@@ -1,0 +1,18 @@
+name: orangelab
+runtime:
+    name: nodejs
+    options:
+        typescript: true
+        packagemanager: npm
+options:
+    refresh: always
+description: Private infrastructure for cloud natives
+config:
+    tailscale:apiKey: TAILSCALE_API_KEY
+    tailscale:tailnet: TAILSCALE_TAILNET
+
+    orangelab:modules.tailscale: true
+    orangelab:modules.longhorn: true
+
+    orangelab:longhorn.version: 1.7.2
+    orangelab:longhorn.replicaCount: 3

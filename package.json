@@ -1,0 +1,21 @@
+{
+    "name": "orange-lab",
+    "description": "Private infrastructure for cloud natives",
+    "version": "0.1.0",
+    "main": "index.ts",
+    "license": "MIT",
+    "scripts": {
+        "deploy": "pulumi up",
+        "lint": "node_modules/.bin/eslint **/*.ts"
+    },
+    "dependencies": {
+        "@pulumi/kubernetes": "4.18.2",
+        "@pulumi/pulumi": "3.137.0",
+        "@pulumi/tailscale": "0.17.4"
+    },
+    "devDependencies": {
+        "@pulumi/eslint-plugin": "0.2.0",
+        "@types/node": "22.8.4",
+        "typescript-eslint": "8.12.2"
+    }
+}
