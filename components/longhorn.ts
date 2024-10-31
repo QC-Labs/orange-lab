@@ -27,6 +27,11 @@ export class Longhorn extends pulumi.ComponentResource {
                         defaultReplicaCount: this.replicaCount,
                         storageOverProvisioningPercentage: 100,
                     },
+                    metrics: {
+                        serviceMonitor: {
+                            enabled: true,
+                        },
+                    },
                 },
             },
             { parent: this },
