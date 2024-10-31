@@ -4,18 +4,15 @@ runtime:
     options:
         typescript: true
         packagemanager: npm
-options:
-    refresh: always
 description: Private infrastructure for cloud natives
 config:
     tailscale:apiKey: TAILSCALE_API_KEY
     tailscale:tailnet: TAILSCALE_TAILNET
 
-    orangelab:modules.tailscale: true
-    orangelab:modules.longhorn: true
-    orangelab:modules.prometheus: false
+    orangelab:longhorn: false
+    orangelab:prometheus: false
 
-    orangelab:longhorn.version: 1.7.2
-    orangelab:longhorn.replicaCount: 3
+    longhorn:version: 1.7.2
+    longhorn:replicaCount: 3
 
-    orangelab:prometheus.version: 65.5.1
+    prometheus:version: 65.5.1

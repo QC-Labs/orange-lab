@@ -94,7 +94,13 @@ pulumi config set orangelab:modules.longhorn true
 pulumi up
 ```
 
-Uninstall: https://artifacthub.io/packages/helm/longhorn/longhorn#uninstallation
+## Uninstall
+
+https://artifacthub.io/packages/helm/longhorn/longhorn#uninstallation
+
+```
+kubectl -n longhorn-system patch -p '{"value": "true"}' --type=merge lhs deleting-confirmation-flag
+```
 
 # Prometheus
 

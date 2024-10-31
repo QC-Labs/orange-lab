@@ -1,28 +1,30 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 
-export interface LonghornArgs {
-    version: string;
-    replicaCount?: number;
-}
-
 export class Longhorn extends pulumi.ComponentResource {
-    constructor(name: string, args: LonghornArgs, opts?: pulumi.ResourceOptions) {
+    private readonly version: string;
+    private readonly replicaCount?: number;
+
+    constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
         super('orangelab:storage:Longhorn', name, args, opts);
 
+        const config = new pulumi.Config('longhorn');
+        this.version = config.require('version');
+        this.replicaCount = config.getNumber('replicaCount');
+
         new kubernetes.helm.v3.Release(
-            `${name}-release`,
+            name,
             {
                 chart: 'longhorn',
                 namespace: 'longhorn-system',
                 createNamespace: true,
-                version: args.version,
+                version: this.version,
                 repositoryOpts: {
                     repo: 'https://charts.longhorn.io',
                 },
                 values: {
                     defaultSettings: {
-                        defaultReplicaCount: args.replicaCount,
+                        defaultReplicaCount: this.replicaCount,
                         storageOverProvisioningPercentage: 100,
                     },
                 },

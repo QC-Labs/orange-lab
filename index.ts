@@ -3,22 +3,20 @@ import { Longhorn } from './components/longhorn';
 import { Tailscale } from './components/tailscale';
 import { Prometheus } from './components/prometheus';
 
-const config = new pulumi.Config('orangelab');
-const enabled: Record<string, boolean> = config.requireObject('modules');
+const orangelabConfig = new pulumi.Config('orangelab');
 
-let tailscale;
-if (enabled.tailscale) {
-    tailscale = new Tailscale('tailscale');
+const tailscale = new Tailscale('tailscale');
+
+let longhorn;
+if (orangelabConfig.requireBoolean('longhorn')) {
+    longhorn = new Longhorn('longhorn');
 }
 
-if (enabled.longhorn) {
-    new Longhorn('longhorn', config.requireObject('longhorn'));
+if (orangelabConfig.requireBoolean('prometheus')) {
+    new Prometheus('prometheus', {}, { dependsOn: longhorn });
 }
 
-if (enabled.prometheus) {
-    new Prometheus('prometheus', config.requireObject('prometheus'));
-}
-
-export const tailscaleServerKey = tailscale?.serverKey;
-export const tailscaleAgentKey = tailscale?.agentKey;
-export const tailscaleDomain = tailscale?.tailnet;
+export const tailscaleServerKey = tailscale.serverKey;
+export const tailscaleAgentKey = tailscale.agentKey;
+export const tailscaleDomain = tailscale.tailnet;
+export const orangelab = orangelabConfig;

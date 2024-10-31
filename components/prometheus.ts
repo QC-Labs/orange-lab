@@ -1,20 +1,21 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 
-export interface PrometheusArgs {
-    version: string;
-}
-
 export class Prometheus extends pulumi.ComponentResource {
-    constructor(name: string, args: PrometheusArgs, opts?: pulumi.ResourceOptions) {
+    private readonly version: string;
+
+    constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
         super('orangelab:monitoring:Prometheus', name, args, opts);
+
+        const config = new pulumi.Config('prometheus');
+        this.version = config.require('version');
 
         // https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
         new kubernetes.helm.v3.Release(
             name,
             {
                 chart: 'kube-prometheus-stack',
-                version: args.version,
+                version: this.version,
                 namespace: 'monitoring',
                 createNamespace: true,
                 repositoryOpts: {

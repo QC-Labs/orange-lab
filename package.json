@@ -5,7 +5,7 @@
     "main": "index.ts",
     "license": "MIT",
     "scripts": {
-        "deploy": "pulumi up",
+        "deploy": "pulumi up --refresh",
         "lint": "node_modules/.bin/eslint **/*.ts"
     },
     "dependencies": {
