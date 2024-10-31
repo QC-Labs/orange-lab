@@ -22,7 +22,6 @@ export class Longhorn extends pulumi.ComponentResource {
                 },
                 values: {
                     defaultSettings: {
-                        allowCollectingLonghornUsageMetrics: false,
                         defaultReplicaCount: args.replicaCount,
                         storageOverProvisioningPercentage: 100,
                     },

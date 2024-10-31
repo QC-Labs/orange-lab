@@ -1,0 +1,98 @@
+import * as kubernetes from '@pulumi/kubernetes';
+import * as pulumi from '@pulumi/pulumi';
+
+export interface PrometheusArgs {
+    version: string;
+}
+
+export class Prometheus extends pulumi.ComponentResource {
+    constructor(name: string, args: PrometheusArgs, opts?: pulumi.ResourceOptions) {
+        super('orangelab:monitoring:Prometheus', name, args, opts);
+
+        // https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
+        new kubernetes.helm.v3.Release(
+            name,
+            {
+                chart: 'kube-prometheus-stack',
+                version: args.version,
+                namespace: 'monitoring',
+                createNamespace: true,
+                repositoryOpts: {
+                    repo: 'https://prometheus-community.github.io/helm-charts',
+                },
+                values: {
+                    defaultRules: {
+                        rules: {
+                            etcd: false,
+                        },
+                    },
+                    grafana: {
+                        username: 'admin',
+                        password: 'admin',
+                    },
+                    kubeEtcd: {
+                        enabled: false,
+                    },
+                    kubeControllerManager: {
+                        serviceMonitor: {
+                            https: false,
+                        },
+                    },
+                    kubeScheduler: {
+                        serviceMonitor: {
+                            https: false,
+                        },
+                    },
+                    kubeProxy: {
+                        serviceMonitor: {
+                            https: false,
+                        },
+                    },
+                    alertmanager: {
+                        ingress: {
+                            enabled: true,
+                        },
+                        alertmanagerSpec: {
+                            storage: {
+                                volumeClaimTemplate: {
+                                    spec: {
+                                        storageClassName: 'longhorn',
+                                        accessModes: ['ReadWriteOnce'],
+                                        resources: {
+                                            requests: {
+                                                storage: '5Gi',
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                    prometheus: {
+                        ingress: {
+                            enabled: true,
+                        },
+                        prometheusSpec: {
+                            storageSpec: {
+                                volumeClaimTemplate: {
+                                    spec: {
+                                        storageClassName: 'longhorn',
+                                        accessModes: ['ReadWriteOnce'],
+                                        resources: {
+                                            requests: {
+                                                storage: '5Gi',
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            { parent: this },
+        );
+
+        this.registerOutputs();
+    }
+}

@@ -45,6 +45,7 @@ pulumi up
 firewall-cmd --permanent --zone=trusted --add-source=10.42.0.0/16 # pods
 firewall-cmd --permanent --zone=trusted --add-source=10.43.0.0/16 # services
 firewall-cmd --permanent --zone=internal --add-port=10250/tcp # Kubelet metrics
+firewall-cmd --permanent --zone=internal --add-port=9100/tcp # Prometheus metrics
 firewall-cmd --permanent --zone=internal --add-port=5001/tcp # Spegel (Embedded distributed registry)
 firewall-cmd --permanent --zone=internal --add-port=6443/tcp # Spegel (Embedded distributed registry)
 firewall-cmd --permanent --add-port=6443/tcp # apiserver
@@ -90,5 +91,14 @@ sed -i -e "s/127.0.0.1/$HOSTNAME/g" ~/.kube/config
 systemctl enable iscsid.service --now
 systemctl enable iscsid.socket --now
 pulumi config set orangelab:modules.longhorn true
+pulumi up
+```
+
+Uninstall: https://artifacthub.io/packages/helm/longhorn/longhorn#uninstallation
+
+# Prometheus
+
+```
+pulumi config set prometheus.enabled true
 pulumi up
 ```
