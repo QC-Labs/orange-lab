@@ -6,10 +6,10 @@ Private infrastructure for cloud natives.
 
 Technology used:
 
--   Pulumi - configuration management, deployments and infrastructure as code
--   Tailscale - end-to-end encrypted communication between nodes.
--   K3s - lightweight Kubernetes cluster
--   Longhorn - distributed storage
+-   Pulumi (https://www.pulumi.com/) - configuration management, deployments and infrastructure as code
+-   Tailscale (https://tailscale.com/) - end-to-end encrypted communication between nodes
+-   K3s (https://k3s.io/) - lightweight Kubernetes cluster
+-   Longhorn (https://longhorn.io/) - distributed storage
 
 # Prerequisites
 
@@ -83,6 +83,18 @@ systemctl enable k3s.service --now
 sudo chmod 600 ~/.kube/config
 sudo chown $USER ~/.kube/config
 sed -i -e "s/127.0.0.1/$HOSTNAME/g" ~/.kube/config
+```
+
+# Tailscale-operator
+
+Add `k8s-operator` and `k8s` tags.
+Create OAuth client for tailscale-operator with write permissions to devices.
+https://tailscale.com/learn/managing-access-to-kubernetes-with-tailscale#preparing-the-operator
+
+```
+pulumi config set orangelab:tailscale-operator true
+pulumi config set tailscale-operator:oauthClientId <OAUTH_CLIENT_ID> --secret
+pulumi config set tailscale-operator:oauthClientSecret <OAUTH_CLIENT_SECRET> --secret
 ```
 
 # Longhorn

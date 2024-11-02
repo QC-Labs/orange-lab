@@ -1,22 +1,26 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Longhorn } from './components/longhorn';
-import { Tailscale } from './components/tailscale';
 import { Prometheus } from './components/prometheus';
+import { Tailscale } from './components/tailscale';
+import { TailscaleOperator } from './components/tailscale-operator';
 
-const orangelabConfig = new pulumi.Config('orangelab');
+const config = new pulumi.Config('orangelab');
 
 const tailscale = new Tailscale('tailscale');
 
+if (config.requireBoolean('tailscale-operator')) {
+    new TailscaleOperator('tailscale-operator');
+}
+
 let longhorn;
-if (orangelabConfig.requireBoolean('longhorn')) {
+if (config.requireBoolean('longhorn')) {
     longhorn = new Longhorn('longhorn');
 }
 
-if (orangelabConfig.requireBoolean('prometheus')) {
+if (config.requireBoolean('prometheus')) {
     new Prometheus('prometheus', {}, { dependsOn: longhorn });
 }
 
 export const tailscaleServerKey = tailscale.serverKey;
 export const tailscaleAgentKey = tailscale.agentKey;
 export const tailscaleDomain = tailscale.tailnet;
-export const orangelab = orangelabConfig;

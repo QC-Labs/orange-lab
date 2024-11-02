@@ -9,8 +9,13 @@ config:
     tailscale:apiKey: TAILSCALE_API_KEY
     tailscale:tailnet: TAILSCALE_TAILNET
 
+    orangelab:tailscale-operator: false
     orangelab:longhorn: false
     orangelab:prometheus: false
+
+    tailscale-operator:version: 1.76.1
+    tailscale-operator:oauthClientId: OAUTH_CLIENT_ID
+    tailscale-operator:oauthClientSecret: OAUTH_CLIENT_SECRET
 
     longhorn:version: 1.7.2
     longhorn:replicaCount: 3
