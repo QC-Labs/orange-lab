@@ -59,7 +59,7 @@ firewall-cmd --reload
 Run the script on _management node_:
 
 ```
-./scripts/k3s-install-server.sh
+./scripts/k3s-server.sh
 ```
 
 then copy the contents and run it on the _server node_ to install k3s server and agent.
@@ -70,19 +70,33 @@ Make sure the service is running and enabled for reboots:
 systemctl enable k3s.service --now
 ```
 
+## Save server configuration
+
+Add the tailscale IP of the server to Pulumi configuration:
+
+```
+pulumi config set k3s:serverIp <server_ip>
+pulumi config set k3s:serverIp $(tailscale ip -4) # for localhost
+```
+
+Add generated agent token to Pulumi configuration as secret:
+
+```
+K3S_TOKEN=$(ssh user@serverIp sudo cat /var/lib/rancher/k3s/server/node-token) # remote by SSH
+K3S_TOKEN=$(cat /var/lib/rancher/k3s/server/node-token) # localhost
+pulumi config set k3s:agentToken $K3S_TOKEN --secret
+```
+
 ## Add agent nodes
 
 ```
-./scripts/k3s-get-credentials.sh
-./scripts/k3s-install-agent.sh
+./scripts/k3s-agent.sh
 ```
 
 ## Kube config
 
 ```
-sudo chmod 600 ~/.kube/config
-sudo chown $USER ~/.kube/config
-sed -i -e "s/127.0.0.1/$HOSTNAME/g" ~/.kube/config
+scp <user>@<k8s-server>:~/.kube/config ~/.kube/config
 ```
 
 # Tailscale-operator
