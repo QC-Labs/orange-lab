@@ -38,6 +38,14 @@ export class Longhorn extends pulumi.ComponentResource {
                               },
                           }
                         : undefined,
+                    ingress: {
+                        enabled: true,
+                        ingressClassName: 'tailscale',
+                        host: 'longhorn',
+                        tls: {
+                            hosts: ['longhorn'],
+                        },
+                    },
                 },
             },
             { parent: this },
