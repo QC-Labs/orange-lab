@@ -19,6 +19,15 @@ brew install pulumi kubectl k9s
 flatpak install io.kinvolk.Headlamp
 ```
 
+Open project in VSCode, make sure you have DevContainers extension installed (https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers).
+
+To have access to your Tailscale network inside VS terminal run following commands. Feel free to change the hostname to whatever you want to call it:
+
+```
+sudo tailscale login
+sudo tailscale up --accept-routes --hostname vscode
+```
+
 # Pulumi
 
 Create Pulumi access token at https://app.pulumi.com/account/tokens

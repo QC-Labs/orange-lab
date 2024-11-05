@@ -14,8 +14,13 @@
         "ghcr.io/devcontainers-extra/features/pulumi:1": {
             "bashCompletion": true,
             "version": "latest"
+        },
+        "ghcr.io/tailscale/codespace/tailscale": {
+            "version": "latest"
         }
     },
+
+    "runArgs": ["--device=/dev/net/tun"],
 
     // Use 'forwardPorts' to make a list of ports inside the container available locally.
     // "forwardPorts": [],
