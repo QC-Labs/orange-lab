@@ -102,6 +102,18 @@ pulumi config set k3s:agentToken $K3S_TOKEN --secret
 ./scripts/k3s-agent.sh
 ```
 
+## Disable suspend
+
+Turn off suspend mode when on AC power. The setting in Gnome UI only applies when you're logged in, but not on login screen. You can check current settings with:
+
+```
+# Check current settings
+sudo -u gdm dbus-run-session gsettings list-recursively org.gnome.settings-daemon.plugins.power | grep sleep
+
+# Disable suspend mode on AC power:
+sudo -u gdm dbus-run-session gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-timeout 0
+```
+
 ## Kube config
 
 ```
