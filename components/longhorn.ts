@@ -1,11 +1,15 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 
+interface LonghornArgs {
+    enableMonitoring?: boolean;
+}
+
 export class Longhorn extends pulumi.ComponentResource {
     private readonly version: string;
     private readonly replicaCount?: number;
 
-    constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
+    constructor(name: string, args: LonghornArgs = {}, opts?: pulumi.ResourceOptions) {
         super('orangelab:storage:Longhorn', name, args, opts);
 
         const config = new pulumi.Config('longhorn');
@@ -27,11 +31,13 @@ export class Longhorn extends pulumi.ComponentResource {
                         defaultReplicaCount: this.replicaCount,
                         storageOverProvisioningPercentage: 100,
                     },
-                    metrics: {
-                        serviceMonitor: {
-                            enabled: true,
-                        },
-                    },
+                    metrics: args.enableMonitoring
+                        ? {
+                              serviceMonitor: {
+                                  enabled: true,
+                              },
+                          }
+                        : undefined,
                 },
             },
             { parent: this },

@@ -12,12 +12,15 @@ if (config.requireBoolean('tailscale-operator')) {
     new TailscaleOperator('tailscale-operator');
 }
 
+const prometheusEnabled = config.requireBoolean('prometheus');
 let longhorn;
 if (config.requireBoolean('longhorn')) {
-    longhorn = new Longhorn('longhorn');
+    longhorn = new Longhorn('longhorn', {
+        enableMonitoring: prometheusEnabled,
+    });
 }
 
-if (config.requireBoolean('prometheus')) {
+if (prometheusEnabled) {
     new Prometheus('prometheus', {}, { dependsOn: longhorn });
 }
 
