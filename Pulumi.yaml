@@ -6,6 +6,8 @@ runtime:
         packagemanager: npm
 description: Private infrastructure for cloud natives
 config:
+    # Commented out entries have to be set in your stack configuration
+
     #    tailscale:apiKey: TAILSCALE_API_KEY
     #    tailscale:tailnet: TAILSCALE_TAILNET
 
@@ -22,5 +24,6 @@ config:
 
     longhorn:version: 1.7.2
     longhorn:replicaCount: 3
+    longhorn:enableMonitoring: false
 
     prometheus:version: 65.5.1
