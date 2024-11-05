@@ -132,13 +132,37 @@ pulumi config set tailscale-operator:oauthClientId <OAUTH_CLIENT_ID> --secret
 pulumi config set tailscale-operator:oauthClientSecret <OAUTH_CLIENT_SECRET> --secret
 ```
 
-# Longhorn
+Before running `pulumi up` make sure you have HTTPS enabled on your tailnet (https://login.tailscale.com/admin/dns).
+
+## Kubernetes API access
+
+After deploying the operator, you can use new endpoint for Kubernetes API, https://tailscale-operator.<tailnet>.ts.net
+
+Permissions are managed in Tailscale so make sure you enable admins access to the cluster in your Tailscale ACLs:
 
 ```
+"grants": [{
+    "src": ["autogroup:admin"],
+    "dst": ["tag:k8s-operator"],
+    "app": {
+        "tailscale.com/cap/kubernetes": [{
+            "impersonate": {
+                "groups": ["system:masters"],
+            },
+        }],
+    },
+}]
+```
+
+# Longhorn
+
+````
+
 systemctl enable iscsid.service --now
 systemctl enable iscsid.socket --now
 pulumi config set orangelab:modules.longhorn true
 pulumi up
+
 ```
 
 ## Uninstall
@@ -146,12 +170,19 @@ pulumi up
 https://artifacthub.io/packages/helm/longhorn/longhorn#uninstallation
 
 ```
+
 kubectl -n longhorn-system patch -p '{"value": "true"}' --type=merge lhs deleting-confirmation-flag
+
 ```
 
 # Prometheus
 
 ```
+
 pulumi config set prometheus.enabled true
 pulumi up
+
 ```
+
+```
+````

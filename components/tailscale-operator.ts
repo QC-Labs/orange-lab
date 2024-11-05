@@ -25,6 +25,9 @@ export class TailscaleOperator extends pulumi.ComponentResource {
                         clientId: config.requireSecret('oauthClientId'),
                         clientSecret: config.requireSecret('oauthClientSecret'),
                     },
+                    apiServerProxyConfig: {
+                        mode: 'true',
+                    },
                 },
             },
             { parent: this },
