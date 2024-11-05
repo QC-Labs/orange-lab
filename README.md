@@ -154,6 +154,12 @@ Permissions are managed in Tailscale so make sure you enable admins access to th
 }]
 ```
 
+From now on, to generate `~/.kube/config` to access Kubernetes API, just run this command
+
+```
+tailscale configure kubeconfig tailscale-operator
+```
+
 # Longhorn
 
 ````
