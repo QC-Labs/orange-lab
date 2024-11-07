@@ -49,6 +49,13 @@ export class Prometheus extends pulumi.ComponentResource {
                     alertmanager: {
                         ingress: {
                             enabled: true,
+                            ingressClassName: 'tailscale',
+                            tls: [
+                                {
+                                    hosts: ['alertmanager'],
+                                },
+                            ],
+                            hostname: 'alertmanager',
                         },
                         alertmanagerSpec: {
                             storage: {
@@ -69,6 +76,13 @@ export class Prometheus extends pulumi.ComponentResource {
                     prometheus: {
                         ingress: {
                             enabled: true,
+                            ingressClassName: 'tailscale',
+                            tls: [
+                                {
+                                    hosts: ['prometheus'],
+                                },
+                            ],
+                            hostname: 'prometheus',
                         },
                         prometheusSpec: {
                             storageSpec: {
