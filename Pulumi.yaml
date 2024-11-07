@@ -8,22 +8,25 @@ description: Private infrastructure for cloud natives
 config:
     # Commented out entries have to be set in your stack configuration
 
-    #    tailscale:apiKey: TAILSCALE_API_KEY
-    #    tailscale:tailnet: TAILSCALE_TAILNET
+    # tailscale:apiKey: TAILSCALE_API_KEY
+    # tailscale:tailnet: TAILSCALE_TAILNET
 
-    #    k3s:serverIp: localhost
-    #    k3s:agentToken: K3S_TOKEN
+    # k3s:serverIp: localhost
+    # k3s:agentToken: K3S_TOKEN
 
     orangelab:tailscale-operator: false
     orangelab:longhorn: false
     orangelab:prometheus: false
+    orangelab:home-assistant: false
 
     tailscale-operator:version: 1.76.1
-    #    tailscale-operator:oauthClientId: OAUTH_CLIENT_ID
-    #    tailscale-operator:oauthClientSecret: OAUTH_CLIENT_SECRET
+    # tailscale-operator:oauthClientId: OAUTH_CLIENT_ID
+    # tailscale-operator:oauthClientSecret: OAUTH_CLIENT_SECRET
 
     longhorn:version: 1.7.2
     longhorn:replicaCount: 3
     longhorn:enableMonitoring: false
 
     prometheus:version: 65.5.1
+
+    home-assistant:version: 0.2.84
