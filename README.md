@@ -25,7 +25,7 @@ To have access to your Tailscale network inside VS terminal run following comman
 
 ```
 sudo tailscale login
-sudo tailscale up --accept-routes --hostname vscode
+sudo tailscale up --accept-routes --hostname <user>-vscode
 ```
 
 # Pulumi

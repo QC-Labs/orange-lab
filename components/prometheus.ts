@@ -6,13 +6,16 @@ export class Prometheus extends pulumi.ComponentResource {
         super('orangelab:monitoring:Prometheus', name, args, opts);
 
         const config = new pulumi.Config('prometheus');
+        const version = config.require('version');
+        const prometheusHostname = config.require('hostname-prometheus');
+        const alertManagerHostname = config.require('hostname-alert-manager');
 
         // https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
         new kubernetes.helm.v3.Release(
             name,
             {
                 chart: 'kube-prometheus-stack',
-                version: config.require('version'),
+                version,
                 namespace: 'monitoring',
                 createNamespace: true,
                 repositoryOpts: {
@@ -20,42 +23,22 @@ export class Prometheus extends pulumi.ComponentResource {
                 },
                 values: {
                     defaultRules: {
-                        rules: {
-                            etcd: false,
-                        },
+                        rules: { etcd: false },
                     },
                     grafana: {
                         username: 'admin',
                         password: 'admin',
                     },
-                    kubeEtcd: {
-                        enabled: false,
-                    },
-                    kubeControllerManager: {
-                        serviceMonitor: {
-                            https: false,
-                        },
-                    },
-                    kubeScheduler: {
-                        serviceMonitor: {
-                            https: false,
-                        },
-                    },
-                    kubeProxy: {
-                        serviceMonitor: {
-                            https: false,
-                        },
-                    },
+                    kubeEtcd: { enabled: false },
+                    kubeControllerManager: { serviceMonitor: { https: false } },
+                    kubeScheduler: { serviceMonitor: { https: false } },
+                    kubeProxy: { serviceMonitor: { https: false } },
                     alertmanager: {
                         ingress: {
                             enabled: true,
                             ingressClassName: 'tailscale',
-                            tls: [
-                                {
-                                    hosts: ['alertmanager'],
-                                },
-                            ],
-                            hostname: 'alertmanager',
+                            tls: [{ hosts: [alertManagerHostname] }],
+                            hostname: alertManagerHostname,
                         },
                         alertmanagerSpec: {
                             storage: {
@@ -63,11 +46,7 @@ export class Prometheus extends pulumi.ComponentResource {
                                     spec: {
                                         storageClassName: 'longhorn',
                                         accessModes: ['ReadWriteOnce'],
-                                        resources: {
-                                            requests: {
-                                                storage: '5Gi',
-                                            },
-                                        },
+                                        resources: { requests: { storage: '5Gi' } },
                                     },
                                 },
                             },
@@ -77,12 +56,8 @@ export class Prometheus extends pulumi.ComponentResource {
                         ingress: {
                             enabled: true,
                             ingressClassName: 'tailscale',
-                            tls: [
-                                {
-                                    hosts: ['prometheus'],
-                                },
-                            ],
-                            hostname: 'prometheus',
+                            tls: [{ hosts: [prometheusHostname] }],
+                            hostname: prometheusHostname,
                         },
                         prometheusSpec: {
                             storageSpec: {
@@ -90,11 +65,7 @@ export class Prometheus extends pulumi.ComponentResource {
                                     spec: {
                                         storageClassName: 'longhorn',
                                         accessModes: ['ReadWriteOnce'],
-                                        resources: {
-                                            requests: {
-                                                storage: '5Gi',
-                                            },
-                                        },
+                                        resources: { requests: { storage: '5Gi' } },
                                     },
                                 },
                             },

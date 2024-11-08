@@ -6,9 +6,6 @@ export interface HomeAssistantArgs {
 }
 
 export class HomeAssistant extends pulumi.ComponentResource {
-    private readonly version: string;
-    private readonly zone?: string;
-
     constructor(
         name: string,
         args: HomeAssistantArgs = {},
@@ -17,8 +14,9 @@ export class HomeAssistant extends pulumi.ComponentResource {
         super('orangelab:apps:HomeAssistant', name, args, opts);
 
         const config = new pulumi.Config('home-assistant');
-        this.version = config.require('version');
-        this.zone = config.get('zone');
+        const version = config.require('version');
+        const hostname = config.require('hostname');
+        const zone = config.get('zone');
 
         // https://artifacthub.io/packages/helm/helm-hass/home-assistant
         new kubernetes.helm.v3.Release(
@@ -27,12 +25,12 @@ export class HomeAssistant extends pulumi.ComponentResource {
                 chart: 'home-assistant',
                 namespace: 'home-assistant',
                 createNamespace: true,
-                version: this.version,
+                version,
                 repositoryOpts: {
                     repo: 'http://pajikos.github.io/home-assistant-helm-chart/',
                 },
                 values: {
-                    affinity: this.zone
+                    affinity: zone
                         ? {
                               nodeAffinity: {
                                   requiredDuringSchedulingIgnoredDuringExecution: {
@@ -42,7 +40,7 @@ export class HomeAssistant extends pulumi.ComponentResource {
                                                   {
                                                       key: 'orangelab/zone',
                                                       operator: 'In',
-                                                      values: [this.zone],
+                                                      values: [zone],
                                                   },
                                               ],
                                           },
@@ -57,7 +55,7 @@ export class HomeAssistant extends pulumi.ComponentResource {
                         className: 'tailscale',
                         hosts: [
                             {
-                                host: 'home-assistant',
+                                host: hostname,
                                 paths: [
                                     {
                                         path: '/',
@@ -66,11 +64,7 @@ export class HomeAssistant extends pulumi.ComponentResource {
                                 ],
                             },
                         ],
-                        tls: [
-                            {
-                                hosts: ['home-assistant'],
-                            },
-                        ],
+                        tls: [{ hosts: [hostname] }],
                     },
                     configuration: {
                         enabled: true,

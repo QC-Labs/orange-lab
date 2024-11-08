@@ -24,7 +24,7 @@ if (config.requireBoolean('prometheus')) {
 }
 
 if (config.requireBoolean('home-assistant')) {
-    new HomeAssistant('homeassistant', {
+    new HomeAssistant('home-assistant', {
         trustedProxies: [
             configK3s.require('clusterCidr'),
             configK3s.require('serviceCidr'),

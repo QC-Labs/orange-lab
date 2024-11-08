@@ -9,6 +9,10 @@ export class TailscaleOperator extends pulumi.ComponentResource {
         super('orangelab:network:TailscaleOperator', name, args, opts);
 
         const config = new pulumi.Config(name);
+        const version = config.require('version');
+        const hostname = config.require('hostname');
+        const oauthClientId = config.requireSecret('oauthClientId');
+        const oauthClientSecret = config.requireSecret('oauthClientSecret');
 
         new kubernetes.helm.v3.Release(
             name,
@@ -16,18 +20,17 @@ export class TailscaleOperator extends pulumi.ComponentResource {
                 chart: 'tailscale-operator',
                 namespace: 'tailscale',
                 createNamespace: true,
-                version: config.require('version'),
+                version,
                 repositoryOpts: {
                     repo: 'https://pkgs.tailscale.com/helmcharts',
                 },
                 values: {
                     oauth: {
-                        clientId: config.requireSecret('oauthClientId'),
-                        clientSecret: config.requireSecret('oauthClientSecret'),
+                        clientId: oauthClientId,
+                        clientSecret: oauthClientSecret,
                     },
-                    apiServerProxyConfig: {
-                        mode: 'true',
-                    },
+                    apiServerProxyConfig: { mode: 'true' },
+                    operatorConfig: { hostname },
                 },
             },
             { parent: this },
