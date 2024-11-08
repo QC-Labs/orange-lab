@@ -1,10 +1,18 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 
+export interface HomeAssistantArgs {
+    trustedProxies?: string[];
+}
+
 export class HomeAssistant extends pulumi.ComponentResource {
     private readonly version: string;
 
-    constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
+    constructor(
+        name: string,
+        args: HomeAssistantArgs = {},
+        opts?: pulumi.ResourceOptions,
+    ) {
         super('orangelab:apps:HomeAssistant', name, args, opts);
 
         const config = new pulumi.Config('home-assistant');
@@ -45,7 +53,7 @@ export class HomeAssistant extends pulumi.ComponentResource {
                     },
                     configuration: {
                         enabled: true,
-                        trusted_proxies: ['10.42.0.0/16', '127.0.0.0/8'],
+                        trusted_proxies: args.trustedProxies ?? [],
                     },
                     persistence: {
                         enabled: true,

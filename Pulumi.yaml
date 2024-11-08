@@ -13,6 +13,8 @@ config:
 
     # k3s:serverIp: localhost
     # k3s:agentToken: K3S_TOKEN
+    k3s:clusterCidr: 10.42.0.0/16
+    k3s:serviceCidr: 10.43.0.0/16
 
     orangelab:tailscale-operator: false
     orangelab:longhorn: false

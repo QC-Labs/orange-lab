@@ -6,6 +6,7 @@ import { TailscaleOperator } from './components/tailscale-operator';
 import { HomeAssistant } from './components/home-assistant';
 
 const config = new pulumi.Config('orangelab');
+const configK3s = new pulumi.Config('k3s');
 
 const tailscale = new Tailscale('tailscale');
 
@@ -23,7 +24,13 @@ if (config.requireBoolean('prometheus')) {
 }
 
 if (config.requireBoolean('home-assistant')) {
-    new HomeAssistant('homeassistant');
+    new HomeAssistant('homeassistant', {
+        trustedProxies: [
+            configK3s.require('clusterCidr'),
+            configK3s.require('serviceCidr'),
+            '127.0.0.0/8',
+        ],
+    });
 }
 
 export const tailscaleServerKey = tailscale.serverKey;
