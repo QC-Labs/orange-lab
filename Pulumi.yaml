@@ -32,3 +32,5 @@ config:
     prometheus:version: 65.5.1
 
     home-assistant:version: 0.2.84
+    # Setting zone forcees deployment on nodes with orangelabs/zone label
+    # home-assistant:zone: home

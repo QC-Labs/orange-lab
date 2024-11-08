@@ -7,6 +7,7 @@ export interface HomeAssistantArgs {
 
 export class HomeAssistant extends pulumi.ComponentResource {
     private readonly version: string;
+    private readonly zone?: string;
 
     constructor(
         name: string,
@@ -17,6 +18,7 @@ export class HomeAssistant extends pulumi.ComponentResource {
 
         const config = new pulumi.Config('home-assistant');
         this.version = config.require('version');
+        this.zone = config.get('zone');
 
         // https://artifacthub.io/packages/helm/helm-hass/home-assistant
         new kubernetes.helm.v3.Release(
@@ -30,6 +32,25 @@ export class HomeAssistant extends pulumi.ComponentResource {
                     repo: 'http://pajikos.github.io/home-assistant-helm-chart/',
                 },
                 values: {
+                    affinity: this.zone
+                        ? {
+                              nodeAffinity: {
+                                  requiredDuringSchedulingIgnoredDuringExecution: {
+                                      nodeSelectorTerms: [
+                                          {
+                                              matchExpressions: [
+                                                  {
+                                                      key: 'orangelab/zone',
+                                                      operator: 'In',
+                                                      values: [this.zone],
+                                                  },
+                                              ],
+                                          },
+                                      ],
+                                  },
+                              },
+                          }
+                        : undefined,
                     hostNetwork: true,
                     ingress: {
                         enabled: true,
