@@ -11,12 +11,6 @@ export class Tailscale extends pulumi.ComponentResource {
 
         this.tailnet = new pulumi.Config(name).require('tailnet');
 
-        new tailscale.DnsPreferences(
-            `${name}-dns`,
-            { magicDns: true },
-            { parent: this, retainOnDelete: true },
-        );
-
         const serverKey = new tailscale.TailnetKey(
             `${name}-server-key`,
             {
