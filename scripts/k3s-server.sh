@@ -16,7 +16,6 @@ echo export TS_AUTH_KEY=$TS_AUTH_KEY
 echo "curl -sfL https://get.k3s.io |  sh -s - \
 --bind-address=\$NODE_IP \
 --selinux \
---docker \
 --secrets-encryption \
 --vpn-auth \"name=tailscale,joinKey=\$TS_AUTH_KEY\" \
 --cluster-cidr=\$CLUSTER_CIDR \

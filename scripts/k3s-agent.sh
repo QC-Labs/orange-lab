@@ -18,5 +18,4 @@ echo "curl -sfL https://get.k3s.io |  sh -s - \
 --token \$K3S_TOKEN \
 --bind-address=\$NODE_IP \
 --selinux \
---docker \
 --vpn-auth \"name=tailscale,joinKey=\$TS_AUTH_KEY\""
