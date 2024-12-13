@@ -24,13 +24,18 @@ if (config.requireBoolean('prometheus')) {
 }
 
 if (config.requireBoolean('home-assistant')) {
-    new HomeAssistant('home-assistant', {
-        trustedProxies: [
-            configK3s.require('clusterCidr'),
-            configK3s.require('serviceCidr'),
-            '127.0.0.0/8',
-        ],
-    });
+    new HomeAssistant(
+        'home-assistant',
+        {
+            trustedProxies: [
+                configK3s.require('clusterCidr'),
+                configK3s.require('serviceCidr'),
+                '127.0.0.0/8',
+            ],
+        },
+        { dependsOn: longhorn },
+    );
+}
 }
 
 export const tailscaleServerKey = tailscale.serverKey;
