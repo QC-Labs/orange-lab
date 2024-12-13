@@ -21,7 +21,7 @@ config:
 
     tailscale-operator:version: 1.76.1
     # Hostname for Tailscale operator proxy for Kubernetes API
-    tailscale-operator:hostname: k8s-api
+    tailscale-operator:hostname: k8s
     # tailscale-operator:oauthClientId: OAUTH_CLIENT_ID
     # tailscale-operator:oauthClientSecret: OAUTH_CLIENT_SECRET
 

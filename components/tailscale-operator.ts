@@ -1,6 +1,7 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 
+// https://tailscale.com/kubernetes-operator
 export class TailscaleOperator extends pulumi.ComponentResource {
     public readonly serverKey: pulumi.Output<string> | undefined;
     public readonly agentKey: pulumi.Output<string> | undefined;
