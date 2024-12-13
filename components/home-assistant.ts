@@ -13,7 +13,7 @@ export class HomeAssistant extends pulumi.ComponentResource {
         args: HomeAssistantArgs = {},
         opts?: pulumi.ResourceOptions,
     ) {
-        super('orangelab:apps:HomeAssistant', name, args, opts);
+        super('orangelab:iot:HomeAssistant', name, args, opts);
 
         const config = new pulumi.Config('home-assistant');
         const version = config.require('version');
