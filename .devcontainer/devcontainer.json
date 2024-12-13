@@ -8,8 +8,7 @@
     "features": {
         "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
             "version": "latest",
-            "helm": "latest",
-            "minikube": "latest"
+            "helm": "latest"
         },
         "ghcr.io/devcontainers-extra/features/pulumi:1": {
             "bashCompletion": true,
@@ -17,7 +16,8 @@
         },
         "ghcr.io/tailscale/codespace/tailscale": {
             "version": "latest"
-        }
+        },
+        "ghcr.io/audacioustux/devcontainers/k9s:1": {}
     },
 
     "runArgs": ["--device=/dev/net/tun"],
