@@ -21,18 +21,35 @@ export class Longhorn extends pulumi.ComponentResource {
                 repositoryOpts: { repo: 'https://charts.longhorn.io' },
                 values: {
                     defaultSettings: {
+                        // requires "node.longhorn.io/create-default-disk=true" label on nodes
+                        createDefaultDiskLabeledNodes: true,
+                        defaultDataLocality: 'best-effort',
                         defaultReplicaCount: replicaCount,
+                        replicaAutoBalance: 'least-effort',
                         storageOverProvisioningPercentage: 100,
                     },
-                    metrics: enableMonitoring
-                        ? { serviceMonitor: { enabled: true } }
-                        : undefined,
+                    csi: {
+                        attacherReplicaCount: replicaCount,
+                        provisionerReplicaCount: replicaCount,
+                        resizerReplicaCount: replicaCount,
+                        snapshotterReplicaCount: replicaCount,
+                    },
+                    longhornUI: {
+                        replicas: 1,
+                    },
+                    persistence: {
+                        defaultClassReplicaCount: replicaCount,
+                        defaultDataLocality: 'best-effort',
+                    },
                     ingress: {
                         enabled: true,
                         ingressClassName: 'tailscale',
                         host: hostname,
-                        tls: { hosts: [hostname] },
+                        tls: true,
                     },
+                    metrics: enableMonitoring
+                        ? { serviceMonitor: { enabled: true } }
+                        : undefined,
                 },
             },
             { parent: this },

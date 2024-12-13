@@ -27,8 +27,9 @@ config:
 
     longhorn:version: 1.7.2
     longhorn:hostname: longhorn
-    # Each replica stored on different host, decrease value when less then 3 hosts available
-    longhorn:replicaCount: 3
+    # Each replica stored on different host
+    longhorn:replicaCount: 2
+    # Deploy Prometheus first
     longhorn:enableMonitoring: false
 
     prometheus:version: 65.5.1
