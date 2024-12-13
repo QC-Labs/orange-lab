@@ -5,6 +5,8 @@ export interface HomeAssistantArgs {
     trustedProxies?: string[];
 }
 
+// Homepage: https://www.home-assistant.io/
+// Helm chart: https://artifacthub.io/packages/helm/helm-hass/home-assistant
 export class HomeAssistant extends pulumi.ComponentResource {
     constructor(
         name: string,
@@ -18,7 +20,6 @@ export class HomeAssistant extends pulumi.ComponentResource {
         const hostname = config.require('hostname');
         const zone = config.get('zone');
 
-        // https://artifacthub.io/packages/helm/helm-hass/home-assistant
         new kubernetes.helm.v3.Release(
             name,
             {

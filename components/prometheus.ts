@@ -1,6 +1,7 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 
+// Helm chart: https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
 export class Prometheus extends pulumi.ComponentResource {
     constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
         super('orangelab:monitoring:Prometheus', name, args, opts);
@@ -11,7 +12,6 @@ export class Prometheus extends pulumi.ComponentResource {
         const alertManagerHostname = config.require('hostname-alert-manager');
         const grafanaHostname = config.require('hostname-grafana');
 
-        // https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
         new kubernetes.helm.v3.Release(
             name,
             {

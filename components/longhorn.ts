@@ -1,6 +1,7 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 
+// Homepage: https://longhorn.io/
 export class Longhorn extends pulumi.ComponentResource {
     constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
         super('orangelab:storage:Longhorn', name, args, opts);
