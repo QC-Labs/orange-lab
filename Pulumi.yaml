@@ -34,7 +34,7 @@ config:
 
     prometheus:version: 65.5.1
     prometheus:hostname-prometheus: prometheus
-    prometheus:hostname-alert-manager: alerts
+    prometheus:hostname-alert-manager: alertmanager
     prometheus:hostname-grafana: grafana
 
     home-assistant:version: 0.2.84

@@ -9,6 +9,7 @@ export class Prometheus extends pulumi.ComponentResource {
         const version = config.require('version');
         const prometheusHostname = config.require('hostname-prometheus');
         const alertManagerHostname = config.require('hostname-alert-manager');
+        const grafanaHostname = config.require('hostname-grafana');
 
         // https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
         new kubernetes.helm.v3.Release(
@@ -16,7 +17,7 @@ export class Prometheus extends pulumi.ComponentResource {
             {
                 chart: 'kube-prometheus-stack',
                 version,
-                namespace: 'monitoring',
+                namespace: 'prometheus',
                 createNamespace: true,
                 repositoryOpts: {
                     repo: 'https://prometheus-community.github.io/helm-charts',
@@ -26,8 +27,13 @@ export class Prometheus extends pulumi.ComponentResource {
                         rules: { etcd: false },
                     },
                     grafana: {
-                        username: 'admin',
-                        password: 'admin',
+                        adminPassword: 'admin',
+                        ingress: {
+                            enabled: true,
+                            ingressClassName: 'tailscale',
+                            tls: [{ hosts: [grafanaHostname] }],
+                            hostname: grafanaHostname,
+                        },
                     },
                     kubeEtcd: { enabled: false },
                     kubeControllerManager: { serviceMonitor: { https: false } },
