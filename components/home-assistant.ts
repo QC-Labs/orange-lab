@@ -38,7 +38,7 @@ export class HomeAssistant extends pulumi.ComponentResource {
                                           {
                                               matchExpressions: [
                                                   {
-                                                      key: 'orangelab/zone',
+                                                      key: 'topology.kubernetes.io/zone',
                                                       operator: 'In',
                                                       values: [zone],
                                                   },

@@ -39,6 +39,6 @@ config:
 
     home-assistant:version: 0.2.84
     home-assistant:hostname: home-assistant
-    # Set zone for deployment on nodes with orangelabs/zone=<value> label
+    # Set zone for deployment on nodes with topology.kubernetes.io/zone=<value> label
     # This gives access to sensors on local host network
     # home-assistant:zone: home
