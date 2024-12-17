@@ -20,6 +20,7 @@ config:
     orangelab:home-assistant: false
     orangelab:nvidia-gpu-operator: false
     orangelab:ollama: false
+    orangelab:open-webui: false
 
     tailscale-operator:version: 1.76.1
     # Hostname for Tailscale operator proxy for Kubernetes API
@@ -49,3 +50,6 @@ config:
 
     ollama:version: 1.1.0
     ollama:hostname: ollama
+
+    open-webui:version: 4.0.6
+    open-webui:hostname: webui

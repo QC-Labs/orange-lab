@@ -6,6 +6,7 @@ import { TailscaleOperator } from './components/tailscale-operator';
 import { HomeAssistant } from './components/home-assistant';
 import { Ollama } from './components/ollama';
 import { NvidiaGPUOperator } from './components/nvidia-gpu-operator';
+import { OpenWebUI } from './components/open-webui';
 
 const config = new pulumi.Config('orangelab');
 const configK3s = new pulumi.Config('k3s');
@@ -49,6 +50,15 @@ const ollama = config.requireBoolean('ollama')
           { dependsOn: longhorn },
       )
     : undefined;
+
+if (config.requireBoolean('open-webui') && ollama) {
+    new OpenWebUI(
+        'open-webui',
+        {
+            ollamaUrl: ollama.endpointUrl,
+        },
+        { dependsOn: ollama },
+    );
 }
 
 export const tailscaleServerKey = tailscale.serverKey;
