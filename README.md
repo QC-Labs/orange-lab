@@ -230,17 +230,11 @@ You can set node labels later when installing applications. Examples:
 # Set zone, used f.e. by home-assistant to deploy to node on same network as sensors
 kubectl label nodes <node-name> topology.kubernetes.io/zone=home
 
+# Storage node used by Longhorn, at least one is needed
+kubectl label nodes <node-name> orangelab/storage=true
+
 # GPU node for Ollama
 kubectl label nodes <node-name> orangelab/gpu=true
-
-# Storage node used by Longhorn, at least one is needed
-kubectl label nodes <node-name> node.longhorn.io/create-default-disk=true
-
-kubectl label nodes <node-name> orangelab/btc-core=true
-kubectl label nodes <node-name> orangelab/btc-core=priority
-
-kubectl label nodes <node-name> orangelab/backup=true
-kubectl label nodes <node-name> orangelab/storage=large
 ```
 
 # Installation - system applications
@@ -298,13 +292,17 @@ tailscale configure kubeconfig k8s
 Enable iSCSI service before deploying Longhorn.
 
 ```sh
+# Add tag to storage nodes that will be used by Longhorn
+kubectl label nodes <node-name> orangelab/storage=true
+
+# Enable iSCSI on each Longhorn node
 systemctl enable iscsid.service --now
 systemctl enable iscsid.socket --now
+
+# Enable module
 pulumi config set orangelab:longhorn true
 pulumi up
 
-# Add tag to storage nodes that will be used by Longhorn
-kubectl label nodes <node-name> node.longhorn.io/create-default-disk=true
 ```
 
 ### Uninstall

@@ -22,18 +22,22 @@ export class Longhorn extends pulumi.ComponentResource {
                 repositoryOpts: { repo: 'https://charts.longhorn.io' },
                 values: {
                     defaultSettings: {
-                        // requires "node.longhorn.io/create-default-disk=true" label on nodes
-                        createDefaultDiskLabeledNodes: true,
                         defaultDataLocality: 'best-effort',
                         defaultReplicaCount: replicaCount,
                         replicaAutoBalance: 'least-effort',
                         storageOverProvisioningPercentage: 100,
+                        systemManagedComponentsNodeSelector: 'orangelab/storage=true',
+                    },
+                    global: {
+                        nodeSelector: {
+                            'orangelab/storage': 'true',
+                        },
                     },
                     csi: {
-                        attacherReplicaCount: replicaCount,
-                        provisionerReplicaCount: replicaCount,
-                        resizerReplicaCount: replicaCount,
-                        snapshotterReplicaCount: replicaCount,
+                        attacherReplicaCount: 1,
+                        provisionerReplicaCount: 1,
+                        resizerReplicaCount: 1,
+                        snapshotterReplicaCount: 1,
                     },
                     longhornUI: {
                         replicas: 1,
