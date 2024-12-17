@@ -23,7 +23,7 @@ Principles and goals:
 -   private by default - uses Tailscale/WireGuard for end to end encrypted communication, making services public has to be explicitly defined
 -   OSS - prefer open source components that can be run locally
 -   automation - use Pulumi and Helm to automate most tasks and configuration
--   easy to use - no deep Kubernetes knowledge required
+-   easy to use - no deep Kubernetes knowledge required, sensible defaults
 -   offline mode - continue working (with some limitations) over local network when internet connection lost
 -   lightweight - can be run on a single laptop
 -   scalable - distribute workloads across multiple machines as they become available, optional use of cloud instances for autoscaling
@@ -42,7 +42,7 @@ Not a tested configuration but feedback welcome. The issue is Longhorn, which on
 
 There are some manual steps required for initial cluster setup and when adding new nodes.
 
-Once that's done, cluster and enabled applications can be updated with:
+Once that's done, infrastructure can be updated with:
 
 ```sh
 # update Pulumi.<stack>.yaml to configure modules
@@ -50,7 +50,7 @@ pulumi up
 pulumi up -r # --refresh Pulumi state if out of sync
 ```
 
-Services have endpoints at https://<service>.<tailnet>.ts.net/
+Services have endpoints at `https://<service>.<tailnet>.ts.net/`
 
 # Installation - management node
 
@@ -101,10 +101,10 @@ pulumi stack select <stack-name>
 Add tags to your Tailnet in ACLs (https://login.tailscale.com/admin/acls/file):
 
 ```json
-    "tagOwners": {
-		"tag:k8s-server":   [],
-		"tag:k8s-agent":    [],
-	}
+"tagOwners": {
+    "tag:k8s-server":   [],
+    "tag:k8s-agent":    [],
+}
 ```
 
 Create Tailscale API access token for Pulumi (https://login.tailscale.com/admin/settings/keys) and add the secrets to `Pulumi.<stack>.yaml` with:
@@ -248,10 +248,10 @@ The operator manages Ingress endpoints and load balancers on Tailnet as well as 
 Add `k8s-operator` and `k8s` tags to your Tailnet in ACLs (https://login.tailscale.com/admin/acls/file):
 
 ```json
-    "tagOwners": {
-		"tag:k8s-operator": [],
-		"tag:k8s":          ["tag:k8s-operator"],
-	}
+"tagOwners": {
+    "tag:k8s-operator": [],
+    "tag:k8s":          ["tag:k8s-operator"],
+}
 ```
 
 Create OAuth client for tailscale-operator with write permissions to devices.
