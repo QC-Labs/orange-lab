@@ -230,6 +230,9 @@ You can set node labels later when installing applications. Examples:
 # Set zone, used f.e. by home-assistant to deploy to node on same network as sensors
 kubectl label nodes <node-name> topology.kubernetes.io/zone=home
 
+# GPU node for Ollama
+kubectl label nodes <node-name> orangelab/gpu=true
+
 # Storage node used by Longhorn, at least one is needed
 kubectl label nodes <node-name> node.longhorn.io/create-default-disk=true
 
@@ -238,7 +241,6 @@ kubectl label nodes <node-name> orangelab/btc-core=priority
 
 kubectl label nodes <node-name> orangelab/backup=true
 kubectl label nodes <node-name> orangelab/storage=large
-kubectl label nodes <node-name> orangelab/gpu=nvidia
 ```
 
 # Installation - system applications

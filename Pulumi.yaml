@@ -18,6 +18,7 @@ config:
     orangelab:longhorn: false
     orangelab:prometheus: false
     orangelab:home-assistant: false
+    orangelab:nvidia-gpu-operator: false
 
     tailscale-operator:version: 1.76.1
     # Hostname for Tailscale operator proxy for Kubernetes API
@@ -42,3 +43,5 @@ config:
     # Set zone for deployment on nodes with topology.kubernetes.io/zone=<value> label
     # This gives access to sensors on local host network
     # home-assistant:zone: home
+
+    nvidia-gpu-operator:version: v24.9.1

@@ -4,6 +4,7 @@ import { Prometheus } from './components/prometheus';
 import { Tailscale } from './components/tailscale';
 import { TailscaleOperator } from './components/tailscale-operator';
 import { HomeAssistant } from './components/home-assistant';
+import { NvidiaGPUOperator } from './components/nvidia-gpu-operator';
 
 const config = new pulumi.Config('orangelab');
 const configK3s = new pulumi.Config('k3s');
@@ -35,6 +36,10 @@ if (config.requireBoolean('home-assistant')) {
         },
         { dependsOn: longhorn },
     );
+}
+
+if (config.requireBoolean('nvidia-gpu-operator')) {
+    new NvidiaGPUOperator('nvidia-gpu-operator');
 }
 }
 
