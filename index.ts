@@ -4,6 +4,7 @@ import { Prometheus } from './components/prometheus';
 import { Tailscale } from './components/tailscale';
 import { TailscaleOperator } from './components/tailscale-operator';
 import { HomeAssistant } from './components/home-assistant';
+import { Ollama } from './components/ollama';
 import { NvidiaGPUOperator } from './components/nvidia-gpu-operator';
 
 const config = new pulumi.Config('orangelab');
@@ -15,10 +16,7 @@ if (config.requireBoolean('tailscale-operator')) {
     new TailscaleOperator('tailscale-operator');
 }
 
-let longhorn;
-if (config.requireBoolean('longhorn')) {
-    longhorn = new Longhorn('longhorn');
-}
+const longhorn = config.requireBoolean('longhorn') ? new Longhorn('longhorn') : undefined;
 
 if (config.requireBoolean('prometheus')) {
     new Prometheus('prometheus', {}, { dependsOn: longhorn });
@@ -41,8 +39,19 @@ if (config.requireBoolean('home-assistant')) {
 if (config.requireBoolean('nvidia-gpu-operator')) {
     new NvidiaGPUOperator('nvidia-gpu-operator');
 }
+
+const ollama = config.requireBoolean('ollama')
+    ? new Ollama(
+          'ollama',
+          {
+              domainName: tailscale.tailnet,
+          },
+          { dependsOn: longhorn },
+      )
+    : undefined;
 }
 
 export const tailscaleServerKey = tailscale.serverKey;
 export const tailscaleAgentKey = tailscale.agentKey;
 export const tailscaleDomain = tailscale.tailnet;
+export const ollamaUrl = ollama?.endpointUrl;

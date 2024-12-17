@@ -19,6 +19,7 @@ config:
     orangelab:prometheus: false
     orangelab:home-assistant: false
     orangelab:nvidia-gpu-operator: false
+    orangelab:ollama: false
 
     tailscale-operator:version: 1.76.1
     # Hostname for Tailscale operator proxy for Kubernetes API
@@ -45,3 +46,6 @@ config:
     # home-assistant:zone: home
 
     nvidia-gpu-operator:version: v24.9.1
+
+    ollama:version: 1.1.0
+    ollama:hostname: ollama
