@@ -13,7 +13,9 @@ Applications (optional, enable with `orangelab:<app>` feature flags in `Pulumi.<
 
 -   `prometheus` - Prometheus/Grafana (https://prometheus.io/) monitoring
 -   `home-assistant` - Home Assistant (https://www.home-assistant.io/) home automation platform
--   Ollama (https://ollama.com/) with Open WebUI (https://openwebui.com/) frontend - local large language models
+-   `nvidia-device-plugin` - NVidia GPU support (https://github.com/NVIDIA/k8s-device-plugin)
+-   `ollama` - Ollama API (https://ollama.com/) local large language models
+-   `open-webui` - Open WebUI (https://openwebui.com/) frontend
 
 Principles and goals:
 
