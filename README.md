@@ -336,6 +336,11 @@ pulumi config home-assistant:zone home
 ## Ollama
 
 ```sh
+# TODO: Get GPU working, which one do we need?
+# Enable NVidia device plugin
+pulumi config set orangelab:nvidia-device-plugin true
+pulumi config set orangelab:nvidia-gpu-operator true
+
 
 # API Endpoint at https://ollama.<tsnet>.ts.net
 pulumi config set orangelab:ollama true
