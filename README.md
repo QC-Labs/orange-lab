@@ -332,3 +332,14 @@ kubectl label nodes <node-name> topology.kubernetes.io/zone=home
 pulumi config set orangelab:home-assistant true
 pulumi config home-assistant:zone home
 ```
+
+## Ollama
+
+```sh
+
+# API Endpoint at https://ollama.<tsnet>.ts.net
+pulumi config set orangelab:ollama true
+
+# Frontend endpoint at https://webui.<tsnet>.ts.net
+pulumi config set orangelab:open-webui true
+```
