@@ -9,6 +9,7 @@ export interface OllamaArgs {
 // Helm chart: https://artifacthub.io/packages/helm/ollama-helm/ollama
 export class Ollama extends pulumi.ComponentResource {
     public readonly endpointUrl: string | undefined;
+    public readonly serviceUrl: string | undefined;
 
     constructor(name: string, args: OllamaArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:ai:Ollama', name, args, opts);
@@ -28,6 +29,7 @@ export class Ollama extends pulumi.ComponentResource {
                     repo: 'https://otwld.github.io/ollama-helm/',
                 },
                 values: {
+                    fullnameOverride: 'ollama',
                     securityContext: {
                         privileged: true,
                     },
@@ -71,6 +73,7 @@ export class Ollama extends pulumi.ComponentResource {
         );
 
         this.endpointUrl = `https://${hostname}.${args.domainName}`;
+        this.serviceUrl = `http://${hostname}.ollama:11434`;
 
         this.registerOutputs();
     }

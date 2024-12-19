@@ -55,7 +55,7 @@ if (config.requireBoolean('open-webui') && ollama) {
     new OpenWebUI(
         'open-webui',
         {
-            ollamaUrl: ollama.endpointUrl,
+            ollamaUrl: ollama.serviceUrl,
         },
         { dependsOn: ollama },
     );
@@ -65,3 +65,4 @@ export const tailscaleServerKey = tailscale.serverKey;
 export const tailscaleAgentKey = tailscale.agentKey;
 export const tailscaleDomain = tailscale.tailnet;
 export const ollamaUrl = ollama?.endpointUrl;
+export const ollamaClusterUrl = ollama?.serviceUrl;
