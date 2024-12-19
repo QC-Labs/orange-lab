@@ -1,9 +1,15 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 
+export interface LonghornArgs {
+    domainName: string;
+}
+
 // Homepage: https://longhorn.io/
 export class Longhorn extends pulumi.ComponentResource {
-    constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
+    public readonly endpointUrl: string | undefined;
+
+    constructor(name: string, args: LonghornArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:storage:Longhorn', name, args, opts);
 
         const config = new pulumi.Config('longhorn');
@@ -59,6 +65,8 @@ export class Longhorn extends pulumi.ComponentResource {
             },
             { parent: this },
         );
+
+        this.endpointUrl = `https://${hostname}.${args.domainName}`;
 
         this.registerOutputs();
     }

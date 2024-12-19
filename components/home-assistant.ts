@@ -2,17 +2,16 @@ import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 
 export interface HomeAssistantArgs {
+    domainName: string;
     trustedProxies?: string[];
 }
 
 // Homepage: https://www.home-assistant.io/
 // Helm chart: https://artifacthub.io/packages/helm/helm-hass/home-assistant
 export class HomeAssistant extends pulumi.ComponentResource {
-    constructor(
-        name: string,
-        args: HomeAssistantArgs = {},
-        opts?: pulumi.ResourceOptions,
-    ) {
+    public readonly endpointUrl: string | undefined;
+
+    constructor(name: string, args: HomeAssistantArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:iot:HomeAssistant', name, args, opts);
 
         const config = new pulumi.Config('home-assistant');
@@ -80,6 +79,8 @@ export class HomeAssistant extends pulumi.ComponentResource {
             },
             { parent: this },
         );
+
+        this.endpointUrl = `https://${hostname}.${args.domainName}`;
 
         this.registerOutputs();
     }

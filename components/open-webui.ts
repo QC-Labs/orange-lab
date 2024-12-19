@@ -2,16 +2,16 @@ import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 
 export interface OpenWebUIArgs {
+    domainName: string;
     ollamaUrl?: string;
 }
 
 // Homepage: https://openwebui.com/
 // Helm chart: https://artifacthub.io/packages/helm/open-webui/open-webui
 export class OpenWebUI extends pulumi.ComponentResource {
-    public readonly serverKey: pulumi.Output<string> | undefined;
-    public readonly agentKey: pulumi.Output<string> | undefined;
+    public readonly endpointUrl: string | undefined;
 
-    constructor(name: string, args: OpenWebUIArgs = {}, opts?: pulumi.ResourceOptions) {
+    constructor(name: string, args: OpenWebUIArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:ai:OpenWebUI', name, args, opts);
 
         const config = new pulumi.Config(name);
@@ -66,6 +66,8 @@ export class OpenWebUI extends pulumi.ComponentResource {
             },
             { parent: this },
         );
+
+        this.endpointUrl = `https://${hostname}.${args.domainName}`;
 
         this.registerOutputs();
     }

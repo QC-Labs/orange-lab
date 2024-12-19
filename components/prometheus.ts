@@ -1,9 +1,17 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 
+export interface PrometheusArgs {
+    domainName: string;
+}
+
 // Helm chart: https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
 export class Prometheus extends pulumi.ComponentResource {
-    constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
+    public readonly alertmanagerEndpointUrl: string | undefined;
+    public readonly prometheusEndpointUrl: string | undefined;
+    public readonly grafanaEndpointUrl: string | undefined;
+
+    constructor(name: string, args: PrometheusArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:monitoring:Prometheus', name, args, opts);
 
         const config = new pulumi.Config('prometheus');
@@ -81,6 +89,10 @@ export class Prometheus extends pulumi.ComponentResource {
             },
             { parent: this },
         );
+
+        this.alertmanagerEndpointUrl = `https://${alertManagerHostname}.${args.domainName}`;
+        this.grafanaEndpointUrl = `https://${grafanaHostname}.${args.domainName}`;
+        this.prometheusEndpointUrl = `https://${prometheusHostname}.${args.domainName}`;
 
         this.registerOutputs();
     }

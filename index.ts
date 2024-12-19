@@ -12,21 +12,35 @@ const config = new pulumi.Config('orangelab');
 const configK3s = new pulumi.Config('k3s');
 
 const tailscale = new Tailscale('tailscale');
+export const tailscaleServerKey = tailscale.serverKey;
+export const tailscaleAgentKey = tailscale.agentKey;
+export const tailscaleDomain = tailscale.tailnet;
 
 if (config.requireBoolean('tailscale-operator')) {
     new TailscaleOperator('tailscale-operator');
 }
 
-const longhorn = config.requireBoolean('longhorn') ? new Longhorn('longhorn') : undefined;
+const longhorn = config.requireBoolean('longhorn')
+    ? new Longhorn('longhorn', { domainName: tailscale.tailnet })
+    : undefined;
+export const longhornUrl = longhorn?.endpointUrl;
 
+let prometheus;
 if (config.requireBoolean('prometheus')) {
-    new Prometheus('prometheus', {}, { dependsOn: longhorn });
+    prometheus = new Prometheus(
+        'prometheus',
+        { domainName: tailscale.tailnet },
+        { dependsOn: longhorn },
+    );
 }
+export const prometheusEndpointUrl = prometheus?.grafanaEndpointUrl;
 
+let homeAssistant;
 if (config.requireBoolean('home-assistant')) {
-    new HomeAssistant(
+    homeAssistant = new HomeAssistant(
         'home-assistant',
         {
+            domainName: tailscale.tailnet,
             trustedProxies: [
                 configK3s.require('clusterCidr'),
                 configK3s.require('serviceCidr'),
@@ -36,6 +50,7 @@ if (config.requireBoolean('home-assistant')) {
         { dependsOn: longhorn },
     );
 }
+export const homeAssistantEndpointUrl = homeAssistant?.endpointUrl;
 
 if (config.requireBoolean('nvidia-gpu-operator')) {
     new NvidiaGPUOperator('nvidia-gpu-operator');
@@ -50,19 +65,18 @@ const ollama = config.requireBoolean('ollama')
           { dependsOn: longhorn },
       )
     : undefined;
+export const ollamaUrl = ollama?.endpointUrl;
+export const ollamaClusterUrl = ollama?.serviceUrl;
 
+let openWebUI;
 if (config.requireBoolean('open-webui') && ollama) {
-    new OpenWebUI(
+    openWebUI = new OpenWebUI(
         'open-webui',
         {
+            domainName: tailscale.tailnet,
             ollamaUrl: ollama.serviceUrl,
         },
         { dependsOn: ollama },
     );
 }
-
-export const tailscaleServerKey = tailscale.serverKey;
-export const tailscaleAgentKey = tailscale.agentKey;
-export const tailscaleDomain = tailscale.tailnet;
-export const ollamaUrl = ollama?.endpointUrl;
-export const ollamaClusterUrl = ollama?.serviceUrl;
+export const openWebUIUrl = openWebUI?.endpointUrl;

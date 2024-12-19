@@ -3,9 +3,6 @@ import * as pulumi from '@pulumi/pulumi';
 
 // Homepage: https://tailscale.com/kubernetes-operator
 export class TailscaleOperator extends pulumi.ComponentResource {
-    public readonly serverKey: pulumi.Output<string> | undefined;
-    public readonly agentKey: pulumi.Output<string> | undefined;
-
     constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
         super('orangelab:network:TailscaleOperator', name, args, opts);
 
