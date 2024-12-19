@@ -28,18 +28,17 @@ export class Ollama extends pulumi.ComponentResource {
                     repo: 'https://otwld.github.io/ollama-helm/',
                 },
                 values: {
+                    securityContext: {
+                        privileged: true,
+                    },
                     nodeSelector: {
                         'orangelab/gpu': 'true',
                     },
                     runtimeClassName: 'nvidia',
                     extraEnv: [
                         {
-                            name: 'NVIDIA_VISIBLE_DEVICES',
-                            value: 'all',
-                        },
-                        {
-                            name: 'NVIDIA_DRIVER_CAPABILITIES',
-                            value: 'compute,utility',
+                            name: 'OLLAMA_DEBUG',
+                            value: 'false',
                         },
                     ],
                     ollama: {
