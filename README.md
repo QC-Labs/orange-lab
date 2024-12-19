@@ -13,7 +13,6 @@ Applications (optional, enable with `orangelab:<app>` feature flags in `Pulumi.<
 
 -   `prometheus` - Prometheus/Grafana (https://prometheus.io/) monitoring
 -   `home-assistant` - Home Assistant (https://www.home-assistant.io/) home automation platform
--   `nvidia-device-plugin` - NVidia GPU support (https://github.com/NVIDIA/k8s-device-plugin)
 -   `ollama` - Ollama API (https://ollama.com/) local large language models
 -   `open-webui` - Open WebUI (https://openwebui.com/) frontend
 
@@ -229,14 +228,14 @@ systemctl enable k3s-agent.service --now
 You can set node labels later when installing applications. Examples:
 
 ```sh
-# Set zone, used f.e. by home-assistant to deploy to node on same network as sensors
-kubectl label nodes <node-name> topology.kubernetes.io/zone=home
-
 # Storage node used by Longhorn, at least one is needed
 kubectl label nodes <node-name> orangelab/storage=true
 
 # GPU node for Ollama
 kubectl label nodes <node-name> orangelab/gpu=true
+
+# Set zone, used f.e. by home-assistant to deploy to node on same network as sensors
+kubectl label nodes <node-name> topology.kubernetes.io/zone=home
 ```
 
 # Installation - system applications
@@ -338,9 +337,7 @@ pulumi config home-assistant:zone home
 ## Ollama
 
 ```sh
-# TODO: Get GPU working, which one do we need?
-# Enable NVidia device plugin
-pulumi config set orangelab:nvidia-device-plugin true
+# Enable NVidia integration
 pulumi config set orangelab:nvidia-gpu-operator true
 
 

@@ -7,7 +7,6 @@ import { HomeAssistant } from './components/home-assistant';
 import { Ollama } from './components/ollama';
 import { NvidiaGPUOperator } from './components/nvidia-gpu-operator';
 import { OpenWebUI } from './components/open-webui';
-import { NVidiaDevicePlugin } from './components/nvidia-device-plugin';
 
 const config = new pulumi.Config('orangelab');
 const configK3s = new pulumi.Config('k3s');
@@ -36,10 +35,6 @@ if (config.requireBoolean('home-assistant')) {
         },
         { dependsOn: longhorn },
     );
-}
-
-if (config.requireBoolean('nvidia-device-plugin')) {
-    new NVidiaDevicePlugin('nvidia-device-plugin');
 }
 
 if (config.requireBoolean('nvidia-gpu-operator')) {
