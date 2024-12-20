@@ -21,7 +21,6 @@ config:
     orangelab:nvidia-gpu-operator: false
     orangelab:ollama: false
     orangelab:open-webui: false
-    orangelab:nvidia-device-plugin: false
 
     tailscale-operator:version: 1.76.1
     # Hostname for Tailscale operator proxy for Kubernetes API

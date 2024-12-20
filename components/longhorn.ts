@@ -83,7 +83,6 @@ export class Longhorn extends pulumi.ComponentResource {
                 reclaimPolicy: 'Delete',
                 parameters: {
                     numberOfReplicas: gpuReplicaCount.toFixed(0),
-                    nodeSelector: 'gpu',
                     dataLocality: 'strict-local',
                 },
             },

@@ -352,7 +352,9 @@ Set CLI to use our `ollama` endpoint instead of the default `localhost:11434`:
 echo export OLLAMA_HOST=https://ollama.<tsnet>.ts.net/ > ~/.bashrc.d/ollama
 ```
 
-Models will be stored on Longhorn volume and replicated across nodes with `orangelab/storage=true` label
+Models will be stored on Longhorn volume.
+
+Increase `longhorn:gpuReplicaCount` to replicate volume across nodes with `orangelab/storage=true` and `orangelab/gpu=true` labels
 
 ```sh
 ollama pull llama3.2
