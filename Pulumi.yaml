@@ -16,9 +16,9 @@ config:
 
     orangelab:tailscale-operator: false
     orangelab:longhorn: false
+    orangelab:nvidia-gpu-operator: false
     orangelab:prometheus: false
     orangelab:home-assistant: false
-    orangelab:nvidia-gpu-operator: false
     orangelab:ollama: false
     orangelab:open-webui: false
 

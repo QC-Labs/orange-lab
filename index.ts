@@ -1,15 +1,18 @@
 import * as pulumi from '@pulumi/pulumi';
+import { Ollama } from './components/ai/ollama';
+import { OpenWebUI } from './components/ai/open-webui';
+import { HomeAssistant } from './components/iot/home-assistant';
 import { Longhorn } from './components/longhorn';
-import { Prometheus } from './components/prometheus';
+import { Prometheus } from './components/monitoring/prometheus';
+import { NvidiaGPUOperator } from './components/nvidia-gpu-operator';
 import { Tailscale } from './components/tailscale';
 import { TailscaleOperator } from './components/tailscale-operator';
-import { HomeAssistant } from './components/home-assistant';
-import { Ollama } from './components/ollama';
-import { NvidiaGPUOperator } from './components/nvidia-gpu-operator';
-import { OpenWebUI } from './components/open-webui';
 
 const config = new pulumi.Config('orangelab');
-const configK3s = new pulumi.Config('k3s');
+
+/**
+ * System
+ */
 
 const tailscale = new Tailscale('tailscale');
 export const tailscaleServerKey = tailscale.serverKey;
@@ -25,6 +28,14 @@ const longhorn = config.requireBoolean('longhorn')
     : undefined;
 export const longhornUrl = longhorn?.endpointUrl;
 
+if (config.requireBoolean('nvidia-gpu-operator')) {
+    new NvidiaGPUOperator('nvidia-gpu-operator');
+}
+
+/**
+ * Monitoring
+ */
+
 let prometheus;
 if (config.requireBoolean('prometheus')) {
     prometheus = new Prometheus(
@@ -33,10 +44,15 @@ if (config.requireBoolean('prometheus')) {
         { dependsOn: longhorn },
     );
 }
-export const prometheusEndpointUrl = prometheus?.grafanaEndpointUrl;
+export const prometheusUrl = prometheus?.grafanaEndpointUrl;
+
+/**
+ * IoT
+ */
 
 let homeAssistant;
 if (config.requireBoolean('home-assistant')) {
+    const configK3s = new pulumi.Config('k3s');
     homeAssistant = new HomeAssistant(
         'home-assistant',
         {
@@ -50,11 +66,11 @@ if (config.requireBoolean('home-assistant')) {
         { dependsOn: longhorn },
     );
 }
-export const homeAssistantEndpointUrl = homeAssistant?.endpointUrl;
+export const iotHomeAssistantUrl = homeAssistant?.endpointUrl;
 
-if (config.requireBoolean('nvidia-gpu-operator')) {
-    new NvidiaGPUOperator('nvidia-gpu-operator');
-}
+/**
+ * AI
+ */
 
 let ollama;
 if (config.requireBoolean('ollama') && longhorn) {
@@ -67,8 +83,8 @@ if (config.requireBoolean('ollama') && longhorn) {
         { dependsOn: [longhorn] },
     );
 }
-export const ollamaUrl = ollama?.endpointUrl;
-export const ollamaClusterUrl = ollama?.serviceUrl;
+export const aiOllamaUrl = ollama?.endpointUrl;
+export const aiOllamaInternalUrl = ollama?.serviceUrl;
 
 let openWebUI;
 if (config.requireBoolean('open-webui') && ollama && longhorn) {
@@ -82,4 +98,4 @@ if (config.requireBoolean('open-webui') && ollama && longhorn) {
         { dependsOn: [ollama, longhorn] },
     );
 }
-export const openWebUIUrl = openWebUI?.endpointUrl;
+export const aiOpenWebUIUrl = openWebUI?.endpointUrl;

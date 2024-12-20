@@ -10,7 +10,7 @@ import * as pulumi from '@pulumi/pulumi';
  */
 export class NvidiaGPUOperator extends pulumi.ComponentResource {
     constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
-        super('orangelab:ai:NvidiaGPUOperator', name, args, opts);
+        super('orangelab:system:NvidiaGPUOperator', name, args, opts);
 
         const config = new pulumi.Config(name);
         const version = config.require('version');
@@ -97,7 +97,7 @@ export class NvidiaGPUOperator extends pulumi.ComponentResource {
                     },
                 },
             },
-            { parent: this },
+            { parent: this, deleteBeforeReplace: true },
         );
 
         this.registerOutputs();
