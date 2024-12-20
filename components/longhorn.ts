@@ -16,8 +16,9 @@ export class Longhorn extends pulumi.ComponentResource {
         const config = new pulumi.Config('longhorn');
         const version = config.require('version');
         const hostname = config.require('hostname');
-        const replicaCount = config.getNumber('replicaCount');
+        const replicaCount = config.requireNumber('replicaCount');
         const enableMonitoring = config.requireBoolean('enableMonitoring');
+        const gpuReplicaCount = config.requireNumber('gpuReplicaCount');
 
         const chart = new kubernetes.helm.v3.Release(
             name,
@@ -81,7 +82,7 @@ export class Longhorn extends pulumi.ComponentResource {
                 volumeBindingMode: 'Immediate',
                 reclaimPolicy: 'Delete',
                 parameters: {
-                    numberOfReplicas: '1',
+                    numberOfReplicas: gpuReplicaCount.toFixed(0),
                     nodeSelector: 'gpu',
                     dataLocality: 'strict-local',
                 },
