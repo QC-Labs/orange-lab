@@ -340,10 +340,27 @@ pulumi config home-assistant:zone home
 # Enable NVidia integration
 pulumi config set orangelab:nvidia-gpu-operator true
 
-
 # API Endpoint at https://ollama.<tsnet>.ts.net
 pulumi config set orangelab:ollama true
+```
 
-# Frontend endpoint at https://webui.<tsnet>.ts.net
+### Ollama CLI
+
+Set CLI to use our `ollama` endpoint instead of the default `localhost:11434`:
+
+```sh
+echo export OLLAMA_HOST=https://ollama.<tsnet>.ts.net/ > ~/.bashrc.d/ollama
+```
+
+Models will be stored on Longhorn volume and replicated across nodes with `orangelab/storage=true` label
+
+```sh
+ollama pull llama3.2
+```
+
+### Open-WebUI
+
+```sh
+# Endpoint at https://webui.<tsnet>.ts.net
 pulumi config set orangelab:open-webui true
 ```
