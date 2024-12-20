@@ -86,7 +86,7 @@ export class Longhorn extends pulumi.ComponentResource {
                     dataLocality: 'strict-local',
                 },
             },
-            { dependsOn: chart },
+            { dependsOn: chart, parent: this },
         );
 
         this.endpointUrl = `https://${hostname}.${args.domainName}`;
