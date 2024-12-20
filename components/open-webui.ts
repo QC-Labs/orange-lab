@@ -4,6 +4,7 @@ import * as pulumi from '@pulumi/pulumi';
 export interface OpenWebUIArgs {
     domainName: string;
     ollamaUrl?: string;
+    storageClass: string;
 }
 
 // Homepage: https://openwebui.com/
@@ -52,6 +53,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
                     },
                     persistence: {
                         enabled: true,
+                        storageClass: args.storageClass,
                     },
                     pipelines: {
                         enabled: false,

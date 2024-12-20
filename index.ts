@@ -56,27 +56,30 @@ if (config.requireBoolean('nvidia-gpu-operator')) {
     new NvidiaGPUOperator('nvidia-gpu-operator');
 }
 
-const ollama = config.requireBoolean('ollama')
-    ? new Ollama(
-          'ollama',
-          {
-              domainName: tailscale.tailnet,
-          },
-          { dependsOn: longhorn },
-      )
-    : undefined;
+let ollama;
+if (config.requireBoolean('ollama') && longhorn) {
+    ollama = new Ollama(
+        'ollama',
+        {
+            domainName: tailscale.tailnet,
+            storageClass: longhorn.gpuStorageClass,
+        },
+        { dependsOn: [longhorn] },
+    );
+}
 export const ollamaUrl = ollama?.endpointUrl;
 export const ollamaClusterUrl = ollama?.serviceUrl;
 
 let openWebUI;
-if (config.requireBoolean('open-webui') && ollama) {
+if (config.requireBoolean('open-webui') && ollama && longhorn) {
     openWebUI = new OpenWebUI(
         'open-webui',
         {
             domainName: tailscale.tailnet,
             ollamaUrl: ollama.serviceUrl,
+            storageClass: longhorn.gpuStorageClass,
         },
-        { dependsOn: ollama },
+        { dependsOn: [ollama, longhorn] },
     );
 }
 export const openWebUIUrl = openWebUI?.endpointUrl;

@@ -3,6 +3,7 @@ import * as pulumi from '@pulumi/pulumi';
 
 export interface OllamaArgs {
     domainName: string;
+    storageClass: string;
 }
 
 // Homepage: https://ollama.com/
@@ -55,6 +56,7 @@ export class Ollama extends pulumi.ComponentResource {
                     },
                     persistentVolume: {
                         enabled: true,
+                        storageClass: args.storageClass,
                     },
                     ingress: {
                         enabled: true,

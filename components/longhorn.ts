@@ -8,6 +8,7 @@ export interface LonghornArgs {
 // Homepage: https://longhorn.io/
 export class Longhorn extends pulumi.ComponentResource {
     public readonly endpointUrl: string | undefined;
+    public gpuStorageClass = 'gpu-storage';
 
     constructor(name: string, args: LonghornArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:storage:Longhorn', name, args, opts);
@@ -18,7 +19,7 @@ export class Longhorn extends pulumi.ComponentResource {
         const replicaCount = config.getNumber('replicaCount');
         const enableMonitoring = config.requireBoolean('enableMonitoring');
 
-        new kubernetes.helm.v3.Release(
+        const chart = new kubernetes.helm.v3.Release(
             name,
             {
                 chart: 'longhorn',
@@ -30,7 +31,10 @@ export class Longhorn extends pulumi.ComponentResource {
                     defaultSettings: {
                         defaultDataLocality: 'best-effort',
                         defaultReplicaCount: replicaCount,
-                        replicaAutoBalance: 'least-effort',
+                        fastReplicaRebuildEnabled: true,
+                        nodeDownPodDeletionPolicy:
+                            'delete-both-statefulset-and-deployment-pod',
+                        replicaAutoBalance: 'best-effort',
                         storageOverProvisioningPercentage: 100,
                         systemManagedComponentsNodeSelector: 'orangelab/storage:true',
                     },
@@ -54,8 +58,8 @@ export class Longhorn extends pulumi.ComponentResource {
                     },
                     ingress: {
                         enabled: true,
-                        ingressClassName: 'tailscale',
                         host: hostname,
+                        ingressClassName: 'tailscale',
                         tls: true,
                     },
                     metrics: enableMonitoring
@@ -64,6 +68,25 @@ export class Longhorn extends pulumi.ComponentResource {
                 },
             },
             { parent: this },
+        );
+
+        new kubernetes.storage.v1.StorageClass(
+            'gpu-storage',
+            {
+                metadata: {
+                    name: this.gpuStorageClass,
+                },
+                allowVolumeExpansion: true,
+                provisioner: 'driver.longhorn.io',
+                volumeBindingMode: 'Immediate',
+                reclaimPolicy: 'Delete',
+                parameters: {
+                    numberOfReplicas: '1',
+                    nodeSelector: 'gpu',
+                    dataLocality: 'strict-local',
+                },
+            },
+            { dependsOn: chart },
         );
 
         this.endpointUrl = `https://${hostname}.${args.domainName}`;

@@ -31,8 +31,10 @@ config:
 
     longhorn:version: 1.7.2
     longhorn:hostname: longhorn
-    # Each replica stored on different host
+    # Set to number of nodes (recommended max 3)
     longhorn:replicaCount: 2
+    # Replicas related to GPU workloads, set to number of GPU nodes (recommended max 3)
+    longhorn:gpuReplicaCount: 1
     # Deploy Prometheus first
     longhorn:enableMonitoring: false
 
