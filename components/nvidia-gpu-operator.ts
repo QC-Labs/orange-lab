@@ -29,12 +29,14 @@ export class NvidiaGPUOperator extends pulumi.ComponentResource {
                     ccManager: {
                         enabled: false,
                     },
+                    // NVidia Data Center GPU Manager - https://docs.nvidia.com/datacenter/dcgm/latest/user-guide/index.html
                     dcgm: {
                         enabled: false,
                     },
                     dcgmExporter: {
                         enabled: false,
                     },
+                    // https://github.com/NVIDIA/k8s-device-plugin
                     devicePlugin: {
                         enabled: true,
                         config: {
@@ -61,15 +63,21 @@ export class NvidiaGPUOperator extends pulumi.ComponentResource {
                             },
                         },
                     },
+                    // NVidia driver already installed on host
                     driver: {
                         enabled: false,
+                        nodeSelector: {
+                            'orangelab/gpu': 'true',
+                        },
                     },
                     gdrcopy: {
                         enabled: false,
                     },
+                    // GPUDirect Storage kernel driver - https://github.com/NVIDIA/gds-nvidia-fs
                     gds: {
                         enabled: false,
                     },
+                    // GPU Feature Discovery
                     gfd: {
                         enabled: true,
                     },
@@ -78,6 +86,18 @@ export class NvidiaGPUOperator extends pulumi.ComponentResource {
                     },
                     migManager: {
                         enabled: false,
+                    },
+                    // Node Feature Discovery dependent chart
+                    nfd: {
+                        enabled: true,
+                    },
+                    // https://github.com/kubernetes-sigs/node-feature-discovery
+                    'node-feature-discovery': {
+                        worker: {
+                            nodeSelector: {
+                                'orangelab/gpu': 'true',
+                            },
+                        },
                     },
                     nodeStatusExporter: {
                         enabled: false,
@@ -88,6 +108,7 @@ export class NvidiaGPUOperator extends pulumi.ComponentResource {
                     sandboxDevicePlugin: {
                         enabled: false,
                     },
+                    // NVidia container toolkit
                     toolkit: {
                         enabled: true,
                         env: [
