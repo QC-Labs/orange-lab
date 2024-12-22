@@ -26,6 +26,7 @@ export class NvidiaGPUOperator extends pulumi.ComponentResource {
                     repo: 'https://helm.ngc.nvidia.com/nvidia',
                 },
                 values: {
+                    // NVIDIA Confidential Computing Manager for Kubernetes
                     ccManager: {
                         enabled: false,
                     },
@@ -97,6 +98,11 @@ export class NvidiaGPUOperator extends pulumi.ComponentResource {
                             nodeSelector: {
                                 'orangelab/gpu': 'true',
                             },
+                            // set as priviledged to allow access to /etc/kubernetes/node-feature-discovery/features.d/
+                            securityContext: {
+                                allowPrivilegeEscalation: true,
+                                privileged: true,
+                            },
                         },
                     },
                     nodeStatusExporter: {
@@ -133,6 +139,7 @@ export class NvidiaGPUOperator extends pulumi.ComponentResource {
                     vfioManager: {
                         enabled: false,
                     },
+                    // https://github.com/NVIDIA/vgpu-device-manager
                     vgpuDeviceManager: {
                         enabled: false,
                     },
