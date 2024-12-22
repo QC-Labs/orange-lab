@@ -15,31 +15,6 @@ export class NvidiaGPUOperator extends pulumi.ComponentResource {
         const config = new pulumi.Config(name);
         const version = config.require('version');
 
-        const configMap = new kubernetes.core.v1.ConfigMap('time-slicing-config', {
-            metadata: {
-                name: 'time-slicing-config',
-                namespace: 'nvidia-gpu-operator',
-            },
-            data: {
-                any: JSON.stringify({
-                    version: 'v1',
-                    flags: {
-                        migStrategy: 'none',
-                    },
-                    sharing: {
-                        timeSlicing: {
-                            resources: [
-                                {
-                                    name: 'nvidia.com/gpu',
-                                    replicas: 4,
-                                },
-                            ],
-                        },
-                    },
-                }),
-            },
-        });
-
         new kubernetes.helm.v3.Release(
             name,
             {
@@ -63,7 +38,27 @@ export class NvidiaGPUOperator extends pulumi.ComponentResource {
                     devicePlugin: {
                         enabled: true,
                         config: {
-                            name: configMap.metadata.name,
+                            create: true,
+                            name: 'device-plugin-config',
+                            default: 'default',
+                            data: {
+                                default: JSON.stringify({
+                                    version: 'v1',
+                                    flags: {
+                                        migStrategy: 'none',
+                                    },
+                                    sharing: {
+                                        timeSlicing: {
+                                            resources: [
+                                                {
+                                                    name: 'nvidia.com/gpu',
+                                                    replicas: 4,
+                                                },
+                                            ],
+                                        },
+                                    },
+                                }),
+                            },
                         },
                     },
                     driver: {
