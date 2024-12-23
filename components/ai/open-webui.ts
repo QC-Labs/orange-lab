@@ -4,6 +4,7 @@ import * as pulumi from '@pulumi/pulumi';
 export interface OpenWebUIArgs {
     domainName: string;
     ollamaUrl?: string;
+    openAiUrl?: string;
     storageClass: string;
 }
 
@@ -31,6 +32,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
                 },
                 values: {
                     ollamaUrls: [args.ollamaUrl],
+                    openaiBaseApiUrl: args.openAiUrl,
                     nodeSelector: {
                         'orangelab/gpu': 'true',
                     },

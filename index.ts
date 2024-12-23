@@ -7,6 +7,7 @@ import { Prometheus } from './components/monitoring/prometheus';
 import { NvidiaGPUOperator } from './components/nvidia-gpu-operator';
 import { Tailscale } from './components/tailscale';
 import { TailscaleOperator } from './components/tailscale-operator';
+import { KubeAi } from './components/ai/kubeai';
 
 const config = new pulumi.Config('orangelab');
 
@@ -72,6 +73,19 @@ export const iotHomeAssistantUrl = homeAssistant?.endpointUrl;
  * AI
  */
 
+let kubeAI;
+if (config.requireBoolean('kubeai') && longhorn) {
+    kubeAI = new KubeAi(
+        'kubeai',
+        {
+            domainName: tailscale.tailnet,
+        },
+        { dependsOn: [longhorn] },
+    );
+}
+export const aiKubeAIUrl = kubeAI?.endpointUrl;
+export const aiKubeAIInternalUrl = kubeAI?.serviceUrl;
+
 let ollama;
 if (config.requireBoolean('ollama') && longhorn) {
     ollama = new Ollama(
@@ -93,6 +107,7 @@ if (config.requireBoolean('open-webui') && ollama && longhorn) {
         {
             domainName: tailscale.tailnet,
             ollamaUrl: ollama.serviceUrl,
+            openAiUrl: kubeAI?.serviceUrl,
             storageClass: longhorn.gpuStorageClass,
         },
         { dependsOn: [ollama, longhorn] },
