@@ -93,7 +93,5 @@ export class Prometheus extends pulumi.ComponentResource {
         this.alertmanagerEndpointUrl = `https://${alertManagerHostname}.${args.domainName}`;
         this.grafanaEndpointUrl = `https://${grafanaHostname}.${args.domainName}`;
         this.prometheusEndpointUrl = `https://${prometheusHostname}.${args.domainName}`;
-
-        this.registerOutputs();
     }
 }

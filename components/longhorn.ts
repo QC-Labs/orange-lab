@@ -90,7 +90,5 @@ export class Longhorn extends pulumi.ComponentResource {
         );
 
         this.endpointUrl = `https://${hostname}.${args.domainName}`;
-
-        this.registerOutputs();
     }
 }

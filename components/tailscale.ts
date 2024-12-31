@@ -40,7 +40,5 @@ export class Tailscale extends pulumi.ComponentResource {
             { parent: this },
         );
         this.agentKey = agentKey.key;
-
-        this.registerOutputs();
     }
 }

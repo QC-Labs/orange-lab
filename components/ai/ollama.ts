@@ -76,7 +76,5 @@ export class Ollama extends pulumi.ComponentResource {
 
         this.endpointUrl = `https://${hostname}.${args.domainName}`;
         this.serviceUrl = `http://${hostname}.ollama:11434`;
-
-        this.registerOutputs();
     }
 }

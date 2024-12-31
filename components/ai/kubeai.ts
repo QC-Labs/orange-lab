@@ -109,7 +109,5 @@ export class KubeAi extends pulumi.ComponentResource {
 
         this.endpointUrl = `https://${hostname}.${args.domainName}`;
         this.serviceUrl = `http://${hostname}.kubeai/openai/v1`;
-
-        this.registerOutputs();
     }
 }

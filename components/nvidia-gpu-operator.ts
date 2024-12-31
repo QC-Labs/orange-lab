@@ -150,7 +150,5 @@ export class NvidiaGPUOperator extends pulumi.ComponentResource {
             },
             { parent: this, deleteBeforeReplace: true },
         );
-
-        this.registerOutputs();
     }
 }

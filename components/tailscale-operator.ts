@@ -33,7 +33,5 @@ export class TailscaleOperator extends pulumi.ComponentResource {
             },
             { parent: this },
         );
-
-        this.registerOutputs();
     }
 }
