@@ -1,4 +1,5 @@
 import * as pulumi from '@pulumi/pulumi';
+import { KubeAi } from './components/ai/kubeai';
 import { Ollama } from './components/ai/ollama';
 import { OpenWebUI } from './components/ai/open-webui';
 import { HomeAssistant } from './components/iot/home-assistant';
@@ -7,64 +8,83 @@ import { Prometheus } from './components/monitoring/prometheus';
 import { NvidiaGPUOperator } from './components/nvidia-gpu-operator';
 import { Tailscale } from './components/tailscale';
 import { TailscaleOperator } from './components/tailscale-operator';
-import { KubeAi } from './components/ai/kubeai';
 
-const config = new pulumi.Config('orangelab');
+class SystemModule extends pulumi.ComponentResource {
+    tailscaleServerKey: pulumi.Output<string> | undefined;
+    tailscaleAgentKey: pulumi.Output<string> | undefined;
+    domainName: string;
+    longhornUrl: string | undefined;
+    defaultStorageClass = '';
+    gpuStorageClass = '';
+    grafanaUrl: string | undefined;
 
-/**
- * System
- */
+    private config = new pulumi.Config('orangelab');
+    private longhorn: Longhorn | undefined;
+    private prometheus: Prometheus | undefined;
 
-const tailscale = new Tailscale('tailscale');
-export const tailscaleServerKey = tailscale.serverKey;
-export const tailscaleAgentKey = tailscale.agentKey;
-export const tailscaleDomain = tailscale.tailnet;
+    constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
+        super('orangelab:system', name, args, opts);
 
-if (config.requireBoolean('tailscale-operator')) {
-    new TailscaleOperator('tailscale-operator');
+        const tailscale = new Tailscale('tailscale');
+        this.tailscaleServerKey = tailscale.serverKey;
+        this.tailscaleAgentKey = tailscale.agentKey;
+        this.domainName = tailscale.tailnet;
+
+        if (this.isModuleEnabled('tailscale-operator')) {
+            new TailscaleOperator('tailscale-operator');
+        }
+
+        if (this.isModuleEnabled('nvidia-gpu-operator')) {
+            new NvidiaGPUOperator('nvidia-gpu-operator');
+        }
+
+        if (this.isModuleEnabled('longhorn')) {
+            this.longhorn = new Longhorn('longhorn', { domainName: this.domainName });
+            this.longhornUrl = this.longhorn.endpointUrl;
+            this.defaultStorageClass = 'longhorn';
+            this.gpuStorageClass = 'gpu-storage';
+        }
+
+        if (system.isModuleEnabled('prometheus')) {
+            this.prometheus = new Prometheus(
+                'prometheus',
+                { domainName: system.domainName },
+                { dependsOn: this.longhorn },
+            );
+            this.grafanaUrl = this.prometheus.grafanaEndpointUrl;
+        }
+    }
+
+    public isModuleEnabled(name: string): boolean {
+        return this.config.requireBoolean(name);
+    }
 }
 
-const longhorn = config.requireBoolean('longhorn')
-    ? new Longhorn('longhorn', { domainName: tailscale.tailnet })
-    : undefined;
-export const longhornUrl = longhorn?.endpointUrl;
-
-if (config.requireBoolean('nvidia-gpu-operator')) {
-    new NvidiaGPUOperator('nvidia-gpu-operator');
-}
-
-/**
- * Monitoring
- */
-
-let prometheus;
-if (config.requireBoolean('prometheus')) {
-    prometheus = new Prometheus(
-        'prometheus',
-        { domainName: tailscale.tailnet },
-        { dependsOn: longhorn },
-    );
-}
-export const prometheusUrl = prometheus?.grafanaEndpointUrl;
+const system = new SystemModule('system');
+export const tailscaleServerKey = system.tailscaleServerKey;
+export const tailscaleAgentKey = system.tailscaleAgentKey;
+export const tailscaleDomain = system.domainName;
+export const longhornUrl = system.longhornUrl;
+export const grafanaUrl = system.grafanaUrl;
 
 /**
  * IoT
  */
 
 let homeAssistant;
-if (config.requireBoolean('home-assistant')) {
+if (system.isModuleEnabled('home-assistant')) {
     const configK3s = new pulumi.Config('k3s');
     homeAssistant = new HomeAssistant(
         'home-assistant',
         {
-            domainName: tailscale.tailnet,
+            domainName: system.domainName,
             trustedProxies: [
                 configK3s.require('clusterCidr'),
                 configK3s.require('serviceCidr'),
                 '127.0.0.0/8',
             ],
         },
-        { dependsOn: longhorn },
+        { dependsOn: system },
     );
 }
 export const iotHomeAssistantUrl = homeAssistant?.endpointUrl;
@@ -74,43 +94,43 @@ export const iotHomeAssistantUrl = homeAssistant?.endpointUrl;
  */
 
 let kubeAI;
-if (config.requireBoolean('kubeai') && longhorn) {
+if (system.isModuleEnabled('kubeai')) {
     kubeAI = new KubeAi(
         'kubeai',
         {
-            domainName: tailscale.tailnet,
+            domainName: system.domainName,
         },
-        { dependsOn: [longhorn] },
+        { dependsOn: [system] },
     );
 }
 export const aiKubeAIUrl = kubeAI?.endpointUrl;
 export const aiKubeAIInternalUrl = kubeAI?.serviceUrl;
 
 let ollama;
-if (config.requireBoolean('ollama') && longhorn) {
+if (system.isModuleEnabled('ollama')) {
     ollama = new Ollama(
         'ollama',
         {
-            domainName: tailscale.tailnet,
-            storageClass: longhorn.gpuStorageClass,
+            domainName: system.domainName,
+            storageClass: system.gpuStorageClass,
         },
-        { dependsOn: [longhorn] },
+        { dependsOn: [system] },
     );
 }
 export const aiOllamaUrl = ollama?.endpointUrl;
 export const aiOllamaInternalUrl = ollama?.serviceUrl;
 
 let openWebUI;
-if (config.requireBoolean('open-webui') && ollama && longhorn) {
+if (system.isModuleEnabled('open-webui') && ollama) {
     openWebUI = new OpenWebUI(
         'open-webui',
         {
-            domainName: tailscale.tailnet,
+            domainName: system.domainName,
             ollamaUrl: ollama.serviceUrl,
             openAiUrl: kubeAI?.serviceUrl,
-            storageClass: longhorn.gpuStorageClass,
+            storageClass: system.gpuStorageClass,
         },
-        { dependsOn: [ollama, longhorn] },
+        { dependsOn: [ollama, system] },
     );
 }
 export const aiOpenWebUIUrl = openWebUI?.endpointUrl;
