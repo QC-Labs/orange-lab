@@ -23,7 +23,7 @@ export class AIModule extends pulumi.ComponentResource {
         args: AIModuleArgs,
         opts?: pulumi.ComponentResourceOptions,
     ) {
-        super('ai', name, args, opts);
+        super('orangelab:AI', name, args, opts);
 
         if (this.isModuleEnabled('ollama')) {
             this.ollama = new Ollama('ollama', {
