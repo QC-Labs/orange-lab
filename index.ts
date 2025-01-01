@@ -3,64 +3,9 @@ import { KubeAi } from './components/ai/kubeai';
 import { Ollama } from './components/ai/ollama';
 import { OpenWebUI } from './components/ai/open-webui';
 import { HomeAssistant } from './components/iot/home-assistant';
-import { Longhorn } from './components/longhorn';
-import { Prometheus } from './components/monitoring/prometheus';
-import { NvidiaGPUOperator } from './components/nvidia-gpu-operator';
-import { Tailscale } from './components/tailscale';
-import { TailscaleOperator } from './components/tailscale-operator';
+import { SystemModule } from './components/system-module';
 
-class SystemModule extends pulumi.ComponentResource {
-    tailscaleServerKey: pulumi.Output<string> | undefined;
-    tailscaleAgentKey: pulumi.Output<string> | undefined;
-    domainName: string;
-    longhornUrl: string | undefined;
-    defaultStorageClass = '';
-    gpuStorageClass = '';
-    grafanaUrl: string | undefined;
-
-    private config = new pulumi.Config('orangelab');
-    private longhorn: Longhorn | undefined;
-    private prometheus: Prometheus | undefined;
-
-    constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
-        super('orangelab:system', name, args, opts);
-
-        const tailscale = new Tailscale('tailscale');
-        this.tailscaleServerKey = tailscale.serverKey;
-        this.tailscaleAgentKey = tailscale.agentKey;
-        this.domainName = tailscale.tailnet;
-
-        if (this.isModuleEnabled('tailscale-operator')) {
-            new TailscaleOperator('tailscale-operator');
-        }
-
-        if (this.isModuleEnabled('nvidia-gpu-operator')) {
-            new NvidiaGPUOperator('nvidia-gpu-operator');
-        }
-
-        if (this.isModuleEnabled('longhorn')) {
-            this.longhorn = new Longhorn('longhorn', { domainName: this.domainName });
-            this.longhornUrl = this.longhorn.endpointUrl;
-            this.defaultStorageClass = 'longhorn';
-            this.gpuStorageClass = 'gpu-storage';
-        }
-
-        if (system.isModuleEnabled('prometheus')) {
-            this.prometheus = new Prometheus(
-                'prometheus',
-                { domainName: system.domainName },
-                { dependsOn: this.longhorn },
-            );
-            this.grafanaUrl = this.prometheus.grafanaEndpointUrl;
-        }
-    }
-
-    public isModuleEnabled(name: string): boolean {
-        return this.config.requireBoolean(name);
-    }
-}
-
-const system = new SystemModule('system');
+export const system = new SystemModule('system');
 export const tailscaleServerKey = system.tailscaleServerKey;
 export const tailscaleAgentKey = system.tailscaleAgentKey;
 export const tailscaleDomain = system.domainName;
