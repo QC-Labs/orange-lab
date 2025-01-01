@@ -9,9 +9,13 @@ export const tailscaleDomain = system.domainName;
 export const longhornUrl = system.longhornUrl;
 export const grafanaUrl = system.grafanaUrl;
 
-const iotModule = new IoTModule('iot', {
-    domainName: system.domainName,
-});
+const iotModule = new IoTModule(
+    'iot',
+    {
+        domainName: system.domainName,
+    },
+    { dependsOn: [system] },
+);
 export const iotHomeAssistantUrl = iotModule.homeAssistantUrl;
 
 const aiModule = new AIModule(
