@@ -6,6 +6,9 @@ runtime:
         packagemanager: npm
 description: Private infrastructure for cloud natives
 config:
+    # Below is list of all settings with default values assuming a single node cluster.
+    # Do NOT modify this file but add overrides in your Pulumi.<stack>.yaml.
+
     # tailscale:apiKey: TAILSCALE_API_KEY
     # tailscale:tailnet: TAILSCALE_TAILNET
 
@@ -32,7 +35,7 @@ config:
     longhorn:version: 1.7.2
     longhorn:hostname: longhorn
     # Set to number of nodes (recommended max 3)
-    longhorn:replicaCount: 2
+    longhorn:replicaCount: 1
     # Replicas related to GPU workloads, set to number of GPU nodes (recommended max 3)
     longhorn:gpuReplicaCount: 1
     # Deploy Prometheus first
