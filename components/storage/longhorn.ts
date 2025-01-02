@@ -5,7 +5,6 @@ export interface LonghornArgs {
     domainName: string;
 }
 
-// Homepage: https://longhorn.io/
 export class Longhorn extends pulumi.ComponentResource {
     public readonly endpointUrl: string | undefined;
     public gpuStorageClass = 'gpu-storage';

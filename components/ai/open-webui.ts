@@ -8,8 +8,6 @@ export interface OpenWebUIArgs {
     storageClass: string;
 }
 
-// Homepage: https://openwebui.com/
-// Helm chart: https://artifacthub.io/packages/helm/open-webui/open-webui
 export class OpenWebUI extends pulumi.ComponentResource {
     public readonly endpointUrl: string | undefined;
 

@@ -6,8 +6,6 @@ export interface OllamaArgs {
     storageClass: string;
 }
 
-// Homepage: https://ollama.com/
-// Helm chart: https://artifacthub.io/packages/helm/ollama-helm/ollama
 export class Ollama extends pulumi.ComponentResource {
     public readonly endpointUrl: string | undefined;
     public readonly serviceUrl: string | undefined;

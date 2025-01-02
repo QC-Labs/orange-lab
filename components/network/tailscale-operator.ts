@@ -1,7 +1,6 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 
-// Homepage: https://tailscale.com/kubernetes-operator
 export class TailscaleOperator extends pulumi.ComponentResource {
     constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
         super('orangelab:network:TailscaleOperator', name, args, opts);

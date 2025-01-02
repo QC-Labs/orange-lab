@@ -2,6 +2,14 @@
 
 ## Tailscale-operator
 
+Homepage - https://tailscale.com/kubernetes-operator
+
+Helm chart - https://github.com/tailscale/tailscale/tree/main/cmd/k8s-operator/deploy/chart
+
+Default values - https://github.com/tailscale/tailscale/blob/main/cmd/k8s-operator/deploy/chart/values.yaml
+
+Endpoint: `https://k8s.<tsnet>.ts.net/`
+
 The operator manages Ingress endpoints and load balancers on Tailnet as well as adds Tailscale authenticated Kubernetes API endpoint.
 
 Add `k8s-operator` and `k8s` tags to your Tailnet in ACLs (https://login.tailscale.com/admin/acls/file):
@@ -20,6 +28,8 @@ https://tailscale.com/learn/managing-access-to-kubernetes-with-tailscale#prepari
 pulumi config set tailscale-operator:oauthClientId <OAUTH_CLIENT_ID> --secret
 pulumi config set tailscale-operator:oauthClientSecret <OAUTH_CLIENT_SECRET> --secret
 pulumi config set orangelab:tailscale-operator true
+
+pulumi up
 ```
 
 ### Kubernetes API access
@@ -50,6 +60,18 @@ tailscale configure kubeconfig k8s
 
 ## Longhorn
 
+Homepage - https://longhorn.io/
+
+Helm chart - https://github.com/longhorn/longhorn/tree/master/chart
+
+Default values - https://github.com/longhorn/longhorn/blob/master/chart/values.yaml
+
+Endpoint: `https://longhorn.<tsnet>.ts.net/`
+
+Longhorn adds permanent storage that is replicated across multiple nodes. It also supports snapshots and backups of data volumes. The nodes need to be labeled with `orangelab/storage=true` - you need at least one.
+
+It's a core component and required for most installations but if you run the cluster on a single node (let's say just to run Ollama), then you can leave it disabled and use k3s default `local-provisioner` as Longhorn adds some overhead and extra containers to the cluster.
+
 Enable iSCSI service before deploying Longhorn.
 
 ```sh
@@ -62,6 +84,11 @@ systemctl enable iscsid.socket --now
 
 # Enable module
 pulumi config set orangelab:longhorn true
+
+# Set replicaCount to amount of storage nodes
+# Longhorn default is 3 which the recommended for 3+ storage nodes
+pulumi config set longhorn:replicaCount 2
+
 pulumi up
 
 ```
@@ -76,11 +103,22 @@ kubectl -n longhorn-system patch -p '{"value": "true"}' --type=merge lhs deletin
 
 ## Prometheus
 
+Homepage - https://prometheus.io/
+
+Helm chart - https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
+
+Endpoints:
+
+-   `https://grafana.<tsnet>.ts.net/`
+-   `https://prometheus.<tsnet>.ts.net/`
+-   `https://alertmanager.<tsnet>.ts.net/`
+
 Prometheus monitoring is disabled by default to keep resource usage low.
 
 Enabling it will increase traffic between nodes and deploy components to all nodes but is useful for troubleshooting the cluster.
 
 ```sh
 pulumi config set orangelab:prometheus true
+
 pulumi up
 ```

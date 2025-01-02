@@ -6,8 +6,6 @@ export interface HomeAssistantArgs {
     trustedProxies?: string[];
 }
 
-// Homepage: https://www.home-assistant.io/
-// Helm chart: https://artifacthub.io/packages/helm/helm-hass/home-assistant
 export class HomeAssistant extends pulumi.ComponentResource {
     public readonly endpointUrl: string | undefined;
 

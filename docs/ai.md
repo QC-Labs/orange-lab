@@ -1,6 +1,23 @@
 # AI module
 
+Components related to artificial intelligence, large language models, AI agents and workflows.
+
+Recommended setup/tldr:
+
+```sh
+pulumi config set orangelab:nvidia-gpu-operator true
+pulumi config set orangelab:ollama true
+pulumi config set orangelab:open-webui true
+pulumi up
+```
+
 ## Ollama
+
+Homepage - https://ollama.com/
+
+Helm chart - https://artifacthub.io/packages/helm/ollama-helm/ollama
+
+Endpoint: `https://ollama.<tsnet>.ts.net/`
 
 ```sh
 # Enable NVidia integration
@@ -9,6 +26,7 @@ pulumi config set orangelab:nvidia-gpu-operator true
 pulumi config set orangelab:ollama true
 pulumi up
 
+# Make request to provision HTTP certificate and activate endpoint
 curl https://ollama.<tsnet>.ts.net
 ```
 
@@ -31,7 +49,44 @@ Add new models with:
 ollama pull llama3.2
 ```
 
+### Visual Studio Code
+
+You can use https://www.continue.dev/ extension to connect to Ollama for code completion and chat.
+
+`config.json` for the extension has to be updated to modify `apiBase` and point to our Ollama instance instead of the default `localhost`. Example config fragment:
+
+```json
+  "models": [
+    {
+      "model": "llama3.2",
+      "title": "Ollama llama3.2",
+      "apiBase": "https://ollama.<tsnet>.ts.net/",
+      "provider": "ollama"
+    },
+    {
+      "model": "qwen2.5-coder:1.5b",
+      "title": "Ollama qwen2.5-coder",
+      "apiBase": "https://ollama.<tsnet>.ts.net/",
+      "provider": "ollama"
+    }
+  ],
+  "tabAutocompleteModel": {
+    "title": "Qwen2.5-Coder 1.5B",
+    "provider": "ollama",
+    "model": "qwen2.5-coder:1.5b",
+    "apiBase": "https://ollama.<tsnet>.ts.net/",
+    "disableInFiles": ["*.txt"]
+  },
+
+```
+
 ## Open-WebUI
+
+Homepage - https://openwebui.com/
+
+Helm chart - https://artifacthub.io/packages/helm/open-webui/open-webui
+
+Endpoint: `https://webui.<tsnet>.ts.net/`
 
 Authentication happens automatically based on your Tailnet credentials.
 
@@ -47,7 +102,13 @@ curl https://webui.<tsnet>.ts.net
 
 ## KubeAI
 
-https://www.kubeai.org/
+Homepage - https://www.kubeai.org/
+
+Helm chart - https://www.kubeai.org/installation/any/
+
+Default values - https://github.com/substratusai/kubeai/blob/main/charts/kubeai/values.yaml
+
+Endpoint - `https://kubeai.<tsnet>.ts.net/`
 
 Allows autoscalling and more control over the models and inference engines.
 

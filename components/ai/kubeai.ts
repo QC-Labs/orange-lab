@@ -5,9 +5,6 @@ export interface KubeAiArgs {
     domainName: string;
 }
 
-// Homepage: https://ollama.com/
-// Helm chart: https://artifacthub.io/packages/helm/ollama-helm/ollama
-// Default values: https://github.com/substratusai/kubeai/blob/main/charts/kubeai/values.yaml
 export class KubeAi extends pulumi.ComponentResource {
     public readonly endpointUrl: string | undefined;
     public readonly serviceUrl: string | undefined;
