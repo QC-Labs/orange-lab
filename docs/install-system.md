@@ -4,7 +4,7 @@
 
 Homepage - https://tailscale.com/kubernetes-operator
 
-Helm chart - https://github.com/tailscale/tailscale/tree/main/cmd/k8s-operator/deploy/chart
+Versions - https://tailscale.com/changelog
 
 Default values - https://github.com/tailscale/tailscale/blob/main/cmd/k8s-operator/deploy/chart/values.yaml
 
@@ -70,7 +70,7 @@ Endpoint: `https://longhorn.<tsnet>.ts.net/`
 
 Longhorn adds permanent storage that is replicated across multiple nodes. It also supports snapshots and backups of data volumes. The nodes need to be labeled with `orangelab/storage=true` - you need at least one.
 
-It's a core component and required for most installations but if you run the cluster on a single node (let's say just to run Ollama), then you can leave it disabled and use k3s default `local-provisioner` as Longhorn adds some overhead and extra containers to the cluster.
+It's a core component and required for most installations but if you run the cluster on a single node (let's say just to run Ollama), then you can leave it disabled and use k3s default `local-path-provisioner` as Longhorn adds some overhead and extra containers to the cluster.
 
 Enable iSCSI service before deploying Longhorn.
 
@@ -100,6 +100,14 @@ https://artifacthub.io/packages/helm/longhorn/longhorn#uninstallation
 ```sh
 kubectl -n longhorn-system patch -p '{"value": "true"}' --type=merge lhs deleting-confirmation-flag
 ```
+
+## NVIDIA GPU operator
+
+Homepage - https://nvidia.github.io/gpu-operator/
+
+Versions - https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html
+
+Helm chart - https://github.com/NVIDIA/gpu-operator/blob/main/deployments/gpu-operator/
 
 ## Prometheus
 

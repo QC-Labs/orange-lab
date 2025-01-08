@@ -43,13 +43,16 @@ Installing server will also run an agent node on the same machine.
 
 ## K3S server
 
-Run the script on _management node_:
+`k3s-server.sh` executed on _management node_ generates script to install K3S on _server node_:
 
 ```sh
-./scripts/k3s-server.sh
-```
+# localhost
+./scripts/k3s-server.sh | sh
 
-then copy the contents and run it on the _server node_ to install k3s server and agent.
+# SSH remote node
+./scripts/k3s-server.sh # run on management node, copy the generated script
+ssh root@<server-node> # paste generated script to install K3S
+```
 
 Make sure the service is running and enabled on startup:
 
@@ -62,17 +65,22 @@ systemctl enable k3s.service --now
 Add the tailscale IP of the server to Pulumi configuration:
 
 ```sh
+# localhost
+pulumi config set k3s:serverIp $(tailscale ip -4)
+
+# Remote host. Find IP with 'tailscale status'
 pulumi config set k3s:serverIp <server_ip>
-pulumi config set k3s:serverIp $(tailscale ip -4) # localhost
 ```
 
 Add generated agent token to Pulumi configuration as secret:
 
 ```sh
-ssh <user>@<k8s-server>
-sudo cat /var/lib/rancher/k3s/server/node-token
+# localhost
+export K3S_TOKEN=$(sudo cat /var/lib/rancher/k3s/server/node-token)
 
-K3S_TOKEN=<token> # copy from server node
+ # SSH remote node
+export K3S_TOKEN=$(ssh root@<node> cat /var/lib/rancher/k3s/server/node-token)
+
 pulumi config set k3s:agentToken $K3S_TOKEN --secret
 ```
 
@@ -91,13 +99,16 @@ It is recommended but not required that they will be online all the time.
 
 ## K3S agent
 
-Run the script on _management node_:
+`k3s-agent.sh` executed on _management node_ generates script to install K3S on _agent node_:
 
 ```sh
-./scripts/k3s-agent.sh
-```
+# localhost
+./scripts/k3s-agent.sh | sh
 
-then copy the contents and run it on the _agent node_ to install k3s agent.
+# SSH remote node
+./scripts/k3s-agent.sh # run on management node, copy the generated script
+ssh root@<agent-node> # paste generated script to install K3s
+```
 
 Make sure the service is running and enabled on startup:
 

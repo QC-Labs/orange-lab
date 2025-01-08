@@ -25,9 +25,6 @@ pulumi config set orangelab:nvidia-gpu-operator true
 
 pulumi config set orangelab:ollama true
 pulumi up
-
-# Make request to provision HTTP certificate and activate endpoint
-curl https://ollama.<tsnet>.ts.net
 ```
 
 Models will be stored on Longhorn volume.
@@ -95,18 +92,13 @@ Models from Ollama and KubeAI/vLLM will be available.
 ```sh
 pulumi config set orangelab:open-webui true
 pulumi up
-
-# Make request to provision HTTP certificate and activate endpoint
-curl https://webui.<tsnet>.ts.net
 ```
 
 ## KubeAI
 
 Homepage - https://www.kubeai.org/
 
-Helm chart - https://www.kubeai.org/installation/any/
-
-Default values - https://github.com/substratusai/kubeai/blob/main/charts/kubeai/values.yaml
+Helm chart - https://github.com/substratusai/kubeai/blob/main/charts/kubeai
 
 Endpoint - `https://kubeai.<tsnet>.ts.net/`
 
@@ -122,7 +114,4 @@ Currently the models are loaded into memory on first request. Longhorn volumes a
 pulumi config set orangelab:kubeai true
 pulumi config set --secret kubeai:huggingfaceToken <hf_token>
 pulumi up
-
-# Make request to provision HTTP certificate and activate endpoint
-curl https://kubeai.<tsnet>.ts.net
 ```

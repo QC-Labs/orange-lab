@@ -81,9 +81,13 @@ Services will have endpoints at `https://<service>.<tailnet>.ts.net/` by default
 pulumi config set orangelab:<app> true
 
 # configure app-specific settings from Pulumi.yaml if needed
+pulumi config set ollama:hostname ollama-api
 
 # deploy
 pulumi up
 # or
 pulumi up -r # --refresh Pulumi state if out of sync
+
+# Make request to provision HTTP certificate and activate endpoint
+curl https://<app>.<tsnet>.ts.net/
 ```
