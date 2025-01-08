@@ -18,6 +18,8 @@ export class OpenWebUI extends pulumi.ComponentResource {
         const version = config.require('version');
         const hostname = config.require('hostname');
 
+        this.endpointUrl = `https://${hostname}.${args.domainName}`;
+
         new kubernetes.helm.v3.Release(
             name,
             {
@@ -35,6 +37,26 @@ export class OpenWebUI extends pulumi.ComponentResource {
                         'orangelab/gpu': 'true',
                     },
                     extraEnvVars: [
+                        {
+                            name: 'WEBUI_URL',
+                            value: this.endpointUrl,
+                        },
+                        {
+                            name: 'ENABLE_SIGNUP',
+                            value: 'True',
+                        },
+                        {
+                            name: 'BYPASS_MODEL_ACCESS_CONTROL',
+                            value: 'True',
+                        },
+                        {
+                            name: 'DEFAULT_USER_ROLE',
+                            value: 'user',
+                        },
+                        {
+                            name: 'ENABLE_EVALUATION_ARENA_MODELS',
+                            value: 'False',
+                        },
                         {
                             name: 'WEBUI_AUTH',
                             value: 'False',
@@ -68,7 +90,5 @@ export class OpenWebUI extends pulumi.ComponentResource {
             },
             { parent: this },
         );
-
-        this.endpointUrl = `https://${hostname}.${args.domainName}`;
     }
 }
