@@ -7,6 +7,7 @@ export interface LonghornArgs {
 
 export class Longhorn extends pulumi.ComponentResource {
     public readonly endpointUrl: string | undefined;
+    public defaultStorageClass = 'longhorn';
     public gpuStorageClass = 'gpu-storage';
 
     constructor(name: string, args: LonghornArgs, opts?: pulumi.ResourceOptions) {

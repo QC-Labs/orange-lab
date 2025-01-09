@@ -10,7 +10,7 @@ export class SystemModule extends pulumi.ComponentResource {
     tailscaleAgentKey: pulumi.Output<string> | undefined;
     domainName: string;
     longhornUrl: string | undefined;
-    defaultStorageClass = '';
+    defaultStorageClass = ''; // local-path-provisioner
     gpuStorageClass = '';
     grafanaUrl: string | undefined;
 
@@ -37,8 +37,8 @@ export class SystemModule extends pulumi.ComponentResource {
         if (this.isModuleEnabled('longhorn')) {
             this.longhorn = new Longhorn('longhorn', { domainName: this.domainName });
             this.longhornUrl = this.longhorn.endpointUrl;
-            this.defaultStorageClass = 'longhorn';
-            this.gpuStorageClass = 'gpu-storage';
+            this.defaultStorageClass = this.longhorn.defaultStorageClass;
+            this.gpuStorageClass = this.longhorn.gpuStorageClass;
         }
 
         if (this.isModuleEnabled('prometheus')) {

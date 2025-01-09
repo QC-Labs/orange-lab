@@ -20,7 +20,6 @@ echo "curl -sfL https://get.k3s.io |  sh -s - \
 --vpn-auth \"name=tailscale,joinKey=\$TS_AUTH_KEY\" \
 --cluster-cidr=\$CLUSTER_CIDR \
 --service-cidr=\$SERVICE_CIDR \
---disable=local-storage \
 --disable=servicelb \
 --disable=traefik \
 --write-kubeconfig ~/.kube/config \
