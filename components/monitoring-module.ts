@@ -20,9 +20,13 @@ export class MonitoringModule extends pulumi.ComponentResource {
         super('orangelab:monitoring', name, args, opts);
 
         if (this.isModuleEnabled('prometheus')) {
-            this.prometheus = new Prometheus('prometheus', {
-                domainName: args.domainName,
-            });
+            this.prometheus = new Prometheus(
+                'prometheus',
+                {
+                    domainName: args.domainName,
+                },
+                { parent: this },
+            );
             this.grafanaUrl = this.prometheus.grafanaEndpointUrl;
         }
     }

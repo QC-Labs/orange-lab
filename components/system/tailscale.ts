@@ -7,7 +7,7 @@ export class Tailscale extends pulumi.ComponentResource {
     public readonly tailnet: string;
 
     constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
-        super('orangelab:network:Tailscale', name, args, opts);
+        super('orangelab:system:Tailscale', name, args, opts);
 
         this.tailnet = new pulumi.Config(name).require('tailnet');
 

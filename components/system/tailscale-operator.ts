@@ -3,7 +3,7 @@ import * as pulumi from '@pulumi/pulumi';
 
 export class TailscaleOperator extends pulumi.ComponentResource {
     constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
-        super('orangelab:network:TailscaleOperator', name, args, opts);
+        super('orangelab:system:TailscaleOperator', name, args, opts);
 
         const config = new pulumi.Config(name);
         const version = config.require('version');

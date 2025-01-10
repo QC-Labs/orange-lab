@@ -18,21 +18,25 @@ export class SystemModule extends pulumi.ComponentResource {
     constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
         super('orangelab:system', name, args, opts);
 
-        const tailscale = new Tailscale('tailscale');
+        const tailscale = new Tailscale('tailscale', {}, { parent: this });
         this.tailscaleServerKey = tailscale.serverKey;
         this.tailscaleAgentKey = tailscale.agentKey;
         this.domainName = tailscale.tailnet;
 
         if (this.isModuleEnabled('tailscale-operator')) {
-            new TailscaleOperator('tailscale-operator');
+            new TailscaleOperator('tailscale-operator', {}, { parent: this });
         }
 
         if (this.isModuleEnabled('nvidia-gpu-operator')) {
-            new NvidiaGPUOperator('nvidia-gpu-operator');
+            new NvidiaGPUOperator('nvidia-gpu-operator', {}, { parent: this });
         }
 
         if (this.isModuleEnabled('longhorn')) {
-            this.longhorn = new Longhorn('longhorn', { domainName: this.domainName });
+            this.longhorn = new Longhorn(
+                'longhorn',
+                { domainName: this.domainName },
+                { parent: this },
+            );
             this.longhornUrl = this.longhorn.endpointUrl;
             this.defaultStorageClass = this.longhorn.defaultStorageClass;
             this.gpuStorageClass = this.longhorn.gpuStorageClass;

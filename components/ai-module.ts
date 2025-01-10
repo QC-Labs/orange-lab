@@ -23,20 +23,28 @@ export class AIModule extends pulumi.ComponentResource {
         args: AIModuleArgs,
         opts?: pulumi.ComponentResourceOptions,
     ) {
-        super('orangelab:AI', name, args, opts);
+        super('orangelab:ai', name, args, opts);
 
         if (this.isModuleEnabled('ollama')) {
-            this.ollama = new Ollama('ollama', {
-                domainName: args.domainName,
-                storageClass: args.gpuStorageClass,
-            });
+            this.ollama = new Ollama(
+                'ollama',
+                {
+                    domainName: args.domainName,
+                    storageClass: args.gpuStorageClass,
+                },
+                { parent: this },
+            );
             this.ollamaUrl = this.ollama.endpointUrl;
         }
 
         if (this.isModuleEnabled('kubeai')) {
-            this.kubeAI = new KubeAi('kubeai', {
-                domainName: args.domainName,
-            });
+            this.kubeAI = new KubeAi(
+                'kubeai',
+                {
+                    domainName: args.domainName,
+                },
+                { parent: this },
+            );
             this.kubeAIUrl = this.kubeAI.serviceUrl;
         }
 
@@ -50,6 +58,7 @@ export class AIModule extends pulumi.ComponentResource {
                     openAiUrl: this.kubeAI?.serviceUrl,
                 },
                 {
+                    parent: this,
                     dependsOn: [this.ollama, this.kubeAI].filter(x => x !== undefined),
                 },
             );

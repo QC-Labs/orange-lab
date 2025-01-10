@@ -11,7 +11,7 @@ export class Longhorn extends pulumi.ComponentResource {
     public gpuStorageClass = 'gpu-storage';
 
     constructor(name: string, args: LonghornArgs, opts?: pulumi.ResourceOptions) {
-        super('orangelab:storage:Longhorn', name, args, opts);
+        super('orangelab:system:Longhorn', name, args, opts);
 
         const config = new pulumi.Config('longhorn');
         const version = config.require('version');
