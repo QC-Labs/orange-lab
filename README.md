@@ -38,15 +38,15 @@ Available settings in `Pulumi.yaml`. More details about components in each modul
 
 -   `prometheus` - Prometheus/Grafana for monitoring
 
+[IoT module](docs/iot.md):
+
+-   `home-assistant` - Home Assistant (https://www.home-assistant.io/) sensor automation platform
+
 [AI module](docs/ai.md):
 
 -   `ollama` - Ollama API (https://ollama.com/) local large language models
 -   `open-webui` - Open WebUI (https://openwebui.com/) frontend
 -   `kubeai` - KubeAI (https://kubeai.io/) with Ollama and vLLM models over OpenAI-compatible API
-
-[IoT module](docs/iot.md):
-
--   `home-assistant` - Home Assistant (https://www.home-assistant.io/) sensor automation platform
 
 # Platforms and limitations
 
@@ -62,7 +62,7 @@ Not a tested configuration but feedback welcome. The issue is Longhorn, which on
 
 1.  configure Pulumi and Tailscale on management node [docs/install.md](docs/install.md)
 2.  install K3s server and agents [docs/install-k3s.md](docs/install-k3s.md)
-3.  deploy system components (Longhorn, NVIDIA GPU operator, Tailscale operator, ...) [docs/install-system.md](docs/install-system.md)
+3.  deploy required system components [docs/install-system.md](docs/install-system.md)
 
 ## Adding additional nodes
 
@@ -74,16 +74,16 @@ More details at [docs/install-k3s.md](docs/install-k3s.md)
 4.  assign Kubernetes node labels (storage, gpu, zone)
 5.  (optional) update `Pulumi.<stack>.yaml` (f.e. increase Longhorn replica count) then `pulumi up`
 
-## Deploy applications
-
-Lookup module documentation for more details [#Applications](#applications)
+## Deploying applications
 
 After system components have been deployed, you can add any of the optional applications.
+
+Lookup module documentation for more details [#Applications](#applications)
 
 Services will have endpoints at `https://<service>.<tailnet>.ts.net/` by default.
 
 ```sh
-# enable module
+# enable app
 pulumi config set orangelab:<app> true
 
 # configure app-specific settings from Pulumi.yaml if needed

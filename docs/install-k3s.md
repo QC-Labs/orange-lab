@@ -86,8 +86,8 @@ pulumi config set k3s:agentToken $K3S_TOKEN --secret
 
 ## Kube config for admin
 
-```
-rm -f ~/.kube/config
+```sh
+# copy kubeconfig from server to your management node
 scp <user>@<k8s-server>:.kube/config ~/.kube/config
 ```
 

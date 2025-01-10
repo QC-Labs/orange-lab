@@ -103,8 +103,19 @@ kubectl -n longhorn-system patch -p '{"value": "true"}' --type=merge lhs deletin
 
 ## NVIDIA GPU operator
 
-Homepage - https://nvidia.github.io/gpu-operator/
-
-Versions - https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html
+Homepage - https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/
 
 Helm chart - https://github.com/NVIDIA/gpu-operator/blob/main/deployments/gpu-operator/
+
+Components - https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html#gpu-operator-component-matrix
+
+```sh
+# Label node(s) that should run GPU workloads
+kubectl label nodes <node-name> orangelab/gpu=true
+
+# enable GPU operator
+pulumi config set orangelab:nvidia-gpu-operator true
+
+pulumi up
+
+```

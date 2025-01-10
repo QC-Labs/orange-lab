@@ -1,13 +1,6 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 
-/**
- * Homepage: https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/
- *
- * Default values: https://github.com/NVIDIA/gpu-operator/blob/main/deployments/gpu-operator/values.yaml
- *
- * Components: https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html#gpu-operator-component-matrix
- */
 export class NvidiaGPUOperator extends pulumi.ComponentResource {
     constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
         super('orangelab:system:NvidiaGPUOperator', name, args, opts);
