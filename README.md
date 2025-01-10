@@ -30,6 +30,12 @@ Available settings in `Pulumi.yaml`. More details about components in each modul
 
 [System module](docs/install-system.md):
 
+-   `longhorn` - replicated storage
+-   `nvidia-gpu-operator` - NVidia GPU support
+-   `tailscale-operator` - ingress support with Tailscale authentication
+
+[Monitoring module](docs/monitoring.md):
+
 -   `prometheus` - Prometheus/Grafana for monitoring
 
 [AI module](docs/ai.md):

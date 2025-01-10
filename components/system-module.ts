@@ -1,5 +1,4 @@
 import * as pulumi from '@pulumi/pulumi';
-import { Prometheus } from './monitoring/prometheus';
 import { Longhorn } from './system/longhorn';
 import { NvidiaGPUOperator } from './system/nvidia-gpu-operator';
 import { Tailscale } from './system/tailscale';
@@ -12,11 +11,9 @@ export class SystemModule extends pulumi.ComponentResource {
     longhornUrl: string | undefined;
     defaultStorageClass = ''; // local-path-provisioner
     gpuStorageClass = '';
-    grafanaUrl: string | undefined;
 
     private config = new pulumi.Config('orangelab');
     private longhorn: Longhorn | undefined;
-    private prometheus: Prometheus | undefined;
 
     constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
         super('orangelab:system', name, args, opts);
@@ -39,15 +36,6 @@ export class SystemModule extends pulumi.ComponentResource {
             this.longhornUrl = this.longhorn.endpointUrl;
             this.defaultStorageClass = this.longhorn.defaultStorageClass;
             this.gpuStorageClass = this.longhorn.gpuStorageClass;
-        }
-
-        if (this.isModuleEnabled('prometheus')) {
-            this.prometheus = new Prometheus(
-                'prometheus',
-                { domainName: this.domainName },
-                { dependsOn: this.longhorn },
-            );
-            this.grafanaUrl = this.prometheus.grafanaEndpointUrl;
         }
     }
 
