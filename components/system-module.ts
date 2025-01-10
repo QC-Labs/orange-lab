@@ -1,9 +1,9 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Prometheus } from './monitoring/prometheus';
-import { Tailscale } from './network/tailscale';
-import { TailscaleOperator } from './network/tailscale-operator';
-import { NvidiaGPUOperator } from './nvidia-gpu-operator';
-import { Longhorn } from './storage/longhorn';
+import { Longhorn } from './system/longhorn';
+import { NvidiaGPUOperator } from './system/nvidia-gpu-operator';
+import { Tailscale } from './system/tailscale';
+import { TailscaleOperator } from './system/tailscale-operator';
 
 export class SystemModule extends pulumi.ComponentResource {
     tailscaleServerKey: pulumi.Output<string> | undefined;
