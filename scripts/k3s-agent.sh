@@ -6,7 +6,7 @@ set -euo pipefail
 
 K3S_URL=https://$(pulumi config get k3s:serverIp):6443
 K3S_TOKEN=$(pulumi config get k3s:agentToken)
-TS_AUTH_KEY=$(pulumi stack output tailscaleAgentKey --show-secrets)
+TS_AUTH_KEY=$(pulumi stack output system --show-secrets | jq .tailscaleAgentKey -r)
 
 echo export K3S_URL=$K3S_URL
 echo export NODE_IP='$(tailscale ip -4)'

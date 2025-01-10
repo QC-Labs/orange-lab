@@ -4,12 +4,9 @@ import { MonitoringModule } from './components/monitoring-module';
 import { SystemModule } from './components/system-module';
 
 const systemModule = new SystemModule('system');
-export const tailscaleServerKey = systemModule.tailscaleServerKey;
-export const tailscaleAgentKey = systemModule.tailscaleAgentKey;
-export const tailscaleDomain = systemModule.domainName;
-export const longhornUrl = systemModule.longhornUrl;
 export const system = {
     longhornUrl: systemModule.longhornUrl,
+    tailscaleAgentKey: systemModule.tailscaleAgentKey,
     tailscaleServerKey: systemModule.tailscaleServerKey,
     tailscaleDomain: systemModule.domainName,
 };
@@ -21,8 +18,9 @@ const monitoringModule = new MonitoringModule(
     },
     { dependsOn: systemModule },
 );
-export const monitoringGrafanaUrl = monitoringModule.grafanaUrl;
-export const monitoring = monitoringModule;
+export const monitoring = {
+    grafanaUrl: monitoringModule.grafanaUrl,
+};
 
 const iotModule = new IoTModule(
     'iot',
@@ -31,7 +29,9 @@ const iotModule = new IoTModule(
     },
     { dependsOn: systemModule },
 );
-export const iotHomeAssistantUrl = iotModule.homeAssistantUrl;
+export const iot = {
+    homeAssistantUrl: iotModule.homeAssistantUrl,
+};
 
 const aiModule = new AIModule(
     'ai',
@@ -41,6 +41,8 @@ const aiModule = new AIModule(
     },
     { dependsOn: systemModule },
 );
-export const aiOllamaUrl = aiModule.ollamaUrl;
-export const aiKubeAIUrl = aiModule.kubeAIUrl;
-export const aiOpenWebUIUrl = aiModule.openWebUIUrl;
+export const ai = {
+    ollamaUrl: aiModule.ollamaUrl,
+    openWebUIUrl: aiModule.openWebUIUrl,
+    kubeAIUrl: aiModule.kubeAIUrl,
+};
