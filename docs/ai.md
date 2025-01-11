@@ -47,11 +47,14 @@ Add models with:
 ollama pull llama3.3:70b
 ollama pull phi4:14b
 
-# General chat, smaller model
+# General chat, faster model
 ollama pull llama3.2:3b
 
-# Vision
+# Vision to text
 ollama pull llama3.2-vision:11b
+ollama pull llama3.2-vision:90b
+ollama pull llava:7b
+ollama pull llava:34b
 
 # Coding chat
 ollama pull deepseek-coder-v2:16b
