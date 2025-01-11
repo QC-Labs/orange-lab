@@ -1,5 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Prometheus } from './monitoring/prometheus';
+import { rootConfig } from './root-config';
 
 interface IoTModuleArgs {
     domainName: string;
@@ -10,8 +11,6 @@ export class MonitoringModule extends pulumi.ComponentResource {
 
     private prometheus: Prometheus | undefined;
 
-    private config = new pulumi.Config('orangelab');
-
     constructor(
         name: string,
         args: IoTModuleArgs,
@@ -19,7 +18,7 @@ export class MonitoringModule extends pulumi.ComponentResource {
     ) {
         super('orangelab:monitoring', name, args, opts);
 
-        if (this.isModuleEnabled('prometheus')) {
+        if (rootConfig.isEnabled('prometheus')) {
             this.prometheus = new Prometheus(
                 'prometheus',
                 {
@@ -29,9 +28,5 @@ export class MonitoringModule extends pulumi.ComponentResource {
             );
             this.grafanaUrl = this.prometheus.grafanaEndpointUrl;
         }
-    }
-
-    public isModuleEnabled(name: string): boolean {
-        return this.config.requireBoolean(name);
     }
 }

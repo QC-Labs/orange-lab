@@ -1,4 +1,5 @@
 import * as pulumi from '@pulumi/pulumi';
+import { rootConfig } from './root-config';
 import { Longhorn } from './system/longhorn';
 import { NvidiaGPUOperator } from './system/nvidia-gpu-operator';
 import { Tailscale } from './system/tailscale';
@@ -12,7 +13,6 @@ export class SystemModule extends pulumi.ComponentResource {
     defaultStorageClass = ''; // local-path-provisioner
     gpuStorageClass = '';
 
-    private config = new pulumi.Config('orangelab');
     private longhorn: Longhorn | undefined;
 
     constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
@@ -23,15 +23,15 @@ export class SystemModule extends pulumi.ComponentResource {
         this.tailscaleAgentKey = tailscale.agentKey;
         this.domainName = tailscale.tailnet;
 
-        if (this.isModuleEnabled('tailscale-operator')) {
+        if (rootConfig.isEnabled('tailscale-operator')) {
             new TailscaleOperator('tailscale-operator', {}, { parent: this });
         }
 
-        if (this.isModuleEnabled('nvidia-gpu-operator')) {
+        if (rootConfig.isEnabled('nvidia-gpu-operator')) {
             new NvidiaGPUOperator('nvidia-gpu-operator', {}, { parent: this });
         }
 
-        if (this.isModuleEnabled('longhorn')) {
+        if (rootConfig.isEnabled('longhorn')) {
             this.longhorn = new Longhorn(
                 'longhorn',
                 { domainName: this.domainName },
@@ -41,9 +41,5 @@ export class SystemModule extends pulumi.ComponentResource {
             this.defaultStorageClass = this.longhorn.defaultStorageClass;
             this.gpuStorageClass = this.longhorn.gpuStorageClass;
         }
-    }
-
-    public isModuleEnabled(name: string): boolean {
-        return this.config.requireBoolean(name);
     }
 }

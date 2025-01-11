@@ -1,5 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import { HomeAssistant } from './iot/home-assistant';
+import { rootConfig } from './root-config';
 
 interface IoTModuleArgs {
     domainName: string;
@@ -8,7 +9,6 @@ interface IoTModuleArgs {
 export class IoTModule extends pulumi.ComponentResource {
     homeAssistantUrl: string | undefined;
 
-    private config = new pulumi.Config('orangelab');
     private homeAssistant: HomeAssistant | undefined;
 
     constructor(
@@ -18,7 +18,7 @@ export class IoTModule extends pulumi.ComponentResource {
     ) {
         super('orangelab:iot', name, args, opts);
 
-        if (this.isModuleEnabled('home-assistant')) {
+        if (rootConfig.isEnabled('home-assistant')) {
             const configK3s = new pulumi.Config('k3s');
             this.homeAssistant = new HomeAssistant(
                 'home-assistant',
@@ -34,9 +34,5 @@ export class IoTModule extends pulumi.ComponentResource {
             );
             this.homeAssistantUrl = this.homeAssistant.endpointUrl;
         }
-    }
-
-    public isModuleEnabled(name: string): boolean {
-        return this.config.requireBoolean(name);
     }
 }
