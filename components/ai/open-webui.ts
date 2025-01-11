@@ -20,12 +20,19 @@ export class OpenWebUI extends pulumi.ComponentResource {
 
         this.endpointUrl = `https://${hostname}.${args.domainName}`;
 
+        const namespace = new kubernetes.core.v1.Namespace(
+            'ns',
+            {
+                metadata: { name },
+            },
+            { parent: this },
+        );
+
         new kubernetes.helm.v3.Release(
             name,
             {
                 chart: 'open-webui',
-                namespace: 'open-webui',
-                createNamespace: true,
+                namespace: namespace.metadata.name,
                 version,
                 repositoryOpts: {
                     repo: 'https://helm.openwebui.com/',

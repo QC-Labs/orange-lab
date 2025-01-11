@@ -17,12 +17,19 @@ export class HomeAssistant extends pulumi.ComponentResource {
         const hostname = config.require('hostname');
         const zone = config.get('zone');
 
+        const namespace = new kubernetes.core.v1.Namespace(
+            'ns',
+            {
+                metadata: { name },
+            },
+            { parent: this },
+        );
+
         new kubernetes.helm.v3.Release(
             name,
             {
                 chart: 'home-assistant',
-                namespace: 'home-assistant',
-                createNamespace: true,
+                namespace: namespace.metadata.name,
                 version,
                 repositoryOpts: {
                     repo: 'http://pajikos.github.io/home-assistant-helm-chart/',

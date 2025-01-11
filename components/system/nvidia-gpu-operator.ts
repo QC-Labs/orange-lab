@@ -8,12 +8,19 @@ export class NvidiaGPUOperator extends pulumi.ComponentResource {
         const config = new pulumi.Config(name);
         const version = config.require('version');
 
+        const namespace = new kubernetes.core.v1.Namespace(
+            'ns',
+            {
+                metadata: { name },
+            },
+            { parent: this },
+        );
+
         new kubernetes.helm.v3.Release(
             name,
             {
                 chart: 'gpu-operator',
-                namespace: 'nvidia-gpu-operator',
-                createNamespace: true,
+                namespace: namespace.metadata.name,
                 version,
                 repositoryOpts: {
                     repo: 'https://helm.ngc.nvidia.com/nvidia',

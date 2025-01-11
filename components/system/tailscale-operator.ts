@@ -11,12 +11,19 @@ export class TailscaleOperator extends pulumi.ComponentResource {
         const oauthClientId = config.requireSecret('oauthClientId');
         const oauthClientSecret = config.requireSecret('oauthClientSecret');
 
+        const namespace = new kubernetes.core.v1.Namespace(
+            'ns',
+            {
+                metadata: { name },
+            },
+            { parent: this },
+        );
+
         new kubernetes.helm.v3.Release(
             name,
             {
                 chart: 'tailscale-operator',
-                namespace: 'tailscale',
-                createNamespace: true,
+                namespace: namespace.metadata.name,
                 version,
                 repositoryOpts: {
                     repo: 'https://pkgs.tailscale.com/helmcharts',

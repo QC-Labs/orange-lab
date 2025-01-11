@@ -20,12 +20,19 @@ export class Longhorn extends pulumi.ComponentResource {
         const enableMonitoring = config.requireBoolean('enableMonitoring');
         const gpuReplicaCount = config.requireNumber('gpuReplicaCount');
 
+        const namespace = new kubernetes.core.v1.Namespace(
+            'ns',
+            {
+                metadata: { name: `${name}-system` },
+            },
+            { parent: this },
+        );
+
         const chart = new kubernetes.helm.v3.Release(
             name,
             {
                 chart: 'longhorn',
-                namespace: 'longhorn-system',
-                createNamespace: true,
+                namespace: namespace.metadata.name,
                 version,
                 repositoryOpts: { repo: 'https://charts.longhorn.io' },
                 values: {

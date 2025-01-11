@@ -17,12 +17,19 @@ export class Ollama extends pulumi.ComponentResource {
         const version = config.require('version');
         const hostname = config.require('hostname');
 
+        const namespace = new kubernetes.core.v1.Namespace(
+            'ns',
+            {
+                metadata: { name },
+            },
+            { parent: this },
+        );
+
         new kubernetes.helm.v3.Release(
             name,
             {
                 chart: 'ollama',
-                namespace: 'ollama',
-                createNamespace: true,
+                namespace: namespace.metadata.name,
                 version,
                 repositoryOpts: {
                     repo: 'https://otwld.github.io/ollama-helm/',

@@ -5,7 +5,6 @@ export interface PrometheusArgs {
     domainName: string;
 }
 
-// Helm chart: https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
 export class Prometheus extends pulumi.ComponentResource {
     public readonly alertmanagerEndpointUrl: string | undefined;
     public readonly prometheusEndpointUrl: string | undefined;
@@ -20,13 +19,20 @@ export class Prometheus extends pulumi.ComponentResource {
         const alertManagerHostname = config.require('hostname-alert-manager');
         const grafanaHostname = config.require('hostname-grafana');
 
+        const namespace = new kubernetes.core.v1.Namespace(
+            'ns',
+            {
+                metadata: { name },
+            },
+            { parent: this },
+        );
+
         new kubernetes.helm.v3.Release(
             name,
             {
                 chart: 'kube-prometheus-stack',
                 version,
-                namespace: 'prometheus',
-                createNamespace: true,
+                namespace: namespace.metadata.name,
                 repositoryOpts: {
                     repo: 'https://prometheus-community.github.io/helm-charts',
                 },

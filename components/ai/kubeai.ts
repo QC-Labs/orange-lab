@@ -17,12 +17,19 @@ export class KubeAi extends pulumi.ComponentResource {
         const hostname = config.require('hostname');
         const huggingfaceToken = config.getSecret('huggingfaceToken');
 
+        const namespace = new kubernetes.core.v1.Namespace(
+            'ns',
+            {
+                metadata: { name },
+            },
+            { parent: this },
+        );
+
         new kubernetes.helm.v3.Release(
             name,
             {
                 chart: 'kubeai',
-                namespace: 'kubeai',
-                createNamespace: true,
+                namespace: namespace.metadata.name,
                 version,
                 repositoryOpts: {
                     repo: 'https://www.kubeai.org',
