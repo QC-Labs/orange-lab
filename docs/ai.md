@@ -40,10 +40,25 @@ export OLLAMA_HOST=https://ollama.<tsnet>.ts.net/
 alias ai="ollama run llama3.2"
 ```
 
-Add new models with:
+Add models with:
 
 ```sh
-ollama pull llama3.2
+# Recommended for general chat
+ollama pull llama3.3:70b
+ollama pull phi4:14b
+
+# General chat, smaller model
+ollama pull llama3.2:3b
+
+# Vision
+ollama pull llama3.2-vision:11b
+
+# Coding chat
+ollama pull deepseek-coder-v2:16b
+ollama pull qwen2.5-coder:7b
+
+# Code completion
+ollama pull qwen2.5-coder:1.5b
 ```
 
 ### Visual Studio Code

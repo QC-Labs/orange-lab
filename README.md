@@ -40,7 +40,7 @@ Available settings in `Pulumi.yaml`. More details about components in each modul
 
 [IoT module](docs/iot.md):
 
--   `home-assistant` - Home Assistant (https://www.home-assistant.io/) sensor automation platform
+-   `home-assistant` - Home Assistant (https://www.home-assistant.io/) home automation platform
 
 [AI module](docs/ai.md):
 

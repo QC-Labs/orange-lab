@@ -1,5 +1,7 @@
 # Installation - system applications
 
+Core components required before any other apps can de deployed.
+
 ## Tailscale-operator
 
 Homepage - https://tailscale.com/kubernetes-operator
@@ -21,8 +23,9 @@ Add `k8s-operator` and `k8s` tags to your Tailnet in ACLs (https://login.tailsca
 }
 ```
 
-Create OAuth client for tailscale-operator with write permissions to devices.
-https://tailscale.com/learn/managing-access-to-kubernetes-with-tailscale#preparing-the-operator
+Go to https://login.tailscale.com/admin/settings/oauth and create OAuth client for tailscale-operator with write permissions for `auth_keys, devices:core`
+
+Details at: https://tailscale.com/learn/managing-access-to-kubernetes-with-tailscale#preparing-the-operator
 
 ```sh
 pulumi config set tailscale-operator:oauthClientId <OAUTH_CLIENT_ID> --secret
@@ -70,7 +73,7 @@ Endpoint: `https://longhorn.<tsnet>.ts.net/`
 
 Longhorn adds permanent storage that is replicated across multiple nodes. It also supports snapshots and backups of data volumes. The nodes need to be labeled with `orangelab/storage=true` - you need at least one.
 
-It's a core component and required for most installations but if you run the cluster on a single node (let's say just to run Ollama), then you can leave it disabled and use k3s default `local-path-provisioner` as Longhorn adds some overhead and extra containers to the cluster.
+It's a core component and required for most installations but if you run the cluster on a single node (let's say just to run Ollama), then you can leave it disabled and use k3s default `local-path-provisioner` as Longhorn adds some overhead and extra containers to the cluster. When using the local provisioner, the persistent volumes will be stored in `/var/lib/rancher/k3s/storage`.
 
 Enable iSCSI service before deploying Longhorn.
 

@@ -53,7 +53,7 @@ Add tags to your Tailnet in ACLs (https://login.tailscale.com/admin/acls/file):
 }
 ```
 
-Create Tailscale API access token for Pulumi (https://login.tailscale.com/admin/settings/keys) and add the secrets to `Pulumi.<stack>.yaml` with:
+Create Tailscale API access token for Pulumi (https://login.tailscale.com/admin/settings/keys) and add it to `Pulumi.<stack>.yaml` with:
 
 ```sh
 pulumi config set tailscale:apiKey <TAILSCALE_API_KEY> --secret
