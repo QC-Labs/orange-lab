@@ -2,6 +2,8 @@
 
 Private infrastructure for cloud natives.
 
+<img src="docs/orange-lab-910-512.png" alt="Orange Lab logo" height="200"/>
+
 ## Core components
 
 -   Pulumi (https://www.pulumi.com/) - configuration management, deployments and infrastructure as code
@@ -28,7 +30,7 @@ All applications are disabled by default.
 
 Available settings in `Pulumi.yaml`. More details about components in each module documentation.
 
-[System module](docs/install-system.md):
+[System module](docs/install-system.md) (required):
 
 -   `longhorn` - replicated storage
 -   `nvidia-gpu-operator` - NVidia GPU support
