@@ -26,9 +26,9 @@ Private infrastructure for cloud natives.
 
 # Applications
 
-All applications are disabled by default.
+Applications are disabled by default.
 
-Available settings in `Pulumi.yaml`. More details about components in each module documentation.
+All available settings can be found in `Pulumi.yaml`. More details about components in each module documentation.
 
 [System module](docs/install-system.md) (required):
 
