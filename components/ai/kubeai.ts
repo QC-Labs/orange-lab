@@ -102,7 +102,7 @@ export class KubeAi extends pulumi.ComponentResource {
                         'llama-3.1-8b-instruct-cpu': {
                             enabled: true,
                             resourceProfile: 'nvidia:1',
-                            // model downloaded on first request, requires Hugginface token
+                            // model downloaded on first request, requires Huggingface token
                             minReplicas: 0,
                         },
                     },

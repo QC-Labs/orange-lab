@@ -69,6 +69,8 @@ Helm chart - https://github.com/longhorn/longhorn/tree/master/chart
 
 Default values - https://github.com/longhorn/longhorn/blob/master/chart/values.yaml
 
+StorageClass parameters - https://longhorn.io/docs/1.7.2/references/storage-class-parameters/
+
 Endpoint: `https://longhorn.<tsnet>.ts.net/`
 
 Longhorn adds permanent storage that is replicated across multiple nodes. It also supports snapshots and backups of data volumes. The nodes need to be labeled with `orangelab/storage=true` - you need at least one.

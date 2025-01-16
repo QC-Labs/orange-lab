@@ -1,11 +1,11 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
+import { PersistentStorage, PersistentStorageType } from '../persistent-storage';
 
 export interface OpenWebUIArgs {
     domainName: string;
     ollamaUrl?: string;
     openAiUrl?: string;
-    storageClass: string;
 }
 
 export class OpenWebUI extends pulumi.ComponentResource {
@@ -24,6 +24,17 @@ export class OpenWebUI extends pulumi.ComponentResource {
             'ns',
             {
                 metadata: { name },
+            },
+            { parent: this },
+        );
+
+        const storage = new PersistentStorage(
+            name,
+            {
+                name,
+                namespace: namespace.metadata.name,
+                size: '2Gi',
+                type: PersistentStorageType.GPU,
             },
             { parent: this },
         );
@@ -82,7 +93,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
                     },
                     persistence: {
                         enabled: true,
-                        storageClass: args.storageClass,
+                        existingClaim: storage.volumeClaimName,
                     },
                     pipelines: {
                         enabled: false,

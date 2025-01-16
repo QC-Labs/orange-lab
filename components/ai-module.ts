@@ -6,7 +6,6 @@ import { rootConfig } from './root-config';
 
 interface AIModuleArgs {
     domainName: string;
-    gpuStorageClass: string;
 }
 
 export class AIModule extends pulumi.ComponentResource {
@@ -30,7 +29,6 @@ export class AIModule extends pulumi.ComponentResource {
                 'ollama',
                 {
                     domainName: args.domainName,
-                    storageClass: args.gpuStorageClass,
                 },
                 { parent: this },
             );
@@ -53,7 +51,6 @@ export class AIModule extends pulumi.ComponentResource {
                 'open-webui',
                 {
                     domainName: args.domainName,
-                    storageClass: args.gpuStorageClass,
                     ollamaUrl: this.ollama?.serviceUrl,
                     openAiUrl: this.kubeAI?.serviceUrl,
                 },

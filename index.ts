@@ -37,7 +37,6 @@ const aiModule = new AIModule(
     'ai',
     {
         domainName: systemModule.domainName,
-        gpuStorageClass: systemModule.gpuStorageClass,
     },
     { dependsOn: systemModule },
 );

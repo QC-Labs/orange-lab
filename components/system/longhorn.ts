@@ -7,8 +7,8 @@ export interface LonghornArgs {
 
 export class Longhorn extends pulumi.ComponentResource {
     public readonly endpointUrl: string | undefined;
-    public defaultStorageClass = 'longhorn';
-    public gpuStorageClass = 'gpu-storage';
+    public static defaultStorageClass = 'longhorn';
+    public static gpuStorageClass = 'longhorn-gpu';
 
     constructor(name: string, args: LonghornArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:system:Longhorn', name, args, opts);
@@ -82,7 +82,7 @@ export class Longhorn extends pulumi.ComponentResource {
             'gpu-storage',
             {
                 metadata: {
-                    name: this.gpuStorageClass,
+                    name: Longhorn.gpuStorageClass,
                 },
                 allowVolumeExpansion: true,
                 provisioner: 'driver.longhorn.io',
