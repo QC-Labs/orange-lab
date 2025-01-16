@@ -1,6 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
-import { Prometheus } from './monitoring/prometheus';
-import { rootConfig } from './root-config';
+import { rootConfig } from '../root-config';
+import { Prometheus } from './prometheus';
 
 interface IoTModuleArgs {
     domainName: string;

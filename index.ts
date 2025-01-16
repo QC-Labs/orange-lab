@@ -1,7 +1,7 @@
-import { AIModule } from './components/ai-module';
-import { IoTModule } from './components/iot-module';
-import { MonitoringModule } from './components/monitoring-module';
-import { SystemModule } from './components/system-module';
+import { AIModule } from './components/ai';
+import { IoTModule } from './components/iot';
+import { MonitoringModule } from './components/monitoring';
+import { SystemModule } from './components/system';
 
 const systemModule = new SystemModule('system');
 export const system = {

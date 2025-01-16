@@ -1,8 +1,8 @@
 import * as pulumi from '@pulumi/pulumi';
-import { KubeAi } from './ai/kubeai';
-import { Ollama } from './ai/ollama';
-import { OpenWebUI } from './ai/open-webui';
-import { rootConfig } from './root-config';
+import { rootConfig } from '../root-config';
+import { KubeAi } from './kubeai';
+import { Ollama } from './ollama';
+import { OpenWebUI } from './open-webui';
 
 interface AIModuleArgs {
     domainName: string;

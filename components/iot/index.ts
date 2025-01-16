@@ -1,6 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
-import { HomeAssistant } from './iot/home-assistant';
-import { rootConfig } from './root-config';
+import { rootConfig } from '../root-config';
+import { HomeAssistant } from './home-assistant';
 
 interface IoTModuleArgs {
     domainName: string;

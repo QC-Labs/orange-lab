@@ -1,9 +1,9 @@
 import * as pulumi from '@pulumi/pulumi';
-import { rootConfig } from './root-config';
-import { Longhorn } from './system/longhorn';
-import { NvidiaGPUOperator } from './system/nvidia-gpu-operator';
-import { Tailscale } from './system/tailscale';
-import { TailscaleOperator } from './system/tailscale-operator';
+import { rootConfig } from '../root-config';
+import { Longhorn } from './longhorn';
+import { NvidiaGPUOperator } from './nvidia-gpu-operator';
+import { Tailscale } from './tailscale';
+import { TailscaleOperator } from './tailscale-operator';
 
 export class SystemModule extends pulumi.ComponentResource {
     tailscaleServerKey: pulumi.Output<string> | undefined;
