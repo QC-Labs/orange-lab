@@ -1,5 +1,6 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
+import { PersistentStorage } from '../persistent-storage';
 
 export interface PrometheusArgs {
     domainName: string;
@@ -20,9 +21,19 @@ export class Prometheus extends pulumi.ComponentResource {
         const grafanaHostname = config.require('hostname-grafana');
 
         const namespace = new kubernetes.core.v1.Namespace(
-            'ns',
+            `${name}-ns`,
             {
                 metadata: { name },
+            },
+            { parent: this },
+        );
+
+        const grafanaStorage = new PersistentStorage(
+            `${name}-grafana-storage`,
+            {
+                name: `${name}-grafana`,
+                namespace: namespace.metadata.name,
+                size: '10Gi',
             },
             { parent: this },
         );
@@ -48,6 +59,10 @@ export class Prometheus extends pulumi.ComponentResource {
                             tls: [{ hosts: [grafanaHostname] }],
                             hostname: grafanaHostname,
                         },
+                        persistence: {
+                            enabled: true,
+                            existingClaim: grafanaStorage.volumeClaimName,
+                        },
                     },
                     kubeEtcd: { enabled: false },
                     kubeControllerManager: { serviceMonitor: { https: false } },
@@ -64,7 +79,8 @@ export class Prometheus extends pulumi.ComponentResource {
                             storage: {
                                 volumeClaimTemplate: {
                                     spec: {
-                                        storageClassName: 'longhorn',
+                                        storageClassName:
+                                            PersistentStorage.getStorageClass(),
                                         accessModes: ['ReadWriteOnce'],
                                         resources: { requests: { storage: '5Gi' } },
                                     },
@@ -83,9 +99,10 @@ export class Prometheus extends pulumi.ComponentResource {
                             storageSpec: {
                                 volumeClaimTemplate: {
                                     spec: {
-                                        storageClassName: 'longhorn',
+                                        storageClassName:
+                                            PersistentStorage.getStorageClass(),
                                         accessModes: ['ReadWriteOnce'],
-                                        resources: { requests: { storage: '5Gi' } },
+                                        resources: { requests: { storage: '50Gi' } },
                                     },
                                 },
                             },
