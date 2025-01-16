@@ -69,6 +69,7 @@ export class Prometheus extends pulumi.ComponentResource {
                     kubeScheduler: { serviceMonitor: { https: false } },
                     kubeProxy: { serviceMonitor: { https: false } },
                     alertmanager: {
+                        enabled: false,
                         ingress: {
                             enabled: true,
                             ingressClassName: 'tailscale',
