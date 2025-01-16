@@ -1,5 +1,6 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
+import { PersistentStorage } from '../persistent-storage';
 
 export interface HomeAssistantArgs {
     domainName: string;
@@ -21,6 +22,16 @@ export class HomeAssistant extends pulumi.ComponentResource {
             'ns',
             {
                 metadata: { name },
+            },
+            { parent: this },
+        );
+
+        const storage = new PersistentStorage(
+            name,
+            {
+                name,
+                namespace: namespace.metadata.name,
+                size: '5Gi',
             },
             { parent: this },
         );
@@ -77,8 +88,7 @@ export class HomeAssistant extends pulumi.ComponentResource {
                     },
                     persistence: {
                         enabled: true,
-                        accessMode: 'ReadWriteOnce',
-                        size: '5Gi',
+                        existingVolume: storage.volumeClaimName,
                     },
                 },
             },
