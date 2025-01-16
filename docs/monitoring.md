@@ -23,3 +23,7 @@ pulumi config set orangelab:prometheus true
 
 pulumi up
 ```
+
+### Uninstall
+
+CRDs need to be removed manually, more info at https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack#uninstall-helm-chart

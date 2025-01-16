@@ -27,7 +27,7 @@ sudo tailscale up --accept-routes --hostname <user>-vscode
 Install dependencies on the management node (where you run Pulumi):
 
 ```sh
-brew install node pulumi kubectl helm k9s
+brew install node pulumi kubectl k9s
 flatpak install io.kinvolk.Headlamp
 sudo tailscale up --operator=$USER --accept-routes
 ```
