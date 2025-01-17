@@ -44,7 +44,7 @@ pulumi stack select <stack-name>
 
 ## Tailscale
 
-Add tags to your Tailnet in ACLs (https://login.tailscale.com/admin/acls/file):
+Add tags to your Tailnet ACLs (https://login.tailscale.com/admin/acls/file):
 
 ```json
 "tagOwners": {

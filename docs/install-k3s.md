@@ -29,6 +29,8 @@ Turn off suspend mode when on AC power. The setting in Gnome UI only applies whe
 # Check current settings
 sudo -u gdm dbus-run-session gsettings list-recursively org.gnome.settings-daemon.plugins.power | grep sleep
 
+# Output example: org.gnome.settings-daemon.plugins.power sleep-inactive-ac-timeout 900
+
 # Disable suspend mode on AC power:
 sudo -u gdm dbus-run-session gsettings set org.gnome.settings-daemon.plugins.power sleep-inactive-ac-timeout 0
 ```
@@ -37,7 +39,7 @@ sudo -u gdm dbus-run-session gsettings set org.gnome.settings-daemon.plugins.pow
 
 Server has to be installed before any other nodes can be added.
 
-It is recommended that the Kubernetes server is installed on a machine that's online 24/7 but it's not required - running everything on a single laptop is fine too, however the availability of services will be limited.
+Kubernetes server should be installed on a machine that's online 24/7 but it's not required - running everything on a single laptop is fine too, however the availability of services will be limited.
 
 Installing server will also run an agent node on the same machine.
 
@@ -94,8 +96,6 @@ scp <user>@<k8s-server>:.kube/config ~/.kube/config
 # Installation - K3S agents
 
 Install K3S agent nodes on any additional physical hardware. Server already runs an agent.
-
-It is recommended but not required that they will be online all the time.
 
 ## K3S agent
 

@@ -13,11 +13,11 @@ pulumi up
 
 ## Ollama
 
-Homepage - https://ollama.com/
-
-Helm chart - https://artifacthub.io/packages/helm/ollama-helm/ollama
-
-Endpoint: `https://ollama.<tsnet>.ts.net/`
+|            |                                                         |
+| ---------- | ------------------------------------------------------- |
+| Homepage   | https://ollama.com/                                     |
+| Helm chart | https://artifacthub.io/packages/helm/ollama-helm/ollama |
+| Endpoints  | `https://ollama.<tsnet>.ts.net/`                        |
 
 ```sh
 # Enable NVidia integration
@@ -97,11 +97,12 @@ You can use https://www.continue.dev/ extension to connect to Ollama for code co
 
 ## Open-WebUI
 
-Homepage - https://openwebui.com/
-
-Helm chart - https://artifacthub.io/packages/helm/open-webui/open-webui
-
-Endpoint: `https://webui.<tsnet>.ts.net/`
+|                       |                                                                              |
+| --------------------- | ---------------------------------------------------------------------------- |
+| Homepage              | https://openwebui.com/                                                       |
+| Helm chart            | https://artifacthub.io/packages/helm/open-webui/open-webui                   |
+| Environment variables | https://docs.openwebui.com/getting-started/advanced-topics/env-configuration |
+| Endpoints             | `https://webui.<tsnet>.ts.net/`                                              |
 
 Authentication happens automatically based on your Tailnet credentials.
 
@@ -114,11 +115,11 @@ pulumi up
 
 ## KubeAI
 
-Homepage - https://www.kubeai.org/
-
-Helm chart - https://github.com/substratusai/kubeai/blob/main/charts/kubeai
-
-Endpoint - `https://kubeai.<tsnet>.ts.net/`
+|            |                                                                |
+| ---------- | -------------------------------------------------------------- |
+| Homepage   | https://www.kubeai.org/                                        |
+| Helm chart | https://github.com/substratusai/kubeai/blob/main/charts/kubeai |
+| Endpoint   | `https://kubeai.<tsnet>.ts.net/`                               |
 
 Allows autoscalling and more control over the models and inference engines.
 

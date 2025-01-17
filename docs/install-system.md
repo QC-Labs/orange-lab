@@ -4,15 +4,14 @@ Core components required before any other apps can de deployed.
 
 ## Tailscale-operator
 
-Homepage - https://tailscale.com/kubernetes-operator
+|                |                                                                                            |
+| -------------- | ------------------------------------------------------------------------------------------ |
+| Homepage       | https://tailscale.com/kubernetes-operator                                                  |
+| Versions       | https://tailscale.com/changelog                                                            |
+| Default values | https://github.com/tailscale/tailscale/blob/main/cmd/k8s-operator/deploy/chart/values.yaml |
+| Endpoints      | `https://k8s.<tsnet>.ts.net/`                                                              |
 
-Versions - https://tailscale.com/changelog
-
-Default values - https://github.com/tailscale/tailscale/blob/main/cmd/k8s-operator/deploy/chart/values.yaml
-
-Endpoint: `https://k8s.<tsnet>.ts.net/`
-
-The operator manages Ingress endpoints and load balancers on Tailnet as well as adds Tailscale authenticated Kubernetes API endpoint.
+The operator manages cluster ingress endpoints on Tailnet as well as adds Tailscale authenticated Kubernetes API endpoint.
 
 Add `k8s-operator` and `k8s` tags to your Tailnet in ACLs (https://login.tailscale.com/admin/acls/file):
 
@@ -37,7 +36,7 @@ pulumi up
 
 ### Kubernetes API access
 
-After deploying the operator, you can use new endpoint for Kubernetes API, https://k8s.<tailnet>.ts.net
+After deploying the operator, you can use new endpoint for Kubernetes API, `https://k8s.<tailnet>.ts.net`
 
 Permissions are managed in Tailscale so make sure you enable admin access to the cluster in your Tailscale ACLs:
 
@@ -63,15 +62,13 @@ tailscale configure kubeconfig k8s
 
 ## Longhorn
 
-Homepage - https://longhorn.io/
-
-Helm chart - https://github.com/longhorn/longhorn/tree/master/chart
-
-Default values - https://github.com/longhorn/longhorn/blob/master/chart/values.yaml
-
-StorageClass parameters - https://longhorn.io/docs/1.7.2/references/storage-class-parameters/
-
-Endpoint: `https://longhorn.<tsnet>.ts.net/`
+|                         |                                                                     |
+| ----------------------- | ------------------------------------------------------------------- |
+| Homepage                | https://longhorn.io/                                                |
+| Helm chart              | https://github.com/longhorn/longhorn/tree/master/chart              |
+| Default values          | https://github.com/longhorn/longhorn/blob/master/chart/values.yaml  |
+| StorageClass parameters | https://longhorn.io/docs/1.7.2/references/storage-class-parameters/ |
+| Endpoints               | `https://longhorn.<tsnet>.ts.net/`                                  |
 
 Longhorn adds permanent storage that is replicated across multiple nodes. It also supports snapshots and backups of data volumes. The nodes need to be labeled with `orangelab/storage=true` - you need at least one.
 
@@ -108,11 +105,11 @@ kubectl -n longhorn-system patch -p '{"value": "true"}' --type=merge lhs deletin
 
 ## NVIDIA GPU operator
 
-Homepage - https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/
-
-Helm chart - https://github.com/NVIDIA/gpu-operator/blob/main/deployments/gpu-operator/
-
-Components - https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html#gpu-operator-component-matrix
+|            |                                                                                                                         |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Homepage   | https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/                                                           |
+| Helm chart | https://github.com/NVIDIA/gpu-operator/blob/main/deployments/gpu-operator/                                              |
+| Components | https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html#gpu-operator-component-matrix |
 
 ```sh
 # Label node(s) that should run GPU workloads
