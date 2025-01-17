@@ -1,8 +1,16 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 
+interface TailscaleOperatorArgs {
+    namespace?: string;
+}
+
 export class TailscaleOperator extends pulumi.ComponentResource {
-    constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
+    constructor(
+        name: string,
+        args: TailscaleOperatorArgs = {},
+        opts?: pulumi.ResourceOptions,
+    ) {
         super('orangelab:system:TailscaleOperator', name, args, opts);
 
         const config = new pulumi.Config(name);
@@ -14,7 +22,7 @@ export class TailscaleOperator extends pulumi.ComponentResource {
         const namespace = new kubernetes.core.v1.Namespace(
             `${name}-ns`,
             {
-                metadata: { name },
+                metadata: { name: args.namespace ?? name },
             },
             { parent: this },
         );

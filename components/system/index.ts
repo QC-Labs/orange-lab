@@ -22,7 +22,11 @@ export class SystemModule extends pulumi.ComponentResource {
         this.domainName = tailscale.tailnet;
 
         if (rootConfig.isEnabled('tailscale-operator')) {
-            new TailscaleOperator('tailscale-operator', {}, { parent: this });
+            new TailscaleOperator(
+                'tailscale-operator',
+                { namespace: 'tailscale' },
+                { parent: this },
+            );
         }
 
         if (rootConfig.isEnabled('nvidia-gpu-operator')) {
