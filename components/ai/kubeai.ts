@@ -18,7 +18,7 @@ export class KubeAi extends pulumi.ComponentResource {
         const huggingfaceToken = config.getSecret('huggingfaceToken');
 
         const namespace = new kubernetes.core.v1.Namespace(
-            'ns',
+            `${name}-ns`,
             {
                 metadata: { name },
             },

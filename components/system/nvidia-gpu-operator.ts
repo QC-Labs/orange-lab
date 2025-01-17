@@ -9,7 +9,7 @@ export class NvidiaGPUOperator extends pulumi.ComponentResource {
         const version = config.require('version');
 
         const namespace = new kubernetes.core.v1.Namespace(
-            'ns',
+            `${name}-ns`,
             {
                 metadata: { name },
             },

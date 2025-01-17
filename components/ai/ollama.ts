@@ -18,7 +18,7 @@ export class Ollama extends pulumi.ComponentResource {
         const hostname = config.require('hostname');
 
         const namespace = new kubernetes.core.v1.Namespace(
-            'ns',
+            `${name}-ns`,
             {
                 metadata: { name },
             },
@@ -26,7 +26,7 @@ export class Ollama extends pulumi.ComponentResource {
         );
 
         const storage = new PersistentStorage(
-            name,
+            `${name}-storage`,
             {
                 name,
                 namespace: namespace.metadata.name,

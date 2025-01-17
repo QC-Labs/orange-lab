@@ -12,7 +12,7 @@ export class TailscaleOperator extends pulumi.ComponentResource {
         const oauthClientSecret = config.requireSecret('oauthClientSecret');
 
         const namespace = new kubernetes.core.v1.Namespace(
-            'ns',
+            `${name}-ns`,
             {
                 metadata: { name },
             },
@@ -34,7 +34,10 @@ export class TailscaleOperator extends pulumi.ComponentResource {
                         clientSecret: oauthClientSecret,
                     },
                     apiServerProxyConfig: { mode: 'true' },
-                    operatorConfig: { hostname },
+                    operatorConfig: {
+                        hostname,
+                        logging: 'info', // info, debug, dev
+                    },
                 },
             },
             { parent: this },

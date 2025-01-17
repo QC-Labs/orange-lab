@@ -21,7 +21,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
         this.endpointUrl = `https://${hostname}.${args.domainName}`;
 
         const namespace = new kubernetes.core.v1.Namespace(
-            'ns',
+            `${name}-ns`,
             {
                 metadata: { name },
             },
@@ -29,7 +29,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
         );
 
         const storage = new PersistentStorage(
-            name,
+            `${name}-storage`,
             {
                 name,
                 namespace: namespace.metadata.name,

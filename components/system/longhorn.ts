@@ -21,7 +21,7 @@ export class Longhorn extends pulumi.ComponentResource {
         const gpuReplicaCount = config.requireNumber('gpuReplicaCount');
 
         const namespace = new kubernetes.core.v1.Namespace(
-            'ns',
+            `${name}-ns`,
             {
                 metadata: { name: `${name}-system` },
             },
@@ -79,7 +79,7 @@ export class Longhorn extends pulumi.ComponentResource {
         );
 
         new kubernetes.storage.v1.StorageClass(
-            'gpu-storage',
+            `${name}-gpu-storage`,
             {
                 metadata: {
                     name: Longhorn.gpuStorageClass,
