@@ -3,7 +3,7 @@
 Management node is where you run Pulumi, most likely your laptop.
 
 ```sh
-git clone https://github.com/AdamNowotny/orange-lab.git
+git clone https://github.com/QC-Labs/orange-lab
 ```
 
 ## Prerequisites - DevContainers (VSCode)
