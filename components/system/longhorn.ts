@@ -42,7 +42,9 @@ export class Longhorn extends pulumi.ComponentResource {
                         fastReplicaRebuildEnabled: true,
                         nodeDownPodDeletionPolicy:
                             'delete-both-statefulset-and-deployment-pod',
+                        orphanAutoDeletion: true,
                         replicaAutoBalance: 'best-effort',
+                        snapshotMaxCount: 20,
                         storageOverProvisioningPercentage: 100,
                         systemManagedComponentsNodeSelector: 'orangelab/storage:true',
                     },
