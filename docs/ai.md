@@ -42,10 +42,7 @@ Add models with:
 
 ```sh
 # Recommended for general chat
-ollama pull llama3.3:70b
 ollama pull phi4:14b
-
-# General chat, faster model
 ollama pull llama3.2:3b
 
 # Vision to text
@@ -77,8 +74,14 @@ You can use https://www.continue.dev/ extension to connect to Ollama for code co
       "provider": "ollama"
     },
     {
-      "model": "qwen2.5-coder:1.5b",
+      "model": "qwen2.5-coder:7b",
       "title": "Ollama qwen2.5-coder",
+      "apiBase": "https://ollama.<tsnet>.ts.net/",
+      "provider": "ollama"
+    },
+    {
+      "model": "deepseek-coder-v2:16b",
+      "title": "Ollama deepseek-coder-v2",
       "apiBase": "https://ollama.<tsnet>.ts.net/",
       "provider": "ollama"
     }
