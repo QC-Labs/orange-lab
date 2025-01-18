@@ -33,7 +33,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
             {
                 name,
                 namespace: namespace.metadata.name,
-                size: '2Gi',
+                size: '5Gi',
                 type: PersistentStorageType.GPU,
             },
             { parent: this },
