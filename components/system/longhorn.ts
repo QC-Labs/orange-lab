@@ -44,6 +44,7 @@ export class Longhorn extends pulumi.ComponentResource {
                         orphanAutoDeletion: true,
                         replicaAutoBalance: 'best-effort',
                         snapshotMaxCount: 20,
+                        storageMinimalAvailablePercentage: 25,
                         storageOverProvisioningPercentage: 100,
                         systemManagedComponentsNodeSelector: 'orangelab/storage:true',
                     },

@@ -90,6 +90,9 @@ pulumi config set orangelab:longhorn true
 # Set replicaCount to 3 if you have 3+ storage nodes
 pulumi config set longhorn:replicaCount 3
 
+# increase size of storage from default 50Gi to 100Gi
+pulumi config set longhorn:storageSize 100Gi
+
 pulumi up
 
 ```

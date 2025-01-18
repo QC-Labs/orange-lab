@@ -16,6 +16,7 @@ export class Ollama extends pulumi.ComponentResource {
         const config = new pulumi.Config(name);
         const version = config.require('version');
         const hostname = config.require('hostname');
+        const storageSize = config.require('storageSize');
 
         const namespace = new kubernetes.core.v1.Namespace(
             `${name}-ns`,
@@ -30,7 +31,7 @@ export class Ollama extends pulumi.ComponentResource {
             {
                 name,
                 namespace: namespace.metadata.name,
-                size: '30Gi',
+                size: storageSize,
                 type: PersistentStorageType.GPU,
             },
             { parent: this },
