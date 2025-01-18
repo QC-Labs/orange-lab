@@ -27,9 +27,7 @@ pulumi config set orangelab:ollama true
 pulumi up
 ```
 
-Models will be stored on Longhorn volume.
-
-Increase `longhorn:gpuReplicaCount` to replicate volume across nodes with `orangelab/storage=true` and `orangelab/gpu=true` labels
+Models will be stored on local Longhorn volume with no replication across nodes.
 
 ### Ollama CLI
 

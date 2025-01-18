@@ -18,7 +18,6 @@ export class Longhorn extends pulumi.ComponentResource {
         const hostname = config.require('hostname');
         const replicaCount = config.requireNumber('replicaCount');
         const enableMonitoring = config.requireBoolean('enableMonitoring');
-        const gpuReplicaCount = config.requireNumber('gpuReplicaCount');
 
         const namespace = new kubernetes.core.v1.Namespace(
             `${name}-ns`,
@@ -91,7 +90,7 @@ export class Longhorn extends pulumi.ComponentResource {
                 volumeBindingMode: 'Immediate',
                 reclaimPolicy: 'Delete',
                 parameters: {
-                    numberOfReplicas: gpuReplicaCount.toFixed(0),
+                    numberOfReplicas: '1',
                     dataLocality: 'strict-local',
                 },
             },

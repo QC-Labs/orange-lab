@@ -36,10 +36,6 @@ config:
     longhorn:hostname: longhorn
     # Set to number of nodes (recommended max 3)
     longhorn:replicaCount: 1
-    # Replicas related to GPU workloads, defaults to local node storage only
-    # Set to number of GPU nodes if you want LLM storage to be shared across nodes
-    # Note this will significantly increase network traffic when adding new models
-    longhorn:gpuReplicaCount: 1
     # Deploy Prometheus first
     longhorn:enableMonitoring: false
 

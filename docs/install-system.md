@@ -70,7 +70,7 @@ tailscale configure kubeconfig k8s
 | StorageClass parameters | https://longhorn.io/docs/1.7.2/references/storage-class-parameters/ |
 | Endpoints               | `https://longhorn.<tsnet>.ts.net/`                                  |
 
-Longhorn adds permanent storage that is replicated across multiple nodes. It also supports snapshots and backups of data volumes. The nodes need to be labeled with `orangelab/storage=true` - you need at least one.
+Longhorn adds permanent storage that is replicated across multiple nodes. It also supports snapshots and backups of data volumes. The nodes need to be labeled with `orangelab/storage=true` - you need at least one. Volumes stored at `/var/lib/longhorn/`.
 
 It's a core component and required for most installations but if you run the cluster on a single node (let's say just to run Ollama), then you can leave it disabled and use k3s default `local-path-provisioner` as Longhorn adds some overhead and extra containers to the cluster. When using the local provisioner, the persistent volumes will be stored in `/var/lib/rancher/k3s/storage`.
 
@@ -87,9 +87,8 @@ systemctl enable iscsid.socket --now
 # Enable module
 pulumi config set orangelab:longhorn true
 
-# Set replicaCount to amount of storage nodes
-# Longhorn default is 3 which the recommended for 3+ storage nodes
-pulumi config set longhorn:replicaCount 2
+# Set replicaCount to 3 if you have 3+ storage nodes
+pulumi config set longhorn:replicaCount 3
 
 pulumi up
 
