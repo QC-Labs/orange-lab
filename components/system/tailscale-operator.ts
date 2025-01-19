@@ -1,4 +1,5 @@
 import * as kubernetes from '@pulumi/kubernetes';
+import { ClusterRole } from '@pulumi/kubernetes/rbac/v1';
 import * as pulumi from '@pulumi/pulumi';
 
 interface TailscaleOperatorArgs {
@@ -7,7 +8,7 @@ interface TailscaleOperatorArgs {
 
 export class TailscaleOperator extends pulumi.ComponentResource {
     constructor(
-        name: string,
+        private name: string,
         args: TailscaleOperatorArgs = {},
         opts?: pulumi.ResourceOptions,
     ) {
@@ -27,6 +28,9 @@ export class TailscaleOperator extends pulumi.ComponentResource {
             { parent: this },
         );
 
+        const userRole = this.createUserRole(name);
+        this.createUserRoleBinding(userRole, 'orangelab:users');
+
         new kubernetes.helm.v3.Release(
             name,
             {
@@ -44,9 +48,62 @@ export class TailscaleOperator extends pulumi.ComponentResource {
                     apiServerProxyConfig: { mode: 'true' },
                     operatorConfig: {
                         hostname,
-                        logging: 'info', // info, debug, dev
+                        logging: 'debug', // info, debug, dev
                     },
                 },
+            },
+            { parent: this },
+        );
+    }
+
+    private createUserRoleBinding(userRole: ClusterRole, groupName: string) {
+        new kubernetes.rbac.v1.ClusterRoleBinding(
+            `${this.name}-user-cluster-role-binding`,
+            {
+                metadata: { name: 'orangelab-user' },
+                subjects: [
+                    {
+                        kind: 'Group',
+                        name: groupName,
+                    },
+                ],
+                roleRef: {
+                    apiGroup: 'rbac.authorization.k8s.io',
+                    kind: 'ClusterRole',
+                    name: userRole.metadata.name,
+                },
+            },
+            { parent: this },
+        );
+    }
+
+    private createUserRole(name: string) {
+        return new kubernetes.rbac.v1.ClusterRole(
+            `${name}-user-cluster-role`,
+            {
+                metadata: { name: 'orangelab-user-cluster-role' },
+                rules: [
+                    {
+                        apiGroups: [
+                            '',
+                            'apiextensions',
+                            'apps',
+                            'autoscaling',
+                            'batch',
+                            'coordination.k8s.io',
+                            'discovery.k8s.io',
+                            'extensions',
+                            'metrics.k8s.io',
+                            'networking.k8s.io',
+                            'node.k8s.io',
+                            'policy',
+                            'rbac.authorization.k8s.io',
+                            'storage.k8s.io',
+                        ],
+                        resources: ['*'],
+                        verbs: ['get', 'list', 'watch'],
+                    },
+                ],
             },
             { parent: this },
         );

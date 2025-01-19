@@ -36,25 +36,25 @@ pulumi up
 
 ### Kubernetes API access
 
-After deploying the operator, you can use new endpoint for Kubernetes API, `https://k8s.<tailnet>.ts.net`
+After deploying the operator, you can use new endpoint for Kubernetes API, `https://k8s.<tailnet>.ts.net` for non-admin users.
 
-Permissions are managed in Tailscale so make sure you enable admin access to the cluster in your Tailscale ACLs:
+Add this grant to your Tailscale ACLs:
 
 ```json
 "grants": [{
-    "src": ["autogroup:admin"],
+    "src": ["autogroup:member"],
     "dst": ["tag:k8s-operator"],
     "app": {
         "tailscale.com/cap/kubernetes": [{
             "impersonate": {
-                "groups": ["system:masters"],
+                "groups": ["orangelab:users"],
             },
         }],
     },
 }]
 ```
 
-From now on, instead of copying the admin `~/.kube/config` from K3S server, you can use:
+To be able to connect to the cluster as a read-only user, generate `~/.kube/config` with:
 
 ```sh
 tailscale configure kubeconfig k8s
