@@ -34,8 +34,8 @@ config:
 
     longhorn:version: 1.7.2
     longhorn:hostname: longhorn
-    # Set to number of nodes (recommended max 3)
-    longhorn:replicaCount: 1
+    # Set to 3 when 3+ storage nodes are available
+    longhorn:replicaCount: 2
     # Deploy Prometheus first
     longhorn:enableMonitoring: false
 
