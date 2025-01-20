@@ -30,7 +30,7 @@ export class PersistentStorage extends pulumi.ComponentResource {
         new kubernetes.core.v1.PersistentVolumeClaim(
             `${name}-pvc`,
             {
-                metadata: { name, namespace: args.namespace },
+                metadata: { name: args.name, namespace: args.namespace },
                 spec: {
                     accessModes: ['ReadWriteOnce'],
                     storageClassName,
@@ -43,7 +43,7 @@ export class PersistentStorage extends pulumi.ComponentResource {
             },
             { parent: this },
         );
-        this.volumeClaimName = name;
+        this.volumeClaimName = args.name;
     }
 
     public static getStorageClass(storageType?: PersistentStorageType) {
