@@ -86,6 +86,7 @@ export class TailscaleOperator extends pulumi.ComponentResource {
                     {
                         apiGroups: [
                             '',
+                            'admissionregistration.k8s.io',
                             'apiextensions',
                             'apps',
                             'autoscaling',
@@ -93,11 +94,13 @@ export class TailscaleOperator extends pulumi.ComponentResource {
                             'coordination.k8s.io',
                             'discovery.k8s.io',
                             'extensions',
+                            'helm.cattle.io',
                             'metrics.k8s.io',
                             'networking.k8s.io',
                             'node.k8s.io',
                             'policy',
                             'rbac.authorization.k8s.io',
+                            'scheduling.k8s.io',
                             'storage.k8s.io',
                         ],
                         resources: ['*'],
