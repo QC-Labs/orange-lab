@@ -23,6 +23,9 @@ pulumi up
 # Enable NVidia integration
 pulumi config set orangelab:nvidia-gpu-operator true
 
+# Increase volume size if needed for bigger models (50 by default)
+pulumi config set orangelab:storageSize "100Gi"
+
 pulumi config set orangelab:ollama true
 pulumi up
 ```
@@ -41,15 +44,14 @@ alias ai="ollama run llama3.2"
 Add models with:
 
 ```sh
-# Recommended for general chat
+# Recommended for general chat, adjust size based on your GPU
+ollama pull deepseek-r1:14b
 ollama pull phi4:14b
 ollama pull llama3.2:3b
 
 # Vision to text
 ollama pull llama3.2-vision:11b
-ollama pull llama3.2-vision:90b
 ollama pull llava:7b
-ollama pull llava:34b
 
 # Coding chat
 ollama pull deepseek-coder-v2:16b
