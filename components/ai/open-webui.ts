@@ -76,6 +76,18 @@ export class OpenWebUI extends pulumi.ComponentResource {
                             value: 'False',
                         },
                         {
+                            name: 'ENABLE_RAG_WEB_SEARCH',
+                            value: 'True',
+                        },
+                        {
+                            name: 'ENABLE_SEARCH_QUERY_GENERATION',
+                            value: 'True',
+                        },
+                        {
+                            name: 'RAG_WEB_SEARCH_ENGINE',
+                            value: 'duckduckgo',
+                        },
+                        {
                             name: 'WEBUI_AUTH',
                             value: 'False',
                         },
