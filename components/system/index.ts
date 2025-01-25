@@ -9,9 +9,8 @@ export class SystemModule extends pulumi.ComponentResource {
     tailscaleServerKey: pulumi.Output<string> | undefined;
     tailscaleAgentKey: pulumi.Output<string> | undefined;
     domainName: string;
-    longhornUrl: string | undefined;
 
-    private longhorn: Longhorn | undefined;
+    longhorn: Longhorn | undefined;
 
     constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
         super('orangelab:system', name, args, opts);
@@ -39,7 +38,6 @@ export class SystemModule extends pulumi.ComponentResource {
                 { domainName: this.domainName },
                 { parent: this },
             );
-            this.longhornUrl = this.longhorn.endpointUrl;
         }
     }
 }

@@ -5,7 +5,7 @@ import { SystemModule } from './components/system';
 
 const systemModule = new SystemModule('system');
 export const system = {
-    longhornUrl: systemModule.longhornUrl,
+    longhornUrl: systemModule.longhorn?.endpointUrl,
     tailscaleAgentKey: systemModule.tailscaleAgentKey,
     tailscaleServerKey: systemModule.tailscaleServerKey,
     tailscaleDomain: systemModule.domainName,
@@ -19,7 +19,7 @@ const monitoringModule = new MonitoringModule(
     { dependsOn: systemModule },
 );
 export const monitoring = {
-    grafanaUrl: monitoringModule.grafanaUrl,
+    grafanaUrl: monitoringModule.prometheus?.grafanaEndpointUrl,
 };
 
 const iotModule = new IoTModule(
@@ -30,7 +30,7 @@ const iotModule = new IoTModule(
     { dependsOn: systemModule },
 );
 export const iot = {
-    homeAssistantUrl: iotModule.homeAssistantUrl,
+    homeAssistantUrl: iotModule.homeAssistant?.endpointUrl,
 };
 
 const aiModule = new AIModule(
@@ -41,8 +41,9 @@ const aiModule = new AIModule(
     { dependsOn: systemModule },
 );
 export const ai = {
-    ollamaUrl: aiModule.ollamaUrl,
-    openWebUIUrl: aiModule.openWebUIUrl,
-    kubeAIUrl: aiModule.kubeAIUrl,
-    automatic1111Url: aiModule.automatic1111Url,
+    ollamaUrl: aiModule.ollama?.endpointUrl,
+    openWebUIUrl: aiModule.openWebUI?.endpointUrl,
+    kubeAIClusterUrl: aiModule.kubeAI?.serviceUrl,
+    automatic1111Url: aiModule.automatic1111?.endpointUrl,
+    automatic1111ClusterUrl: aiModule.automatic1111?.serviceUrl,
 };

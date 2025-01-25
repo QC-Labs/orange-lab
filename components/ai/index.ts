@@ -10,15 +10,10 @@ interface AIModuleArgs {
 }
 
 export class AIModule extends pulumi.ComponentResource {
-    ollamaUrl: string | undefined;
-    kubeAIUrl: string | undefined;
-    openWebUIUrl: string | undefined;
-    automatic1111Url: string | undefined;
-
-    private ollama: Ollama | undefined;
-    private kubeAI: KubeAi | undefined;
-    private openWebUI: OpenWebUI | undefined;
-    private automatic1111: Automatic1111 | undefined;
+    ollama: Ollama | undefined;
+    kubeAI: KubeAi | undefined;
+    openWebUI: OpenWebUI | undefined;
+    automatic1111: Automatic1111 | undefined;
 
     constructor(
         name: string,
@@ -35,7 +30,6 @@ export class AIModule extends pulumi.ComponentResource {
                 },
                 { parent: this },
             );
-            this.ollamaUrl = this.ollama.endpointUrl;
         }
 
         if (rootConfig.isEnabled('automatic1111')) {
@@ -46,7 +40,6 @@ export class AIModule extends pulumi.ComponentResource {
                 },
                 { parent: this },
             );
-            this.automatic1111Url = this.automatic1111.serviceUrl;
         }
 
         if (rootConfig.isEnabled('kubeai')) {
@@ -57,7 +50,6 @@ export class AIModule extends pulumi.ComponentResource {
                 },
                 { parent: this },
             );
-            this.kubeAIUrl = this.kubeAI.serviceUrl;
         }
 
         if (rootConfig.isEnabled('open-webui')) {
@@ -76,7 +68,6 @@ export class AIModule extends pulumi.ComponentResource {
                     ),
                 },
             );
-            this.openWebUIUrl = this.openWebUI.endpointUrl;
         }
     }
 }

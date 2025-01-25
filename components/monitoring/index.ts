@@ -7,9 +7,7 @@ interface IoTModuleArgs {
 }
 
 export class MonitoringModule extends pulumi.ComponentResource {
-    grafanaUrl: string | undefined;
-
-    private prometheus: Prometheus | undefined;
+    prometheus: Prometheus | undefined;
 
     constructor(
         name: string,
@@ -26,7 +24,6 @@ export class MonitoringModule extends pulumi.ComponentResource {
                 },
                 { parent: this },
             );
-            this.grafanaUrl = this.prometheus.grafanaEndpointUrl;
         }
     }
 }

@@ -7,9 +7,7 @@ interface IoTModuleArgs {
 }
 
 export class IoTModule extends pulumi.ComponentResource {
-    homeAssistantUrl: string | undefined;
-
-    private homeAssistant: HomeAssistant | undefined;
+    homeAssistant: HomeAssistant | undefined;
 
     constructor(
         name: string,
@@ -32,7 +30,6 @@ export class IoTModule extends pulumi.ComponentResource {
                 },
                 { parent: this },
             );
-            this.homeAssistantUrl = this.homeAssistant.endpointUrl;
         }
     }
 }
