@@ -11,6 +11,8 @@ pulumi config set orangelab:open-webui true
 pulumi up
 ```
 
+> Note: GPU memory is limited so you might encounter out-of-memory errors when loading new models. Only enable components you need. You can check processes using GPU with `nvidia-smi`. Check Ollama section on how to stop models to free up memory.
+
 ## Ollama
 
 |            |                                                         |
@@ -44,21 +46,28 @@ alias ai="ollama run llama3.2"
 Add models with:
 
 ```sh
-# Recommended for general chat, adjust size based on your GPU
-ollama pull deepseek-r1:14b
-ollama pull phi4:14b
-ollama pull llama3.2:3b
+# Recommended for general chat, check available model sizes at https://ollama.com/search
+ollama pull deepseek-r1
+ollama pull phi4
+ollama pull llama3.2
 
 # Vision to text
-ollama pull llama3.2-vision:11b
-ollama pull llava:7b
+ollama pull llama3.2-vision
+ollama pull llava
 
 # Coding chat
-ollama pull deepseek-coder-v2:16b
+ollama pull deepseek-coder-v2
 ollama pull qwen2.5-coder:7b
 
-# Code completion
+# Code completion, use smaller models for faster responses
 ollama pull qwen2.5-coder:1.5b
+```
+
+By default models are stopped after 5 minutes. You can see loaded models and stop them with:
+
+```sh
+ollama ps
+ollama stop <id>
 ```
 
 ### Visual Studio Code
@@ -98,6 +107,25 @@ You can use https://www.continue.dev/ extension to connect to Ollama for code co
 
 ```
 
+## Automatic1111 Stable Diffusion WebUI
+
+|                       |                                                                                                  |
+| --------------------- | ------------------------------------------------------------------------------------------------ |
+| Homepage              | https://github.com/AUTOMATIC1111/stable-diffusion-webui                                          |
+| Docker image          | https://hub.docker.com/r/universonic/stable-diffusion-webui                                      |
+| Dockerfile            | https://github.com/universonic/docker-stable-diffusion-webui                                     |
+| Environment variables | https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Command-Line-Arguments-and-Settings |
+| Endpoints             | `https://automatic1111.<tsnet>.ts.net/`                                                          |
+
+```sh
+pulumi config set orangelab:automatic1111 true
+pulumi up
+```
+
+First time the application starts, it will download Stability Diffusion model (about 4GB) before accepting requests. The container itself is about 7GB.
+
+You can either use the website endpoint or OpenWebUI integration to generate images.
+
 ## Open-WebUI
 
 |                       |                                                                              |
@@ -110,6 +138,8 @@ You can use https://www.continue.dev/ extension to connect to Ollama for code co
 Authentication happens automatically based on your Tailnet credentials.
 
 Models from Ollama and KubeAI/vLLM will be available.
+
+If stable diffusion is enabled, you can generate images based on responses - https://docs.openwebui.com/tutorials/integrations/images/#using-image-generation
 
 ```sh
 pulumi config set orangelab:open-webui true

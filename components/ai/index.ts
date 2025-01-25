@@ -1,5 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import { rootConfig } from '../root-config';
+import { Automatic1111 } from './automatic1111';
 import { KubeAi } from './kubeai';
 import { Ollama } from './ollama';
 import { OpenWebUI } from './open-webui';
@@ -12,10 +13,12 @@ export class AIModule extends pulumi.ComponentResource {
     ollamaUrl: string | undefined;
     kubeAIUrl: string | undefined;
     openWebUIUrl: string | undefined;
+    automatic1111Url: string | undefined;
 
     private ollama: Ollama | undefined;
     private kubeAI: KubeAi | undefined;
     private openWebUI: OpenWebUI | undefined;
+    private automatic1111: Automatic1111 | undefined;
 
     constructor(
         name: string,
@@ -33,6 +36,17 @@ export class AIModule extends pulumi.ComponentResource {
                 { parent: this },
             );
             this.ollamaUrl = this.ollama.endpointUrl;
+        }
+
+        if (rootConfig.isEnabled('automatic1111')) {
+            this.automatic1111 = new Automatic1111(
+                'automatic1111',
+                {
+                    domainName: args.domainName,
+                },
+                { parent: this },
+            );
+            this.automatic1111Url = this.automatic1111.serviceUrl;
         }
 
         if (rootConfig.isEnabled('kubeai')) {
@@ -53,10 +67,13 @@ export class AIModule extends pulumi.ComponentResource {
                     domainName: args.domainName,
                     ollamaUrl: this.ollama?.serviceUrl,
                     openAiUrl: this.kubeAI?.serviceUrl,
+                    automatic1111Url: this.automatic1111?.serviceUrl,
                 },
                 {
                     parent: this,
-                    dependsOn: [this.ollama, this.kubeAI].filter(x => x !== undefined),
+                    dependsOn: [this.ollama, this.kubeAI, this.automatic1111].filter(
+                        x => x !== undefined,
+                    ),
                 },
             );
             this.openWebUIUrl = this.openWebUI.endpointUrl;

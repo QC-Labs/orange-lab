@@ -44,4 +44,5 @@ export const ai = {
     ollamaUrl: aiModule.ollamaUrl,
     openWebUIUrl: aiModule.openWebUIUrl,
     kubeAIUrl: aiModule.kubeAIUrl,
+    automatic1111Url: aiModule.automatic1111Url,
 };

@@ -24,6 +24,7 @@ config:
     orangelab:home-assistant: false
     orangelab:kubeai: false
     orangelab:ollama: false
+    orangelab:automatic1111: false
     orangelab:open-webui: false
 
     tailscale-operator:version: 1.78.3
@@ -52,14 +53,19 @@ config:
 
     nvidia-gpu-operator:version: v24.9.1
 
-    kubeai:version: 0.10.0
-    kubeai:hostname: kubeai
-    # Set token to access gated repos
-    kubeai:huggingfaceToken: ''
-
     ollama:version: 1.4.0
     ollama:hostname: ollama
     ollama:storageSize: 50Gi
 
+    automatic1111:hostname: 'automatic1111'
+    automatic1111:cliArgs: '--medvram'
+    automatic1111:storageSize: 20Gi
+    automatic1111:storageOnly: false
+
     open-webui:version: 5.4.0
     open-webui:hostname: webui
+
+    kubeai:version: 0.10.0
+    kubeai:hostname: kubeai
+    # Set token to access gated repos
+    kubeai:huggingfaceToken: ''

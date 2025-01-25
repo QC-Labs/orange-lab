@@ -6,6 +6,7 @@ export interface OpenWebUIArgs {
     domainName: string;
     ollamaUrl?: string;
     openAiUrl?: string;
+    automatic1111Url?: string;
 }
 
 export class OpenWebUI extends pulumi.ComponentResource {
@@ -86,6 +87,18 @@ export class OpenWebUI extends pulumi.ComponentResource {
                         {
                             name: 'RAG_WEB_SEARCH_ENGINE',
                             value: 'duckduckgo',
+                        },
+                        {
+                            name: 'ENABLE_IMAGE_GENERATION',
+                            value: args.automatic1111Url ? 'True' : 'False',
+                        },
+                        {
+                            name: 'IMAGE_GENERATION_ENGINE',
+                            value: 'automatic1111',
+                        },
+                        {
+                            name: 'AUTOMATIC1111_BASE_URL',
+                            value: args.automatic1111Url,
                         },
                         {
                             name: 'WEBUI_AUTH',
