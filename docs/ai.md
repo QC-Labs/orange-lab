@@ -36,7 +36,7 @@ Models will be stored on local Longhorn volume with no replication across nodes.
 You can disable the app but keep model storage with:
 
 ```sh
-pulumi config set automatic1111:storageOnly true
+pulumi config set ollama:storageOnly true
 pulumi up
 ```
 
