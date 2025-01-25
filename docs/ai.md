@@ -33,6 +33,12 @@ pulumi up
 ```
 
 Models will be stored on local Longhorn volume with no replication across nodes.
+You can disable the app but keep model storage with:
+
+```sh
+pulumi config set automatic1111:storageOnly true
+pulumi up
+```
 
 ### Ollama CLI
 
@@ -125,6 +131,13 @@ pulumi up
 First time the application starts, it will download Stability Diffusion model (about 4GB) before accepting requests. The container itself is about 7GB.
 
 You can either use the website endpoint or OpenWebUI integration to generate images.
+
+You can disable the app but keep model storage with:
+
+```sh
+pulumi config set automatic1111:storageOnly true
+pulumi up
+```
 
 ## Open-WebUI
 
