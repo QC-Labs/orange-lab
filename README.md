@@ -49,6 +49,7 @@ All available settings can be found in `Pulumi.yaml`. More details about compone
 -   `ollama` - Ollama API (https://ollama.com/) local large language models
 -   `open-webui` - Open WebUI (https://openwebui.com/) frontend
 -   `kubeai` - KubeAI (https://kubeai.io/) with Ollama and vLLM models over OpenAI-compatible API
+-   `automatic1111` - Automatic1111 Stable Diffusion WebUI (https://github.com/AUTOMATIC1111/stable-diffusion-webui)
 
 # Platforms and limitations
 
