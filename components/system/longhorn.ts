@@ -36,6 +36,8 @@ export class Longhorn extends pulumi.ComponentResource {
                 repositoryOpts: { repo: 'https://charts.longhorn.io' },
                 values: {
                     defaultSettings: {
+                        allowEmptyDiskSelectorVolume: false,
+                        allowEmptyNodeSelectorVolume: true,
                         defaultDataLocality: 'best-effort',
                         defaultReplicaCount: replicaCount,
                         fastReplicaRebuildEnabled: true,
