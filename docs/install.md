@@ -8,19 +8,11 @@ git clone https://github.com/QC-Labs/orange-lab
 
 ## Prerequisites - DevContainers (VSCode)
 
-_This method is recommended for new users as it doesn't require installing dependencies.
-After each container rebuild, Tailscale and Pulumi has to be setup again so you might want to switch to manual method later._
+_This method is recommended for new users as it doesn't require installing dependencies._
 
 Make sure you have DevContainers extension installed (https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers).
 
-Open project in VSCode. It will install the required dependencies. You can then use the terminal to run commands.
-
-To have access to your Tailscale network inside VS terminal run following command. Change the hostname to whatever you want to call it. Make sure the name doesn't exist yet:
-
-```sh
-# This needs to be run after each container rebuild
-sudo tailscale up --accept-routes --hostname <user>-vscode
-```
+Open project in VSCode. It will install the required dependencies and recommended extensions. You can then use the terminal inside VSCode to run commands.
 
 ## Prerequisites - Manual
 

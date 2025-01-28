@@ -8,7 +8,8 @@
     "features": {
         "ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {
             "version": "latest",
-            "helm": "latest"
+            "helm": "none",
+            "minikube": "none"
         },
         "ghcr.io/devcontainers-extra/features/pulumi:1": {
             "bashCompletion": true,
@@ -20,7 +21,14 @@
         "ghcr.io/audacioustux/devcontainers/k9s:1": {}
     },
 
+    // for Tailscale
     "runArgs": ["--device=/dev/net/tun"],
+
+    "mounts": [
+        "source=${localEnv:HOME}${localEnv:USERPROFILE}/.kube/config,target=/home/node/.kube/config,type=bind,consistency=cached",
+        "source=${localEnv:HOME}${localEnv:USERPROFILE}/.pulumi,target=/home/node/.pulumi,type=bind,consistency=cached",
+        "source=/var/run/tailscale/tailscaled.sock,target=/var/run/tailscale/tailscaled.sock,type=bind,consistency=cached"
+    ],
 
     // Use 'forwardPorts' to make a list of ports inside the container available locally.
     // "forwardPorts": [],
