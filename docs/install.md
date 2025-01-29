@@ -53,4 +53,6 @@ pulumi config set tailscale:tailnet <TAILSCALE_TAILNET>
 pulumi up
 ```
 
+You can find Tailnet DNS name at https://login.tailscale.com/admin/dns
+
 Enable MagicDNS and HTTPS certificates on https://login.tailscale.com/admin/dns
