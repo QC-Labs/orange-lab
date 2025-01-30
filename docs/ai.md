@@ -40,6 +40,8 @@ pulumi config set ollama:storageOnly true
 pulumi up
 ```
 
+If the Ollama Helm chart refuses to insteall due to directory creation permissions on ```/var/lib/rancher/k3s/storage/``` you can temporarily  loosen SELinux restrictions with ```sudo setenforce 0``` and then set it back to ```1``` when completed.
+
 ### Ollama CLI
 
 Set CLI to use our `ollama` endpoint instead of the default `localhost:11434`. We'll also add 'ai' alias. Save this as `~/.bashrc.d/ollama`:
