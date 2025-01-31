@@ -21,6 +21,7 @@ config:
     orangelab:longhorn: false
     orangelab:nvidia-gpu-operator: false
     orangelab:prometheus: false
+    orangelab:beszel: false
     orangelab:home-assistant: false
     orangelab:kubeai: false
     orangelab:ollama: false
@@ -44,6 +45,12 @@ config:
     prometheus:hostname-prometheus: prometheus
     prometheus:hostname-alert-manager: alertmanager
     prometheus:hostname-grafana: grafana
+
+    beszel:enabled: true
+    # beszel:hubKey: BESZEL_KEY
+    beszel:hostname: beszel
+    beszel:storageSize: 5Gi
+    beszel:storageOnly: false
 
     home-assistant:version: 0.2.96
     home-assistant:hostname: home-assistant

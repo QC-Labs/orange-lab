@@ -19,6 +19,7 @@ const monitoringModule = new MonitoringModule(
     { dependsOn: systemModule },
 );
 export const monitoring = {
+    beszelUrl: monitoringModule.beszel?.endpointUrl,
     grafanaUrl: monitoringModule.prometheus?.grafanaEndpointUrl,
 };
 

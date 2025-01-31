@@ -2,6 +2,60 @@
 
 Optional components related monitoring the cluster.
 
+Recommended setup:
+
+```sh
+pulumi config set orangelab:beszel true
+pulumi up
+
+pulumi config set beszel:hubKey <KEY>
+pulumi up
+
+# add hosts using Beszel UI
+```
+
+## Beszel
+
+|           |                                  |
+| --------- | -------------------------------- |
+| Homepage  | https://beszel.dev/              |
+| Endpoints | `https://beszel.<tsnet>.ts.net/` |
+
+A lightweight alternative to Prometheus.
+
+First deploy Beszel hub with:
+
+```sh
+pulumi config set orangelab:beszel true
+pulumi up
+```
+
+Once the hub is deployed, you need to find the generated public key. Click `Add system`, then copy the `Public key` field. Close the popup and do not add any systems yet.
+
+```sh
+# replace <KEY> with the copied value "ssh-ed25519 ..."
+pulumi config set beszel:hubKey <KEY>
+pulumi up
+```
+
+Make sure to allow traffic to agents on port `45876`:
+
+```sh
+firewall-cmd --permanent --add-port=45876/tcp
+```
+
+Once the agents are deployed, you need to manually add them in the UI of Beszel. Click `Add system`, select `docker`, then enter the hostname in the `Name` field and Tailscale IP in `Host/IP`
+
+You can find the IP address of your node using one of two ways:
+
+```sh
+# List all hosts and IPs
+tailscale status
+
+# List only nodes added to cluster
+kubectl get nodes -o json | jq -r '.items[] | .metadata.name + " - " + .metadata.annotations["flannel.alpha.coreos.com/public-ip"]'
+```
+
 ## Prometheus
 
 |            |                                                                                            |
