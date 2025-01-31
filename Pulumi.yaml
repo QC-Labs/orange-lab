@@ -9,6 +9,8 @@ config:
     # Below is list of all settings with default values assuming a single node cluster.
     # Do NOT modify this file but add overrides in your Pulumi.<stack>.yaml.
 
+    ### SYSTEM ###
+
     # tailscale:apiKey: TAILSCALE_API_KEY
     # tailscale:tailnet: TAILSCALE_TAILNET
 
@@ -17,23 +19,14 @@ config:
     k3s:clusterCidr: 10.42.0.0/16
     k3s:serviceCidr: 10.43.0.0/16
 
-    orangelab:tailscale-operator: false
-    orangelab:longhorn: false
-    orangelab:nvidia-gpu-operator: false
-    orangelab:prometheus: false
-    orangelab:beszel: false
-    orangelab:home-assistant: false
-    orangelab:kubeai: false
-    orangelab:ollama: false
-    orangelab:automatic1111: false
-    orangelab:open-webui: false
-
+    tailscale-operator:enabled: false
     tailscale-operator:version: 1.78.3
     # Hostname for Tailscale operator proxy for Kubernetes API
     tailscale-operator:hostname: k8s
     # tailscale-operator:oauthClientId: OAUTH_CLIENT_ID
     # tailscale-operator:oauthClientSecret: OAUTH_CLIENT_SECRET
 
+    longhorn:enabled: false
     longhorn:version: 1.8.0
     longhorn:hostname: longhorn
     # Set to 3 when 3+ storage nodes are available
@@ -41,38 +34,51 @@ config:
     # Deploy Prometheus first
     longhorn:enableMonitoring: false
 
+    nvidia-gpu-operator:enabled: false
+    nvidia-gpu-operator:version: v24.9.1
+
+    ### Monitoring ###
+
+    prometheus:enabled: false
     prometheus:version: 67.7.0
     prometheus:hostname-prometheus: prometheus
     prometheus:hostname-alert-manager: alertmanager
     prometheus:hostname-grafana: grafana
 
-    beszel:enabled: true
+    beszel:enabled: false
     # beszel:hubKey: BESZEL_KEY
     beszel:hostname: beszel
     beszel:storageSize: 5Gi
     beszel:storageOnly: false
 
+    ### IoT ###
+
+    home-assistant:enabled: false
     home-assistant:version: 0.2.96
     home-assistant:hostname: home-assistant
     # Set zone for deployment on nodes with topology.kubernetes.io/zone=<value> label
     # This gives access to sensors on local host network
     # home-assistant:zone: home
 
-    nvidia-gpu-operator:version: v24.9.1
+    ### AI ###
 
+    ollama:enabled: false
     ollama:version: 1.4.0
     ollama:hostname: ollama
     ollama:storageSize: 50Gi
     ollama:storageOnly: false
 
+    automatic1111:enabled: false
     automatic1111:hostname: 'automatic1111'
     automatic1111:cliArgs: '--medvram'
     automatic1111:storageSize: 20Gi
     automatic1111:storageOnly: false
 
+    open-webui:enabled: false
     open-webui:version: 5.4.0
     open-webui:hostname: webui
 
+    kubeai:enabled: false
     kubeai:version: 0.10.0
     kubeai:hostname: kubeai
     # Set token to access gated repos

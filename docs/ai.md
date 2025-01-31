@@ -5,9 +5,9 @@ Components related to artificial intelligence, large language models, AI agents 
 Recommended setup/tldr:
 
 ```sh
-pulumi config set orangelab:nvidia-gpu-operator true
-pulumi config set orangelab:ollama true
-pulumi config set orangelab:open-webui true
+pulumi config set nvidia-gpu-operator:enabled true
+pulumi config set ollama:enabled true
+pulumi config set open-webui:enabled true
 pulumi up
 ```
 
@@ -23,12 +23,12 @@ pulumi up
 
 ```sh
 # Enable NVidia integration
-pulumi config set orangelab:nvidia-gpu-operator true
+pulumi config set nvidia-gpu-operator:enabled true
 
-# Increase volume size if needed for bigger models (50 by default)
-pulumi config set orangelab:storageSize "100Gi"
+# Increase volume size if needed for bigger models (50 by default, can be expanded later)
+pulumi config set ollama:storageSize "100Gi"
 
-pulumi config set orangelab:ollama true
+pulumi config set ollama:enabled true
 pulumi up
 ```
 
@@ -126,7 +126,7 @@ You can use https://www.continue.dev/ extension to connect to Ollama for code co
 | Endpoints             | `https://automatic1111.<tsnet>.ts.net/`                                                          |
 
 ```sh
-pulumi config set orangelab:automatic1111 true
+pulumi config set automatic1111:enabled true
 pulumi up
 ```
 
@@ -157,7 +157,7 @@ Models from Ollama and KubeAI/vLLM will be available.
 If stable diffusion is enabled, you can generate images based on responses - https://docs.openwebui.com/tutorials/integrations/images/#using-image-generation
 
 ```sh
-pulumi config set orangelab:open-webui true
+pulumi config set open-webui:enabled true
 pulumi up
 ```
 
@@ -178,7 +178,7 @@ KubeAI models are downloaded from HuggingFace. You need to create free account a
 Currently the models are loaded into memory on first request. Longhorn volumes are NOT used. KubeAI supports persistent volumes for vLLM however they need to be pre-populated and do not download the model automatically.
 
 ```sh
-pulumi config set orangelab:kubeai true
+pulumi config set kubeai:enabled true
 pulumi config set --secret kubeai:huggingfaceToken <hf_token>
 pulumi up
 ```

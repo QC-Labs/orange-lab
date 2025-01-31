@@ -5,28 +5,30 @@ Optional components related monitoring the cluster.
 Recommended setup:
 
 ```sh
-pulumi config set orangelab:beszel true
+pulumi config set beszel:enabled true
 pulumi up
 
+# copy key from UI
 pulumi config set beszel:hubKey <KEY>
 pulumi up
 
-# add hosts using Beszel UI
+# add hosts using UI
 ```
 
 ## Beszel
 
-|           |                                  |
-| --------- | -------------------------------- |
-| Homepage  | https://beszel.dev/              |
-| Endpoints | `https://beszel.<tsnet>.ts.net/` |
+|           |                                    |
+| --------- | ---------------------------------- |
+| Homepage  | https://beszel.dev/                |
+| Endpoints | `https://beszel.<tsnet>.ts.net/`   |
+|           | `https://beszel.<tsnet>.ts.net/_/` |
 
 A lightweight alternative to Prometheus.
 
 First deploy Beszel hub with:
 
 ```sh
-pulumi config set orangelab:beszel true
+pulumi config set beszel:enabled true
 pulumi up
 ```
 
@@ -71,7 +73,7 @@ Prometheus monitoring is disabled by default to keep resource usage low.
 Enabling it will increase traffic between nodes and deploy components to all nodes but is useful for troubleshooting the cluster.
 
 ```sh
-pulumi config set orangelab:prometheus true
+pulumi config set prometheus:enabled true
 
 pulumi up
 ```

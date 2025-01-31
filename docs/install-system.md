@@ -29,7 +29,7 @@ Details at: https://tailscale.com/learn/managing-access-to-kubernetes-with-tails
 ```sh
 pulumi config set tailscale-operator:oauthClientId <OAUTH_CLIENT_ID> --secret
 pulumi config set tailscale-operator:oauthClientSecret <OAUTH_CLIENT_SECRET> --secret
-pulumi config set orangelab:tailscale-operator true
+pulumi config set tailscale-operator:enabled true
 
 pulumi up
 ```
@@ -85,7 +85,7 @@ systemctl enable iscsid.service --now
 systemctl enable iscsid.socket --now
 
 # Enable module
-pulumi config set orangelab:longhorn true
+pulumi config set longhorn:enabled true
 
 # Set replicaCount to 3 if you have 3+ storage nodes
 pulumi config set longhorn:replicaCount 3
@@ -118,7 +118,7 @@ kubectl -n longhorn-system patch -p '{"value": "true"}' --type=merge lhs deletin
 kubectl label nodes <node-name> orangelab/gpu=true
 
 # enable GPU operator
-pulumi config set orangelab:nvidia-gpu-operator true
+pulumi config set nvidia-gpu-operator:enabled true
 
 pulumi up
 

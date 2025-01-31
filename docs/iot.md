@@ -15,7 +15,7 @@ Using zone is optional, but helps with making sure the application is deployed o
 ```sh
 kubectl label nodes <node-name> topology.kubernetes.io/zone=home
 
-pulumi config set orangelab:home-assistant true
+pulumi config set home-assistant:enabled true
 pulumi config set home-assistant:zone home
 
 pulumi up

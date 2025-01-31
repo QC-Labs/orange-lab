@@ -39,7 +39,7 @@ All available settings can be found in `Pulumi.yaml`. More details about compone
 [Monitoring module](docs/monitoring.md):
 
 -   `beszel` - Beszel (https://beszel.dev/) lightweight monitoring
--   `prometheus` - Prometheus/Grafana for monitoring
+-   `prometheus` - Prometheus/Grafana monitoring
 
 [IoT module](docs/iot.md):
 
@@ -88,7 +88,7 @@ Services will have endpoints at `https://<service>.<tailnet>.ts.net/` by default
 
 ```sh
 # enable app
-pulumi config set orangelab:<app> true
+pulumi config set <app>:enabled true
 
 # configure app-specific settings from Pulumi.yaml if needed
 pulumi config set ollama:hostname ollama-api

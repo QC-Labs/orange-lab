@@ -1,10 +1,13 @@
 import * as pulumi from '@pulumi/pulumi';
 
 class RootConfig {
-    private config = new pulumi.Config('orangelab');
+    private globalConfig = new pulumi.Config('orangelab');
 
     public isEnabled(name: string): boolean {
-        return this.config.requireBoolean(name);
+        const config = new pulumi.Config(name);
+        return (
+            this.globalConfig.getBoolean(name) ?? config.getBoolean('enabled') ?? false
+        );
     }
 }
 
