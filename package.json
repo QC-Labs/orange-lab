@@ -9,13 +9,13 @@
         "lint": "node_modules/.bin/eslint **/*.ts"
     },
     "dependencies": {
-        "@pulumi/kubernetes": "4.18.3",
-        "@pulumi/pulumi": "3.138.0",
-        "@pulumi/tailscale": "0.17.4"
+        "@pulumi/kubernetes": "4.21.1",
+        "@pulumi/pulumi": "3.148.0",
+        "@pulumi/tailscale": "0.17.5"
     },
     "devDependencies": {
         "@pulumi/eslint-plugin": "0.2.0",
-        "@types/node": "22.9.0",
-        "typescript-eslint": "8.13.0"
+        "@types/node": "22.12.0",
+        "typescript-eslint": "8.22.0"
     }
 }
