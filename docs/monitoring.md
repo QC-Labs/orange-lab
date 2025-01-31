@@ -32,7 +32,9 @@ pulumi config set beszel:enabled true
 pulumi up
 ```
 
-Once the hub is deployed, you need to find the generated public key. Click `Add system`, then copy the `Public key` field. Close the popup and do not add any systems yet.
+Once the hub is deployed, go to `beszel.<tsnet>.ts.net` endpoint and create an admin account.
+
+To deploy agents you need to find the generated public key. Click `Add system`, then copy the `Public key` field. Close the popup and do not add any systems yet.
 
 ```sh
 # replace <KEY> with the copied value "ssh-ed25519 ..."

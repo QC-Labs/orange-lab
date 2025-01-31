@@ -180,7 +180,7 @@ export class Beszel extends pulumi.ComponentResource {
                                     ],
                                     env: [
                                         {
-                                            name: 'DISABLE_PASSWORD_AUTH',
+                                            name: 'USER_CREATION',
                                             value: 'true',
                                         },
                                     ],
