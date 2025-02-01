@@ -18,6 +18,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
         const config = new pulumi.Config(name);
         const version = config.require('version');
         const hostname = config.require('hostname');
+        const appVersion = config.get('appVersion');
 
         this.endpointUrl = `https://${hostname}.${args.domainName}`;
 
@@ -115,6 +116,9 @@ export class OpenWebUI extends pulumi.ComponentResource {
                     ],
                     ollama: {
                         enabled: false,
+                    },
+                    image: {
+                        tag: appVersion,
                     },
                     persistence: {
                         enabled: true,
