@@ -57,8 +57,10 @@ All available settings can be found in `Pulumi.yaml`. More details about compone
 Installation instructions assume your machines are running Bluefin (https://projectbluefin.io/) based on Fedora Silverblue unless otherwise noted.
 It should run on any modern Linux distribution with Linux kernel 6.11.6+, even including Raspberry Pi.
 
-Windows and MacOS are not currently supported. K3s requires Linux to run workloads using _containerd_ directly, however you could have some luck running https://k3d.io/ which uses Docker wrapper to run some containers as long as they do not use persistent storage.
+Windows and MacOS support is limited. K3s requires Linux to run workloads using _containerd_ directly, however you could have some luck running https://k3d.io/ which uses Docker wrapper to run some containers as long as they do not use persistent storage.
 Not a tested configuration but feedback welcome. The issue is Longhorn, which only runs on Linux. More info at https://github.com/k3d-io/k3d/blob/main/docs/faq/faq.md#longhorn-in-k3d
+
+Look at System module, Longhorn section on how to disable replicated storage and use local storage only.
 
 # Installation
 
@@ -101,3 +103,20 @@ pulumi up -r # --refresh Pulumi state if out of sync
 # Make request to provision HTTP certificate and activate endpoint
 curl https://<app>.<tsnet>.ts.net/
 ```
+
+To remove an application, set the `enabled` flag to `false`. This will remove all resources associated with the app.
+
+To keep storage around (for example downloaded ollama models) but remove all other resources, use `storageOnly`:
+
+```sh
+# Remove application including storage
+pulumi config set <app>:enabled false
+pulumi up
+
+# Remove application resources but keep related storage
+pulumi config set <app>:enabled true
+pulumi config set <app>:storageOnly true
+pulumi up
+```
+
+> Note: If HTTPS ingress connection using Tailscale is failing, try to remove the application and make sure there is no leftover entry for a service at https://login.tailscale.com/admin/machines. If so, remove it before enabling the app again.

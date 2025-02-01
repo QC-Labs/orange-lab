@@ -1,7 +1,6 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { rootConfig } from './root-config';
-import { Longhorn } from './system/longhorn';
 
 export enum PersistentStorageType {
     Default,
@@ -12,7 +11,10 @@ interface PersistentStorageArgs {
     name: string;
     namespace: pulumi.Input<string>;
     size: string;
+    // determine storage class based on workload type
     type?: PersistentStorageType;
+    // override storage class used
+    storageClass?: string;
 }
 
 export class PersistentStorage extends pulumi.ComponentResource {
@@ -25,7 +27,8 @@ export class PersistentStorage extends pulumi.ComponentResource {
     ) {
         super('orangelab:PersistentStorage', name, args, opts);
 
-        const storageClassName = PersistentStorage.getStorageClass(args.type);
+        const storageClassName =
+            args.storageClass ?? PersistentStorage.getStorageClass(args.type);
 
         new kubernetes.core.v1.PersistentVolumeClaim(
             `${name}-pvc`,
@@ -47,16 +50,11 @@ export class PersistentStorage extends pulumi.ComponentResource {
     }
 
     public static getStorageClass(storageType?: PersistentStorageType) {
-        let storageClassName = 'local-path';
-        if (rootConfig.isEnabled('longhorn')) {
-            switch (storageType) {
-                case PersistentStorageType.GPU:
-                    storageClassName = Longhorn.gpuStorageClass;
-                    break;
-                default:
-                    storageClassName = Longhorn.defaultStorageClass;
-            }
+        switch (storageType) {
+            case PersistentStorageType.GPU:
+                return rootConfig.get('storageClass-gpu');
+            default:
+                return rootConfig.get('storageClass');
         }
-        return storageClassName;
     }
 }

@@ -9,6 +9,10 @@ class RootConfig {
             this.globalConfig.getBoolean(name) ?? config.getBoolean('enabled') ?? false
         );
     }
+
+    public get(key: string): string | undefined {
+        return this.globalConfig.get(key);
+    }
 }
 
 export const rootConfig = new RootConfig();

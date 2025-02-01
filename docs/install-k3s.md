@@ -11,8 +11,6 @@ firewall-cmd --permanent --add-port=6443/tcp # API Server
 firewall-cmd --permanent --add-port=10250/tcp # Kubelet metrics
 firewall-cmd --permanent --add-port=9100/tcp # Prometheus metrics
 firewall-cmd --permanent --add-port=45876/tcp # Beszel metrics
-firewall-cmd --permanent --add-port=5001/tcp # Spegel (Embedded distributed registry)
-firewall-cmd --permanent --add-port=6443/tcp # Spegel (Embedded distributed registry)
 systemctl reload firewalld
 ```
 

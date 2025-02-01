@@ -72,8 +72,6 @@ tailscale configure kubeconfig k8s
 
 Longhorn adds permanent storage that is replicated across multiple nodes. It also supports snapshots and backups of data volumes. The nodes need to be labeled with `orangelab/storage=true` - you need at least one. Volumes stored at `/var/lib/longhorn/`.
 
-It's a core component and required for most installations but if you run the cluster on a single node (let's say just to run Ollama), then you can leave it disabled and use k3s default `local-path-provisioner` as Longhorn adds some overhead and extra containers to the cluster. When using the local provisioner, the persistent volumes will be stored in `/var/lib/rancher/k3s/storage`.
-
 Enable iSCSI service before deploying Longhorn.
 
 ```sh
@@ -95,6 +93,24 @@ pulumi config set longhorn:storageSize 100Gi
 
 pulumi up
 
+```
+
+### Disable Longhorn
+
+Longhorn requires Linux so when running Windows or MacOS you can disable it and use `local-path` storage class instead.
+This is also useful when running a single-node cluster as Longhorn adds some overhead and extra containers. Note that disabling Longhorn will mean that replicated storage won't be available.
+
+When using the local provisioner, the persistent volumes will be stored in `/var/lib/rancher/k3s/storage`.
+
+On SELinux systems, if deployment fails due to directory creation permissions on `/var/lib/rancher/k3s/storage/` you can temporarily loosen SELinux restrictions with `sudo setenforce 0` and then set it back to `1` when completed.
+
+To override the storage classes used run:
+
+```sh
+pulumi config set longhorn:enabled false
+pulumi config set longhorn:storageClass local-path
+pulumi config set longhorn:storageClass-gpu local-path
+pulumi up
 ```
 
 ### Uninstall
