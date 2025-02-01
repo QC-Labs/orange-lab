@@ -19,7 +19,7 @@ Private infrastructure for cloud natives.
 -   automation - use Pulumi and Helm to automate most tasks and configuration
 -   easy to use - no deep Kubernetes knowledge required, sensible defaults
 -   offline mode - continue working (with some limitations) over local network when internet connection lost
--   lightweight - can be run on a single laptop using default configuration, with settings to enable additional features like storage replication
+-   lightweight - can be run on a single laptop using default configuration
 -   scalable - distribute workloads across multiple machines as they become available, optional use of cloud instances for autoscaling
 -   self-healing - in case of problems, the system should recover with no user intervention
 -   immutable - no snowflakes, as long as there is at least one Longhorn replica available, components can be destroyed and easily recreated
@@ -49,8 +49,8 @@ All available settings can be found in `Pulumi.yaml`. More details about compone
 
 -   `ollama` - Ollama API (https://ollama.com/) local large language models
 -   `open-webui` - Open WebUI (https://openwebui.com/) frontend
--   `kubeai` - KubeAI (https://kubeai.io/) with Ollama and vLLM models over OpenAI-compatible API
 -   `automatic1111` - Automatic1111 Stable Diffusion WebUI (https://github.com/AUTOMATIC1111/stable-diffusion-webui)
+-   `kubeai` - KubeAI (https://kubeai.io/) with Ollama and vLLM models over OpenAI-compatible API
 
 # Platforms and limitations
 
