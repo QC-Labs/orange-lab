@@ -16,6 +16,7 @@ export class Prometheus extends pulumi.ComponentResource {
 
         const config = new pulumi.Config('prometheus');
         const version = config.require('version');
+        const grafanaPassword = config.require('grafana-password');
         const prometheusHostname = config.require('hostname-prometheus');
         const alertManagerHostname = config.require('hostname-alert-manager');
         const grafanaHostname = config.require('hostname-grafana');
@@ -52,7 +53,7 @@ export class Prometheus extends pulumi.ComponentResource {
                         rules: { etcd: false },
                     },
                     grafana: {
-                        adminPassword: 'admin',
+                        adminPassword: grafanaPassword,
                         ingress: {
                             enabled: true,
                             ingressClassName: 'tailscale',

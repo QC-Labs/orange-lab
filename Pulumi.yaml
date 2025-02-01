@@ -47,6 +47,7 @@ config:
 
     prometheus:enabled: false
     prometheus:version: 67.7.0
+    prometheus:grafana-password: admin
     prometheus:hostname-prometheus: prometheus
     prometheus:hostname-alert-manager: alertmanager
     prometheus:hostname-grafana: grafana

@@ -77,6 +77,9 @@ Enabling it will increase traffic between nodes and deploy components to all nod
 ```sh
 pulumi config set prometheus:enabled true
 
+# (optional) Override grafana "admin" password
+pulumi config set prometheus:grafana-password <password> --secret
+
 pulumi up
 ```
 
