@@ -15,7 +15,7 @@
     },
     "devDependencies": {
         "@pulumi/eslint-plugin": "0.2.0",
-        "@types/node": "22.12.0",
+        "@types/node": "22.13.0",
         "typescript-eslint": "8.22.0"
     }
 }

@@ -41,7 +41,7 @@ config:
     longhorn:enableMonitoring: false
 
     nvidia-gpu-operator:enabled: false
-    nvidia-gpu-operator:version: v24.9.1
+    nvidia-gpu-operator:version: v24.9.2
 
     ### Monitoring ###
 
@@ -61,7 +61,7 @@ config:
     ### IoT ###
 
     home-assistant:enabled: false
-    home-assistant:version: 0.2.96
+    home-assistant:version: 0.2.102
     home-assistant:hostname: home-assistant
     # Set zone for deployment on nodes with topology.kubernetes.io/zone=<value> label
     # This gives access to sensors on local host network
@@ -87,7 +87,7 @@ config:
     open-webui:hostname: webui
 
     kubeai:enabled: false
-    kubeai:version: 0.10.0
+    kubeai:version: 0.11.0
     kubeai:hostname: kubeai
     # Set token to access gated repos
     kubeai:huggingfaceToken: ''
