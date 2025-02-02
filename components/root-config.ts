@@ -5,6 +5,10 @@ class RootConfig {
 
     public isEnabled(name: string): boolean {
         const config = new pulumi.Config(name);
+        if (this.globalConfig.getBoolean(name)) {
+            // eslint-disable-next-line no-console
+            console.warn(`orangelab:${name} is deprecated. Use ${name}:enabled instead.`);
+        }
         return (
             this.globalConfig.getBoolean(name) ?? config.getBoolean('enabled') ?? false
         );
