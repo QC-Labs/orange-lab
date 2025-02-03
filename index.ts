@@ -47,4 +47,6 @@ export const ai = {
     kubeAIClusterUrl: aiModule.kubeAI?.serviceUrl,
     automatic1111Url: aiModule.automatic1111?.endpointUrl,
     automatic1111ClusterUrl: aiModule.automatic1111?.serviceUrl,
+    sdnextUrl: aiModule.sdnext?.endpointUrl,
+    sdnextClusterUrl: aiModule.sdnext?.serviceUrl,
 };

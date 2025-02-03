@@ -108,6 +108,7 @@ pulumi config set <app>:enabled true
 
 # configure app-specific settings from Pulumi.yaml if needed
 pulumi config set ollama:hostname ollama-api
+pulumi config set ollama:storageSize 100Gi
 
 # deploy
 pulumi up

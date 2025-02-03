@@ -81,6 +81,12 @@ config:
     automatic1111:storageSize: 20Gi
     automatic1111:storageOnly: false
 
+    sdnext:enabled: false
+    sdnext:hostname: 'sdnext'
+    sdnext:cliArgs: '--medvram'
+    sdnext:storageSize: 20Gi
+    sdnext:storageOnly: false
+
     open-webui:enabled: false
     open-webui:version: 5.4.0
     open-webui:appVersion: '0.5.7'
