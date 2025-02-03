@@ -28,7 +28,9 @@ Private infrastructure for cloud natives.
 
 Applications are disabled by default.
 
-All available settings can be found in `Pulumi.yaml`. More details about components in each module documentation.
+All available settings can be found in `Pulumi.yaml`.
+
+More details about components in each module documentation.
 
 [System module](docs/install-system.md) (required):
 
@@ -38,20 +40,20 @@ All available settings can be found in `Pulumi.yaml`. More details about compone
 
 [Monitoring module](docs/monitoring.md):
 
--   `beszel` - Beszel (https://beszel.dev/) lightweight monitoring
+-   `beszel` - Beszel lightweight monitoring
 -   `prometheus` - Prometheus/Grafana monitoring
 
 [IoT module](docs/iot.md):
 
--   `home-assistant` - Home Assistant (https://www.home-assistant.io/) home automation platform
+-   `home-assistant` - Home Assistant home automation platform
 
 [AI module](docs/ai.md):
 
--   `ollama` - Ollama API (https://ollama.com/) local large language models
--   `open-webui` - Open WebUI (https://openwebui.com/) frontend
--   `automatic1111` - Automatic1111 Stable Diffusion WebUI (https://github.com/AUTOMATIC1111/stable-diffusion-webui)
--   `sdnext` - SD.Next Stable Diffusion WebUI (https://github.com/vladmandic/sdnext)
--   `kubeai` - KubeAI (https://kubeai.io/) with Ollama and vLLM models over OpenAI-compatible API
+-   `ollama` - local large language models
+-   `open-webui` - Open WebUI frontend
+-   `automatic1111` - Automatic1111 Stable Diffusion WebUI
+-   `sdnext` - SD.Next Stable Diffusion WebUI
+-   `kubeai` - Ollama and vLLM models over OpenAI-compatible API
 
 # Platforms and limitations
 
