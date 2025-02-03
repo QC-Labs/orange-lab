@@ -60,11 +60,25 @@ It should run on any modern Linux distribution with Linux kernel 6.11.6+, even i
 Windows and MacOS support is limited. K3s requires Linux to run workloads using _containerd_ directly, however you could have some luck running https://k3d.io/ which uses Docker wrapper to run some containers as long as they do not use persistent storage.
 Not a tested configuration but feedback welcome. The issue is Longhorn, which only runs on Linux. More info at https://github.com/k3d-io/k3d/blob/main/docs/faq/faq.md#longhorn-in-k3d
 
-Look at System module, Longhorn section on how to disable replicated storage and use local storage only.
+Steps to disable Longhorn and switch to `local-path-provisioner` at [install-system.md](./docs/install-system.md#disable-longhorn)
+
+Currently only NVidia GPUs are supported.
 
 # Installation
 
+Before applications can be deployed there are some steps that need to be taken, like installing K3s and deploying system components.
+
+Start with configuring Pulumi, Tailscale, then install K3s server. More agents can be added later.
+
+Longhorn replicated storage requires at least one node with `orangelab/storage` label.
+
+GPU workloads require a node with `orangelab/gpu` label.
+
 ## Initial cluster setup
+
+All 3 steps below are required. The first time you configure the cluster, it's best to run `pulumi up` after each component. Make sure all pods are running fine before moving to next step.
+
+Click on the links for detailed instructions:
 
 1.  configure Pulumi and Tailscale on management node [docs/install.md](docs/install.md)
 2.  install K3s server and agents [docs/install-k3s.md](docs/install-k3s.md)
@@ -119,4 +133,46 @@ pulumi config set <app>:storageOnly true
 pulumi up
 ```
 
-> Note: If HTTPS ingress connection using Tailscale is failing, try to remove the application and make sure there is no leftover entry for a service at https://login.tailscale.com/admin/machines. If so, remove it before enabling the app again.
+## Troubleshooting
+
+It's easiest to use Headlamp or k9s to connect to cluster. Below some useful commands to when troubleshooting connection issues.
+
+```sh
+# Check logs of the app
+kubectl logs -l app=<app> -n <app> -f
+
+# Watch cluster events
+kubectl events -A -w
+```
+
+Pods can be stopped and will be recreated automatically.
+
+### HTTPS endpoint
+
+In case of issues connecting to the HTTPS endpoint, try connecting to the Kubernetes service directly, bypassing the Ingress and Tailscale `ts-*` proxy pod:
+
+```sh
+# Find cluster IP address and port of the service
+kubectl get svc -n <app>
+
+# Test connection or use browser (note services do not use HTTPS, only Ingress)
+curl http://<ip>:<port>/
+telnet <ip> <port>
+```
+
+If that works, then Tailscale Ingress needs to be looked at. Try stopping the `ts-*` proxy pod, it will be recreated. Remember that first time you access an endpoint, the HTTPS certificate is provisioned and that can take up to a minute.
+
+If all fails, you can shut down the application resources, then recreate them. Note that if storage is removed then configuration will be lost and some data might need to be downloaded again (for example LLM models)
+
+```sh
+# Remove everything but storage volumes
+pulumi config set <app>:storageOnly true
+pulumi up
+
+# Remove all resources, including storage and namespace
+pulumi config set <app>:enabled false
+pulumi up
+
+```
+
+Make sure there is no leftover entry for a service at https://login.tailscale.com/admin/machines. If there is a conflicting entry, remove it before enabling the app again (specifically the Ingress resource managed by Tailscale operator).
