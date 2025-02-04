@@ -3,10 +3,12 @@ import * as kubernetes from '@pulumi/kubernetes';
 import { PersistentStorage, PersistentStorageType } from './persistent-storage';
 
 interface DeploymentArgs {
+    name?: string;
     image: string;
     commandArgs?: string[];
     env?: Record<string, string>;
     gpu?: boolean;
+    hostNetwork?: boolean;
     volumeMounts?: { mountPath: string; subPath?: string }[];
     healthChecks?: boolean;
     resources?: kubernetes.types.input.core.v1.ResourceRequirements;
@@ -16,8 +18,12 @@ interface DeploymentArgs {
 /**
  * Application class provides DSL (Domain Specific Language) to simplify creation of Kubernetes manifests.
  *
+ * Use of this class is optional.
+ * The Kubernetes resources are NOT encapsulated and are accessible for reading by components.
+ * This allows partial use and extensibility.
+ *
  * It uses "builder" pattern so you need to call "create()" at the end to create the resources.
- * The `With*` methods use "fluent interface" to modify configuration state.
+ * The `with*` methods use "fluent interface" to allow modifying configuration state through "method chaining".
  *
  * Some standard configuration settings are supported:
  * - storageOnly
@@ -28,11 +34,12 @@ export class Application {
     public endpointUrl: string | undefined;
     public serviceUrl: string | undefined;
 
-    namespace: kubernetes.core.v1.Namespace;
+    readonly namespace: kubernetes.core.v1.Namespace;
     storage: PersistentStorage | undefined;
     service: kubernetes.core.v1.Service | undefined;
     ingress: kubernetes.networking.v1.Ingress | undefined;
     deployment: kubernetes.apps.v1.Deployment | undefined;
+    deamonSet: kubernetes.apps.v1.DaemonSet | undefined;
 
     private config: pulumi.Config;
     private hostname: string;
@@ -43,6 +50,7 @@ export class Application {
     private port: number | undefined;
     private https: boolean | undefined;
     private deploymentArgs: DeploymentArgs | undefined;
+    private deamonSetArgs: DeploymentArgs | undefined;
 
     constructor(
         private readonly scope: pulumi.ComponentResource,
@@ -55,9 +63,9 @@ export class Application {
         this.hostname = this.config.require('hostname');
     }
 
-    withStorage(args: { size?: string; type?: PersistentStorageType }) {
-        this.storageSize = args.size ?? this.config.require('storageSize');
-        this.storageType = args.type;
+    withStorage(args?: { size?: string; type?: PersistentStorageType }) {
+        this.storageSize = args?.size ?? this.config.get('storageSize');
+        this.storageType = args?.type;
         this.storageOnly = this.config.get('storageOnly')?.toLowerCase() === 'true';
         return this;
     }
@@ -72,6 +80,10 @@ export class Application {
         this.deploymentArgs = args;
         return this;
     }
+    withDeamonSet(args: DeploymentArgs) {
+        this.deamonSetArgs = args;
+        return this;
+    }
 
     create() {
         this.storage = this.storageSize ? this.createStorage() : undefined;
@@ -82,8 +94,12 @@ export class Application {
         this.ingress = this.https
             ? this.createIngress(this.namespace, this.hostname)
             : undefined;
+        const serviceAccount = this.createServiceAccount(this.namespace);
         this.deployment = this.deploymentArgs
-            ? this.createDeployment(this.namespace, this.deploymentArgs)
+            ? this.createDeployment(this.namespace, serviceAccount, this.deploymentArgs)
+            : undefined;
+        this.deamonSet = this.deamonSetArgs
+            ? this.createDeamonSet(this.namespace, serviceAccount, this.deamonSetArgs)
             : undefined;
 
         this.endpointUrl = this.https
@@ -197,13 +213,13 @@ export class Application {
 
     private createDeployment(
         namespace: kubernetes.core.v1.Namespace,
+        serviceAccount: kubernetes.core.v1.ServiceAccount,
         args: DeploymentArgs,
     ) {
         const env = Object.entries(args.env ?? {}).map(([key, value]) => ({
             name: key,
             value,
         }));
-        const serviceAccount = this.createServiceAccount(namespace);
         return new kubernetes.apps.v1.Deployment(
             `${this.name}-deployment`,
             {
@@ -215,7 +231,7 @@ export class Application {
                     },
                     template: {
                         metadata: {
-                            name: this.name,
+                            name: args.name ?? this.name,
                             labels: this.labels,
                         },
                         spec: {
@@ -226,6 +242,7 @@ export class Application {
                                       fsGroup: args.runAsUser,
                                   }
                                 : undefined,
+                            hostNetwork: args.hostNetwork,
                             containers: [
                                 {
                                     args: args.commandArgs,
@@ -239,7 +256,7 @@ export class Application {
                                               },
                                           }
                                         : undefined,
-                                    name: this.name,
+                                    name: args.name ?? this.name,
                                     ports: this.port
                                         ? [
                                               {
@@ -289,6 +306,50 @@ export class Application {
                                       },
                                   ]
                                 : [],
+                        },
+                    },
+                },
+            },
+            { parent: this.scope },
+        );
+    }
+
+    private createDeamonSet(
+        namespace: kubernetes.core.v1.Namespace,
+        serviceAccount: kubernetes.core.v1.ServiceAccount,
+        args: DeploymentArgs,
+    ) {
+        const env = Object.entries(args.env ?? {}).map(([key, value]) => ({
+            name: key,
+            value,
+        }));
+        const deamonSetName = `${this.name}-${args.name ?? 'deamonset'}`;
+        return new kubernetes.apps.v1.DaemonSet(
+            deamonSetName,
+            {
+                metadata: {
+                    name: deamonSetName,
+                    namespace: namespace.metadata.name,
+                },
+                spec: {
+                    selector: {
+                        matchLabels: this.labels,
+                    },
+                    template: {
+                        metadata: {
+                            name: this.name,
+                            labels: this.labels,
+                        },
+                        spec: {
+                            hostNetwork: args.hostNetwork,
+                            containers: [
+                                {
+                                    image: args.image,
+                                    name: deamonSetName,
+                                    env,
+                                },
+                            ],
+                            serviceAccountName: serviceAccount.metadata.name,
                         },
                     },
                 },
