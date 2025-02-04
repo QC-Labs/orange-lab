@@ -7,8 +7,10 @@ interface DeploymentArgs {
     commandArgs?: string[];
     env?: Record<string, string>;
     gpu?: boolean;
-    volumeMounts?: [{ path: string }];
+    volumeMounts?: { mountPath: string; subPath?: string }[];
     healthChecks?: boolean;
+    resources?: kubernetes.types.input.core.v1.ResourceRequirements;
+    runAsUser?: number;
 }
 
 /**
@@ -217,6 +219,13 @@ export class Application {
                             labels: this.labels,
                         },
                         spec: {
+                            securityContext: args.runAsUser
+                                ? {
+                                      runAsUser: args.runAsUser,
+                                      runAsGroup: args.runAsUser,
+                                      fsGroup: args.runAsUser,
+                                  }
+                                : undefined,
                             containers: [
                                 {
                                     args: args.commandArgs,
@@ -248,6 +257,7 @@ export class Application {
                                               },
                                           }
                                         : undefined,
+                                    resources: args.resources,
                                     securityContext: args.gpu
                                         ? {
                                               privileged: true,
@@ -256,7 +266,8 @@ export class Application {
                                     volumeMounts: (args.volumeMounts ?? []).map(
                                         volumeMount => ({
                                             name: this.name,
-                                            mountPath: volumeMount.path,
+                                            mountPath: volumeMount.mountPath,
+                                            subPath: volumeMount.subPath,
                                         }),
                                     ),
                                 },
