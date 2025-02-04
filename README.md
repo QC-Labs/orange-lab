@@ -45,7 +45,7 @@ More details about components in each module documentation.
 
 [IoT module](docs/iot.md):
 
--   `home-assistant` - Home Assistant home automation platform
+-   `home-assistant` - sensor and home automation platform
 
 [AI module](docs/ai.md):
 
