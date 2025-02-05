@@ -31,6 +31,11 @@ interface DeploymentArgs {
  * - storageOnly
  * - storageSize
  * - hostname
+ *
+ * Limitations:
+ * - only one Deployment type supported
+ * - only one DaemonSet supported
+ * - no endpoints for DaemonSet
  */
 export class Application {
     public endpointUrl: string | undefined;
@@ -50,8 +55,6 @@ export class Application {
     private storageSize: string | undefined;
     private storageType: PersistentStorageType | undefined;
     private labels: { app: string };
-    private port: number | undefined;
-    private https: boolean | undefined;
     private deploymentArgs: DeploymentArgs | undefined;
     private deamonSetArgs: DeploymentArgs | undefined;
 
@@ -73,12 +76,6 @@ export class Application {
         return this;
     }
 
-    withService(args: { port: number; https?: boolean }) {
-        this.port = args.port;
-        this.https = args.https;
-        return this;
-    }
-
     withDeployment(args: DeploymentArgs) {
         this.deploymentArgs = args;
         return this;
@@ -91,26 +88,29 @@ export class Application {
     create() {
         this.storage = this.storageSize ? this.createStorage() : undefined;
         if (this.storageOnly) return;
-        this.service = this.port
-            ? this.createService(this.namespace, this.port)
-            : undefined;
-        this.ingress = this.https
-            ? this.createIngress(this.namespace, this.hostname)
-            : undefined;
         this.serviceAccount = this.createServiceAccount(this.namespace);
-        this.deployment = this.deploymentArgs
-            ? this.createDeployment(this.namespace, this.deploymentArgs)
-            : undefined;
-        this.deamonSet = this.deamonSetArgs
-            ? this.createDeamonSet(this.namespace, this.deamonSetArgs)
-            : undefined;
 
-        this.endpointUrl = this.https
-            ? `https://${this.hostname}.${this.params.domainName}`
-            : undefined;
-        this.serviceUrl = this.port
-            ? `http://${this.hostname}.${this.name}:${this.port.toString()}`
-            : undefined;
+        if (this.deploymentArgs) {
+            if (this.deploymentArgs.port) {
+                this.service = this.createService(
+                    this.namespace,
+                    this.deploymentArgs.port,
+                );
+                this.serviceUrl = `http://${this.hostname}.${
+                    this.name
+                }:${this.deploymentArgs.port.toString()}`;
+                this.ingress = this.createIngress(
+                    this.namespace,
+                    this.hostname,
+                    this.deploymentArgs.port,
+                );
+                this.endpointUrl = `https://${this.hostname}.${this.params.domainName}`;
+            }
+            this.deployment = this.createDeployment(this.namespace, this.deploymentArgs);
+        }
+        if (this.deamonSetArgs) {
+            this.deamonSet = this.createDeamonSet(this.namespace, this.deamonSetArgs);
+        }
     }
 
     private createNamespace() {
@@ -176,8 +176,12 @@ export class Application {
         );
     }
 
-    private createIngress(namespace: kubernetes.core.v1.Namespace, hostname: string) {
-        if (!this.service || !this.port) return undefined;
+    private createIngress(
+        namespace: kubernetes.core.v1.Namespace,
+        hostname: string,
+        targetPort: number,
+    ) {
+        if (!this.service) return undefined;
         return new kubernetes.networking.v1.Ingress(
             `${this.name}-ingress`,
             {
@@ -200,7 +204,7 @@ export class Application {
                                         backend: {
                                             service: {
                                                 name: this.service.metadata.name,
-                                                port: { number: this.port },
+                                                port: { number: targetPort },
                                             },
                                         },
                                     },

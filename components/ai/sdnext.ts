@@ -17,10 +17,7 @@ export class SDNext extends pulumi.ComponentResource {
         const cliArgs = config.require('cliArgs');
 
         const app = new Application(this, name, { domainName: args.domainName })
-            .withStorage({
-                type: PersistentStorageType.GPU,
-            })
-            .withService({ port: 7860, https: true })
+            .withStorage({ type: PersistentStorageType.GPU })
             .withDeployment({
                 image: 'saladtechnologies/sdnext:base',
                 port: 7860,
