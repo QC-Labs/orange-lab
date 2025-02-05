@@ -48,14 +48,14 @@ export class Application {
     serviceAccount: kubernetes.core.v1.ServiceAccount | undefined;
     ingress: kubernetes.networking.v1.Ingress | undefined;
     deployment: kubernetes.apps.v1.Deployment | undefined;
-    deamonSet: kubernetes.apps.v1.DaemonSet | undefined;
+    daemonSet: kubernetes.apps.v1.DaemonSet | undefined;
 
     private config: pulumi.Config;
     private hostname: string;
     private storageOnly = false;
     private labels: { app: string };
     private deploymentArgs: DeploymentArgs | undefined;
-    private deamonSetArgs: DeploymentArgs | undefined;
+    private daemonSetArgs: DeploymentArgs | undefined;
 
     constructor(
         private readonly scope: pulumi.ComponentResource,
@@ -88,7 +88,7 @@ export class Application {
         return this;
     }
     withDeamonSet(args: DeploymentArgs) {
-        this.deamonSetArgs = args;
+        this.daemonSetArgs = args;
         return this;
     }
 
@@ -110,8 +110,8 @@ export class Application {
             }
             this.deployment = this.createDeployment(this.deploymentArgs);
         }
-        if (this.deamonSetArgs) {
-            this.deamonSet = this.createDeamonSet(this.deamonSetArgs);
+        if (this.daemonSetArgs) {
+            this.daemonSet = this.createDaemonSet(this.daemonSetArgs);
         }
     }
 
@@ -221,11 +221,11 @@ export class Application {
         );
     }
 
-    private createDeamonSet(args: DeploymentArgs) {
-        assert(args.name, 'name is required for deamonset');
+    private createDaemonSet(args: DeploymentArgs) {
+        assert(args.name, 'name is required for daemonset');
         const deamonSetName = `${this.name}-${args.name}`;
         return new kubernetes.apps.v1.DaemonSet(
-            `${deamonSetName}-deamonset`,
+            `${deamonSetName}-daemonset`,
             {
                 metadata: {
                     name: deamonSetName,
