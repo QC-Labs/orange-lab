@@ -32,7 +32,7 @@ export class Beszel extends pulumi.ComponentResource {
             });
 
         if (hubKey) {
-            app.withDeamonSet({
+            app.addDeamonSet({
                 name: 'agent',
                 image: `henrygd/beszel-agent`,
                 hostNetwork: true,
@@ -42,8 +42,6 @@ export class Beszel extends pulumi.ComponentResource {
                 },
             });
         }
-
-        app.create();
 
         this.endpointUrl = app.endpointUrl;
     }

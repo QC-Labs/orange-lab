@@ -52,7 +52,6 @@ export class Automatic1111 extends pulumi.ComponentResource {
                     },
                 },
             });
-        app.create();
 
         this.endpointUrl = app.endpointUrl;
         this.serviceUrl = app.serviceUrl;

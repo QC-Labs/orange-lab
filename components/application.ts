@@ -96,16 +96,10 @@ export class Application {
         return this;
     }
 
-    withDeamonSet(args: DeploymentArgs) {
-        this.daemonSetArgs = args;
+    addDeamonSet(args: DeploymentArgs) {
+        if (this.storageOnly) return this;
+        this.daemonSet = this.createDaemonSet(args);
         return this;
-    }
-
-    create() {
-        if (this.storageOnly) return;
-        if (this.daemonSetArgs) {
-            this.daemonSet = this.createDaemonSet(this.daemonSetArgs);
-        }
     }
 
     private createNamespace() {

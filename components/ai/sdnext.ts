@@ -38,7 +38,7 @@ export class SDNext extends pulumi.ComponentResource {
                 healthChecks: true,
                 volumeMounts: [{ mountPath: '/webui/data' }],
             });
-        app.create();
+
         this.endpointUrl = app.endpointUrl;
         this.serviceUrl = app.serviceUrl;
     }
