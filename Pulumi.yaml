@@ -89,7 +89,7 @@ config:
 
     open-webui:enabled: false
     open-webui:version: 5.4.0
-    open-webui:appVersion: '0.5.7'
+    open-webui:appVersion: '0.5.9'
     open-webui:hostname: webui
 
     kubeai:enabled: false
