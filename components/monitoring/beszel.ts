@@ -26,6 +26,7 @@ export class Beszel extends pulumi.ComponentResource {
             .withService({ port: 8090, https: true })
             .withDeployment({
                 image: 'henrygd/beszel:latest',
+                port: 8090,
                 env: {
                     USER_CREATION: 'true',
                 },

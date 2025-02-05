@@ -23,6 +23,7 @@ export class SDNext extends pulumi.ComponentResource {
             .withService({ port: 7860, https: true })
             .withDeployment({
                 image: 'saladtechnologies/sdnext:base',
+                port: 7860,
                 commandArgs: [
                     '--listen',
                     '--docs',

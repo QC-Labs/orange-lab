@@ -1,10 +1,12 @@
 import * as pulumi from '@pulumi/pulumi';
 import * as kubernetes from '@pulumi/kubernetes';
 import { PersistentStorage, PersistentStorageType } from './persistent-storage';
+import assert from 'node:assert';
 
 interface DeploymentArgs {
     name?: string;
     image: string;
+    port?: number;
     commandArgs?: string[];
     env?: Record<string, string>;
     gpu?: boolean;
@@ -37,6 +39,7 @@ export class Application {
     readonly namespace: kubernetes.core.v1.Namespace;
     storage: PersistentStorage | undefined;
     service: kubernetes.core.v1.Service | undefined;
+    serviceAccount: kubernetes.core.v1.ServiceAccount | undefined;
     ingress: kubernetes.networking.v1.Ingress | undefined;
     deployment: kubernetes.apps.v1.Deployment | undefined;
     deamonSet: kubernetes.apps.v1.DaemonSet | undefined;
@@ -94,12 +97,12 @@ export class Application {
         this.ingress = this.https
             ? this.createIngress(this.namespace, this.hostname)
             : undefined;
-        const serviceAccount = this.createServiceAccount(this.namespace);
+        this.serviceAccount = this.createServiceAccount(this.namespace);
         this.deployment = this.deploymentArgs
-            ? this.createDeployment(this.namespace, serviceAccount, this.deploymentArgs)
+            ? this.createDeployment(this.namespace, this.deploymentArgs)
             : undefined;
         this.deamonSet = this.deamonSetArgs
-            ? this.createDeamonSet(this.namespace, serviceAccount, this.deamonSetArgs)
+            ? this.createDeamonSet(this.namespace, this.deamonSetArgs)
             : undefined;
 
         this.endpointUrl = this.https
@@ -213,13 +216,9 @@ export class Application {
 
     private createDeployment(
         namespace: kubernetes.core.v1.Namespace,
-        serviceAccount: kubernetes.core.v1.ServiceAccount,
         args: DeploymentArgs,
     ) {
-        const env = Object.entries(args.env ?? {}).map(([key, value]) => ({
-            name: key,
-            value,
-        }));
+        assert(args.port, 'port required for deployments');
         return new kubernetes.apps.v1.Deployment(
             `${this.name}-deployment`,
             {
@@ -229,85 +228,7 @@ export class Application {
                     selector: {
                         matchLabels: this.labels,
                     },
-                    template: {
-                        metadata: {
-                            name: args.name ?? this.name,
-                            labels: this.labels,
-                        },
-                        spec: {
-                            securityContext: args.runAsUser
-                                ? {
-                                      runAsUser: args.runAsUser,
-                                      runAsGroup: args.runAsUser,
-                                      fsGroup: args.runAsUser,
-                                  }
-                                : undefined,
-                            hostNetwork: args.hostNetwork,
-                            containers: [
-                                {
-                                    args: args.commandArgs,
-                                    env,
-                                    image: args.image,
-                                    livenessProbe: args.healthChecks
-                                        ? {
-                                              httpGet: {
-                                                  path: '/',
-                                                  port: 'http',
-                                              },
-                                          }
-                                        : undefined,
-                                    name: args.name ?? this.name,
-                                    ports: this.port
-                                        ? [
-                                              {
-                                                  name: 'http',
-                                                  containerPort: this.port,
-                                                  protocol: 'TCP',
-                                              },
-                                          ]
-                                        : [],
-                                    readinessProbe: args.healthChecks
-                                        ? {
-                                              httpGet: {
-                                                  path: '/',
-                                                  port: 'http',
-                                              },
-                                          }
-                                        : undefined,
-                                    resources: args.resources,
-                                    securityContext: args.gpu
-                                        ? {
-                                              privileged: true,
-                                          }
-                                        : undefined,
-                                    volumeMounts: (args.volumeMounts ?? []).map(
-                                        volumeMount => ({
-                                            name: this.name,
-                                            mountPath: volumeMount.mountPath,
-                                            subPath: volumeMount.subPath,
-                                        }),
-                                    ),
-                                },
-                            ],
-                            serviceAccountName: serviceAccount.metadata.name,
-                            runtimeClassName: args.gpu ? 'nvidia' : undefined,
-                            nodeSelector: args.gpu
-                                ? {
-                                      'orangelab/gpu': 'true',
-                                  }
-                                : undefined,
-                            volumes: this.storage
-                                ? [
-                                      {
-                                          name: this.name,
-                                          persistentVolumeClaim: {
-                                              claimName: this.storage.volumeClaimName,
-                                          },
-                                      },
-                                  ]
-                                : [],
-                        },
-                    },
+                    template: this.createPodTemplateSpec(args),
                 },
             },
             { parent: this.scope },
@@ -316,16 +237,12 @@ export class Application {
 
     private createDeamonSet(
         namespace: kubernetes.core.v1.Namespace,
-        serviceAccount: kubernetes.core.v1.ServiceAccount,
         args: DeploymentArgs,
     ) {
-        const env = Object.entries(args.env ?? {}).map(([key, value]) => ({
-            name: key,
-            value,
-        }));
-        const deamonSetName = `${this.name}-${args.name ?? 'deamonset'}`;
+        assert(args.name, 'name is required for deamonset');
+        const deamonSetName = `${this.name}-${args.name}`;
         return new kubernetes.apps.v1.DaemonSet(
-            deamonSetName,
+            `${deamonSetName}-deamonset`,
             {
                 metadata: {
                     name: deamonSetName,
@@ -335,26 +252,78 @@ export class Application {
                     selector: {
                         matchLabels: this.labels,
                     },
-                    template: {
-                        metadata: {
-                            name: this.name,
-                            labels: this.labels,
-                        },
-                        spec: {
-                            hostNetwork: args.hostNetwork,
-                            containers: [
-                                {
-                                    image: args.image,
-                                    name: deamonSetName,
-                                    env,
-                                },
-                            ],
-                            serviceAccountName: serviceAccount.metadata.name,
-                        },
-                    },
+                    template: this.createPodTemplateSpec(args),
                 },
             },
             { parent: this.scope },
         );
+    }
+
+    private createPodTemplateSpec(
+        args: DeploymentArgs,
+    ): pulumi.Input<kubernetes.types.input.core.v1.PodTemplateSpec> {
+        assert(this.serviceAccount);
+        const env = Object.entries(args.env ?? {}).map(([key, value]) => ({
+            name: key,
+            value,
+        }));
+        const podName = args.name ? `${this.name}-${args.name}` : this.name;
+        return {
+            metadata: { name: podName, labels: this.labels },
+            spec: {
+                securityContext: args.runAsUser
+                    ? {
+                          runAsUser: args.runAsUser,
+                          runAsGroup: args.runAsUser,
+                          fsGroup: args.runAsUser,
+                      }
+                    : undefined,
+                hostNetwork: args.hostNetwork,
+                containers: [
+                    {
+                        args: args.commandArgs,
+                        env,
+                        image: args.image,
+                        livenessProbe: args.healthChecks
+                            ? { httpGet: { path: '/', port: 'http' } }
+                            : undefined,
+                        name: podName,
+                        ports: args.port
+                            ? [
+                                  {
+                                      name: 'http',
+                                      containerPort: args.port,
+                                      protocol: 'TCP',
+                                  },
+                              ]
+                            : [],
+                        readinessProbe: args.healthChecks
+                            ? { httpGet: { path: '/', port: 'http' } }
+                            : undefined,
+                        resources: args.resources,
+                        securityContext: args.gpu ? { privileged: true } : undefined,
+                        volumeMounts: (args.volumeMounts ?? []).map(volumeMount => ({
+                            name: this.name,
+                            mountPath: volumeMount.mountPath,
+                            subPath: volumeMount.subPath,
+                        })),
+                    },
+                ],
+                serviceAccountName: this.serviceAccount.metadata.name,
+                runtimeClassName: args.gpu ? 'nvidia' : undefined,
+                nodeSelector: args.gpu ? { 'orangelab/gpu': 'true' } : undefined,
+                volumes:
+                    this.storage && args.volumeMounts && args.volumeMounts.length > 0
+                        ? [
+                              {
+                                  name: this.name,
+                                  persistentVolumeClaim: {
+                                      claimName: this.storage.volumeClaimName,
+                                  },
+                              },
+                          ]
+                        : [],
+            },
+        };
     }
 }

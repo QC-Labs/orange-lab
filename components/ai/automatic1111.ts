@@ -32,6 +32,7 @@ export class Automatic1111 extends pulumi.ComponentResource {
                     COMMANDLINE_ARGS: cliArgs,
                 },
                 gpu: true,
+                port: 8080,
                 runAsUser: 1000,
                 volumeMounts: [
                     {
