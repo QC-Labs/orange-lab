@@ -21,7 +21,7 @@ export class Beszel extends pulumi.ComponentResource {
 
         const app = new Application(this, name, { domainName: args.domainName })
             .addStorage()
-            .withDeployment({
+            .addDeployment({
                 image: 'henrygd/beszel:latest',
                 port: 8090,
                 env: {

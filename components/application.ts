@@ -85,10 +85,17 @@ export class Application {
         return this;
     }
 
-    withDeployment(args: DeploymentArgs) {
-        this.deploymentArgs = args;
+    addDeployment(args: DeploymentArgs) {
+        if (this.storageOnly) return this;
+        this.deployment = this.createDeployment(args);
+        if (!args.port) return this;
+        this.service = this.createService(args.port);
+        this.serviceUrl = `http://${this.hostname}.${this.name}:${args.port.toString()}`;
+        this.ingress = this.createIngress(this.hostname, args.port);
+        this.endpointUrl = `https://${this.hostname}.${this.params.domainName}`;
         return this;
     }
+
     withDeamonSet(args: DeploymentArgs) {
         this.daemonSetArgs = args;
         return this;
@@ -96,20 +103,6 @@ export class Application {
 
     create() {
         if (this.storageOnly) return;
-        if (this.deploymentArgs) {
-            if (this.deploymentArgs.port) {
-                this.service = this.createService(this.deploymentArgs.port);
-                this.serviceUrl = `http://${this.hostname}.${
-                    this.name
-                }:${this.deploymentArgs.port.toString()}`;
-                this.ingress = this.createIngress(
-                    this.hostname,
-                    this.deploymentArgs.port,
-                );
-                this.endpointUrl = `https://${this.hostname}.${this.params.domainName}`;
-            }
-            this.deployment = this.createDeployment(this.deploymentArgs);
-        }
         if (this.daemonSetArgs) {
             this.daemonSet = this.createDaemonSet(this.daemonSetArgs);
         }
