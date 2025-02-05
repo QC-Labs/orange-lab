@@ -63,13 +63,15 @@ export class Application {
         private readonly params: { domainName: string },
     ) {
         this.config = new pulumi.Config(name);
+        this.hostname = this.config.require('hostname');
+        this.storageOnly = this.config.get('storageOnly')?.toLowerCase() === 'true';
         this.labels = { app: name };
         this.namespace = this.createNamespace();
-        this.hostname = this.config.require('hostname');
+        if (this.storageOnly) return;
+        this.serviceAccount = this.createServiceAccount();
     }
 
     addStorage(args?: { size?: string; type?: PersistentStorageType }) {
-        this.storageOnly = this.config.get('storageOnly')?.toLowerCase() === 'true';
         this.storage = new PersistentStorage(
             `${this.name}-storage`,
             {
@@ -94,8 +96,6 @@ export class Application {
 
     create() {
         if (this.storageOnly) return;
-        this.serviceAccount = this.createServiceAccount();
-
         if (this.deploymentArgs) {
             if (this.deploymentArgs.port) {
                 this.service = this.createService(this.deploymentArgs.port);
