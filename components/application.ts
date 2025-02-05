@@ -3,7 +3,7 @@ import * as kubernetes from '@pulumi/kubernetes';
 import { PersistentStorage, PersistentStorageType } from './persistent-storage';
 import assert from 'node:assert';
 
-interface DeploymentArgs {
+interface ContainerSpec {
     name?: string;
     image: string;
     port?: number;
@@ -24,8 +24,7 @@ interface DeploymentArgs {
  * The Kubernetes resources are NOT encapsulated and are accessible for reading by components.
  * This allows partial use and extensibility.
  *
- * It uses "builder" pattern so you need to call "create()" at the end to create the resources.
- * The `with*` methods use "fluent interface" to allow modifying configuration state through "method chaining".
+ * The `add*` methods use "fluent interface" to allow modifying configuration state through "method chaining".
  *
  * Some standard configuration settings are supported:
  * - storageOnly
@@ -33,9 +32,9 @@ interface DeploymentArgs {
  * - hostname
  *
  * Limitations:
- * - only one Deployment type
- * - only one DaemonSet
- * - one Service and Ingress for Deployment
+ * - only one Deployment supported
+ * - one endpoint required for Deployment
+ * - max one DaemonSet
  * - no endpoints for DaemonSet
  */
 export class Application {
@@ -54,8 +53,6 @@ export class Application {
     private hostname: string;
     private storageOnly = false;
     private labels: { app: string };
-    private deploymentArgs: DeploymentArgs | undefined;
-    private daemonSetArgs: DeploymentArgs | undefined;
 
     constructor(
         private readonly scope: pulumi.ComponentResource,
@@ -85,18 +82,18 @@ export class Application {
         return this;
     }
 
-    addDeployment(args: DeploymentArgs) {
+    addDeployment(args: ContainerSpec) {
         if (this.storageOnly) return this;
         this.deployment = this.createDeployment(args);
         if (!args.port) return this;
         this.service = this.createService(args.port);
         this.serviceUrl = `http://${this.hostname}.${this.name}:${args.port.toString()}`;
-        this.ingress = this.createIngress(this.hostname, args.port);
+        this.ingress = this.createIngress(this.service, this.hostname);
         this.endpointUrl = `https://${this.hostname}.${this.params.domainName}`;
         return this;
     }
 
-    addDeamonSet(args: DeploymentArgs) {
+    addDeamonSet(args: ContainerSpec) {
         if (this.storageOnly) return this;
         this.daemonSet = this.createDaemonSet(args);
         return this;
@@ -105,9 +102,7 @@ export class Application {
     private createNamespace() {
         return new kubernetes.core.v1.Namespace(
             `${this.name}-ns`,
-            {
-                metadata: { name: this.name },
-            },
+            { metadata: { name: this.name } },
             { parent: this.scope },
         );
     }
@@ -152,8 +147,9 @@ export class Application {
         );
     }
 
-    private createIngress(hostname: string, targetPort: number) {
-        assert(this.service);
+    private createIngress(service: kubernetes.core.v1.Service, hostname: string) {
+        const serviceName = service.metadata.name;
+        const targetPort = service.spec.ports[0].port;
         return new kubernetes.networking.v1.Ingress(
             `${this.name}-ingress`,
             {
@@ -175,7 +171,7 @@ export class Application {
                                         pathType: 'ImplementationSpecific',
                                         backend: {
                                             service: {
-                                                name: this.service.metadata.name,
+                                                name: serviceName,
                                                 port: { number: targetPort },
                                             },
                                         },
@@ -190,7 +186,7 @@ export class Application {
         );
     }
 
-    private createDeployment(args: DeploymentArgs) {
+    private createDeployment(args: ContainerSpec) {
         assert(args.port, 'port required for deployments');
         return new kubernetes.apps.v1.Deployment(
             `${this.name}-deployment`,
@@ -198,9 +194,7 @@ export class Application {
                 metadata: { name: this.name, namespace: this.namespace.metadata.name },
                 spec: {
                     replicas: 1,
-                    selector: {
-                        matchLabels: this.labels,
-                    },
+                    selector: { matchLabels: this.labels },
                     template: this.createPodTemplateSpec(args),
                 },
             },
@@ -208,7 +202,7 @@ export class Application {
         );
     }
 
-    private createDaemonSet(args: DeploymentArgs) {
+    private createDaemonSet(args: ContainerSpec) {
         assert(args.name, 'name is required for daemonset');
         const deamonSetName = `${this.name}-${args.name}`;
         return new kubernetes.apps.v1.DaemonSet(
@@ -219,9 +213,7 @@ export class Application {
                     namespace: this.namespace.metadata.name,
                 },
                 spec: {
-                    selector: {
-                        matchLabels: this.labels,
-                    },
+                    selector: { matchLabels: this.labels },
                     template: this.createPodTemplateSpec(args),
                 },
             },
@@ -230,7 +222,7 @@ export class Application {
     }
 
     private createPodTemplateSpec(
-        args: DeploymentArgs,
+        args: ContainerSpec,
     ): pulumi.Input<kubernetes.types.input.core.v1.PodTemplateSpec> {
         assert(this.serviceAccount);
         const env = Object.entries(args.env ?? {}).map(([key, value]) => ({
@@ -283,7 +275,7 @@ export class Application {
                 runtimeClassName: args.gpu ? 'nvidia' : undefined,
                 nodeSelector: args.gpu ? { 'orangelab/gpu': 'true' } : undefined,
                 volumes:
-                    this.storage && args.volumeMounts && args.volumeMounts.length > 0
+                    this.storage && args.volumeMounts
                         ? [
                               {
                                   name: this.name,
@@ -292,7 +284,7 @@ export class Application {
                                   },
                               },
                           ]
-                        : [],
+                        : undefined,
             },
         };
     }
