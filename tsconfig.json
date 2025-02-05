@@ -1,16 +1,17 @@
 {
     "compilerOptions": {
-        "strict": true,
-        "outDir": "bin",
-        "target": "es2016",
+        "esModuleInterop": true,
+        "experimentalDecorators": true,
+        "forceConsistentCasingInFileNames": true,
         "module": "commonjs",
         "moduleResolution": "node",
-        "sourceMap": true,
-        "experimentalDecorators": true,
-        "pretty": true,
         "noFallthroughCasesInSwitch": true,
         "noImplicitReturns": true,
-        "forceConsistentCasingInFileNames": true
+        "outDir": "bin",
+        "pretty": true,
+        "sourceMap": true,
+        "strict": true,
+        "target": "es2016"
     },
     "include": ["**/*.ts", "eslint.config.mjs"],
     "files": ["index.ts"]
