@@ -33,8 +33,9 @@ interface DeploymentArgs {
  * - hostname
  *
  * Limitations:
- * - only one Deployment type supported
- * - only one DaemonSet supported
+ * - only one Deployment type
+ * - only one DaemonSet
+ * - one Service and Ingress for Deployment
  * - no endpoints for DaemonSet
  */
 export class Application {
@@ -88,28 +89,24 @@ export class Application {
     create() {
         this.storage = this.storageSize ? this.createStorage() : undefined;
         if (this.storageOnly) return;
-        this.serviceAccount = this.createServiceAccount(this.namespace);
+        this.serviceAccount = this.createServiceAccount();
 
         if (this.deploymentArgs) {
             if (this.deploymentArgs.port) {
-                this.service = this.createService(
-                    this.namespace,
-                    this.deploymentArgs.port,
-                );
+                this.service = this.createService(this.deploymentArgs.port);
                 this.serviceUrl = `http://${this.hostname}.${
                     this.name
                 }:${this.deploymentArgs.port.toString()}`;
                 this.ingress = this.createIngress(
-                    this.namespace,
                     this.hostname,
                     this.deploymentArgs.port,
                 );
                 this.endpointUrl = `https://${this.hostname}.${this.params.domainName}`;
             }
-            this.deployment = this.createDeployment(this.namespace, this.deploymentArgs);
+            this.deployment = this.createDeployment(this.deploymentArgs);
         }
         if (this.deamonSetArgs) {
-            this.deamonSet = this.createDeamonSet(this.namespace, this.deamonSetArgs);
+            this.deamonSet = this.createDeamonSet(this.deamonSetArgs);
         }
     }
 
@@ -136,13 +133,13 @@ export class Application {
         );
     }
 
-    private createServiceAccount(namespace: kubernetes.core.v1.Namespace) {
+    private createServiceAccount() {
         return new kubernetes.core.v1.ServiceAccount(
             `${this.name}-sa`,
             {
                 metadata: {
                     name: this.name,
-                    namespace: namespace.metadata.name,
+                    namespace: this.namespace.metadata.name,
                     labels: this.labels,
                 },
             },
@@ -150,13 +147,13 @@ export class Application {
         );
     }
 
-    private createService(namespace: kubernetes.core.v1.Namespace, port: number) {
+    private createService(port: number) {
         return new kubernetes.core.v1.Service(
             `${this.name}-svc`,
             {
                 metadata: {
                     name: this.name,
-                    namespace: namespace.metadata.name,
+                    namespace: this.namespace.metadata.name,
                     labels: this.labels,
                 },
                 spec: {
@@ -176,18 +173,14 @@ export class Application {
         );
     }
 
-    private createIngress(
-        namespace: kubernetes.core.v1.Namespace,
-        hostname: string,
-        targetPort: number,
-    ) {
-        if (!this.service) return undefined;
+    private createIngress(hostname: string, targetPort: number) {
+        assert(this.service);
         return new kubernetes.networking.v1.Ingress(
             `${this.name}-ingress`,
             {
                 metadata: {
                     name: this.name,
-                    namespace: namespace.metadata.name,
+                    namespace: this.namespace.metadata.name,
                     labels: this.labels,
                 },
                 spec: {
@@ -218,15 +211,12 @@ export class Application {
         );
     }
 
-    private createDeployment(
-        namespace: kubernetes.core.v1.Namespace,
-        args: DeploymentArgs,
-    ) {
+    private createDeployment(args: DeploymentArgs) {
         assert(args.port, 'port required for deployments');
         return new kubernetes.apps.v1.Deployment(
             `${this.name}-deployment`,
             {
-                metadata: { name: this.name, namespace: namespace.metadata.name },
+                metadata: { name: this.name, namespace: this.namespace.metadata.name },
                 spec: {
                     replicas: 1,
                     selector: {
@@ -239,10 +229,7 @@ export class Application {
         );
     }
 
-    private createDeamonSet(
-        namespace: kubernetes.core.v1.Namespace,
-        args: DeploymentArgs,
-    ) {
+    private createDeamonSet(args: DeploymentArgs) {
         assert(args.name, 'name is required for deamonset');
         const deamonSetName = `${this.name}-${args.name}`;
         return new kubernetes.apps.v1.DaemonSet(
@@ -250,7 +237,7 @@ export class Application {
             {
                 metadata: {
                     name: deamonSetName,
-                    namespace: namespace.metadata.name,
+                    namespace: this.namespace.metadata.name,
                 },
                 spec: {
                     selector: {
