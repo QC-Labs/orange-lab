@@ -21,7 +21,7 @@ export class Automatic1111 extends pulumi.ComponentResource {
         const cliArgs = config.require('cliArgs');
 
         const app = new Application(this, name, { domainName: args.domainName })
-            .withStorage({ type: PersistentStorageType.GPU })
+            .addStorage({ type: PersistentStorageType.GPU })
             .withDeployment({
                 image: 'universonic/stable-diffusion-webui:full',
                 commandArgs: ['--listen', '--api'],

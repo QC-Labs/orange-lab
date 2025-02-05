@@ -20,7 +20,7 @@ export class Beszel extends pulumi.ComponentResource {
         const hubKey = config.get('hubKey');
 
         const app = new Application(this, name, { domainName: args.domainName })
-            .withStorage()
+            .addStorage()
             .withDeployment({
                 image: 'henrygd/beszel:latest',
                 port: 8090,

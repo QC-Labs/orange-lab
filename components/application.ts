@@ -53,8 +53,6 @@ export class Application {
     private config: pulumi.Config;
     private hostname: string;
     private storageOnly = false;
-    private storageSize: string | undefined;
-    private storageType: PersistentStorageType | undefined;
     private labels: { app: string };
     private deploymentArgs: DeploymentArgs | undefined;
     private deamonSetArgs: DeploymentArgs | undefined;
@@ -70,10 +68,18 @@ export class Application {
         this.hostname = this.config.require('hostname');
     }
 
-    withStorage(args?: { size?: string; type?: PersistentStorageType }) {
-        this.storageSize = args?.size ?? this.config.get('storageSize');
-        this.storageType = args?.type;
+    addStorage(args?: { size?: string; type?: PersistentStorageType }) {
         this.storageOnly = this.config.get('storageOnly')?.toLowerCase() === 'true';
+        this.storage = new PersistentStorage(
+            `${this.name}-storage`,
+            {
+                name: this.name,
+                namespace: this.namespace.metadata.name,
+                size: args?.size ?? this.config.require('storageSize'),
+                type: args?.type ?? PersistentStorageType.Default,
+            },
+            { parent: this.scope },
+        );
         return this;
     }
 
@@ -87,7 +93,6 @@ export class Application {
     }
 
     create() {
-        this.storage = this.storageSize ? this.createStorage() : undefined;
         if (this.storageOnly) return;
         this.serviceAccount = this.createServiceAccount();
 
@@ -115,19 +120,6 @@ export class Application {
             `${this.name}-ns`,
             {
                 metadata: { name: this.name },
-            },
-            { parent: this.scope },
-        );
-    }
-
-    private createStorage(): PersistentStorage {
-        return new PersistentStorage(
-            `${this.name}-storage`,
-            {
-                name: this.name,
-                namespace: this.namespace.metadata.name,
-                size: this.storageSize ?? '5Gi',
-                type: this.storageType ?? PersistentStorageType.Default,
             },
             { parent: this.scope },
         );
