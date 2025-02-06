@@ -40,6 +40,7 @@ interface ContainerSpec {
 export class Application {
     public endpointUrl: string | undefined;
     public serviceUrl: string | undefined;
+    public storageOnly = false;
 
     readonly namespace: kubernetes.core.v1.Namespace;
     storage: PersistentStorage | undefined;
@@ -51,7 +52,6 @@ export class Application {
 
     private config: pulumi.Config;
     private hostname: string;
-    private storageOnly = false;
     private labels: Record<string, string>;
 
     constructor(
@@ -75,7 +75,6 @@ export class Application {
         }
         this.namespace = this.createNamespace();
         if (this.storageOnly) return;
-        this.serviceAccount = this.createServiceAccount();
     }
 
     addStorage(args?: { size?: string; type?: PersistentStorageType }) {
@@ -245,7 +244,7 @@ export class Application {
         args: ContainerSpec,
         labels?: Record<string, string>,
     ): pulumi.Input<kubernetes.types.input.core.v1.PodTemplateSpec> {
-        assert(this.serviceAccount);
+        this.serviceAccount = this.serviceAccount ?? this.createServiceAccount();
         const env = Object.entries(args.env ?? {}).map(([key, value]) => ({
             name: key,
             value,
