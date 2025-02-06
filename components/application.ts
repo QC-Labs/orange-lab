@@ -52,7 +52,7 @@ export class Application {
     private config: pulumi.Config;
     private hostname: string;
     private storageOnly = false;
-    private labels: { app: string };
+    private labels: Record<string, string>;
 
     constructor(
         private readonly scope: pulumi.ComponentResource,
@@ -61,8 +61,18 @@ export class Application {
     ) {
         this.config = new pulumi.Config(name);
         this.hostname = this.config.require('hostname');
-        this.storageOnly = this.config.get('storageOnly')?.toLowerCase() === 'true';
-        this.labels = { app: name };
+        const version = this.config.get('version');
+        const appVersion = this.config.get('appVersion');
+        this.storageOnly = this.config.getBoolean('storageOnly') ?? false;
+
+        this.labels = {
+            app: name,
+            'app.kubernetes.io/name': name,
+            'app.kubernetes.io/managed-by': 'OrangeLab',
+        };
+        if (version) {
+            this.labels['app.kubernetes.io/version'] = appVersion ?? version;
+        }
         this.namespace = this.createNamespace();
         if (this.storageOnly) return;
         this.serviceAccount = this.createServiceAccount();
@@ -209,7 +219,11 @@ export class Application {
     private createDaemonSet(args: ContainerSpec) {
         assert(args.name, 'name is required for daemonset');
         const daemonSetName = `${this.name}-${args.name}`;
-        const labels = { ...this.labels, daemonSet: daemonSetName };
+        const labels = {
+            ...this.labels,
+            component: args.name,
+            'app.kubernetes.io/component': args.name,
+        };
         return new kubernetes.apps.v1.DaemonSet(
             `${daemonSetName}-daemonset`,
             {
