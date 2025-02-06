@@ -24,7 +24,7 @@ interface ContainerSpec {
  * The Kubernetes resources are NOT encapsulated and are accessible for reading by components.
  * This allows partial use and extensibility.
  *
- * The `add*` methods use "fluent interface" to allow modifying configuration state through "method chaining".
+ * The `add*` methods use "fluent interface" to allow provisioning resources through "method chaining".
  *
  * Some standard configuration settings are supported:
  * - storageOnly
@@ -191,7 +191,11 @@ export class Application {
         return new kubernetes.apps.v1.Deployment(
             `${this.name}-deployment`,
             {
-                metadata: { name: this.name, namespace: this.namespace.metadata.name },
+                metadata: {
+                    name: this.name,
+                    namespace: this.namespace.metadata.name,
+                    labels: this.labels,
+                },
                 spec: {
                     replicas: 1,
                     selector: { matchLabels: this.labels },
@@ -204,17 +208,19 @@ export class Application {
 
     private createDaemonSet(args: ContainerSpec) {
         assert(args.name, 'name is required for daemonset');
-        const deamonSetName = `${this.name}-${args.name}`;
+        const daemonSetName = `${this.name}-${args.name}`;
+        const labels = { ...this.labels, daemonSet: daemonSetName };
         return new kubernetes.apps.v1.DaemonSet(
-            `${deamonSetName}-daemonset`,
+            `${daemonSetName}-daemonset`,
             {
                 metadata: {
-                    name: deamonSetName,
+                    name: daemonSetName,
                     namespace: this.namespace.metadata.name,
+                    labels,
                 },
                 spec: {
-                    selector: { matchLabels: this.labels },
-                    template: this.createPodTemplateSpec(args),
+                    selector: { matchLabels: labels },
+                    template: this.createPodTemplateSpec(args, labels),
                 },
             },
             { parent: this.scope },
@@ -223,6 +229,7 @@ export class Application {
 
     private createPodTemplateSpec(
         args: ContainerSpec,
+        labels?: Record<string, string>,
     ): pulumi.Input<kubernetes.types.input.core.v1.PodTemplateSpec> {
         assert(this.serviceAccount);
         const env = Object.entries(args.env ?? {}).map(([key, value]) => ({
@@ -231,7 +238,7 @@ export class Application {
         }));
         const podName = args.name ? `${this.name}-${args.name}` : this.name;
         return {
-            metadata: { name: podName, labels: this.labels },
+            metadata: { name: podName, labels: labels ?? this.labels },
             spec: {
                 securityContext: args.runAsUser
                     ? {
