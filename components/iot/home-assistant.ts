@@ -1,6 +1,6 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
-import { PersistentStorage } from '../persistent-storage';
+import { Application } from '../application';
 
 export interface HomeAssistantArgs {
     domainName: string;
@@ -18,29 +18,15 @@ export class HomeAssistant extends pulumi.ComponentResource {
         const hostname = config.require('hostname');
         const zone = config.get('zone');
 
-        const namespace = new kubernetes.core.v1.Namespace(
-            `${name}-ns`,
-            {
-                metadata: { name },
-            },
-            { parent: this },
-        );
-
-        const storage = new PersistentStorage(
-            `${name}-storage`,
-            {
-                name,
-                namespace: namespace.metadata.name,
-                size: '5Gi',
-            },
-            { parent: this },
-        );
+        const app = new Application(this, name, {
+            domainName: args.domainName,
+        }).addStorage();
 
         new kubernetes.helm.v3.Release(
             name,
             {
                 chart: 'home-assistant',
-                namespace: namespace.metadata.name,
+                namespace: app.namespace.metadata.name,
                 version,
                 repositoryOpts: {
                     repo: 'http://pajikos.github.io/home-assistant-helm-chart/',
@@ -88,7 +74,7 @@ export class HomeAssistant extends pulumi.ComponentResource {
                     },
                     persistence: {
                         enabled: true,
-                        existingVolume: storage.volumeClaimName,
+                        existingVolume: app.storage?.volumeClaimName,
                     },
                 },
             },

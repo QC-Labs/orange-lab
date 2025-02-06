@@ -63,6 +63,7 @@ config:
     home-assistant:enabled: false
     home-assistant:version: 0.2.102
     home-assistant:hostname: home-assistant
+    home-assistant:storageSize: 5Gi
     # Set zone for deployment on nodes with topology.kubernetes.io/zone=<value> label
     # This gives access to sensors on local host network
     # home-assistant:zone: home
@@ -70,7 +71,7 @@ config:
     ### AI ###
 
     ollama:enabled: false
-    ollama:version: 1.4.0
+    ollama:version: 1.4.1
     ollama:hostname: ollama
     ollama:storageSize: 50Gi
     ollama:storageOnly: false
@@ -89,8 +90,9 @@ config:
 
     open-webui:enabled: false
     open-webui:version: 5.4.0
-    open-webui:appVersion: '0.5.9'
+    open-webui:appVersion: 0.5.9
     open-webui:hostname: webui
+    open-webui:storageSize: 5Gi
 
     kubeai:enabled: false
     kubeai:version: 0.11.0

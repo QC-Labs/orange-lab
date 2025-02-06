@@ -1,6 +1,7 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
-import { PersistentStorage, PersistentStorageType } from '../persistent-storage';
+import { Application } from '../application';
+import { PersistentStorageType } from '../persistent-storage';
 
 export interface OpenWebUIArgs {
     domainName: string;
@@ -22,30 +23,17 @@ export class OpenWebUI extends pulumi.ComponentResource {
 
         this.endpointUrl = `https://${hostname}.${args.domainName}`;
 
-        const namespace = new kubernetes.core.v1.Namespace(
-            `${name}-ns`,
-            {
-                metadata: { name },
-            },
-            { parent: this },
-        );
+        const app = new Application(this, name, {
+            domainName: args.domainName,
+        }).addStorage({ type: PersistentStorageType.GPU });
 
-        const storage = new PersistentStorage(
-            `${name}-storage`,
-            {
-                name,
-                namespace: namespace.metadata.name,
-                size: '5Gi',
-                type: PersistentStorageType.GPU,
-            },
-            { parent: this },
-        );
+        if (app.storageOnly) return;
 
         new kubernetes.helm.v3.Release(
             name,
             {
                 chart: 'open-webui',
-                namespace: namespace.metadata.name,
+                namespace: app.namespace.metadata.name,
                 version,
                 repositoryOpts: {
                     repo: 'https://helm.openwebui.com/',
@@ -122,7 +110,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
                     },
                     persistence: {
                         enabled: true,
-                        existingClaim: storage.volumeClaimName,
+                        existingClaim: app.storage?.volumeClaimName,
                     },
                     pipelines: {
                         enabled: false,

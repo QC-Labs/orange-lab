@@ -1,6 +1,7 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
-import { PersistentStorage, PersistentStorageType } from '../persistent-storage';
+import { Application } from '../application';
+import { PersistentStorageType } from '../persistent-storage';
 
 export interface OllamaArgs {
     domainName: string;
@@ -9,9 +10,7 @@ export interface OllamaArgs {
 export class Ollama extends pulumi.ComponentResource {
     public readonly endpointUrl: string | undefined;
     public readonly serviceUrl: string | undefined;
-
-    readonly namespace: kubernetes.core.v1.Namespace;
-    readonly storage: PersistentStorage;
+    app: Application;
 
     constructor(private name: string, args: OllamaArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:ai:Ollama', name, args, opts);
@@ -19,12 +18,12 @@ export class Ollama extends pulumi.ComponentResource {
         const config = new pulumi.Config(name);
         const version = config.require('version');
         const hostname = config.require('hostname');
-        const storageSize = config.require('storageSize');
-        const storageOnly = config.requireBoolean('storageOnly');
 
-        this.namespace = this.createNamespace();
-        this.storage = this.createStorage(storageSize);
-        if (storageOnly) return;
+        this.app = new Application(this, name, {
+            domainName: args.domainName,
+        }).addStorage({ type: PersistentStorageType.GPU });
+
+        if (this.app.storageOnly) return;
 
         this.createHelmRelease(version, hostname);
 
@@ -37,7 +36,7 @@ export class Ollama extends pulumi.ComponentResource {
             this.name,
             {
                 chart: 'ollama',
-                namespace: this.namespace.metadata.name,
+                namespace: this.app.namespace.metadata.name,
                 version,
                 repositoryOpts: {
                     repo: 'https://otwld.github.io/ollama-helm/',
@@ -69,7 +68,7 @@ export class Ollama extends pulumi.ComponentResource {
                     },
                     persistentVolume: {
                         enabled: true,
-                        existingClaim: this.storage.volumeClaimName,
+                        existingClaim: this.app.storage?.volumeClaimName,
                     },
                     ingress: {
                         enabled: true,
@@ -83,29 +82,6 @@ export class Ollama extends pulumi.ComponentResource {
                         tls: [{ hosts: [hostname] }],
                     },
                 },
-            },
-            { parent: this },
-        );
-    }
-
-    private createStorage(storageSize: string) {
-        return new PersistentStorage(
-            `${this.name}-storage`,
-            {
-                name: this.name,
-                namespace: this.namespace.metadata.name,
-                size: storageSize,
-                type: PersistentStorageType.GPU,
-            },
-            { parent: this },
-        );
-    }
-
-    private createNamespace() {
-        return new kubernetes.core.v1.Namespace(
-            `${this.name}-ns`,
-            {
-                metadata: { name: this.name },
             },
             { parent: this },
         );
