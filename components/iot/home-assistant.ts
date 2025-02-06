@@ -22,6 +22,8 @@ export class HomeAssistant extends pulumi.ComponentResource {
             domainName: args.domainName,
         }).addStorage();
 
+        if (app.storageOnly) return;
+
         new kubernetes.helm.v3.Release(
             name,
             {
