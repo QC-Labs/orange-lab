@@ -56,18 +56,18 @@ export class Application {
 
     constructor(
         private readonly scope: pulumi.ComponentResource,
-        private readonly name: string,
+        private readonly appName: string,
         private readonly params: { domainName: string },
     ) {
-        this.config = new pulumi.Config(name);
+        this.config = new pulumi.Config(appName);
         this.hostname = this.config.require('hostname');
         const version = this.config.get('version');
         const appVersion = this.config.get('appVersion');
         this.storageOnly = this.config.getBoolean('storageOnly') ?? false;
 
         this.labels = {
-            app: name,
-            'app.kubernetes.io/name': name,
+            app: appName,
+            'app.kubernetes.io/name': appName,
             'app.kubernetes.io/managed-by': 'OrangeLab',
         };
         if (version) {
@@ -79,9 +79,9 @@ export class Application {
 
     addStorage(args?: { size?: string; type?: PersistentStorageType }) {
         this.storage = new PersistentStorage(
-            `${this.name}-storage`,
+            `${this.appName}-storage`,
             {
-                name: this.name,
+                name: this.appName,
                 namespace: this.namespace.metadata.name,
                 size: args?.size ?? this.config.require('storageSize'),
                 type: args?.type ?? PersistentStorageType.Default,
@@ -96,7 +96,8 @@ export class Application {
         this.deployment = this.createDeployment(args);
         if (!args.port) return this;
         this.service = this.createService(args.port);
-        this.serviceUrl = `http://${this.hostname}.${this.name}:${args.port.toString()}`;
+        const port = args.port.toString();
+        this.serviceUrl = `http://${this.hostname}.${this.appName}:${port}`;
         this.ingress = this.createIngress(this.service, this.hostname);
         this.endpointUrl = `https://${this.hostname}.${this.params.domainName}`;
         return this;
@@ -110,18 +111,18 @@ export class Application {
 
     private createNamespace() {
         return new kubernetes.core.v1.Namespace(
-            `${this.name}-ns`,
-            { metadata: { name: this.name } },
+            `${this.appName}-ns`,
+            { metadata: { name: this.appName } },
             { parent: this.scope },
         );
     }
 
     private createServiceAccount() {
         return new kubernetes.core.v1.ServiceAccount(
-            `${this.name}-sa`,
+            `${this.appName}-sa`,
             {
                 metadata: {
-                    name: this.name,
+                    name: this.appName,
                     namespace: this.namespace.metadata.name,
                     labels: this.labels,
                 },
@@ -132,10 +133,10 @@ export class Application {
 
     private createService(port: number) {
         return new kubernetes.core.v1.Service(
-            `${this.name}-svc`,
+            `${this.appName}-svc`,
             {
                 metadata: {
-                    name: this.name,
+                    name: this.appName,
                     namespace: this.namespace.metadata.name,
                     labels: this.labels,
                 },
@@ -160,10 +161,10 @@ export class Application {
         const serviceName = service.metadata.name;
         const targetPort = service.spec.ports[0].port;
         return new kubernetes.networking.v1.Ingress(
-            `${this.name}-ingress`,
+            `${this.appName}-ingress`,
             {
                 metadata: {
-                    name: this.name,
+                    name: this.appName,
                     namespace: this.namespace.metadata.name,
                     labels: this.labels,
                 },
@@ -198,10 +199,10 @@ export class Application {
     private createDeployment(args: ContainerSpec) {
         assert(args.port, 'port required for deployments');
         return new kubernetes.apps.v1.Deployment(
-            `${this.name}-deployment`,
+            `${this.appName}-deployment`,
             {
                 metadata: {
-                    name: this.name,
+                    name: this.appName,
                     namespace: this.namespace.metadata.name,
                     labels: this.labels,
                 },
@@ -217,7 +218,7 @@ export class Application {
 
     private createDaemonSet(args: ContainerSpec) {
         assert(args.name, 'name is required for daemonset');
-        const daemonSetName = `${this.name}-${args.name}`;
+        const daemonSetName = `${this.appName}-${args.name}`;
         const labels = {
             ...this.labels,
             component: args.name,
@@ -249,7 +250,7 @@ export class Application {
             name: key,
             value,
         }));
-        const podName = args.name ? `${this.name}-${args.name}` : this.name;
+        const podName = args.name ? `${this.appName}-${args.name}` : this.appName;
         return {
             metadata: { name: podName, labels: labels ?? this.labels },
             spec: {
@@ -285,7 +286,7 @@ export class Application {
                         resources: args.resources,
                         securityContext: args.gpu ? { privileged: true } : undefined,
                         volumeMounts: (args.volumeMounts ?? []).map(volumeMount => ({
-                            name: this.name,
+                            name: this.appName,
                             mountPath: volumeMount.mountPath,
                             subPath: volumeMount.subPath,
                         })),
@@ -298,7 +299,7 @@ export class Application {
                     this.storage && args.volumeMounts
                         ? [
                               {
-                                  name: this.name,
+                                  name: this.appName,
                                   persistentVolumeClaim: {
                                       claimName: this.storage.volumeClaimName,
                                   },
