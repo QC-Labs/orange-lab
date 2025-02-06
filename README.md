@@ -2,7 +2,7 @@
 
 Private infrastructure for cloud natives.
 
-<img src="docs/orange-lab-910-512.png" alt="Orange Lab logo" height="200"/>
+<img src="docs/orange-lab-910-512.png" alt="OrangeLab logo" height="250"/>
 
 ## Core components
 
@@ -32,22 +32,22 @@ All available settings can be found in `Pulumi.yaml`.
 
 More details about components in each module documentation.
 
-[System module](docs/install-system.md) (required):
+[System module](./components/system/SYSTEM.md) (required):
 
 -   `longhorn` - replicated storage
 -   `nvidia-gpu-operator` - NVidia GPU support
 -   `tailscale-operator` - ingress support with Tailscale authentication
 
-[Monitoring module](docs/monitoring.md):
+[Monitoring module](./components/monitoring/MONITORING.md):
 
 -   `beszel` - Beszel lightweight monitoring
 -   `prometheus` - Prometheus/Grafana monitoring
 
-[IoT module](docs/iot.md):
+[IoT module](./components/iot/IOT.md):
 
 -   `home-assistant` - sensor and home automation platform
 
-[AI module](docs/ai.md):
+[AI module](./components/ai/AI.md):
 
 -   `ollama` - local large language models
 -   `open-webui` - Open WebUI frontend
@@ -63,7 +63,7 @@ It should run on any modern Linux distribution with Linux kernel 6.11.6+, even i
 Windows and MacOS support is limited. K3s requires Linux to run workloads using _containerd_ directly, however you could have some luck running https://k3d.io/ which uses Docker wrapper to run some containers as long as they do not use persistent storage.
 Not a tested configuration but feedback welcome. The issue is Longhorn, which only runs on Linux. More info at https://github.com/k3d-io/k3d/blob/main/docs/faq/faq.md#longhorn-in-k3d
 
-Steps to disable Longhorn and switch to `local-path-provisioner` at [install-system.md](./docs/install-system.md#disable-longhorn)
+Steps to disable Longhorn and switch to `local-path-provisioner` at [install-system.md](./components/system/SYSTEM.md#disable-longhorn)
 
 Currently only NVidia GPUs are supported.
 
@@ -85,7 +85,7 @@ Click on the links for detailed instructions:
 
 1.  configure Pulumi and Tailscale on management node [docs/install.md](docs/install.md)
 2.  install K3s server and agents [docs/install-k3s.md](docs/install-k3s.md)
-3.  deploy required system components [docs/install-system.md](docs/install-system.md)
+3.  deploy required system components [components/system/SYSTEM.md](./components/system/SYSTEM.md)
 
 ## Adding additional nodes
 
