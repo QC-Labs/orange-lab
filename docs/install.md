@@ -42,6 +42,8 @@ Add tags to your Tailnet ACLs (https://login.tailscale.com/admin/acls/file):
 "tagOwners": {
     "tag:k8s-server":   [],
     "tag:k8s-agent":    [],
+    "tag:k8s-operator": [],
+    "tag:k8s":          ["tag:k8s-operator"],
 }
 ```
 

@@ -2,6 +2,27 @@
 
 Core components required before any other apps can de deployed.
 
+Recommended setup/tldr:
+
+```sh
+# Add k8s and k8s-operator tags to Tailscale ACL
+# Create OAuth client in Tailscale
+pulumi config set tailscale-operator:oauthClientId <OAUTH_CLIENT_ID> --secret
+pulumi config set tailscale-operator:oauthClientSecret <OAUTH_CLIENT_SECRET> --secret
+pulumi config set tailscale-operator:enabled true
+pulumi up
+
+# Add tag to storage nodes that will be used by Longhorn
+kubectl label nodes <node-name> orangelab/storage=true
+pulumi config set longhorn:enabled true
+pulumi up
+
+# Label node(s) that should run GPU workloads
+kubectl label nodes <node-name> orangelab/gpu=true
+pulumi config set nvidia-gpu-operator:enabled true
+pulumi up
+```
+
 ## Tailscale-operator
 
 |                |                                                                                            |
@@ -12,6 +33,8 @@ Core components required before any other apps can de deployed.
 | Endpoints      | `https://k8s.<tsnet>.ts.net/`                                                              |
 
 The operator manages cluster ingress endpoints on Tailnet as well as adds Tailscale authenticated Kubernetes API endpoint.
+
+### Installation
 
 Add `k8s-operator` and `k8s` tags to your Tailnet in ACLs (https://login.tailscale.com/admin/acls/file):
 
@@ -34,7 +57,7 @@ pulumi config set tailscale-operator:enabled true
 pulumi up
 ```
 
-### Kubernetes API access
+### Kubernetes API access (optional)
 
 After deploying the operator, you can use new endpoint for Kubernetes API, `https://k8s.<tailnet>.ts.net` for non-admin users.
 
@@ -72,15 +95,17 @@ tailscale configure kubeconfig k8s
 
 Longhorn adds permanent storage that is replicated across multiple nodes. It also supports snapshots and backups of data volumes. The nodes need to be labeled with `orangelab/storage=true` - you need at least one. Volumes stored at `/var/lib/longhorn/`.
 
+### Installation
+
 Enable iSCSI service before deploying Longhorn.
 
 ```sh
-# Add tag to storage nodes that will be used by Longhorn
-kubectl label nodes <node-name> orangelab/storage=true
-
 # Enable iSCSI on each Longhorn node
 systemctl enable iscsid.service --now
 systemctl enable iscsid.socket --now
+
+# Add tag to storage nodes that will be used by Longhorn
+kubectl label nodes <node-name> orangelab/storage=true
 
 # Enable module
 pulumi config set longhorn:enabled true
@@ -95,7 +120,7 @@ pulumi up
 
 ```
 
-### Disable Longhorn
+### Disable Longhorn (not recommended)
 
 Longhorn requires Linux so when running Windows or MacOS you can disable it and use `local-path` storage class instead.
 This is also useful when running a single-node cluster as Longhorn adds some overhead and extra containers. Note that disabling Longhorn will mean that replicated storage won't be available.
@@ -108,8 +133,8 @@ To override the storage classes used run:
 
 ```sh
 pulumi config set longhorn:enabled false
-pulumi config set longhorn:storageClass local-path
-pulumi config set longhorn:storageClass-gpu local-path
+pulumi config set orangelab:storageClass local-path
+pulumi config set orangelab:storageClass-gpu local-path
 pulumi up
 ```
 
@@ -128,6 +153,10 @@ kubectl -n longhorn-system patch -p '{"value": "true"}' --type=merge lhs deletin
 | Homepage   | https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/                                                           |
 | Helm chart | https://github.com/NVIDIA/gpu-operator/blob/main/deployments/gpu-operator/                                              |
 | Components | https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html#gpu-operator-component-matrix |
+
+This component is needed to run GPU workloads using NVidia devices.
+
+Designate one or more nodes as GPU, then enable the operator.
 
 ```sh
 # Label node(s) that should run GPU workloads
