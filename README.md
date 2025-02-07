@@ -26,12 +26,6 @@ Private infrastructure for cloud natives.
 
 # Applications
 
-Applications are disabled by default.
-
-All available settings can be found in `Pulumi.yaml`.
-
-More details about components in each module documentation.
-
 [System module](./components/system/SYSTEM.md) (required):
 
 -   `longhorn` - replicated storage
@@ -69,41 +63,21 @@ Currently only NVidia GPUs are supported.
 
 # Installation
 
-Before applications can be deployed there are some steps that need to be taken, like installing K3s and deploying system components.
-
-Start with configuring Pulumi, Tailscale, then install K3s server. More agents can be added later.
-
-Longhorn replicated storage requires at least one node with `orangelab/storage` label.
-
-GPU workloads require a node with `orangelab/gpu` label.
-
 ## Initial cluster setup
 
-All 3 steps below are required. The first time you configure the cluster, it's best to run `pulumi up` after each component. Make sure all pods are running fine before moving to next step.
+The first time you configure the cluster, it's best to run `pulumi up` after each component. Make sure all pods are running fine before moving to next step.
 
 Click on the links for detailed instructions:
 
 1.  configure Pulumi and Tailscale on management node [docs/install.md](docs/install.md)
-2.  install K3s server and agents [docs/install-k3s.md](docs/install-k3s.md)
-3.  deploy required system components [components/system/SYSTEM.md](./components/system/SYSTEM.md)
-
-## Adding additional nodes
-
-More details at [docs/install-k3s.md](docs/install-k3s.md)
-
-1.  enable Tailscale on the node
-2.  configure firewall rules
-3.  install K3s agent
-4.  assign Kubernetes node labels (storage, gpu, zone)
-5.  (optional) update `Pulumi.<stack>.yaml` (f.e. increase Longhorn replica count) then `pulumi up`
+2.  install K3s and label nodes [docs/install-k3s.md](docs/install-k3s.md)
+3.  deploy system components [components/system/SYSTEM.md](./components/system/SYSTEM.md)
 
 ## Deploying applications
 
-After system components have been deployed, you can add any of the optional applications.
+After system components have been deployed, you can add any of the optional [#Applications](#applications).
 
-Lookup module documentation for more details [#Applications](#applications)
-
-Services will have endpoints at `https://<service>.<tailnet>.ts.net/` by default.
+All available settings can be found in `Pulumi.yaml`. Override defaults with `pulumi config` or by directly modifying `Pulumi.<stack>.yaml`.
 
 ```sh
 # enable app
@@ -122,6 +96,8 @@ pulumi up -r # --refresh Pulumi state if out of sync
 curl https://<app>.<tsnet>.ts.net/
 ```
 
+## Enable/disable applications
+
 To remove an application, set the `enabled` flag to `false`. This will remove all resources associated with the app.
 
 To keep storage around (for example downloaded ollama models) but remove all other resources, use `storageOnly`:
@@ -137,9 +113,9 @@ pulumi config set <app>:storageOnly true
 pulumi up
 ```
 
-## Troubleshooting
+# Troubleshooting
 
-It's easiest to use Headlamp or k9s to connect to cluster. Below some useful commands to when troubleshooting connection issues.
+It's easiest to use _Headlamp_ or _k9s_ to connect to cluster. Below are some useful commands when troubleshooting issues.
 
 ```sh
 # Check logs of the app
@@ -151,7 +127,20 @@ kubectl events -A -w
 
 Pods can be stopped and will be recreated automatically.
 
-### HTTPS endpoint
+You can shut down the application resources, then recreate them. Note that if storage is removed then configuration will be lost and some data might need to be downloaded again (for example LLM models)
+
+```sh
+# Remove everything but storage volumes
+pulumi config set <app>:storageOnly true
+pulumi up
+
+# Remove all resources, including storage and namespace
+pulumi config set <app>:enabled false
+pulumi up
+
+```
+
+## HTTPS endpoint
 
 In case of issues connecting to the HTTPS endpoint, try connecting to the Kubernetes service directly, bypassing the Ingress and Tailscale `ts-*` proxy pod:
 
@@ -165,18 +154,5 @@ telnet <ip> <port>
 ```
 
 If that works, then Tailscale Ingress needs to be looked at. Try stopping the `ts-*` proxy pod, it will be recreated. Remember that first time you access an endpoint, the HTTPS certificate is provisioned and that can take up to a minute.
-
-If all fails, you can shut down the application resources, then recreate them. Note that if storage is removed then configuration will be lost and some data might need to be downloaded again (for example LLM models)
-
-```sh
-# Remove everything but storage volumes
-pulumi config set <app>:storageOnly true
-pulumi up
-
-# Remove all resources, including storage and namespace
-pulumi config set <app>:enabled false
-pulumi up
-
-```
 
 Make sure there is no leftover entry for a service at https://login.tailscale.com/admin/machines. If there is a conflicting entry, remove it before enabling the app again (specifically the Ingress resource managed by Tailscale operator).
