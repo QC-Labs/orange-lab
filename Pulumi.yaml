@@ -9,6 +9,13 @@ config:
     # Below is list of all settings with default values assuming a single node cluster.
     # Do NOT modify this file but add overrides in your Pulumi.<stack>.yaml.
 
+    # Standard settings supported by most apps:
+    # - enabled (enable/disable app)
+    # - hostname (hostname for HTTPS endpoint)
+    # - storageOnly (disable app but retain storage)
+    # - storageSize (expand default storage size if needed)
+    # - storageClass (force storage class used by app)
+
     ### SYSTEM ###
 
     # tailscale:apiKey: TAILSCALE_API_KEY

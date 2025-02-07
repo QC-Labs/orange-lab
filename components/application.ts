@@ -26,11 +26,6 @@ interface ContainerSpec {
  *
  * The `add*` methods use "fluent interface" to allow provisioning resources through "method chaining".
  *
- * Some standard configuration settings are supported:
- * - storageOnly
- * - storageSize
- * - hostname
- *
  * Limitations:
  * - only one Deployment supported
  * - one endpoint required for Deployment
@@ -85,6 +80,7 @@ export class Application {
                 namespace: this.namespace.metadata.name,
                 size: args?.size ?? this.config.require('storageSize'),
                 type: args?.type ?? PersistentStorageType.Default,
+                storageClass: this.config.get('storageClass'),
             },
             { parent: this.scope },
         );
