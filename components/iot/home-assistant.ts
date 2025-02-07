@@ -1,6 +1,7 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
+import { PersistentStorage } from '../persistent-storage';
 
 export interface HomeAssistantArgs {
     domainName: string;
@@ -16,11 +17,10 @@ export class HomeAssistant extends pulumi.ComponentResource {
         const config = new pulumi.Config('home-assistant');
         const version = config.require('version');
         const hostname = config.require('hostname');
+        const storageClass = config.get('storageClass');
         const zone = config.get('zone');
 
-        const app = new Application(this, name, {
-            domainName: args.domainName,
-        }).addStorage();
+        const app = new Application(this, name, { domainName: args.domainName });
 
         if (app.storageOnly) return;
 
@@ -76,8 +76,9 @@ export class HomeAssistant extends pulumi.ComponentResource {
                     },
                     persistence: {
                         enabled: true,
-                        existingVolume: app.storage?.volumeClaimName,
+                        storageClass: storageClass ?? PersistentStorage.getStorageClass(),
                     },
+                    replicaCount: 1,
                 },
             },
             { parent: this },
