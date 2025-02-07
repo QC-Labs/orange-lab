@@ -129,17 +129,6 @@ Pods can be stopped and will be recreated automatically.
 
 You can shut down the application resources, then recreate them. Note that if storage is removed then configuration will be lost and some data might need to be downloaded again (for example LLM models)
 
-```sh
-# Remove everything but storage volumes
-pulumi config set <app>:storageOnly true
-pulumi up
-
-# Remove all resources, including storage and namespace
-pulumi config set <app>:enabled false
-pulumi up
-
-```
-
 ## HTTPS endpoint
 
 In case of issues connecting to the HTTPS endpoint, try connecting to the Kubernetes service directly, bypassing the Ingress and Tailscale `ts-*` proxy pod:
