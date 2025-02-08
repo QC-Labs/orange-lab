@@ -85,7 +85,7 @@ config:
 
     automatic1111:enabled: false
     automatic1111:hostname: 'automatic1111'
-    automatic1111:cliArgs: '--medvram'
+    automatic1111:cliArgs: '--lowvram'
     automatic1111:storageSize: 20Gi
     automatic1111:storageOnly: false
 
