@@ -51,7 +51,7 @@ Private infrastructure for cloud natives.
 
 # Platforms and limitations
 
-Installation instructions assume your machines are running Bluefin (https://projectbluefin.io/) based on Fedora Silverblue unless otherwise noted.
+Installation instructions assume your machines are running Bluefin (Developer edition, https://projectbluefin.io/) based on Fedora Silverblue unless otherwise noted.
 It should run on any modern Linux distribution with Linux kernel 6.11.6+, even including Raspberry Pi.
 
 Windows and MacOS support is limited. K3s requires Linux to run workloads using _containerd_ directly, however you could have some luck running https://k3d.io/ which uses Docker wrapper to run some containers as long as they do not use persistent storage.
@@ -70,8 +70,9 @@ The first time you configure the cluster, it's best to run `pulumi up` after eac
 Click on the links for detailed instructions:
 
 1.  configure Pulumi and Tailscale on management node [docs/install.md](docs/install.md)
-2.  install K3s and label nodes [docs/install-k3s.md](docs/install-k3s.md)
-3.  deploy system components [components/system/SYSTEM.md](./components/system/SYSTEM.md)
+2.  _(optional)_ configure SSH on nodes for easier access [docs/install-ssh.mc](docs/install-ssh.md)
+3.  install K3s and label nodes [docs/install-k3s.md](docs/install-k3s.md)
+4.  deploy system components [components/system/SYSTEM.md](./components/system/SYSTEM.md)
 
 ## Deploying applications
 
