@@ -16,7 +16,8 @@ Using zone is optional, but helps with making sure the application is deployed o
 kubectl label nodes <node-name> topology.kubernetes.io/zone=home
 
 pulumi config set home-assistant:enabled true
-pulumi config set home-assistant:zone home
+
+pulumi config set home-assistant:requiredNodeLabel "topology.kubernetes.io/zone=home"
 
 pulumi up
 ```

@@ -18,7 +18,6 @@ export class HomeAssistant extends pulumi.ComponentResource {
         const version = config.require('version');
         const hostname = config.require('hostname');
         const storageClass = config.get('storageClass');
-        const zone = config.get('zone');
 
         const app = new Application(this, name, { domainName: args.domainName });
 
@@ -34,25 +33,7 @@ export class HomeAssistant extends pulumi.ComponentResource {
                     repo: 'http://pajikos.github.io/home-assistant-helm-chart/',
                 },
                 values: {
-                    affinity: zone
-                        ? {
-                              nodeAffinity: {
-                                  requiredDuringSchedulingIgnoredDuringExecution: {
-                                      nodeSelectorTerms: [
-                                          {
-                                              matchExpressions: [
-                                                  {
-                                                      key: 'topology.kubernetes.io/zone',
-                                                      operator: 'In',
-                                                      values: [zone],
-                                                  },
-                                              ],
-                                          },
-                                      ],
-                                  },
-                              },
-                          }
-                        : undefined,
+                    affinity: app.getAffinity(),
                     hostNetwork: true,
                     ingress: {
                         enabled: true,

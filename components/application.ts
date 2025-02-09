@@ -38,16 +38,17 @@ export class Application {
     public storageOnly = false;
 
     readonly namespace: kubernetes.core.v1.Namespace;
-    storage: PersistentStorage | undefined;
-    service: kubernetes.core.v1.Service | undefined;
-    serviceAccount: kubernetes.core.v1.ServiceAccount | undefined;
-    ingress: kubernetes.networking.v1.Ingress | undefined;
-    deployment: kubernetes.apps.v1.Deployment | undefined;
-    daemonSet: kubernetes.apps.v1.DaemonSet | undefined;
+    storage?: PersistentStorage;
+    service?: kubernetes.core.v1.Service;
+    serviceAccount?: kubernetes.core.v1.ServiceAccount;
+    ingress?: kubernetes.networking.v1.Ingress;
+    deployment?: kubernetes.apps.v1.Deployment;
+    daemonSet?: kubernetes.apps.v1.DaemonSet;
 
     private config: pulumi.Config;
     private hostname: string;
     private labels: Record<string, string>;
+    private requiredNodeLabel?: string;
 
     constructor(
         private readonly scope: pulumi.ComponentResource,
@@ -59,7 +60,7 @@ export class Application {
         const version = this.config.get('version');
         const appVersion = this.config.get('appVersion');
         this.storageOnly = this.config.getBoolean('storageOnly') ?? false;
-
+        this.requiredNodeLabel = this.config.get('requiredNodeLabel');
         this.labels = {
             app: appName,
             'app.kubernetes.io/name': appName,
@@ -103,6 +104,21 @@ export class Application {
         if (this.storageOnly) return this;
         this.daemonSet = this.createDaemonSet(args);
         return this;
+    }
+
+    getAffinity() {
+        if (!this.requiredNodeLabel) return;
+        const [key, value] = this.requiredNodeLabel.split('=');
+        const matchExp = value
+            ? { key, operator: 'In', values: [value] }
+            : { key, operator: 'Exists' };
+        return {
+            nodeAffinity: {
+                requiredDuringSchedulingIgnoredDuringExecution: {
+                    nodeSelectorTerms: [{ matchExpressions: [matchExp] }],
+                },
+            },
+        };
     }
 
     private getMetadata() {
