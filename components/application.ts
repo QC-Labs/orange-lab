@@ -105,6 +105,14 @@ export class Application {
         return this;
     }
 
+    private getMetadata() {
+        return {
+            name: this.appName,
+            namespace: this.namespace.metadata.name,
+            labels: this.labels,
+        };
+    }
+
     private createNamespace() {
         return new kubernetes.core.v1.Namespace(
             `${this.appName}-ns`,
@@ -116,13 +124,7 @@ export class Application {
     private createServiceAccount() {
         return new kubernetes.core.v1.ServiceAccount(
             `${this.appName}-sa`,
-            {
-                metadata: {
-                    name: this.appName,
-                    namespace: this.namespace.metadata.name,
-                    labels: this.labels,
-                },
-            },
+            { metadata: this.getMetadata() },
             { parent: this.scope },
         );
     }
@@ -131,11 +133,7 @@ export class Application {
         return new kubernetes.core.v1.Service(
             `${this.appName}-svc`,
             {
-                metadata: {
-                    name: this.appName,
-                    namespace: this.namespace.metadata.name,
-                    labels: this.labels,
-                },
+                metadata: this.getMetadata(),
                 spec: {
                     type: 'ClusterIP',
                     ports: [
@@ -159,11 +157,7 @@ export class Application {
         return new kubernetes.networking.v1.Ingress(
             `${this.appName}-ingress`,
             {
-                metadata: {
-                    name: this.appName,
-                    namespace: this.namespace.metadata.name,
-                    labels: this.labels,
-                },
+                metadata: this.getMetadata(),
                 spec: {
                     ingressClassName: 'tailscale',
                     tls: [{ hosts: [hostname] }],
@@ -197,11 +191,7 @@ export class Application {
         return new kubernetes.apps.v1.Deployment(
             `${this.appName}-deployment`,
             {
-                metadata: {
-                    name: this.appName,
-                    namespace: this.namespace.metadata.name,
-                    labels: this.labels,
-                },
+                metadata: this.getMetadata(),
                 spec: {
                     replicas: 1,
                     selector: { matchLabels: this.labels },
@@ -223,11 +213,7 @@ export class Application {
         return new kubernetes.apps.v1.DaemonSet(
             `${daemonSetName}-daemonset`,
             {
-                metadata: {
-                    name: daemonSetName,
-                    namespace: this.namespace.metadata.name,
-                    labels,
-                },
+                metadata: { ...this.getMetadata(), name: daemonSetName, labels },
                 spec: {
                     selector: { matchLabels: labels },
                     template: this.createPodTemplateSpec(args, labels),
@@ -248,7 +234,11 @@ export class Application {
         }));
         const podName = args.name ? `${this.appName}-${args.name}` : this.appName;
         return {
-            metadata: { name: podName, labels: labels ?? this.labels },
+            metadata: {
+                ...this.getMetadata(),
+                name: podName,
+                labels: labels ?? this.labels,
+            },
             spec: {
                 securityContext: args.runAsUser
                     ? {
