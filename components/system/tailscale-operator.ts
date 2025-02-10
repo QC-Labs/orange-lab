@@ -1,12 +1,15 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import { ClusterRole } from '@pulumi/kubernetes/rbac/v1';
 import * as pulumi from '@pulumi/pulumi';
+import { Application } from '../application';
 
 interface TailscaleOperatorArgs {
     namespace?: string;
 }
 
 export class TailscaleOperator extends pulumi.ComponentResource {
+    private readonly app: Application;
+
     constructor(
         private name: string,
         args: TailscaleOperatorArgs = {},
@@ -20,13 +23,7 @@ export class TailscaleOperator extends pulumi.ComponentResource {
         const oauthClientId = config.requireSecret('oauthClientId');
         const oauthClientSecret = config.requireSecret('oauthClientSecret');
 
-        const namespace = new kubernetes.core.v1.Namespace(
-            `${name}-ns`,
-            {
-                metadata: { name: args.namespace ?? name },
-            },
-            { parent: this },
-        );
+        this.app = new Application(this, name, { namespaceName: args.namespace });
 
         const userRole = this.createUserRole(name);
         this.createUserRoleBinding(userRole, 'orangelab:users');
@@ -35,7 +32,7 @@ export class TailscaleOperator extends pulumi.ComponentResource {
             name,
             {
                 chart: 'tailscale-operator',
-                namespace: namespace.metadata.name,
+                namespace: this.app.namespace.metadata.name,
                 version,
                 repositoryOpts: {
                     repo: 'https://pkgs.tailscale.com/helmcharts',
@@ -60,7 +57,7 @@ export class TailscaleOperator extends pulumi.ComponentResource {
         new kubernetes.rbac.v1.ClusterRoleBinding(
             `${this.name}-user-cluster-role-binding`,
             {
-                metadata: { name: 'orangelab-user' },
+                metadata: { ...this.app.getMetadata(), name: 'orangelab-user' },
                 subjects: [
                     {
                         kind: 'Group',
@@ -81,7 +78,10 @@ export class TailscaleOperator extends pulumi.ComponentResource {
         return new kubernetes.rbac.v1.ClusterRole(
             `${name}-user-cluster-role`,
             {
-                metadata: { name: 'orangelab-user-cluster-role' },
+                metadata: {
+                    ...this.app.getMetadata(),
+                    name: 'orangelab-user-cluster-role',
+                },
                 rules: [
                     {
                         apiGroups: [

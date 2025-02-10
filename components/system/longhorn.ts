@@ -21,9 +21,7 @@ export class Longhorn extends pulumi.ComponentResource {
 
         const namespace = new kubernetes.core.v1.Namespace(
             `${name}-ns`,
-            {
-                metadata: { name: `${name}-system` },
-            },
+            { metadata: { name: `${name}-system` } },
             { parent: this },
         );
 

@@ -141,7 +141,7 @@ export class Application {
         return { matchExpressions: [match] };
     }
 
-    private getMetadata() {
+    getMetadata() {
         return {
             name: this.appName,
             namespace: this.namespace.metadata.name,
