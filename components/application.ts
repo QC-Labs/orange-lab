@@ -46,7 +46,6 @@ export class Application {
     daemonSet?: kubernetes.apps.v1.DaemonSet;
 
     private config: pulumi.Config;
-    private hostname: string;
     private labels: Record<string, string>;
     private requiredNodeLabel?: string;
     private preferredNodeLabel?: string;
@@ -54,10 +53,9 @@ export class Application {
     constructor(
         private readonly scope: pulumi.ComponentResource,
         private readonly appName: string,
-        private readonly params: { domainName: string },
+        private readonly params?: { domainName?: string; namespaceName?: string },
     ) {
         this.config = new pulumi.Config(appName);
-        this.hostname = this.config.require('hostname');
         const version = this.config.get('version');
         const appVersion = this.config.get('appVersion');
         this.storageOnly = this.config.getBoolean('storageOnly') ?? false;
@@ -71,7 +69,7 @@ export class Application {
         if (version) {
             this.labels['app.kubernetes.io/version'] = appVersion ?? version;
         }
-        this.namespace = this.createNamespace();
+        this.namespace = this.createNamespace(params?.namespaceName);
         if (this.storageOnly) return;
     }
 
@@ -91,14 +89,17 @@ export class Application {
     }
 
     addDeployment(args: ContainerSpec) {
+        assert(this.params?.domainName, 'domainName is required');
+        const hostname = this.config.require('hostname');
         if (this.storageOnly) return this;
+
         this.deployment = this.createDeployment(args);
         if (!args.port) return this;
         this.service = this.createService(args.port);
         const port = args.port.toString();
-        this.serviceUrl = `http://${this.hostname}.${this.appName}:${port}`;
-        this.ingress = this.createIngress(this.service, this.hostname);
-        this.endpointUrl = `https://${this.hostname}.${this.params.domainName}`;
+        this.serviceUrl = `http://${hostname}.${this.appName}:${port}`;
+        this.ingress = this.createIngress(this.service, hostname);
+        this.endpointUrl = `https://${hostname}.${this.params.domainName}`;
         return this;
     }
 
@@ -149,10 +150,10 @@ export class Application {
         };
     }
 
-    private createNamespace() {
+    private createNamespace(name?: string) {
         return new kubernetes.core.v1.Namespace(
             `${this.appName}-ns`,
-            { metadata: { name: this.appName } },
+            { metadata: { name: name ?? this.appName } },
             { parent: this.scope },
         );
     }
