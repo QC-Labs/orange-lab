@@ -42,6 +42,7 @@ export class Ollama extends pulumi.ComponentResource {
                     repo: 'https://otwld.github.io/ollama-helm/',
                 },
                 values: {
+                    affinity: this.app.getAffinity(),
                     fullnameOverride: 'ollama',
                     securityContext: {
                         privileged: true,

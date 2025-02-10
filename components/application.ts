@@ -49,6 +49,7 @@ export class Application {
     private hostname: string;
     private labels: Record<string, string>;
     private requiredNodeLabel?: string;
+    private preferredNodeLabel?: string;
 
     constructor(
         private readonly scope: pulumi.ComponentResource,
@@ -61,6 +62,7 @@ export class Application {
         const appVersion = this.config.get('appVersion');
         this.storageOnly = this.config.getBoolean('storageOnly') ?? false;
         this.requiredNodeLabel = this.config.get('requiredNodeLabel');
+        this.preferredNodeLabel = this.config.get('preferredNodeLabel');
         this.labels = {
             app: appName,
             'app.kubernetes.io/name': appName,
@@ -106,19 +108,37 @@ export class Application {
         return this;
     }
 
-    getAffinity() {
-        if (!this.requiredNodeLabel) return;
-        const [key, value] = this.requiredNodeLabel.split('=');
-        const matchExp = value
-            ? { key, operator: 'In', values: [value] }
-            : { key, operator: 'Exists' };
+    getAffinity(): kubernetes.types.input.core.v1.Affinity | undefined {
+        if (!this.requiredNodeLabel && !this.preferredNodeLabel) return;
         return {
             nodeAffinity: {
-                requiredDuringSchedulingIgnoredDuringExecution: {
-                    nodeSelectorTerms: [{ matchExpressions: [matchExp] }],
-                },
+                requiredDuringSchedulingIgnoredDuringExecution: this.requiredNodeLabel
+                    ? {
+                          nodeSelectorTerms: [
+                              this.getNodeSelectorTerm(this.requiredNodeLabel),
+                          ],
+                      }
+                    : undefined,
+                preferredDuringSchedulingIgnoredDuringExecution: this.preferredNodeLabel
+                    ? [
+                          {
+                              preference: this.getNodeSelectorTerm(
+                                  this.preferredNodeLabel,
+                              ),
+                              weight: 1,
+                          },
+                      ]
+                    : undefined,
             },
         };
+    }
+
+    private getNodeSelectorTerm(labelSpec: string) {
+        const [key, value] = labelSpec.split('=');
+        const match = value
+            ? { key, operator: 'In', values: [value] }
+            : { key, operator: 'Exists' };
+        return { matchExpressions: [match] };
     }
 
     private getMetadata() {
@@ -211,7 +231,11 @@ export class Application {
                 spec: {
                     replicas: 1,
                     selector: { matchLabels: { app: this.appName } },
-                    template: this.createPodTemplateSpec(args),
+                    template: this.createPodTemplateSpec(
+                        args,
+                        this.labels,
+                        this.getAffinity(),
+                    ),
                 },
             },
             { parent: this.scope },
@@ -243,7 +267,8 @@ export class Application {
 
     private createPodTemplateSpec(
         args: ContainerSpec,
-        labels?: Record<string, string>,
+        labels: Record<string, string>,
+        affinity?: kubernetes.types.input.core.v1.Affinity,
     ): pulumi.Input<kubernetes.types.input.core.v1.PodTemplateSpec> {
         this.serviceAccount = this.serviceAccount ?? this.createServiceAccount();
         const env = Object.entries(args.env ?? {}).map(([key, value]) => ({
@@ -255,9 +280,10 @@ export class Application {
             metadata: {
                 ...this.getMetadata(),
                 name: podName,
-                labels: labels ?? this.labels,
+                labels,
             },
             spec: {
+                affinity,
                 securityContext: args.runAsUser
                     ? {
                           runAsUser: args.runAsUser,
