@@ -22,7 +22,15 @@ systemctl disable firewalld.service --now
 
 ## (Optional) Disable suspend on laptops
 
-Turn off suspend mode when on AC power. The setting in Gnome UI only applies when you're logged in, but not on login screen. You can check current settings with:
+To disable suspend mode when laptop lid is closed, edit `/etc/systemd/logind.conf` and uncomment these lines
+
+```conf
+HandleLidSwitch=ignore
+HandleLidSwitchExternalPower=ignore
+HandleLidSwitchDocked=ignore
+```
+
+Turn off suspend mode when on AC power. The setting in Gnome UI (Settings -> Power -> Automatic Suspend -> "When Plugged In") only applies when you're logged in, but not on login screen. You can check current settings with:
 
 ```sh
 # Check current settings
