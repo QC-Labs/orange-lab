@@ -210,7 +210,7 @@ export class Application {
                 metadata: this.getMetadata(),
                 spec: {
                     replicas: 1,
-                    selector: { matchLabels: this.labels },
+                    selector: { matchLabels: { app: this.appName } },
                     template: this.createPodTemplateSpec(args),
                 },
             },
@@ -231,7 +231,9 @@ export class Application {
             {
                 metadata: { ...this.getMetadata(), name: daemonSetName, labels },
                 spec: {
-                    selector: { matchLabels: labels },
+                    selector: {
+                        matchLabels: { app: this.appName, component: args.name },
+                    },
                     template: this.createPodTemplateSpec(args, labels),
                 },
             },
