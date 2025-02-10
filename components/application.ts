@@ -237,9 +237,12 @@ export class Application {
                         this.labels,
                         this.getAffinity(),
                     ),
+                    strategy: this.storage
+                        ? { type: 'Recreate' }
+                        : { type: 'RollingUpdate' },
                 },
             },
-            { parent: this.scope },
+            { parent: this.scope, deleteBeforeReplace: true },
         );
     }
 
