@@ -13,7 +13,7 @@ export class Beszel extends pulumi.ComponentResource {
     readonly deployment: kubernetes.apps.v1.Deployment | undefined;
     readonly appLabels = { app: 'beszel' };
 
-    constructor(private name: string, args: BeszelArgs, opts?: pulumi.ResourceOptions) {
+    constructor(name: string, args: BeszelArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:ai:Beszel', name, args, opts);
 
         const config = new pulumi.Config(name);
@@ -29,6 +29,10 @@ export class Beszel extends pulumi.ComponentResource {
                 },
                 hostNetwork: true,
                 volumeMounts: [{ mountPath: '/beszel_data' }],
+                resources: {
+                    requests: { cpu: '5m', memory: '50Mi' },
+                    limits: { memory: '200Mi' },
+                },
             });
 
         if (hubKey) {
@@ -39,6 +43,10 @@ export class Beszel extends pulumi.ComponentResource {
                 env: {
                     PORT: '45876',
                     KEY: hubKey,
+                },
+                resources: {
+                    requests: { cpu: '5m', memory: '20Mi' },
+                    limits: { memory: '100Mi' },
                 },
             });
         }

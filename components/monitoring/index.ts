@@ -21,9 +21,7 @@ export class MonitoringModule extends pulumi.ComponentResource {
         if (rootConfig.isEnabled('prometheus')) {
             this.prometheus = new Prometheus(
                 'prometheus',
-                {
-                    domainName: args.domainName,
-                },
+                { domainName: args.domainName },
                 { parent: this },
             );
         }
@@ -31,9 +29,7 @@ export class MonitoringModule extends pulumi.ComponentResource {
         if (rootConfig.isEnabled('beszel')) {
             this.beszel = new Beszel(
                 'beszel',
-                {
-                    domainName: args.domainName,
-                },
+                { domainName: args.domainName },
                 { parent: this },
             );
         }
