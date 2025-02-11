@@ -23,9 +23,7 @@ export class Prometheus extends pulumi.ComponentResource {
 
         const namespace = new kubernetes.core.v1.Namespace(
             `${name}-ns`,
-            {
-                metadata: { name },
-            },
+            { metadata: { name } },
             { parent: this },
         );
 

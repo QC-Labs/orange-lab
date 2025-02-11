@@ -2,6 +2,7 @@ import * as pulumi from '@pulumi/pulumi';
 import * as kubernetes from '@pulumi/kubernetes';
 import { PersistentStorage, PersistentStorageType } from './persistent-storage';
 import assert from 'node:assert';
+import { LimitRange } from '@pulumi/kubernetes/core/v1';
 
 interface ContainerSpec {
     name?: string;
@@ -106,6 +107,25 @@ export class Application {
     addDeamonSet(args: ContainerSpec) {
         if (this.storageOnly) return this;
         this.daemonSet = this.createDaemonSet(args);
+        return this;
+    }
+
+    addDefaultLimits(args: {
+        request?: Record<string, string>;
+        limit?: Record<string, string>;
+    }) {
+        new LimitRange(this.appName, {
+            metadata: this.getMetadata(),
+            spec: {
+                limits: [
+                    {
+                        type: 'Container',
+                        defaultRequest: args.request,
+                        default: args.limit,
+                    },
+                ],
+            },
+        });
         return this;
     }
 

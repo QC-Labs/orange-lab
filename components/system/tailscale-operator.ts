@@ -23,7 +23,12 @@ export class TailscaleOperator extends pulumi.ComponentResource {
         const oauthClientId = config.requireSecret('oauthClientId');
         const oauthClientSecret = config.requireSecret('oauthClientSecret');
 
-        this.app = new Application(this, name, { namespaceName: args.namespace });
+        this.app = new Application(this, name, {
+            namespaceName: args.namespace,
+        }).addDefaultLimits({
+            request: { cpu: '10m', memory: '100Mi' },
+            limit: { memory: '300Mi' },
+        });
 
         const userRole = this.createUserRole(name);
         this.createUserRoleBinding(userRole, 'orangelab:users');
