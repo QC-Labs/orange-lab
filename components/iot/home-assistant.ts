@@ -15,7 +15,7 @@ export class HomeAssistant extends pulumi.ComponentResource {
         super('orangelab:iot:HomeAssistant', name, args, opts);
 
         const config = new pulumi.Config('home-assistant');
-        const version = config.require('version');
+        const version = config.get('version');
         const hostname = config.require('hostname');
         const storageClass = config.get('storageClass');
 

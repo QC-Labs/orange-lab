@@ -13,7 +13,7 @@ export class KubeAi extends pulumi.ComponentResource {
         super('orangelab:ai:KubeAi', name, args, opts);
 
         const config = new pulumi.Config(name);
-        const version = config.require('version');
+        const version = config.get('version');
         const hostname = config.require('hostname');
         const huggingfaceToken = config.getSecret('huggingfaceToken');
 

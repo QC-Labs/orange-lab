@@ -6,7 +6,7 @@ export class NvidiaGPUOperator extends pulumi.ComponentResource {
         super('orangelab:system:NvidiaGPUOperator', name, args, opts);
 
         const config = new pulumi.Config(name);
-        const version = config.require('version');
+        const version = config.get('version');
 
         const namespace = new kubernetes.core.v1.Namespace(
             `${name}-ns`,

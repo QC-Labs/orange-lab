@@ -17,7 +17,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
         super('orangelab:ai:OpenWebUI', name, args, opts);
 
         const config = new pulumi.Config(name);
-        const version = config.require('version');
+        const version = config.get('version');
         const hostname = config.require('hostname');
         const appVersion = config.get('appVersion');
 

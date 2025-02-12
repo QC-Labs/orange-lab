@@ -14,7 +14,7 @@ export class Longhorn extends pulumi.ComponentResource {
         super('orangelab:system:Longhorn', name, args, opts);
 
         const config = new pulumi.Config('longhorn');
-        const version = config.require('version');
+        const version = config.get('version');
         const hostname = config.require('hostname');
         const replicaCount = config.requireNumber('replicaCount');
         const enableMonitoring = config.requireBoolean('enableMonitoring');

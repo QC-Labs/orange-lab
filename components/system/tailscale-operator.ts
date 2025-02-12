@@ -18,7 +18,7 @@ export class TailscaleOperator extends pulumi.ComponentResource {
         super('orangelab:system:TailscaleOperator', name, args, opts);
 
         const config = new pulumi.Config(name);
-        const version = config.require('version');
+        const version = config.get('version');
         const hostname = config.require('hostname');
         const oauthClientId = config.requireSecret('oauthClientId');
         const oauthClientSecret = config.requireSecret('oauthClientSecret');

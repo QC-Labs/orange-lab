@@ -16,7 +16,7 @@ export class Ollama extends pulumi.ComponentResource {
         super('orangelab:ai:Ollama', name, args, opts);
 
         const config = new pulumi.Config(name);
-        const version = config.require('version');
+        const version = config.get('version');
         const hostname = config.require('hostname');
 
         this.app = new Application(this, name, { domainName: args.domainName })
@@ -25,13 +25,13 @@ export class Ollama extends pulumi.ComponentResource {
 
         if (this.app.storageOnly) return;
 
-        this.createHelmRelease(version, hostname);
+        this.createHelmRelease(hostname, version);
 
         this.endpointUrl = `https://${hostname}.${args.domainName}`;
         this.serviceUrl = `http://${hostname}.ollama:11434`;
     }
 
-    private createHelmRelease(version: string, hostname: string) {
+    private createHelmRelease(hostname: string, version?: string) {
         new kubernetes.helm.v3.Release(
             this.name,
             {
