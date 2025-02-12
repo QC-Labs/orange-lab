@@ -22,5 +22,8 @@ echo "curl -sfL https://get.k3s.io |  sh -s - \
 --service-cidr=\$SERVICE_CIDR \
 --disable=servicelb \
 --disable=traefik \
+--kube-apiserver-arg=enable-admission-plugins=DefaultTolerationSeconds \
+--kube-apiserver-arg=default-not-ready-toleration-seconds=10 \
+--kube-apiserver-arg=default-unreachable-toleration-seconds=10 \
 --write-kubeconfig ~/.kube/config \
 --write-kubeconfig-mode=644"
