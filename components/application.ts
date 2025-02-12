@@ -9,12 +9,15 @@ interface ContainerSpec {
     image: string;
     port?: number;
     commandArgs?: string[];
-    env?: Record<string, string>;
+    env?: Record<string, string | undefined>;
     gpu?: boolean;
     hostNetwork?: boolean;
     volumeMounts?: { mountPath: string; subPath?: string }[];
     healthChecks?: boolean;
-    resources?: kubernetes.types.input.core.v1.ResourceRequirements;
+    resources?: {
+        limits?: { cpu?: string; memory?: string };
+        requests?: { cpu?: string; memory?: string };
+    };
     runAsUser?: number;
 }
 
@@ -114,18 +117,22 @@ export class Application {
         request?: Record<string, string>;
         limit?: Record<string, string>;
     }) {
-        new LimitRange(this.appName, {
-            metadata: this.getMetadata(),
-            spec: {
-                limits: [
-                    {
-                        type: 'Container',
-                        defaultRequest: args.request,
-                        default: args.limit,
-                    },
-                ],
+        new LimitRange(
+            `${this.appName}-limits`,
+            {
+                metadata: this.getMetadata(),
+                spec: {
+                    limits: [
+                        {
+                            type: 'Container',
+                            defaultRequest: args.request,
+                            default: args.limit,
+                        },
+                    ],
+                },
             },
-        });
+            { parent: this.scope },
+        );
         return this;
     }
 
@@ -295,10 +302,12 @@ export class Application {
         affinity?: kubernetes.types.input.core.v1.Affinity,
     ): pulumi.Input<kubernetes.types.input.core.v1.PodTemplateSpec> {
         this.serviceAccount = this.serviceAccount ?? this.createServiceAccount();
-        const env = Object.entries(args.env ?? {}).map(([key, value]) => ({
-            name: key,
-            value,
-        }));
+        const env = Object.entries(args.env ?? {})
+            .filter(([_, value]) => value)
+            .map(([key, value]) => ({
+                name: key,
+                value,
+            }));
         const podName = args.name ? `${this.appName}-${args.name}` : this.appName;
         return {
             metadata: {
@@ -337,7 +346,19 @@ export class Application {
                         readinessProbe: args.healthChecks
                             ? { httpGet: { path: '/', port: 'http' } }
                             : undefined,
-                        resources: args.resources,
+                        resources: args.gpu
+                            ? {
+                                  ...args.resources,
+                                  requests: {
+                                      ...args.resources?.requests,
+                                      'nvidia.com/gpu': '1',
+                                  },
+                                  limits: {
+                                      ...args.resources?.limits,
+                                      'nvidia.com/gpu': '1',
+                                  },
+                              }
+                            : args.resources,
                         securityContext: args.gpu ? { privileged: true } : undefined,
                         volumeMounts: (args.volumeMounts ?? []).map(volumeMount => ({
                             name: this.appName,

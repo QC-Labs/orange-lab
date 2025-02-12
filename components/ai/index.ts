@@ -5,17 +5,19 @@ import { KubeAi } from './kubeai';
 import { Ollama } from './ollama';
 import { OpenWebUI } from './open-webui';
 import { SDNext } from './sdnext';
+import { InvokeAi } from './invokeai';
 
 interface AIModuleArgs {
     domainName: string;
 }
 
 export class AIModule extends pulumi.ComponentResource {
-    ollama: Ollama | undefined;
-    kubeAI: KubeAi | undefined;
-    openWebUI: OpenWebUI | undefined;
-    automatic1111: Automatic1111 | undefined;
-    sdnext: SDNext | undefined;
+    ollama?: Ollama;
+    kubeAI?: KubeAi;
+    openWebUI?: OpenWebUI;
+    automatic1111?: Automatic1111;
+    sdnext?: SDNext;
+    invokeAi?: InvokeAi;
 
     constructor(
         name: string,
@@ -80,6 +82,14 @@ export class AIModule extends pulumi.ComponentResource {
                         x => x !== undefined,
                     ),
                 },
+            );
+        }
+
+        if (rootConfig.isEnabled('invokeai')) {
+            this.invokeAi = new InvokeAi(
+                'invokeai',
+                { domainName: args.domainName },
+                { parent: this },
             );
         }
     }
