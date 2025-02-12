@@ -27,6 +27,8 @@ const iotModule = new IoTModule(
     'iot',
     {
         domainName: systemModule.domainName,
+        clusterCidr: systemModule.clusterCidr,
+        serviceCidr: systemModule.serviceCidr,
     },
     { dependsOn: systemModule },
 );
