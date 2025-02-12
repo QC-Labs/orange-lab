@@ -46,10 +46,7 @@ export class Automatic1111 extends pulumi.ComponentResource {
                     },
                 ],
                 resources: {
-                    requests: {
-                        cpu: '100m',
-                        memory: '7Gi',
-                    },
+                    requests: { cpu: '100m', memory: '2Gi' },
                 },
             });
 

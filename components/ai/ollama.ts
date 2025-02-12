@@ -19,9 +19,9 @@ export class Ollama extends pulumi.ComponentResource {
         const version = config.require('version');
         const hostname = config.require('hostname');
 
-        this.app = new Application(this, name, {
-            domainName: args.domainName,
-        }).addStorage({ type: PersistentStorageType.GPU });
+        this.app = new Application(this, name, { domainName: args.domainName })
+            .addDefaultLimits({ request: { cpu: '5m', memory: '3Gi' } })
+            .addStorage({ type: PersistentStorageType.GPU });
 
         if (this.app.storageOnly) return;
 
