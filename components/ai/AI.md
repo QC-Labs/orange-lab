@@ -188,6 +188,26 @@ pulumi config set open-webui:enabled true
 pulumi up
 ```
 
+## InvokeAI
+
+|                       |                                                     |
+| --------------------- | --------------------------------------------------- |
+| Homepage              | https://invoke-ai.github.io/InvokeAI/               |
+| Source code           | https://github.com/invoke-ai/InvokeAI               |
+| Environment variables | https://invoke-ai.github.io/InvokeAI/configuration/ |
+| Endpoints             | `https://invokeai.<tsnet>.ts.net/`                  |
+
+Stable Diffusion image generation with a clean user interface.
+
+Note: Unlike _automatic1111_ and _sdnext_, it doesn't integrate with WebUI.
+
+```sh
+pulumi config set invokeai:enable true
+# optional, gives access to gated models
+pulumi config set invokeai:huggingfaceToken <TOKEN> --secret
+pulumi up
+```
+
 ## KubeAI
 
 |            |                                                                |
