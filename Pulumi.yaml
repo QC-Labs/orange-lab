@@ -112,7 +112,7 @@ config:
     # Set token to access gated repos
     kubeai:huggingfaceToken: ''
 
-    invokeai:enabled: true
+    invokeai:enabled: false
     invokeai:hostname: 'invokeai'
     invokeai:storageSize: 20Gi
     # invokeai:huggingfaceToken: TOKEN
