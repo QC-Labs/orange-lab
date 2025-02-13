@@ -33,7 +33,7 @@ export class HomeAssistant extends pulumi.ComponentResource {
                     repo: 'http://pajikos.github.io/home-assistant-helm-chart/',
                 },
                 values: {
-                    affinity: app.getAffinity(),
+                    affinity: app.nodes.getAffinity(),
                     hostNetwork: true,
                     ingress: {
                         enabled: true,

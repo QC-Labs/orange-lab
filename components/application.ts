@@ -6,6 +6,7 @@ import { LimitRange } from '@pulumi/kubernetes/core/v1';
 import { PodTemplateSpecBuilder } from './pod-template-spec';
 import { ContainerSpec } from './interfaces';
 import { Metadata } from './metadata';
+import { Nodes } from './nodes';
 
 /**
  * Application class provides DSL (Domain Specific Language) to simplify creation of Kubernetes manifests.
@@ -28,6 +29,7 @@ export class Application {
     public storageOnly = false;
     readonly metadata: Metadata;
     readonly namespace: kubernetes.core.v1.Namespace;
+    readonly nodes: Nodes;
 
     storage?: PersistentStorage;
     service?: kubernetes.core.v1.Service;
@@ -50,6 +52,7 @@ export class Application {
             config: this.config,
             namespace: this.namespace,
         });
+        this.nodes = new Nodes(this.config);
     }
 
     addStorage(args?: { size?: string; type?: PersistentStorageType }) {
@@ -111,38 +114,6 @@ export class Application {
             { parent: this.scope },
         );
         return this;
-    }
-
-    getAffinity(): kubernetes.types.input.core.v1.Affinity | undefined {
-        const requiredNodeLabel = this.config.get('requiredNodeLabel');
-        const preferredNodeLabel = this.config.get('preferredNodeLabel');
-        if (!requiredNodeLabel && !preferredNodeLabel) return;
-
-        const getNodeSelectorTerm = (labelSpec: string) => {
-            const [key, value] = labelSpec.split('=');
-            const match = value
-                ? { key, operator: 'In', values: [value] }
-                : { key, operator: 'Exists' };
-            return { matchExpressions: [match] };
-        };
-
-        return {
-            nodeAffinity: {
-                requiredDuringSchedulingIgnoredDuringExecution: requiredNodeLabel
-                    ? {
-                          nodeSelectorTerms: [getNodeSelectorTerm(requiredNodeLabel)],
-                      }
-                    : undefined,
-                preferredDuringSchedulingIgnoredDuringExecution: preferredNodeLabel
-                    ? [
-                          {
-                              preference: getNodeSelectorTerm(preferredNodeLabel),
-                              weight: 1,
-                          },
-                      ]
-                    : undefined,
-            },
-        };
     }
 
     private createNamespace(name?: string) {
@@ -226,7 +197,7 @@ export class Application {
             metadata: this.metadata.get(),
             storage: this.storage,
             serviceAccount: this.serviceAccount,
-            affinity: this.getAffinity(),
+            affinity: this.nodes.getAffinity(),
         });
         return new kubernetes.apps.v1.Deployment(
             `${this.appName}-deployment`,
