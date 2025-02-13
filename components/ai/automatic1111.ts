@@ -45,6 +45,7 @@ export class Automatic1111 extends pulumi.ComponentResource {
                         subPath: 'outputs',
                     },
                 ],
+                healthChecks: true,
                 resources: {
                     requests: { cpu: '100m', memory: '2Gi' },
                 },
