@@ -360,6 +360,12 @@ export class Application {
                               }
                             : args.resources,
                         securityContext: args.gpu ? { privileged: true } : undefined,
+                        startupProbe: args.healthChecks
+                            ? {
+                                  httpGet: { path: '/', port: 'http' },
+                                  failureThreshold: 10,
+                              }
+                            : undefined,
                         volumeMounts: (args.volumeMounts ?? []).map(volumeMount => ({
                             name: this.appName,
                             mountPath: volumeMount.mountPath,
