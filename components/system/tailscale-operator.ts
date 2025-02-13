@@ -62,7 +62,7 @@ export class TailscaleOperator extends pulumi.ComponentResource {
         new kubernetes.rbac.v1.ClusterRoleBinding(
             `${this.name}-user-cluster-role-binding`,
             {
-                metadata: { ...this.app.getMetadata(), name: 'orangelab-user' },
+                metadata: { ...this.app.metadata.get(), name: 'orangelab-user' },
                 subjects: [
                     {
                         kind: 'Group',
@@ -84,7 +84,7 @@ export class TailscaleOperator extends pulumi.ComponentResource {
             `${name}-user-cluster-role`,
             {
                 metadata: {
-                    ...this.app.getMetadata(),
+                    ...this.app.metadata.get(),
                     name: 'orangelab-user-cluster-role',
                 },
                 rules: [

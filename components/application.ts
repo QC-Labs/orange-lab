@@ -5,6 +5,7 @@ import assert from 'node:assert';
 import { LimitRange } from '@pulumi/kubernetes/core/v1';
 import { PodTemplateSpecBuilder } from './pod-template-spec';
 import { ContainerSpec } from './interfaces';
+import { Metadata } from './metadata';
 
 /**
  * Application class provides DSL (Domain Specific Language) to simplify creation of Kubernetes manifests.
@@ -25,8 +26,9 @@ export class Application {
     public endpointUrl: string | undefined;
     public serviceUrl: string | undefined;
     public storageOnly = false;
-
+    readonly metadata: Metadata;
     readonly namespace: kubernetes.core.v1.Namespace;
+
     storage?: PersistentStorage;
     service?: kubernetes.core.v1.Service;
     serviceAccount?: kubernetes.core.v1.ServiceAccount;
@@ -35,7 +37,6 @@ export class Application {
     daemonSet?: kubernetes.apps.v1.DaemonSet;
 
     private config: pulumi.Config;
-    private labels: Record<string, string>;
 
     constructor(
         private readonly scope: pulumi.ComponentResource,
@@ -44,22 +45,11 @@ export class Application {
     ) {
         this.config = new pulumi.Config(appName);
         this.storageOnly = this.config.getBoolean('storageOnly') ?? false;
-        this.labels = this.createLabels();
         this.namespace = this.createNamespace(params?.namespaceName);
-    }
-
-    private createLabels() {
-        const labels = {
-            app: this.appName,
-            'app.kubernetes.io/name': this.appName,
-            'app.kubernetes.io/managed-by': 'OrangeLab',
-        };
-        const version = this.config.get('version');
-        const appVersion = this.config.get('appVersion');
-        if (version) {
-            this.labels['app.kubernetes.io/version'] = appVersion ?? version;
-        }
-        return labels;
+        this.metadata = new Metadata(appName, {
+            config: this.config,
+            namespace: this.namespace,
+        });
     }
 
     addStorage(args?: { size?: string; type?: PersistentStorageType }) {
@@ -107,7 +97,7 @@ export class Application {
         new LimitRange(
             `${this.appName}-limits`,
             {
-                metadata: this.getMetadata(),
+                metadata: this.metadata.get(),
                 spec: {
                     limits: [
                         {
@@ -155,14 +145,6 @@ export class Application {
         };
     }
 
-    getMetadata() {
-        return {
-            name: this.appName,
-            namespace: this.namespace.metadata.name,
-            labels: this.labels,
-        };
-    }
-
     private createNamespace(name?: string) {
         return new kubernetes.core.v1.Namespace(
             `${this.appName}-ns`,
@@ -174,7 +156,7 @@ export class Application {
     private createServiceAccount() {
         return new kubernetes.core.v1.ServiceAccount(
             `${this.appName}-sa`,
-            { metadata: this.getMetadata() },
+            { metadata: this.metadata.get() },
             { parent: this.scope },
         );
     }
@@ -183,7 +165,7 @@ export class Application {
         return new kubernetes.core.v1.Service(
             `${this.appName}-svc`,
             {
-                metadata: this.getMetadata(),
+                metadata: this.metadata.get(),
                 spec: {
                     type: 'ClusterIP',
                     ports: [
@@ -194,7 +176,7 @@ export class Application {
                             targetPort: port,
                         },
                     ],
-                    selector: this.labels,
+                    selector: this.metadata.getSelectorLabels(),
                 },
             },
             { parent: this.scope },
@@ -207,7 +189,7 @@ export class Application {
         return new kubernetes.networking.v1.Ingress(
             `${this.appName}-ingress`,
             {
-                metadata: this.getMetadata(),
+                metadata: this.metadata.get(),
                 spec: {
                     ingressClassName: 'tailscale',
                     tls: [{ hosts: [hostname] }],
@@ -241,7 +223,7 @@ export class Application {
         assert(this.serviceAccount, 'serviceAccount is required');
         const podSpec = new PodTemplateSpecBuilder(this.appName, {
             spec: args,
-            metadata: this.getMetadata(),
+            metadata: this.metadata.get(),
             storage: this.storage,
             serviceAccount: this.serviceAccount,
             affinity: this.getAffinity(),
@@ -249,10 +231,10 @@ export class Application {
         return new kubernetes.apps.v1.Deployment(
             `${this.appName}-deployment`,
             {
-                metadata: this.getMetadata(),
+                metadata: this.metadata.get(),
                 spec: {
                     replicas: 1,
-                    selector: { matchLabels: { app: this.appName } },
+                    selector: { matchLabels: this.metadata.getSelectorLabels() },
                     template: podSpec.create(),
                     strategy: this.storage
                         ? { type: 'Recreate' }
@@ -266,13 +248,7 @@ export class Application {
     private createDaemonSet(args: ContainerSpec) {
         assert(args.name, 'name is required for daemonset');
         assert(this.serviceAccount, 'serviceAccount is required');
-        const daemonSetName = `${this.appName}-${args.name}`;
-        const labels = {
-            ...this.labels,
-            component: args.name,
-            'app.kubernetes.io/component': args.name,
-        };
-        const metadata = { ...this.getMetadata(), name: daemonSetName, labels };
+        const metadata = this.metadata.getForComponent(args.name);
         const podSpec = new PodTemplateSpecBuilder(this.appName, {
             spec: args,
             metadata,
@@ -280,12 +256,12 @@ export class Application {
             serviceAccount: this.serviceAccount,
         });
         return new kubernetes.apps.v1.DaemonSet(
-            `${daemonSetName}-daemonset`,
+            `${this.appName}-${args.name}-daemonset`,
             {
                 metadata,
                 spec: {
                     selector: {
-                        matchLabels: { app: this.appName, component: args.name },
+                        matchLabels: this.metadata.getSelectorLabels(args.name),
                     },
                     template: podSpec.create(),
                 },
