@@ -3,23 +3,8 @@ import * as kubernetes from '@pulumi/kubernetes';
 import { PersistentStorage, PersistentStorageType } from './persistent-storage';
 import assert from 'node:assert';
 import { LimitRange } from '@pulumi/kubernetes/core/v1';
-
-interface ContainerSpec {
-    name?: string;
-    image: string;
-    port?: number;
-    commandArgs?: string[];
-    env?: Record<string, string | undefined>;
-    gpu?: boolean;
-    hostNetwork?: boolean;
-    volumeMounts?: { mountPath: string; subPath?: string }[];
-    healthChecks?: boolean;
-    resources?: {
-        limits?: { cpu?: string; memory?: string };
-        requests?: { cpu?: string; memory?: string };
-    };
-    runAsUser?: number;
-}
+import { PodTemplateSpecBuilder } from './pod-template-spec';
+import { ContainerSpec } from './interfaces';
 
 /**
  * Application class provides DSL (Domain Specific Language) to simplify creation of Kubernetes manifests.
@@ -51,8 +36,6 @@ export class Application {
 
     private config: pulumi.Config;
     private labels: Record<string, string>;
-    private requiredNodeLabel?: string;
-    private preferredNodeLabel?: string;
 
     constructor(
         private readonly scope: pulumi.ComponentResource,
@@ -60,21 +43,23 @@ export class Application {
         private readonly params?: { domainName?: string; namespaceName?: string },
     ) {
         this.config = new pulumi.Config(appName);
-        const version = this.config.get('version');
-        const appVersion = this.config.get('appVersion');
         this.storageOnly = this.config.getBoolean('storageOnly') ?? false;
-        this.requiredNodeLabel = this.config.get('requiredNodeLabel');
-        this.preferredNodeLabel = this.config.get('preferredNodeLabel');
-        this.labels = {
-            app: appName,
-            'app.kubernetes.io/name': appName,
+        this.labels = this.createLabels();
+        this.namespace = this.createNamespace(params?.namespaceName);
+    }
+
+    private createLabels() {
+        const labels = {
+            app: this.appName,
+            'app.kubernetes.io/name': this.appName,
             'app.kubernetes.io/managed-by': 'OrangeLab',
         };
+        const version = this.config.get('version');
+        const appVersion = this.config.get('appVersion');
         if (version) {
             this.labels['app.kubernetes.io/version'] = appVersion ?? version;
         }
-        this.namespace = this.createNamespace(params?.namespaceName);
-        if (this.storageOnly) return;
+        return labels;
     }
 
     addStorage(args?: { size?: string; type?: PersistentStorageType }) {
@@ -97,6 +82,7 @@ export class Application {
         const hostname = this.config.require('hostname');
         if (this.storageOnly) return this;
 
+        this.serviceAccount = this.serviceAccount ?? this.createServiceAccount();
         this.deployment = this.createDeployment(args);
         if (!args.port) return this;
         this.service = this.createService(args.port);
@@ -109,6 +95,7 @@ export class Application {
 
     addDeamonSet(args: ContainerSpec) {
         if (this.storageOnly) return this;
+        this.serviceAccount = this.serviceAccount ?? this.createServiceAccount();
         this.daemonSet = this.createDaemonSet(args);
         return this;
     }
@@ -137,36 +124,35 @@ export class Application {
     }
 
     getAffinity(): kubernetes.types.input.core.v1.Affinity | undefined {
-        if (!this.requiredNodeLabel && !this.preferredNodeLabel) return;
+        const requiredNodeLabel = this.config.get('requiredNodeLabel');
+        const preferredNodeLabel = this.config.get('preferredNodeLabel');
+        if (!requiredNodeLabel && !preferredNodeLabel) return;
+
+        const getNodeSelectorTerm = (labelSpec: string) => {
+            const [key, value] = labelSpec.split('=');
+            const match = value
+                ? { key, operator: 'In', values: [value] }
+                : { key, operator: 'Exists' };
+            return { matchExpressions: [match] };
+        };
+
         return {
             nodeAffinity: {
-                requiredDuringSchedulingIgnoredDuringExecution: this.requiredNodeLabel
+                requiredDuringSchedulingIgnoredDuringExecution: requiredNodeLabel
                     ? {
-                          nodeSelectorTerms: [
-                              this.getNodeSelectorTerm(this.requiredNodeLabel),
-                          ],
+                          nodeSelectorTerms: [getNodeSelectorTerm(requiredNodeLabel)],
                       }
                     : undefined,
-                preferredDuringSchedulingIgnoredDuringExecution: this.preferredNodeLabel
+                preferredDuringSchedulingIgnoredDuringExecution: preferredNodeLabel
                     ? [
                           {
-                              preference: this.getNodeSelectorTerm(
-                                  this.preferredNodeLabel,
-                              ),
+                              preference: getNodeSelectorTerm(preferredNodeLabel),
                               weight: 1,
                           },
                       ]
                     : undefined,
             },
         };
-    }
-
-    private getNodeSelectorTerm(labelSpec: string) {
-        const [key, value] = labelSpec.split('=');
-        const match = value
-            ? { key, operator: 'In', values: [value] }
-            : { key, operator: 'Exists' };
-        return { matchExpressions: [match] };
     }
 
     getMetadata() {
@@ -252,6 +238,14 @@ export class Application {
 
     private createDeployment(args: ContainerSpec) {
         assert(args.port, 'port required for deployments');
+        assert(this.serviceAccount, 'serviceAccount is required');
+        const podSpec = new PodTemplateSpecBuilder(this.appName, {
+            spec: args,
+            metadata: this.getMetadata(),
+            storage: this.storage,
+            serviceAccount: this.serviceAccount,
+            affinity: this.getAffinity(),
+        });
         return new kubernetes.apps.v1.Deployment(
             `${this.appName}-deployment`,
             {
@@ -259,11 +253,7 @@ export class Application {
                 spec: {
                     replicas: 1,
                     selector: { matchLabels: { app: this.appName } },
-                    template: this.createPodTemplateSpec(
-                        args,
-                        this.labels,
-                        this.getAffinity(),
-                    ),
+                    template: podSpec.create(),
                     strategy: this.storage
                         ? { type: 'Recreate' }
                         : { type: 'RollingUpdate' },
@@ -275,119 +265,32 @@ export class Application {
 
     private createDaemonSet(args: ContainerSpec) {
         assert(args.name, 'name is required for daemonset');
+        assert(this.serviceAccount, 'serviceAccount is required');
         const daemonSetName = `${this.appName}-${args.name}`;
         const labels = {
             ...this.labels,
             component: args.name,
             'app.kubernetes.io/component': args.name,
         };
+        const metadata = { ...this.getMetadata(), name: daemonSetName, labels };
+        const podSpec = new PodTemplateSpecBuilder(this.appName, {
+            spec: args,
+            metadata,
+            storage: this.storage,
+            serviceAccount: this.serviceAccount,
+        });
         return new kubernetes.apps.v1.DaemonSet(
             `${daemonSetName}-daemonset`,
             {
-                metadata: { ...this.getMetadata(), name: daemonSetName, labels },
+                metadata,
                 spec: {
                     selector: {
                         matchLabels: { app: this.appName, component: args.name },
                     },
-                    template: this.createPodTemplateSpec(args, labels),
+                    template: podSpec.create(),
                 },
             },
             { parent: this.scope },
         );
-    }
-
-    private createPodTemplateSpec(
-        args: ContainerSpec,
-        labels: Record<string, string>,
-        affinity?: kubernetes.types.input.core.v1.Affinity,
-    ): pulumi.Input<kubernetes.types.input.core.v1.PodTemplateSpec> {
-        this.serviceAccount = this.serviceAccount ?? this.createServiceAccount();
-        const env = Object.entries(args.env ?? {})
-            .filter(([_, value]) => value)
-            .map(([key, value]) => ({
-                name: key,
-                value,
-            }));
-        const podName = args.name ? `${this.appName}-${args.name}` : this.appName;
-        return {
-            metadata: {
-                ...this.getMetadata(),
-                name: podName,
-                labels,
-            },
-            spec: {
-                affinity,
-                securityContext: args.runAsUser
-                    ? {
-                          runAsUser: args.runAsUser,
-                          runAsGroup: args.runAsUser,
-                          fsGroup: args.runAsUser,
-                      }
-                    : undefined,
-                hostNetwork: args.hostNetwork,
-                containers: [
-                    {
-                        args: args.commandArgs,
-                        env,
-                        image: args.image,
-                        livenessProbe: args.healthChecks
-                            ? { httpGet: { path: '/', port: 'http' } }
-                            : undefined,
-                        name: podName,
-                        ports: args.port
-                            ? [
-                                  {
-                                      name: 'http',
-                                      containerPort: args.port,
-                                      protocol: 'TCP',
-                                  },
-                              ]
-                            : [],
-                        readinessProbe: args.healthChecks
-                            ? { httpGet: { path: '/', port: 'http' } }
-                            : undefined,
-                        resources: args.gpu
-                            ? {
-                                  ...args.resources,
-                                  requests: {
-                                      ...args.resources?.requests,
-                                      'nvidia.com/gpu': '1',
-                                  },
-                                  limits: {
-                                      ...args.resources?.limits,
-                                      'nvidia.com/gpu': '1',
-                                  },
-                              }
-                            : args.resources,
-                        securityContext: args.gpu ? { privileged: true } : undefined,
-                        startupProbe: args.healthChecks
-                            ? {
-                                  httpGet: { path: '/', port: 'http' },
-                                  failureThreshold: 10,
-                              }
-                            : undefined,
-                        volumeMounts: (args.volumeMounts ?? []).map(volumeMount => ({
-                            name: this.appName,
-                            mountPath: volumeMount.mountPath,
-                            subPath: volumeMount.subPath,
-                        })),
-                    },
-                ],
-                serviceAccountName: this.serviceAccount.metadata.name,
-                runtimeClassName: args.gpu ? 'nvidia' : undefined,
-                nodeSelector: args.gpu ? { 'orangelab/gpu': 'true' } : undefined,
-                volumes:
-                    this.storage && args.volumeMounts
-                        ? [
-                              {
-                                  name: this.appName,
-                                  persistentVolumeClaim: {
-                                      claimName: this.storage.volumeClaimName,
-                                  },
-                              },
-                          ]
-                        : undefined,
-            },
-        };
     }
 }
