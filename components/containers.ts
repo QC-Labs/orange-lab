@@ -1,11 +1,24 @@
 import * as kubernetes from '@pulumi/kubernetes';
-import { ContainerSpec } from './interfaces';
 import { PersistentStorage } from './persistent-storage';
 
-// Builder for kubernetes.types.input.core.v1.PodTemplateSpec.
-// Just creates the manifest but does not create any Pulumi resources.
-// Used by Application class.
-export class PodTemplateSpecBuilder {
+export interface ContainerSpec {
+    name?: string;
+    image: string;
+    port?: number;
+    commandArgs?: string[];
+    env?: Record<string, string | undefined>;
+    gpu?: boolean;
+    hostNetwork?: boolean;
+    volumeMounts?: { mountPath: string; subPath?: string }[];
+    healthChecks?: boolean;
+    resources?: {
+        limits?: { cpu?: string; memory?: string };
+        requests?: { cpu?: string; memory?: string };
+    };
+    runAsUser?: number;
+}
+
+export class Containers {
     metadata: kubernetes.types.input.meta.v1.ObjectMeta;
     serviceAccount: kubernetes.core.v1.ServiceAccount;
     storage?: PersistentStorage;
@@ -29,7 +42,7 @@ export class PodTemplateSpecBuilder {
         this.affinity = args.affinity;
     }
 
-    public create(): kubernetes.types.input.core.v1.PodTemplateSpec {
+    public createPodTemplateSpec(): kubernetes.types.input.core.v1.PodTemplateSpec {
         return {
             metadata: this.metadata,
             spec: {

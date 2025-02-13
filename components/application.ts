@@ -1,21 +1,17 @@
-import * as pulumi from '@pulumi/pulumi';
 import * as kubernetes from '@pulumi/kubernetes';
-import { PersistentStorage, PersistentStorageType } from './persistent-storage';
-import assert from 'node:assert';
 import { LimitRange } from '@pulumi/kubernetes/core/v1';
-import { PodTemplateSpecBuilder } from './pod-template-spec';
-import { ContainerSpec } from './interfaces';
+import * as pulumi from '@pulumi/pulumi';
+import assert from 'node:assert';
+import { Containers, ContainerSpec } from './containers';
 import { Metadata } from './metadata';
 import { Nodes } from './nodes';
+import { PersistentStorage, PersistentStorageType } from './persistent-storage';
 
 /**
  * Application class provides DSL (Domain Specific Language) to simplify creation of Kubernetes manifests.
  *
- * Use of this class is optional.
- * The Kubernetes resources are NOT encapsulated and are accessible for reading by components.
- * This allows partial use and extensibility.
- *
  * The `add*` methods use "fluent interface" to allow provisioning resources through "method chaining".
+ * Pulumi resources are created here and other classes are used to create Kubernetes manifests without side-effects.
  *
  * Limitations:
  * - only one Deployment supported
@@ -24,21 +20,20 @@ import { Nodes } from './nodes';
  * - no endpoints for DaemonSet
  */
 export class Application {
-    public endpointUrl: string | undefined;
-    public serviceUrl: string | undefined;
-    public storageOnly = false;
+    endpointUrl?: string;
+    serviceUrl?: string;
+    storageOnly = false;
     readonly metadata: Metadata;
     readonly namespace: kubernetes.core.v1.Namespace;
     readonly nodes: Nodes;
-
     storage?: PersistentStorage;
-    service?: kubernetes.core.v1.Service;
-    serviceAccount?: kubernetes.core.v1.ServiceAccount;
-    ingress?: kubernetes.networking.v1.Ingress;
-    deployment?: kubernetes.apps.v1.Deployment;
-    daemonSet?: kubernetes.apps.v1.DaemonSet;
 
-    private config: pulumi.Config;
+    private readonly config: pulumi.Config;
+    private service?: kubernetes.core.v1.Service;
+    private serviceAccount?: kubernetes.core.v1.ServiceAccount;
+    private ingress?: kubernetes.networking.v1.Ingress;
+    private deployment?: kubernetes.apps.v1.Deployment;
+    private daemonSet?: kubernetes.apps.v1.DaemonSet;
 
     constructor(
         private readonly scope: pulumi.ComponentResource,
@@ -192,7 +187,7 @@ export class Application {
     private createDeployment(args: ContainerSpec) {
         assert(args.port, 'port required for deployments');
         assert(this.serviceAccount, 'serviceAccount is required');
-        const podSpec = new PodTemplateSpecBuilder(this.appName, {
+        const podSpec = new Containers(this.appName, {
             spec: args,
             metadata: this.metadata.get(),
             storage: this.storage,
@@ -206,7 +201,7 @@ export class Application {
                 spec: {
                     replicas: 1,
                     selector: { matchLabels: this.metadata.getSelectorLabels() },
-                    template: podSpec.create(),
+                    template: podSpec.createPodTemplateSpec(),
                     strategy: this.storage
                         ? { type: 'Recreate' }
                         : { type: 'RollingUpdate' },
@@ -220,7 +215,7 @@ export class Application {
         assert(args.name, 'name is required for daemonset');
         assert(this.serviceAccount, 'serviceAccount is required');
         const metadata = this.metadata.getForComponent(args.name);
-        const podSpec = new PodTemplateSpecBuilder(this.appName, {
+        const podSpec = new Containers(this.appName, {
             spec: args,
             metadata,
             storage: this.storage,
@@ -234,7 +229,7 @@ export class Application {
                     selector: {
                         matchLabels: this.metadata.getSelectorLabels(args.name),
                     },
-                    template: podSpec.create(),
+                    template: podSpec.createPodTemplateSpec(),
                 },
             },
             { parent: this.scope },
