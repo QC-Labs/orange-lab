@@ -43,11 +43,12 @@ Private infrastructure for cloud natives.
 
 [AI module](./components/ai/AI.md):
 
+-   `automatic1111` - Automatic1111 Stable Diffusion WebUI
+-   `kubeai` - Ollama and vLLM models over OpenAI-compatible API
+-   `invokeai` - generative AI plaform, community edition
 -   `ollama` - local large language models
 -   `open-webui` - Open WebUI frontend
--   `automatic1111` - Automatic1111 Stable Diffusion WebUI
 -   `sdnext` - SD.Next Stable Diffusion WebUI
--   `kubeai` - Ollama and vLLM models over OpenAI-compatible API
 
 # Platforms and limitations
 
