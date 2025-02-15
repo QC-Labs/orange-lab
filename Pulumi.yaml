@@ -105,6 +105,7 @@ config:
     kubeai:enabled: false
     kubeai:hostname: kubeai
     kubeai:preferredNodeLabel: orangelab/kubeai
+    kubeai:enableMonitoring: false
     # Set token to access gated repos
     # kubeai:huggingfaceToken: ''
     # Comma-separated list of models from https://github.com/substratusai/kubeai/blob/main/charts/models/values.yaml

@@ -96,6 +96,10 @@ export class Prometheus extends pulumi.ComponentResource {
                             hostname: prometheusHostname,
                         },
                         prometheusSpec: {
+                            podMonitorSelectorNilUsesHelmValues: false,
+                            probeSelectorNilUsesHelmValues: false,
+                            ruleSelectorNilUsesHelmValues: false,
+                            serviceMonitorSelectorNilUsesHelmValues: false,
                             storageSpec: {
                                 volumeClaimTemplate: {
                                     spec: {

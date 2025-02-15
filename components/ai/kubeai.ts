@@ -15,6 +15,7 @@ export class KubeAi extends pulumi.ComponentResource {
 
         const config = new pulumi.Config(name);
         const version = config.get('version');
+        const enableMonitoring = config.getBoolean('enableMonitoring');
         const hostname = config.require('hostname');
         const huggingfaceToken = config.getSecret('huggingfaceToken');
         const models = config.get('models')?.split(',') ?? [];
@@ -43,6 +44,16 @@ export class KubeAi extends pulumi.ComponentResource {
                         ],
                         tls: [{ hosts: [hostname] }],
                     },
+                    metrics: enableMonitoring
+                        ? {
+                              prometheusOperator: {
+                                  vLLMPodMonitor: {
+                                      enabled: true,
+                                      labels: {},
+                                  },
+                              },
+                          }
+                        : undefined,
                     modelAutoscaling: { timeWindow: '30m' },
                     modelServerPods: {
                         // required for NVidia detection
