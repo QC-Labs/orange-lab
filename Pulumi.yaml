@@ -50,7 +50,6 @@ config:
     longhorn:enableMonitoring: false
 
     nvidia-gpu-operator:enabled: false
-    # nvidia-gpu-operator:version: v24.9.2
 
     ### Monitoring ###
 
@@ -105,10 +104,14 @@ config:
 
     kubeai:enabled: false
     kubeai:hostname: kubeai
+    kubeai:preferredNodeLabel: orangelab/kubeai
     # Set token to access gated repos
-    kubeai:huggingfaceToken: ''
+    # kubeai:huggingfaceToken: ''
+    # Comma-separated list of models from https://github.com/substratusai/kubeai/blob/main/charts/models/values.yaml
+    kubeai:models: qwen2.5-coder-1.5b-rtx4070-8gb
 
     invokeai:enabled: false
+    invokeai:preferredNodeLabel: orangelab/invokeai
     invokeai:hostname: 'invokeai'
     invokeai:storageSize: 20Gi
     # invokeai:huggingfaceToken: TOKEN

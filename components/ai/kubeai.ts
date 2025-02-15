@@ -1,5 +1,6 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
+import { Application } from '../application';
 
 export interface KubeAiArgs {
     domainName: string;
@@ -16,43 +17,19 @@ export class KubeAi extends pulumi.ComponentResource {
         const version = config.get('version');
         const hostname = config.require('hostname');
         const huggingfaceToken = config.getSecret('huggingfaceToken');
+        const models = config.get('models')?.split(',') ?? [];
 
-        const namespace = new kubernetes.core.v1.Namespace(
-            `${name}-ns`,
-            {
-                metadata: { name },
-            },
-            { parent: this },
-        );
+        const app = new Application(this, name);
 
-        new kubernetes.helm.v3.Release(
+        const kubeAi = new kubernetes.helm.v3.Release(
             name,
             {
                 chart: 'kubeai',
-                namespace: namespace.metadata.name,
+                namespace: app.namespace.metadata.name,
                 version,
-                repositoryOpts: {
-                    repo: 'https://www.kubeai.org',
-                },
+                repositoryOpts: { repo: 'https://www.kubeai.org' },
                 values: {
-                    secrets: {
-                        huggingface: {
-                            token: huggingfaceToken,
-                        },
-                    },
-                    modelServerPods: {
-                        // required for NVidia detection
-                        securityContext: {
-                            privileged: true,
-                            allowPrivilegeEscalation: true,
-                        },
-                    },
-                    openwebui: {
-                        enabled: false,
-                    },
-                    nodeSelector: {
-                        'orangelab/gpu': 'true',
-                    },
+                    affinity: app.nodes.getAffinity(),
                     ingress: {
                         enabled: true,
                         className: 'tailscale',
@@ -66,6 +43,16 @@ export class KubeAi extends pulumi.ComponentResource {
                         ],
                         tls: [{ hosts: [hostname] }],
                     },
+                    modelAutoscaling: { timeWindow: '10m' },
+                    modelServerPods: {
+                        // required for NVidia detection
+                        securityContext: {
+                            privileged: true,
+                            allowPrivilegeEscalation: true,
+                        },
+                    },
+                    openwebui: { enabled: false },
+                    nodeSelector: { 'orangelab/gpu': 'true' },
                     resourceProfiles: {
                         nvidia: {
                             runtimeClassName: 'nvidia',
@@ -75,6 +62,7 @@ export class KubeAi extends pulumi.ComponentResource {
                             },
                         },
                     },
+                    secrets: { huggingface: { token: huggingfaceToken } },
                 },
             },
             { parent: this },
@@ -84,28 +72,11 @@ export class KubeAi extends pulumi.ComponentResource {
             `${name}-models`,
             {
                 chart: 'models',
-                namespace: 'kubeai',
-                createNamespace: true,
+                namespace: app.namespace.metadata.name,
                 version,
-                repositoryOpts: {
-                    repo: 'https://www.kubeai.org',
-                },
+                repositoryOpts: { repo: 'https://www.kubeai.org' },
                 values: {
-                    // Preconfigured models at https://github.com/substratusai/kubeai/blob/main/charts/models/values.yaml
-                    catalog: {
-                        'qwen2.5-coder-1.5b-cpu': {
-                            enabled: true,
-                            resourceProfile: 'nvidia:1',
-                            // model downloaded on first request
-                            minReplicas: 0,
-                        },
-                        'llama-3.1-8b-instruct-cpu': {
-                            enabled: true,
-                            resourceProfile: 'nvidia:1',
-                            // model downloaded on first request, requires Huggingface token
-                            minReplicas: 0,
-                        },
-                    },
+                    catalog: this.createModelCatalog(models),
                 },
             },
             { parent: this, dependsOn: [kubeAi] },
@@ -113,5 +84,18 @@ export class KubeAi extends pulumi.ComponentResource {
 
         this.endpointUrl = `https://${hostname}.${args.domainName}`;
         this.serviceUrl = `http://${hostname}.kubeai/openai/v1`;
+    }
+
+    private createModelCatalog(models: string[]): Record<string, object> {
+        const modelList = models.map(model => ({
+            [model]: {
+                enabled: true,
+                resourceProfile: 'nvidia:1',
+                // model downloaded on first request
+                minReplicas: 0,
+            },
+        }));
+        const catalog = Object.assign({}, ...modelList) as Record<string, object>;
+        return catalog;
     }
 }
