@@ -42,6 +42,7 @@ config:
     # tailscale-operator:oauthClientSecret: OAUTH_CLIENT_SECRET
 
     longhorn:enabled: false
+    longhorn:version: 1.8.0
     longhorn:hostname: longhorn
     # Set to 3 when 3+ storage nodes are available
     longhorn:replicaCount: 2
