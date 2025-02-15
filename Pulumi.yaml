@@ -108,7 +108,7 @@ config:
     # Set token to access gated repos
     # kubeai:huggingfaceToken: ''
     # Comma-separated list of models from https://github.com/substratusai/kubeai/blob/main/charts/models/values.yaml
-    kubeai:models: qwen2.5-coder-1.5b-rtx4070-8gb
+    kubeai:models: qwen2.5-coder-1.5b-rtx4070-8gb,faster-whisper-medium-en-cpu
 
     invokeai:enabled: false
     invokeai:preferredNodeLabel: orangelab/invokeai

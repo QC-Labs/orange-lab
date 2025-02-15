@@ -225,6 +225,7 @@ pulumi up
 | vLLM arguments | https://docs.vllm.ai/en/stable/serving/engine_args.html                    |
 | Endpoint       | `https://kubeai.<tsnet>.ts.net/`                                           |
 |                | `https://kubeai.<tsnet>.ts.net/openai/v1/models`                           |
+|                | `https://kubeai.<tsnet>.ts.net/openai/v1/audio/transcriptions`             |
 
 KubeAI provides OpenAI-compatible API to Ollama and vLLM. It allows autoscalling and more control over the models and inference engines.
 
