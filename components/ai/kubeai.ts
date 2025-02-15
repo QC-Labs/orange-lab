@@ -43,7 +43,7 @@ export class KubeAi extends pulumi.ComponentResource {
                         ],
                         tls: [{ hosts: [hostname] }],
                     },
-                    modelAutoscaling: { timeWindow: '10m' },
+                    modelAutoscaling: { timeWindow: '30m' },
                     modelServerPods: {
                         // required for NVidia detection
                         securityContext: {
