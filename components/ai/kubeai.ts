@@ -108,7 +108,7 @@ export class KubeAi extends pulumi.ComponentResource {
                     },
                 },
             },
-            { parent: this },
+            { parent: this, dependsOn: [kubeAi] },
         );
 
         this.endpointUrl = `https://${hostname}.${args.domainName}`;
