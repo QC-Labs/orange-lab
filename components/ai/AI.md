@@ -80,7 +80,11 @@ ollama stop <id>
 
 You can use https://www.continue.dev/ extension to connect to Ollama for code completion and chat.
 
-`config.json` for the extension has to be updated to modify `apiBase` and point to our Ollama instance instead of the default `localhost`. Example config fragment:
+`config.json` for the extension has to be updated to modify `apiBase` and point to our Ollama instance instead of the default `localhost`.
+
+Available settings at https://docs.continue.dev/customize/deep-dives/autocomplete
+
+Example config fragment:
 
 ```json
   "models": [
@@ -97,7 +101,7 @@ You can use https://www.continue.dev/ extension to connect to Ollama for code co
       "provider": "ollama"
     },
     {
-      "model": "deepseek-coder-v2:16b",
+      "model": "deepseek-coder-v2",
       "title": "Ollama deepseek-coder-v2",
       "apiBase": "https://ollama.<tsnet>.ts.net/",
       "provider": "ollama"
@@ -195,9 +199,12 @@ pulumi up
 | Homepage              | https://invoke-ai.github.io/InvokeAI/               |
 | Source code           | https://github.com/invoke-ai/InvokeAI               |
 | Environment variables | https://invoke-ai.github.io/InvokeAI/configuration/ |
+| Tutorials             | https://www.youtube.com/@invokeai                   |
 | Endpoints             | `https://invokeai.<tsnet>.ts.net/`                  |
 
-Stable Diffusion image generation with a clean user interface.
+Generative AI platform with a clean user interface.
+
+Note: The community edition does not support user authentication so the images you create will be visible to everyone on your Tailnet.
 
 Note: Unlike _automatic1111_ and _sdnext_, it doesn't integrate with WebUI.
 
@@ -208,24 +215,58 @@ pulumi config set invokeai:huggingfaceToken <TOKEN> --secret
 pulumi up
 ```
 
-## KubeAI
+## KubeAI (experimental)
 
-|            |                                                                |
-| ---------- | -------------------------------------------------------------- |
-| Homepage   | https://www.kubeai.org/                                        |
-| Helm chart | https://github.com/substratusai/kubeai/blob/main/charts/kubeai |
-| Endpoint   | `https://kubeai.<tsnet>.ts.net/`                               |
+|                |                                                                            |
+| -------------- | -------------------------------------------------------------------------- |
+| Homepage       | https://www.kubeai.org/                                                    |
+| Helm chart     | https://github.com/substratusai/kubeai/blob/main/charts/kubeai             |
+| Model catalog  | https://github.com/substratusai/kubeai/blob/main/charts/models/values.yaml |
+| vLLM arguments | https://docs.vllm.ai/en/stable/serving/engine_args.html                    |
+| Endpoint       | `https://kubeai.<tsnet>.ts.net/`                                           |
+|                | `https://kubeai.<tsnet>.ts.net/openai/v1/models`                           |
 
-Allows autoscalling and more control over the models and inference engines.
+KubeAI provides OpenAI-compatible API to Ollama and vLLM. It allows autoscalling and more control over the models and inference engines.
 
-Provides OpenAI-compatible API to Ollama and vLLM.
+It's generally more useful for dedicated GPU clusters or when using an agent deployed with cloud providers. It is included here for experiments as it supports vLLM engine as an alternative to Ollama. It's faster but also uses more VRAM.
+
+Currently the models are loaded into memory on first request and stay in memory for 30 minutes. Longhorn volumes are NOT used.
+
+Make sure nothing else is loaded into GPU memory (`nvidia-smi`), otherwise the model pods will likely fail to start.
 
 KubeAI models are downloaded from HuggingFace. You need to create free account and access token with permission to `Read access to contents of all public gated repos you can access` at https://huggingface.co/settings/tokens
-
-Currently the models are loaded into memory on first request. Longhorn volumes are NOT used. KubeAI supports persistent volumes for vLLM however they need to be pre-populated and do not download the model automatically.
 
 ```sh
 pulumi config set kubeai:enabled true
 pulumi config set --secret kubeai:huggingfaceToken <hf_token>
 pulumi up
+```
+
+### Visual Studio Code
+
+Similar to Ollama, you can configure Continue to use KubeAi/vLLM. Depending on the model, max tokens or context length will have to be adjusted.
+
+```json
+"models": [
+    {
+        "model": "qwen2.5-coder-1.5b-rtx4070-8gb",
+        "title": "vLLM qwen2.5-coder",
+        "provider": "openai",
+        "apiBase": "https://kubeai.<tsnet>.ts.net/openai/v1",
+        "apiKey": "NOT USED"
+    },
+],
+"tabAutocompleteModel": {
+    "title": "Qwen2.5-Coder 1.5B",
+    "provider": "openai",
+    "model": "qwen2.5-coder-1.5b-rtx4070-8gb",
+    "apiBase": "https://kubeai.<tsnet>.ts.net/openai/v1",
+    "disableInFiles": ["*.txt", "*.md"]
+},
+"tabAutocompleteOptions": {
+    "disabled": "false",
+    "debounceDelay": 1000,
+    "maxPromptTokens": 1024,
+    "contextLength": 1024
+},
 ```
