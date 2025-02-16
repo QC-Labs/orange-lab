@@ -1,6 +1,8 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
+import { Dashboard } from '../dashboard';
+import dashboardJson from './kubeai-dashboard-vllm.json';
 
 export interface KubeAiArgs {
     domainName: string;
@@ -10,7 +12,7 @@ export class KubeAi extends pulumi.ComponentResource {
     public readonly endpointUrl: string | undefined;
     public readonly serviceUrl: string | undefined;
 
-    constructor(name: string, args: KubeAiArgs, opts?: pulumi.ResourceOptions) {
+    constructor(private name: string, args: KubeAiArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:ai:KubeAi', name, args, opts);
 
         const config = new pulumi.Config(name);
@@ -92,6 +94,10 @@ export class KubeAi extends pulumi.ComponentResource {
             },
             { parent: this, dependsOn: [kubeAi] },
         );
+
+        if (enableMonitoring) {
+            new Dashboard(name, this, { configJson: dashboardJson });
+        }
 
         this.endpointUrl = `https://${hostname}.${args.domainName}`;
         this.serviceUrl = `http://${hostname}.kubeai/openai/v1`;

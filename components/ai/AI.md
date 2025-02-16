@@ -243,15 +243,13 @@ pulumi config set --secret kubeai:huggingfaceToken <hf_token>
 pulumi up
 ```
 
-Prometheus monitoring for vLLM can be enabled with:
+Prometheus monitoring and related Grafana dashboard for vLLM can be enabled with:
 
 ```sh
 pulumi set kubeai:enableMonitoring true
 ```
 
-Note Prometheus has to be installed first before changing that switch.
-
-Sample Grafana dashboard to import - https://github.com/substratusai/kubeai/blob/main/examples/observability/vllm-grafana-dashboard.json
+Note that Prometheus has to be installed first before changing that switch.
 
 ### Visual Studio Code
 

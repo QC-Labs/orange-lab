@@ -9,6 +9,7 @@
         "noImplicitReturns": true,
         "outDir": "bin",
         "pretty": true,
+        "resolveJsonModule": true,
         "sourceMap": true,
         "strict": true,
         "target": "es2016"
