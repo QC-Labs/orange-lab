@@ -58,6 +58,9 @@ config:
     prometheus:hostname-prometheus: prometheus
     prometheus:hostname-alert-manager: alertmanager
     prometheus:hostname-grafana: grafana
+    # Required for Grafana Dashboards when enableMonitoring is set for an application
+    # grafana:url: https://grafana.<tsnet>.ts.net/
+    # grafana:auth: admin:admin
 
     beszel:enabled: false
     # beszel:hubKey: BESZEL_KEY

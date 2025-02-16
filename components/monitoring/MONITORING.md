@@ -83,6 +83,18 @@ pulumi config set prometheus:grafana-password <password> --secret
 pulumi up
 ```
 
+### Grafana dashboards
+
+Some applications have Grafana dashboards when `enableMonitoring` is on. The provider requires `url` and `auth` to be set in order to connect to the provisioned Grafana instance.
+
+```sh
+# Use your Tailnet domain name
+pulumi config set grafana:url https://grafana.<tsnet>.ts.net/
+
+# Basic auth user:password to Grafana frontend
+pulumi config set grafana:auth admin:admin --secret
+```
+
 ### Uninstall
 
 CRDs need to be removed manually, more info at https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack#uninstall-helm-chart

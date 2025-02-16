@@ -11,7 +11,8 @@
     "dependencies": {
         "@pulumi/kubernetes": "4.21.1",
         "@pulumi/pulumi": "3.148.0",
-        "@pulumi/tailscale": "0.17.5"
+        "@pulumi/tailscale": "0.17.5",
+        "@pulumiverse/grafana": "^0.12.3"
     },
     "devDependencies": {
         "@pulumi/eslint-plugin": "0.2.0",
