@@ -64,7 +64,7 @@ export class KubeAi extends pulumi.ComponentResource {
                             allowPrivilegeEscalation: true,
                         },
                     },
-                    openwebui: { enabled: false },
+                    ['open-webui']: { enabled: false },
                     nodeSelector: { 'orangelab/gpu': 'true' },
                     resourceProfiles: {
                         nvidia: {
