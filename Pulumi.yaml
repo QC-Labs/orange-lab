@@ -51,6 +51,8 @@ config:
 
     nvidia-gpu-operator:enabled: false
 
+    debug:enabled: false
+
     ### Monitoring ###
 
     prometheus:enabled: false

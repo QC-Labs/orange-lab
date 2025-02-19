@@ -1,5 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import { rootConfig } from '../root-config';
+import { Debug } from './debug';
 import { Longhorn } from './longhorn';
 import { NvidiaGPUOperator } from './nvidia-gpu-operator';
 import { Tailscale } from './tailscale';
@@ -40,6 +41,10 @@ export class SystemModule extends pulumi.ComponentResource {
                 { domainName: this.domainName },
                 { parent: this },
             );
+        }
+
+        if (rootConfig.isEnabled('debug')) {
+            new Debug('debug', {}, { parent: this });
         }
 
         const configK3s = new pulumi.Config('k3s');
