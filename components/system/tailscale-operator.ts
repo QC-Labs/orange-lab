@@ -37,7 +37,7 @@ export class TailscaleOperator extends pulumi.ComponentResource {
             name,
             {
                 chart: 'tailscale-operator',
-                namespace: this.app.namespace.metadata.name,
+                namespace: this.app.namespaceName,
                 version,
                 repositoryOpts: {
                     repo: 'https://pkgs.tailscale.com/helmcharts',

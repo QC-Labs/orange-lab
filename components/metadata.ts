@@ -1,14 +1,13 @@
-import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 
 export class Metadata {
     private config: pulumi.Config;
-    private namespace: kubernetes.core.v1.Namespace;
+    private namespace: string;
     private labels: Record<string, string>;
 
     constructor(
         private appName: string,
-        args: { namespace: kubernetes.core.v1.Namespace; config: pulumi.Config },
+        args: { namespace: string; config: pulumi.Config },
     ) {
         this.config = args.config;
         this.namespace = args.namespace;
@@ -18,7 +17,7 @@ export class Metadata {
     get() {
         return {
             name: this.appName,
-            namespace: this.namespace.metadata.name,
+            namespace: this.namespace,
             labels: this.labels,
         };
     }

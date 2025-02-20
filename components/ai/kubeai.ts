@@ -28,7 +28,7 @@ export class KubeAi extends pulumi.ComponentResource {
             name,
             {
                 chart: 'kubeai',
-                namespace: app.namespace.metadata.name,
+                namespace: app.namespaceName,
                 version,
                 repositoryOpts: { repo: 'https://www.kubeai.org' },
                 values: {
@@ -85,7 +85,7 @@ export class KubeAi extends pulumi.ComponentResource {
             `${name}-models`,
             {
                 chart: 'models',
-                namespace: app.namespace.metadata.name,
+                namespace: app.namespaceName,
                 version,
                 repositoryOpts: { repo: 'https://www.kubeai.org' },
                 values: {

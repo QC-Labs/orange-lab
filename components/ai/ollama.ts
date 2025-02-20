@@ -36,7 +36,7 @@ export class Ollama extends pulumi.ComponentResource {
             this.name,
             {
                 chart: 'ollama',
-                namespace: this.app.namespace.metadata.name,
+                namespace: this.app.namespaceName,
                 version,
                 repositoryOpts: {
                     repo: 'https://otwld.github.io/ollama-helm/',

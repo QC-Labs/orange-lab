@@ -27,7 +27,7 @@ export class HomeAssistant extends pulumi.ComponentResource {
             name,
             {
                 chart: 'home-assistant',
-                namespace: app.namespace.metadata.name,
+                namespace: app.namespaceName,
                 version,
                 repositoryOpts: {
                     repo: 'http://pajikos.github.io/home-assistant-helm-chart/',

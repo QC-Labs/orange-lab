@@ -24,10 +24,11 @@ export class Application {
     serviceUrl?: string;
     storageOnly = false;
     readonly metadata: Metadata;
-    readonly namespace: kubernetes.core.v1.Namespace;
     readonly nodes: Nodes;
     storage?: PersistentStorage;
+    namespaceName: string;
 
+    private readonly namespace?: kubernetes.core.v1.Namespace;
     private readonly config: pulumi.Config;
     private service?: kubernetes.core.v1.Service;
     private serviceAccount?: kubernetes.core.v1.ServiceAccount;
@@ -38,14 +39,23 @@ export class Application {
     constructor(
         private readonly scope: pulumi.ComponentResource,
         private readonly appName: string,
-        private readonly params?: { domainName?: string; namespaceName?: string },
+        private readonly args?: {
+            domainName?: string;
+            namespaceName?: string;
+            existingNamespace?: string;
+        },
     ) {
         this.config = new pulumi.Config(appName);
         this.storageOnly = this.config.getBoolean('storageOnly') ?? false;
-        this.namespace = this.createNamespace(params?.namespaceName);
+        if (args?.existingNamespace) {
+            this.namespaceName = args.existingNamespace;
+        } else {
+            this.namespaceName = args?.namespaceName ?? appName;
+            this.namespace = this.createNamespace(this.namespaceName);
+        }
         this.metadata = new Metadata(appName, {
             config: this.config,
-            namespace: this.namespace,
+            namespace: this.namespaceName,
         });
         this.nodes = new Nodes(this.config);
     }
@@ -55,7 +65,7 @@ export class Application {
             `${this.appName}-storage`,
             {
                 name: this.appName,
-                namespace: this.namespace.metadata.name,
+                namespace: this.namespaceName,
                 size: args?.size ?? this.config.require('storageSize'),
                 type: args?.type ?? PersistentStorageType.Default,
                 storageClass: this.config.get('storageClass'),
@@ -66,7 +76,7 @@ export class Application {
     }
 
     addDeployment(args: ContainerSpec) {
-        assert(this.params?.domainName, 'domainName is required');
+        assert(this.args?.domainName, 'domainName is required');
         const hostname = this.config.require('hostname');
         if (this.storageOnly) return this;
 
@@ -77,7 +87,7 @@ export class Application {
         const port = args.port.toString();
         this.serviceUrl = `http://${hostname}.${this.appName}:${port}`;
         this.ingress = this.createIngress(this.service, hostname);
-        this.endpointUrl = `https://${hostname}.${this.params.domainName}`;
+        this.endpointUrl = `https://${hostname}.${this.args.domainName}`;
         return this;
     }
 
@@ -111,10 +121,10 @@ export class Application {
         return this;
     }
 
-    private createNamespace(name?: string) {
+    private createNamespace(name: string) {
         return new kubernetes.core.v1.Namespace(
             `${this.appName}-ns`,
-            { metadata: { name: name ?? this.appName } },
+            { metadata: { name } },
             { parent: this.scope },
         );
     }
