@@ -14,7 +14,7 @@ export class Beszel extends pulumi.ComponentResource {
     readonly appLabels = { app: 'beszel' };
 
     constructor(name: string, args: BeszelArgs, opts?: pulumi.ResourceOptions) {
-        super('orangelab:ai:Beszel', name, args, opts);
+        super('orangelab:monitoring:Beszel', name, args, opts);
 
         const config = new pulumi.Config(name);
         const hubKey = config.get('hubKey');
