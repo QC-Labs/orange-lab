@@ -60,7 +60,12 @@ export class Application {
         this.nodes = new Nodes(this.config);
     }
 
-    addStorage(args?: { size?: string; type?: PersistentStorageType }) {
+    addStorage(args?: {
+        size?: string;
+        type?: PersistentStorageType;
+        existingVolume?: string;
+        existingClaim?: string;
+    }) {
         this.storage = new PersistentStorage(
             `${this.appName}-storage`,
             {
@@ -69,6 +74,8 @@ export class Application {
                 size: args?.size ?? this.config.require('storageSize'),
                 type: args?.type ?? PersistentStorageType.Default,
                 storageClass: this.config.get('storageClass'),
+                existingVolume: args?.existingVolume,
+                existingClaim: args?.existingClaim,
             },
             { parent: this.scope },
         );

@@ -1,18 +1,19 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
-import { Longhorn } from './longhorn';
+import assert from 'node:assert';
+import { Application } from '../application';
 
 /*
 Disable debug first when switching volumes
 debug:enabled true
 
-Name of existing PVC (attached) or Longhorn volume name (detached)
-debug:volumeName: cloned-volume
+Name of existing attached PVC
+debug:pvcName: beszel
 
 Use existing Longhorn volume instead of PVC.
-debug:longhornVolume: true
+debug:existingVolume: cloned-volume
 
-Namespace volume was created in, defaults to volumeName
+Namespace volume was created in, defaults to pvcName
 debug:namespace: default
 
 Size has to match the volume
@@ -31,97 +32,49 @@ export class Debug extends pulumi.ComponentResource {
     exportPath: string;
     storageSize: string;
     claim?: kubernetes.core.v1.PersistentVolumeClaim;
+    app: Application;
 
     constructor(private name: string, args = {}, opts?: pulumi.ResourceOptions) {
         super('orangelab:system:Debug', name, args, opts);
 
         const config = new pulumi.Config('debug');
-        const volumeName = config.require('volumeName');
-        this.namespace = config.get('namespace') ?? volumeName;
-        const longhornVolume = config.getBoolean('longhornVolume');
+        const pvcName = config.get('pvcName');
+        const existingVolume = config.get('existingVolume');
+        this.namespace = config.get('namespace') ?? pvcName;
         this.storageSize = config.require('storageSize');
         this.nodeName = config.get('nodeName');
         this.exportPath = config.require('exportPath');
 
-        const volume = longhornVolume ? this.createPV(volumeName) : undefined;
-
-        const claim = this.createPVC(volumeName, volume);
+        const volumeName = pvcName ?? existingVolume;
+        assert(volumeName, 'Either pvcName or existingVolume must be provided');
+        this.app = new Application(this, name, {
+            existingNamespace: this.namespace,
+        }).addStorage({
+            size: this.storageSize,
+            existingVolume,
+            existingClaim: pvcName,
+        });
+        assert(this.app.storage?.volumeClaimName);
 
         // Comment out one method
-        // this.createDeployment(volumeName, claim);
-        // this.createExportJob(volumeName, claim);
+        // this.createDeployment(volumeName, app.storage.volumeClaimName);
+        // this.createDeployment(this.app.storage.volumeClaimName);
+        this.createExportJob(volumeName, this.app.storage.volumeClaimName);
     }
 
-    private createPV(volumeName: string) {
-        return new kubernetes.core.v1.PersistentVolume(
-            `${this.name}-pv`,
-            {
-                metadata: {
-                    name: `${this.name}-${volumeName}`,
-                    namespace: this.namespace,
-                },
-                spec: {
-                    accessModes: ['ReadWriteOnce'],
-                    storageClassName: Longhorn.defaultStorageClass,
-                    capacity: { storage: this.storageSize },
-                    volumeMode: 'Filesystem',
-                    persistentVolumeReclaimPolicy: 'Retain',
-                    csi: {
-                        driver: 'driver.longhorn.io',
-                        fsType: 'ext4',
-                        volumeAttributes: {
-                            numberOfReplicas: '1',
-                            staleReplicaTimeout: '2880',
-                        },
-                        volumeHandle: volumeName,
-                    },
-                },
-            },
-            { parent: this },
-        );
-    }
-
-    private createPVC(
-        volumeName: string,
-        existingVolume?: kubernetes.core.v1.PersistentVolume,
-    ) {
-        return new kubernetes.core.v1.PersistentVolumeClaim(
-            `${this.name}-pvc`,
-            {
-                metadata: {
-                    name: `${this.name}-${volumeName}`,
-                    namespace: this.namespace,
-                },
-                spec: {
-                    accessModes: ['ReadWriteOnce'],
-                    dataSource: !existingVolume
-                        ? { kind: 'PersistentVolumeClaim', name: volumeName }
-                        : undefined,
-                    volumeName: existingVolume?.metadata.name,
-                    resources: { requests: { storage: this.storageSize } },
-                },
-            },
-            { parent: this, deleteBeforeReplace: true },
-        );
-    }
-
-    private createDeployment(
-        volumeName: string,
-        claim: kubernetes.core.v1.PersistentVolumeClaim,
-    ) {
-        const fullName = `${this.name}-${volumeName}`;
+    private createDeployment(claimName: string) {
         new kubernetes.apps.v1.Deployment(
             `${this.name}-deployment`,
             {
                 metadata: {
-                    name: fullName,
+                    name: this.name,
                     namespace: this.namespace,
                 },
                 spec: {
-                    selector: { matchLabels: { app: fullName } },
+                    selector: { matchLabels: { app: this.name } },
                     replicas: 1,
                     template: {
-                        metadata: { name: fullName, labels: { app: fullName } },
+                        metadata: { name: this.name, labels: { app: this.name } },
                         spec: {
                             nodeName: this.nodeName,
                             containers: [
@@ -137,12 +90,7 @@ export class Debug extends pulumi.ComponentResource {
                                 },
                             ],
                             volumes: [
-                                {
-                                    name: 'source',
-                                    persistentVolumeClaim: {
-                                        claimName: claim.metadata.name,
-                                    },
-                                },
+                                { name: 'source', persistentVolumeClaim: { claimName } },
                                 { name: 'target', hostPath: { path: this.exportPath } },
                             ],
                         },
@@ -152,23 +100,20 @@ export class Debug extends pulumi.ComponentResource {
             { parent: this, deleteBeforeReplace: true },
         );
     }
-    private createExportJob(
-        volumeName: string,
-        claim: kubernetes.core.v1.PersistentVolumeClaim,
-    ) {
-        const fullName = `${this.name}-${volumeName}`;
-        const labels = { app: fullName, component: 'export' };
-
+    private createExportJob(volumeName: string, claimName: string) {
         new kubernetes.batch.v1.Job(
             `${this.name}-export-job`,
             {
                 metadata: {
-                    name: fullName,
+                    name: this.name,
                     namespace: this.namespace,
                 },
                 spec: {
                     template: {
-                        metadata: { name: fullName, labels },
+                        metadata: {
+                            name: this.name,
+                            labels: { app: this.name, component: 'export' },
+                        },
                         spec: {
                             nodeName: this.nodeName,
                             containers: [
@@ -189,12 +134,7 @@ export class Debug extends pulumi.ComponentResource {
                             ],
                             restartPolicy: 'Never',
                             volumes: [
-                                {
-                                    name: 'source',
-                                    persistentVolumeClaim: {
-                                        claimName: claim.metadata.name,
-                                    },
-                                },
+                                { name: 'source', persistentVolumeClaim: { claimName } },
                                 { name: 'target', hostPath: { path: this.exportPath } },
                             ],
                         },

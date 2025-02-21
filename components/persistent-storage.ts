@@ -1,5 +1,6 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
+import assert from 'node:assert';
 import { rootConfig } from './root-config';
 
 export enum PersistentStorageType {
@@ -9,44 +10,117 @@ export enum PersistentStorageType {
 
 interface PersistentStorageArgs {
     name: string;
-    namespace: pulumi.Input<string>;
+    namespace: string;
     size: string;
-    // determine storage class based on workload type
+    /**
+     * Determine storage class based on workload type
+     */
     type?: PersistentStorageType;
-    // override storage class used
+    /**
+     * Override storage class used
+     */
     storageClass?: string;
+    /**
+     * Name of currently detached Longhorn volume.
+     * New volume won't be created.
+     */
+    existingVolume?: string;
+    /**
+     * Clone volume attached to existing claim. Used by Debug component to inspect already attached volumes
+     */
+    existingClaim?: string;
 }
 
 export class PersistentStorage extends pulumi.ComponentResource {
     volumeClaimName: string;
 
     constructor(
-        name: string,
-        args: PersistentStorageArgs,
+        private name: string,
+        private args: PersistentStorageArgs,
         opts?: pulumi.ComponentResourceOptions,
     ) {
         super('orangelab:PersistentStorage', name, args, opts);
+        assert(
+            !(args.existingClaim && args.existingVolume),
+            'Cannot use both existingClaim and existingVolume',
+        );
+        assert(
+            !(args.existingVolume && args.storageClass),
+            'StorageClass cannot be changed when using existing Longhorn volumes',
+        );
 
+        const existingVolume = args.existingVolume
+            ? this.createPV({ name: args.name, volumeHandle: args.existingVolume })
+            : undefined;
+        this.createPVC({
+            name: args.name,
+            existingVolume,
+            existingClaim: args.existingClaim,
+        });
+        this.volumeClaimName = args.name;
+    }
+
+    private createPVC({
+        name,
+        existingVolume,
+        existingClaim,
+    }: {
+        name: string;
+        existingVolume?: kubernetes.core.v1.PersistentVolume;
+        existingClaim?: string;
+    }) {
         const storageClassName =
-            args.storageClass ?? PersistentStorage.getStorageClass(args.type);
-
+            this.args.storageClass ?? PersistentStorage.getStorageClass(this.args.type);
         new kubernetes.core.v1.PersistentVolumeClaim(
-            `${name}-pvc`,
+            `${this.name}-pvc`,
             {
-                metadata: { name: args.name, namespace: args.namespace },
+                metadata: { name, namespace: this.args.namespace },
                 spec: {
                     accessModes: ['ReadWriteOnce'],
-                    storageClassName,
-                    resources: {
-                        requests: {
-                            storage: args.size,
+                    storageClassName: existingVolume
+                        ? existingVolume.spec.storageClassName
+                        : storageClassName,
+                    dataSource: existingClaim
+                        ? {
+                              kind: 'PersistentVolumeClaim',
+                              name: existingClaim,
+                          }
+                        : undefined,
+                    volumeName: existingVolume?.metadata.name,
+                    resources: { requests: { storage: this.args.size } },
+                },
+            },
+            { parent: this },
+        );
+    }
+
+    private createPV({ name, volumeHandle }: { name: string; volumeHandle: string }) {
+        return new kubernetes.core.v1.PersistentVolume(
+            `${this.name}-pv`,
+            {
+                metadata: {
+                    name,
+                    namespace: this.args.namespace,
+                },
+                spec: {
+                    accessModes: ['ReadWriteOnce'],
+                    storageClassName: `longhorn-${volumeHandle}`,
+                    capacity: { storage: this.args.size },
+                    volumeMode: 'Filesystem',
+                    persistentVolumeReclaimPolicy: 'Retain',
+                    csi: {
+                        driver: 'driver.longhorn.io',
+                        fsType: 'ext4',
+                        volumeAttributes: {
+                            numberOfReplicas: '1',
+                            staleReplicaTimeout: '2880',
                         },
+                        volumeHandle,
                     },
                 },
             },
             { parent: this },
         );
-        this.volumeClaimName = args.name;
     }
 
     public static getStorageClass(storageType?: PersistentStorageType) {
