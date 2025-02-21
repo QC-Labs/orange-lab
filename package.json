@@ -6,7 +6,8 @@
     "license": "MIT",
     "scripts": {
         "deploy": "pulumi up --refresh",
-        "lint": "node_modules/.bin/eslint **/*.ts"
+        "lint": "node_modules/.bin/eslint **/*.ts",
+        "test": "npm run lint"
     },
     "dependencies": {
         "@pulumi/kubernetes": "4.21.1",
