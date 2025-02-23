@@ -36,6 +36,11 @@ pulumi stack select <stack-name>
 
 ## Tailscale
 
+```sh
+# Start Tailscale service on each node
+sudo tailscale up --operator=$USER --accept-routes
+```
+
 Add tags to your Tailnet ACLs (https://login.tailscale.com/admin/acls/file):
 
 ```json

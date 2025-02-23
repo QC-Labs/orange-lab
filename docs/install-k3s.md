@@ -20,7 +20,18 @@ In case of connectivity issues, try disabling the firewall:
 systemctl disable firewalld.service --now
 ```
 
-## (Optional) Disable suspend on laptops
+## (Optional) Disable suspend
+
+### Server
+
+```sh
+# Disable all sleep modes
+sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
+```
+
+### Laptop
+
+#### Ignore lid close
 
 To disable suspend mode when laptop lid is closed while on AC power, edit `/etc/systemd/logind.conf` and uncomment these lines
 
@@ -33,6 +44,8 @@ HandleLidSwitchDocked=ignore
 If the file doesn't exist, copy it `cp /usr/lib/systemd/logind.conf /etc/systemd/` then edit.
 
 Restart service with `sudo systemctl reload systemd-logind.service`
+
+#### Don't suspend when on AC power
 
 Turn off suspend mode when on AC power. The setting in Gnome UI (Settings -> Power -> Automatic Suspend -> "When Plugged In") only applies when you're logged in, but not on login screen. You can check current settings with:
 
