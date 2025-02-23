@@ -10,7 +10,7 @@ export enum PersistentStorageType {
 
 interface PersistentStorageArgs {
     name: string;
-    namespace: string;
+    namespace: pulumi.Output<string>;
     size: string;
     /**
      * Determine storage class based on workload type
