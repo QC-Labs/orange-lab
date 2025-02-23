@@ -58,8 +58,8 @@ export class Debug extends pulumi.ComponentResource {
 
         // Comment out one method
         // this.createDeployment(volumeName, app.storage.volumeClaimName);
-        // this.createDeployment(this.app.storage.volumeClaimName);
-        this.createExportJob(volumeName, this.app.storage.volumeClaimName);
+        this.createDeployment(this.app.storage.volumeClaimName);
+        // this.createExportJob(volumeName, this.app.storage.volumeClaimName);
     }
 
     private createDeployment(claimName: string) {
