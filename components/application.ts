@@ -183,7 +183,7 @@ export class Application {
                                 paths: [
                                     {
                                         path: '/',
-                                        pathType: 'ImplementationSpecific',
+                                        pathType: 'Prefix',
                                         backend: {
                                             service: {
                                                 name: serviceName,
