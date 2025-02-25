@@ -22,6 +22,7 @@ export class SystemModule extends pulumi.ComponentResource {
         this.tailscaleServerKey = tailscale.serverKey;
         this.tailscaleAgentKey = tailscale.agentKey;
         this.domainName = tailscale.tailnet;
+        const enableMonitoring = rootConfig.enableMonitoring();
 
         if (rootConfig.isEnabled('tailscale-operator')) {
             new TailscaleOperator(
@@ -38,7 +39,7 @@ export class SystemModule extends pulumi.ComponentResource {
         if (rootConfig.isEnabled('longhorn')) {
             this.longhorn = new Longhorn(
                 'longhorn',
-                { domainName: this.domainName },
+                { domainName: this.domainName, enableMonitoring },
                 { parent: this },
             );
         }

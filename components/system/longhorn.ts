@@ -1,8 +1,11 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
+import { Dashboard } from '../dashboard';
+import dashboardJson from './longhorn-dashboard.json';
 
 export interface LonghornArgs {
     domainName: string;
+    enableMonitoring: boolean;
 }
 
 export class Longhorn extends pulumi.ComponentResource {
@@ -17,7 +20,6 @@ export class Longhorn extends pulumi.ComponentResource {
         const version = config.get('version');
         const hostname = config.require('hostname');
         const replicaCount = config.requireNumber('replicaCount');
-        const enableMonitoring = config.requireBoolean('enableMonitoring');
 
         const namespace = new kubernetes.core.v1.Namespace(
             `${name}-ns`,
@@ -72,13 +74,17 @@ export class Longhorn extends pulumi.ComponentResource {
                         ingressClassName: 'tailscale',
                         tls: true,
                     },
-                    metrics: enableMonitoring
+                    metrics: args.enableMonitoring
                         ? { serviceMonitor: { enabled: true } }
                         : undefined,
                 },
             },
             { parent: this },
         );
+
+        if (args.enableMonitoring) {
+            new Dashboard(name, this, { configJson: dashboardJson });
+        }
 
         new kubernetes.storage.v1.StorageClass(
             `${name}-gpu-storage`,
