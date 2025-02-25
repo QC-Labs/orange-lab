@@ -1,19 +1,19 @@
 import * as pulumi from '@pulumi/pulumi';
 import * as grafana from '@pulumiverse/grafana';
 
-interface DashboardArgs {
+interface GrafanaDashboardArgs {
     configJson: unknown;
 }
 
-export class Dashboard {
+export class GrafanaDashboard {
     static folder?: grafana.oss.Folder = undefined;
 
     constructor(
         private appName: string,
         private scope: pulumi.ComponentResource,
-        args: DashboardArgs,
+        args: GrafanaDashboardArgs,
     ) {
-        Dashboard.folder = Dashboard.folder ?? this.createFolder();
+        GrafanaDashboard.folder = GrafanaDashboard.folder ?? this.createFolder();
         this.createDashboard(args.configJson);
     }
 
@@ -28,7 +28,7 @@ export class Dashboard {
         new grafana.oss.Dashboard(
             `${this.appName}-dashboard`,
             {
-                folder: Dashboard.folder?.uid,
+                folder: GrafanaDashboard.folder?.uid,
                 configJson: JSON.stringify(configJson),
             },
             { parent: this.scope },

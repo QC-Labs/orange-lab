@@ -2,7 +2,7 @@ import * as kubernetes from '@pulumi/kubernetes';
 import { ClusterRole } from '@pulumi/kubernetes/rbac/v1';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
-import { Dashboard } from '../dashboard';
+import { GrafanaDashboard } from '../grafana-dashboard';
 import dashboardJson from './tailscale-dashboard.json';
 
 interface TailscaleOperatorArgs {
@@ -58,7 +58,7 @@ export class TailscaleOperator extends pulumi.ComponentResource {
                 },
                 { parent: this },
             );
-            new Dashboard(name, this, { configJson: dashboardJson });
+            new GrafanaDashboard(name, this, { configJson: dashboardJson });
         }
 
         new kubernetes.helm.v3.Release(

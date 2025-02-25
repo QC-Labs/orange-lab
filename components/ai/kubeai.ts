@@ -1,7 +1,7 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
-import { Dashboard } from '../dashboard';
+import { GrafanaDashboard } from '../grafana-dashboard';
 import dashboardJson from './kubeai-dashboard-vllm.json';
 
 export interface KubeAiArgs {
@@ -96,7 +96,7 @@ export class KubeAi extends pulumi.ComponentResource {
         );
 
         if (args.enableMonitoring) {
-            new Dashboard(name, this, { configJson: dashboardJson });
+            new GrafanaDashboard(name, this, { configJson: dashboardJson });
         }
 
         this.endpointUrl = `https://${hostname}.${args.domainName}`;
