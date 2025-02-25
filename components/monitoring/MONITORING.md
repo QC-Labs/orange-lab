@@ -70,9 +70,9 @@ kubectl get nodes -o json | jq -r '.items[] | .metadata.name + " - " + .metadata
 |            | `https://prometheus.<tsnet>.ts.net/`                                                       |
 |            | `https://alertmanager.<tsnet>.ts.net/`                                                     |
 
-Prometheus monitoring is disabled by default to keep resource usage low.
+Prometheus provides much more detailed monitoring of the cluster. Many tools (like Headlamp) integrate with it to show metrics for Kubernetes resources.
 
-Enabling it will increase traffic between nodes and deploy components to all nodes but is useful for troubleshooting the cluster.
+Enabling it will increase traffic between nodes. Expect over 1GB of data saved to storage per day, even with just a few nodes.
 
 ```sh
 pulumi config set prometheus:enabled true
@@ -85,16 +85,36 @@ pulumi up
 
 ### Grafana dashboards
 
-Some applications have Grafana dashboards when `enableMonitoring` is on. The provider requires `url` and `auth` to be set in order to connect to the provisioned Grafana instance.
+Once Prometheus is installed, additional metrics and Grafana dashboards can be enabled for applications that support it.
+
+The Grafana provider requires `url` and `auth` to be set in order to connect to the provisioned Grafana instance.
 
 ```sh
+# Enable additional metrics and dashboards
+# IMPORTANT: only enable once Prometheus has been installed.
+pulumi config set prometheus:enableComponentMonitoring true
+
 # Use your Tailnet domain name
 pulumi config set grafana:url https://grafana.<tsnet>.ts.net/
 
 # Basic auth user:password to Grafana frontend
 pulumi config set grafana:auth admin:admin --secret
+
+pulumi up
 ```
 
 ### Uninstall
+
+```sh
+# Remove application monitoring before uninstalling Prometheus
+pulumi config set prometheus:enableComponentMonitoring false
+
+pulumi up
+
+# Remove Prometheus
+pulumi config set prometheus:enabled false
+
+pulumi up
+```
 
 CRDs need to be removed manually, more info at https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack#uninstall-helm-chart
