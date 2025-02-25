@@ -14,6 +14,13 @@ class RootConfig {
         );
     }
 
+    public enableMonitoring() {
+        const config = new pulumi.Config('prometheus');
+        const prometheusEnabled = config.requireBoolean('enabled');
+        const componentsEnabled = config.requireBoolean('enableComponentMonitoring');
+        return prometheusEnabled && componentsEnabled;
+    }
+
     public get(key: string): string | undefined {
         return this.globalConfig.get(key);
     }

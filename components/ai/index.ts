@@ -25,6 +25,7 @@ export class AIModule extends pulumi.ComponentResource {
         opts?: pulumi.ComponentResourceOptions,
     ) {
         super('orangelab:ai', name, args, opts);
+        const enableMonitoring = rootConfig.enableMonitoring();
 
         if (rootConfig.isEnabled('ollama')) {
             this.ollama = new Ollama(
@@ -39,9 +40,7 @@ export class AIModule extends pulumi.ComponentResource {
         if (rootConfig.isEnabled('automatic1111')) {
             this.automatic1111 = new Automatic1111(
                 'automatic1111',
-                {
-                    domainName: args.domainName,
-                },
+                { domainName: args.domainName },
                 { parent: this },
             );
         }
@@ -49,9 +48,7 @@ export class AIModule extends pulumi.ComponentResource {
         if (rootConfig.isEnabled('sdnext')) {
             this.sdnext = new SDNext(
                 'sdnext',
-                {
-                    domainName: args.domainName,
-                },
+                { domainName: args.domainName },
                 { parent: this },
             );
         }
@@ -59,9 +56,7 @@ export class AIModule extends pulumi.ComponentResource {
         if (rootConfig.isEnabled('kubeai')) {
             this.kubeAI = new KubeAi(
                 'kubeai',
-                {
-                    domainName: args.domainName,
-                },
+                { domainName: args.domainName, enableMonitoring },
                 { parent: this },
             );
         }

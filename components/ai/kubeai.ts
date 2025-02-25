@@ -6,6 +6,7 @@ import dashboardJson from './kubeai-dashboard-vllm.json';
 
 export interface KubeAiArgs {
     domainName: string;
+    enableMonitoring: boolean;
 }
 
 export class KubeAi extends pulumi.ComponentResource {
@@ -17,7 +18,6 @@ export class KubeAi extends pulumi.ComponentResource {
 
         const config = new pulumi.Config(name);
         const version = config.get('version');
-        const enableMonitoring = config.getBoolean('enableMonitoring');
         const hostname = config.require('hostname');
         const huggingfaceToken = config.getSecret('huggingfaceToken');
         const models = config.get('models')?.split(',') ?? [];
@@ -46,7 +46,7 @@ export class KubeAi extends pulumi.ComponentResource {
                         ],
                         tls: [{ hosts: [hostname] }],
                     },
-                    metrics: enableMonitoring
+                    metrics: args.enableMonitoring
                         ? {
                               prometheusOperator: {
                                   vLLMPodMonitor: {
@@ -95,7 +95,7 @@ export class KubeAi extends pulumi.ComponentResource {
             { parent: this, dependsOn: [kubeAi] },
         );
 
-        if (enableMonitoring) {
+        if (args.enableMonitoring) {
             new Dashboard(name, this, { configJson: dashboardJson });
         }
 
