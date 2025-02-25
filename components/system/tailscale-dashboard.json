@@ -1,0 +1,1215 @@
+{
+    "annotations": {
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": {
+                    "type": "grafana",
+                    "uid": "-- Grafana --"
+                },
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "target": {
+                    "limit": 100,
+                    "matchAny": false,
+                    "tags": [],
+                    "type": "dashboard"
+                },
+                "type": "dashboard"
+            }
+        ]
+    },
+    "description": "Tailscale dashboard based on https://github.com/Zydepoint/Tailscale-dashboard",
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "id": 29,
+    "links": [
+        {
+            "asDropdown": false,
+            "icon": "external link",
+            "includeVars": false,
+            "keepTime": false,
+            "tags": [],
+            "targetBlank": true,
+            "title": "Tailscale - Admin",
+            "tooltip": "Go to Tailscale Admin Page",
+            "type": "link",
+            "url": "https://login.tailscale.com/admin/"
+        }
+    ],
+    "liveNow": true,
+    "panels": [
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "id": 23,
+            "panels": [],
+            "title": "All stats",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Advertised and approved subnet routes",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "fixedColor": "text",
+                        "mode": "fixed"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 12,
+                "x": 0,
+                "y": 1
+            },
+            "id": 12,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "center",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                    "calcs": ["lastNotNull"],
+                    "fields": "",
+                    "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+            },
+            "pluginVersion": "11.4.0",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "tailscaled_advertised_routes{job=\"$job\", instance=~\"$instance\"}",
+                    "legendFormat": "Advertised Routes",
+                    "range": true,
+                    "refId": "A"
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "tailscaled_approved_routes{job=\"$job\", instance=~\"$instance\"}",
+                    "hide": false,
+                    "instant": false,
+                    "legendFormat": "Approved Routes",
+                    "range": true,
+                    "refId": "B"
+                }
+            ],
+            "title": "Subnet Router",
+            "transformations": [
+                {
+                    "filter": {
+                        "id": "byRefId",
+                        "options": "A"
+                    },
+                    "id": "calculateField",
+                    "options": {
+                        "alias": "Advertised Routes",
+                        "mode": "reduceRow",
+                        "reduce": {
+                            "include": ["Advertised Routes"],
+                            "reducer": "sum"
+                        },
+                        "replaceFields": true
+                    }
+                },
+                {
+                    "filter": {
+                        "id": "byRefId",
+                        "options": "B"
+                    },
+                    "id": "calculateField",
+                    "options": {
+                        "alias": "Approved Routes",
+                        "mode": "reduceRow",
+                        "reduce": {
+                            "include": ["Approved Routes"],
+                            "reducer": "sum"
+                        },
+                        "replaceFields": true
+                    }
+                }
+            ],
+            "transparent": true,
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "fixedColor": "text",
+                        "mode": "fixed"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 10
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 12,
+                "y": 1
+            },
+            "id": 11,
+            "options": {
+                "colorMode": "value",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "percentChangeColorMode": "standard",
+                "reduceOptions": {
+                    "calcs": ["lastNotNull"],
+                    "fields": "",
+                    "values": false
+                },
+                "showPercentChange": false,
+                "textMode": "auto",
+                "wideLayout": true
+            },
+            "pluginVersion": "11.4.0",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "tailscaled_health_messages{job=\"$job\", instance=~\"$instance\"}",
+                    "legendFormat": "{{type}}",
+                    "range": true,
+                    "refId": "A"
+                }
+            ],
+            "title": "Health Messages",
+            "transformations": [
+                {
+                    "id": "calculateField",
+                    "options": {
+                        "mode": "reduceRow",
+                        "reduce": {
+                            "reducer": "sum"
+                        },
+                        "replaceFields": true
+                    }
+                }
+            ],
+            "transparent": true,
+            "type": "stat"
+        },
+        {
+            "fieldConfig": {
+                "defaults": {},
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 4,
+                "w": 6,
+                "x": 18,
+                "y": 1
+            },
+            "id": 22,
+            "options": {
+                "code": {
+                    "language": "markdown",
+                    "showLineNumbers": false,
+                    "showMiniMap": false
+                },
+                "content": "### Colors\n\nPurple = inbound traffic  \nBlue = outbound traffic",
+                "mode": "markdown"
+            },
+            "pluginVersion": "11.4.0",
+            "title": "",
+            "transparent": true,
+            "type": "text"
+        },
+        {
+            "datasource": {
+                "default": true,
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Inbound/outbound bytes/sec per interface",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "line",
+                        "fillOpacity": 40,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "bps"
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byRegexp",
+                            "options": "/.*TX/"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "dark-blue",
+                                    "mode": "fixed"
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byRegexp",
+                            "options": "/.*RX/"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "dark-purple",
+                                    "mode": "fixed"
+                                }
+                            },
+                            {
+                                "id": "custom.axisPlacement",
+                                "value": "right"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 5
+            },
+            "id": 10,
+            "options": {
+                "legend": {
+                    "calcs": ["mean", "lastNotNull", "max", "min"],
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "showLegend": false
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "11.4.0",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "disableTextWrap": false,
+                    "editorMode": "code",
+                    "exemplar": false,
+                    "expr": "sum by(instance) (rate(tailscaled_inbound_bytes_total{job=\"$job\", instance=~\"$instance\", path=~\"direct_.*\"}[2m])) * 8",
+                    "format": "time_series",
+                    "fullMetaSearch": false,
+                    "includeNullMetadata": true,
+                    "instant": false,
+                    "legendFormat": "{{instance}} RX {{path}}",
+                    "range": true,
+                    "refId": "A",
+                    "useBackend": false
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "sum by (instance) (\r\n  rate(tailscaled_outbound_bytes_total{job=\"$job\", instance=~\"$instance\", path=~\"direct_.*\"}[2m])\r\n)*8",
+                    "hide": false,
+                    "instant": false,
+                    "legendFormat": "{{instance}} TX {{path}}",
+                    "range": true,
+                    "refId": "B"
+                }
+            ],
+            "title": "Traffic Summary",
+            "transparent": true,
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "default": true,
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Dropped Packets",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "line",
+                        "fillOpacity": 40,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "line"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "percentage",
+                        "steps": [
+                            {
+                                "color": "dark-red",
+                                "value": null
+                            }
+                        ]
+                    },
+                    "unit": "pps"
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byRegexp",
+                            "options": "/.*unknown/"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.hideFrom",
+                                "value": {
+                                    "legend": true,
+                                    "tooltip": false,
+                                    "viz": true
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byRegexp",
+                            "options": "/.*error/"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "mode": "thresholds",
+                                    "seriesBy": "max"
+                                }
+                            },
+                            {
+                                "id": "custom.gradientMode",
+                                "value": "scheme"
+                            },
+                            {
+                                "id": "custom.fillOpacity",
+                                "value": 25
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byRegexp",
+                            "options": "/.*multicast/"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.hideFrom",
+                                "value": {
+                                    "legend": true,
+                                    "tooltip": false,
+                                    "viz": true
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byRegexp",
+                            "options": "/.*acl/"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.hideFrom",
+                                "value": {
+                                    "legend": true,
+                                    "tooltip": false,
+                                    "viz": true
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 5
+            },
+            "id": 8,
+            "options": {
+                "legend": {
+                    "calcs": ["mean", "max", "min"],
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "showLegend": false
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "11.4.0",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "disableTextWrap": false,
+                    "editorMode": "code",
+                    "expr": "rate(tailscaled_inbound_dropped_packets_total{job=\"$job\", instance=~\"$instance\"}[2m])",
+                    "fullMetaSearch": false,
+                    "includeNullMetadata": true,
+                    "legendFormat": "{{instance}} RX {{reason}}",
+                    "range": true,
+                    "refId": "A",
+                    "useBackend": false
+                },
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "rate(tailscaled_outbound_dropped_packets_total{job=\"$job\", instance=~\"$instance\"}[2m])",
+                    "hide": false,
+                    "instant": false,
+                    "legendFormat": "{{instance}} TX {{reason}}",
+                    "range": true,
+                    "refId": "B"
+                }
+            ],
+            "title": "Errors (TX/RX)",
+            "transparent": true,
+            "type": "timeseries"
+        },
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 13
+            },
+            "id": 15,
+            "panels": [],
+            "title": "Direct Traffic (P2P)",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "default": true,
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Traffic from direct peer-to-peer connections.\n",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "line",
+                        "fillOpacity": 40,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "bps"
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Value"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "dark-purple",
+                                    "mode": "fixed"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 14
+            },
+            "id": 6,
+            "options": {
+                "legend": {
+                    "calcs": ["mean", "max", "min"],
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "11.4.0",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "disableTextWrap": false,
+                    "editorMode": "code",
+                    "expr": "sum by (instance) (\r\n  rate(tailscaled_inbound_bytes_total{job=\"$job\", instance=~\"$instance\", path=~\"direct_.*\"}[2m])\r\n)*8",
+                    "fullMetaSearch": false,
+                    "includeNullMetadata": true,
+                    "legendFormat": "{{instance}} RX {{path}}",
+                    "range": true,
+                    "refId": "A",
+                    "useBackend": false
+                }
+            ],
+            "title": "Inbound",
+            "transparent": true,
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "default": true,
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Traffic to direct peer-to-peer connections.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "line",
+                        "fillOpacity": 40,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "bps"
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Value"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "dark-blue",
+                                    "mode": "fixed"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 14
+            },
+            "id": 17,
+            "options": {
+                "legend": {
+                    "calcs": ["mean", "max", "min"],
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "11.4.0",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "editorMode": "code",
+                    "expr": "sum by (instance) (\r\n  rate(tailscaled_outbound_bytes_total{job=\"$job\", instance=~\"$instance\", path=~\"direct_.*\"}[2m])\r\n)*8",
+                    "hide": false,
+                    "instant": false,
+                    "legendFormat": "{{instance}} TX {{path}}",
+                    "range": true,
+                    "refId": "B"
+                }
+            ],
+            "title": "Outbound",
+            "transparent": true,
+            "type": "timeseries"
+        },
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 22
+            },
+            "id": 16,
+            "panels": [],
+            "title": "Relayed Traffic (DERP)",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "default": true,
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Traffic from relayed connections. DERP (Designated Encrypted Relay for Packets) servers act as a relay server when a direct connection isn’t possible. Relay connections might result in higher latency.\n",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "line",
+                        "fillOpacity": 40,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "bps"
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Value"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "dark-purple",
+                                    "mode": "fixed"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 0,
+                "y": 23
+            },
+            "id": 18,
+            "options": {
+                "legend": {
+                    "calcs": ["mean", "max", "min"],
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "11.4.0",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "disableTextWrap": false,
+                    "editorMode": "code",
+                    "expr": "rate(tailscaled_inbound_bytes_total{job=\"$job\", instance=~\"$instance\", path=\"derp\"}[2m])*8",
+                    "fullMetaSearch": false,
+                    "includeNullMetadata": true,
+                    "legendFormat": "{{instance}} RX {{path}}",
+                    "range": true,
+                    "refId": "A",
+                    "useBackend": false
+                }
+            ],
+            "title": "Inbound",
+            "transparent": true,
+            "type": "timeseries"
+        },
+        {
+            "datasource": {
+                "default": true,
+                "type": "prometheus",
+                "uid": "prometheus"
+            },
+            "description": "Traffic from relayed connections. DERP (Designated Encrypted Relay for Packets) servers act as a relay server when a direct connection isn’t possible.  Relay connections might result in higher latency.",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "barWidthFactor": 0.6,
+                        "drawStyle": "line",
+                        "fillOpacity": 40,
+                        "gradientMode": "none",
+                        "hideFrom": {
+                            "legend": false,
+                            "tooltip": false,
+                            "viz": false
+                        },
+                        "insertNulls": false,
+                        "lineInterpolation": "linear",
+                        "lineWidth": 1,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "never",
+                        "spanNulls": false,
+                        "stacking": {
+                            "group": "A",
+                            "mode": "none"
+                        },
+                        "thresholdsStyle": {
+                            "mode": "off"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    },
+                    "unit": "bps"
+                },
+                "overrides": [
+                    {
+                        "__systemRef": "hideSeriesFrom",
+                        "matcher": {
+                            "id": "byNames",
+                            "options": {
+                                "mode": "exclude",
+                                "names": ["100.70.71.101:5252 recv "],
+                                "prefix": "All except:",
+                                "readOnly": true
+                            }
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.hideFrom",
+                                "value": {
+                                    "legend": false,
+                                    "tooltip": false,
+                                    "viz": false
+                                }
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Value"
+                        },
+                        "properties": [
+                            {
+                                "id": "color",
+                                "value": {
+                                    "fixedColor": "dark-blue",
+                                    "mode": "fixed"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 8,
+                "w": 12,
+                "x": 12,
+                "y": 23
+            },
+            "id": 19,
+            "options": {
+                "legend": {
+                    "calcs": ["mean", "max", "min"],
+                    "displayMode": "table",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "multi",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "11.4.0",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "prometheus",
+                        "uid": "prometheus"
+                    },
+                    "disableTextWrap": false,
+                    "editorMode": "code",
+                    "expr": "rate(tailscaled_outbound_bytes_total{job=\"$job\", instance=~\"$instance\", path=\"derp\"}[2m])*8",
+                    "fullMetaSearch": false,
+                    "includeNullMetadata": true,
+                    "legendFormat": "{{instance}} TX {{path}}",
+                    "range": true,
+                    "refId": "A",
+                    "useBackend": false
+                }
+            ],
+            "title": "Outbound",
+            "transparent": true,
+            "type": "timeseries"
+        }
+    ],
+    "preload": false,
+    "refresh": "1m",
+    "schemaVersion": 40,
+    "tags": ["prometheus"],
+    "templating": {
+        "list": [
+            {
+                "current": {
+                    "text": "ts_ingress_resource_prometheus_prometheus-aa6716c2-grafana",
+                    "value": "ts_ingress_resource_prometheus_prometheus-aa6716c2-grafana"
+                },
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "prometheus"
+                },
+                "definition": "label_values(up, job)",
+                "description": "Fetch info from Prometheus scrape job.",
+                "includeAll": false,
+                "label": "job",
+                "name": "job",
+                "options": [],
+                "query": {
+                    "qryType": 5,
+                    "query": "label_values(up, job)",
+                    "refId": "PrometheusVariableQueryEditor-VariableQuery"
+                },
+                "refresh": 1,
+                "regex": ".*ts.*",
+                "sort": 1,
+                "type": "query"
+            },
+            {
+                "current": {
+                    "text": "All",
+                    "value": "$__all"
+                },
+                "datasource": {
+                    "type": "prometheus",
+                    "uid": "prometheus"
+                },
+                "definition": "label_values(up{job=\"$job\"}, instance)",
+                "description": "What target you want to fetch info from.",
+                "includeAll": true,
+                "label": "instance",
+                "name": "instance",
+                "options": [],
+                "query": {
+                    "qryType": 5,
+                    "query": "label_values(up{job=\"$job\"}, instance)",
+                    "refId": "PrometheusVariableQueryEditor-VariableQuery"
+                },
+                "refresh": 1,
+                "regex": "",
+                "sort": 1,
+                "type": "query"
+            }
+        ]
+    },
+    "time": {
+        "from": "now-12h",
+        "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "browser",
+    "title": "Tailscale",
+    "uid": "de9fpk1payv40c",
+    "version": 19,
+    "weekStart": ""
+}

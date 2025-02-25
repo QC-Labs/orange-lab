@@ -2,9 +2,12 @@ import * as kubernetes from '@pulumi/kubernetes';
 import { ClusterRole } from '@pulumi/kubernetes/rbac/v1';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
+import { Dashboard } from '../dashboard';
+import dashboardJson from './tailscale-dashboard.json';
 
 interface TailscaleOperatorArgs {
     namespace?: string;
+    enableMonitoring?: boolean;
 }
 
 export class TailscaleOperator extends pulumi.ComponentResource {
@@ -33,25 +36,48 @@ export class TailscaleOperator extends pulumi.ComponentResource {
         const userRole = this.createUserRole(name);
         this.createUserRoleBinding(userRole, 'orangelab:users');
 
+        let proxyClass;
+        if (args.enableMonitoring) {
+            proxyClass = new kubernetes.apiextensions.CustomResource(
+                'proxyClass',
+                {
+                    apiVersion: 'tailscale.com/v1alpha1',
+                    kind: 'ProxyClass',
+                    metadata: {
+                        name: 'tailscale-proxyclass',
+                        namespace: this.app.namespaceName,
+                    },
+                    spec: {
+                        metrics: {
+                            enable: true,
+                            serviceMonitor: {
+                                enable: true,
+                            },
+                        },
+                    },
+                },
+                { parent: this },
+            );
+            new Dashboard(name, this, { configJson: dashboardJson });
+        }
+
         new kubernetes.helm.v3.Release(
             name,
             {
                 chart: 'tailscale-operator',
                 namespace: this.app.namespaceName,
                 version,
-                repositoryOpts: {
-                    repo: 'https://pkgs.tailscale.com/helmcharts',
-                },
+                repositoryOpts: { repo: 'https://pkgs.tailscale.com/helmcharts' },
                 values: {
-                    oauth: {
-                        clientId: oauthClientId,
-                        clientSecret: oauthClientSecret,
-                    },
+                    oauth: { clientId: oauthClientId, clientSecret: oauthClientSecret },
                     apiServerProxyConfig: { mode: 'true' },
                     operatorConfig: {
                         hostname,
                         logging: 'debug', // info, debug, dev
                     },
+                    proxyConfig: args.enableMonitoring
+                        ? { defaultProxyClass: proxyClass?.metadata.name }
+                        : undefined,
                 },
             },
             { parent: this },
