@@ -38,6 +38,7 @@ export class Metadata {
     private createLabels() {
         const labels: Record<string, string> = {
             app: this.appName,
+            component: 'default',
             'app.kubernetes.io/name': this.appName,
             'app.kubernetes.io/managed-by': 'OrangeLab',
         };
