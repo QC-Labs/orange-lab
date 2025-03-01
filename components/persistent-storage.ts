@@ -28,7 +28,7 @@ interface PersistentStorageArgs {
     /**
      * Clone volume attached to existing claim. Used by Debug component to inspect already attached volumes
      */
-    existingClaim?: string;
+    cloneExistingClaim?: string;
 }
 
 export class PersistentStorage extends pulumi.ComponentResource {
@@ -41,8 +41,8 @@ export class PersistentStorage extends pulumi.ComponentResource {
     ) {
         super('orangelab:PersistentStorage', name, args, opts);
         assert(
-            !(args.existingClaim && args.existingVolume),
-            'Cannot use both existingClaim and existingVolume',
+            !(args.cloneExistingClaim && args.existingVolume),
+            'Cannot use both cloneExistingClaim and existingVolume',
         );
         assert(
             !(args.existingVolume && args.storageClass),
@@ -55,7 +55,7 @@ export class PersistentStorage extends pulumi.ComponentResource {
         this.createPVC({
             name: args.name,
             existingVolume,
-            existingClaim: args.existingClaim,
+            cloneExistingClaim: args.cloneExistingClaim,
         });
         this.volumeClaimName = args.name;
     }
@@ -63,11 +63,11 @@ export class PersistentStorage extends pulumi.ComponentResource {
     private createPVC({
         name,
         existingVolume,
-        existingClaim,
+        cloneExistingClaim,
     }: {
         name: string;
         existingVolume?: kubernetes.core.v1.PersistentVolume;
-        existingClaim?: string;
+        cloneExistingClaim?: string;
     }) {
         const storageClassName =
             this.args.storageClass ?? PersistentStorage.getStorageClass(this.args.type);
@@ -80,10 +80,10 @@ export class PersistentStorage extends pulumi.ComponentResource {
                     storageClassName: existingVolume
                         ? existingVolume.spec.storageClassName
                         : storageClassName,
-                    dataSource: existingClaim
+                    dataSource: cloneExistingClaim
                         ? {
                               kind: 'PersistentVolumeClaim',
-                              name: existingClaim,
+                              name: cloneExistingClaim,
                           }
                         : undefined,
                     volumeName: existingVolume?.metadata.name,

@@ -64,7 +64,7 @@ export class Application {
         size?: string;
         type?: PersistentStorageType;
         existingVolume?: string;
-        existingClaim?: string;
+        cloneExistingClaim?: string;
     }) {
         this.storage = new PersistentStorage(
             `${this.appName}-storage`,
@@ -75,7 +75,7 @@ export class Application {
                 type: args?.type ?? PersistentStorageType.Default,
                 storageClass: this.config.get('storageClass'),
                 existingVolume: args?.existingVolume,
-                existingClaim: args?.existingClaim,
+                cloneExistingClaim: args?.cloneExistingClaim,
             },
             { parent: this.scope },
         );

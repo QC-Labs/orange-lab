@@ -7,8 +7,8 @@ import { Application } from '../application';
 Disable debug first when switching volumes
 debug:enabled true
 
-Name of existing attached PVC
-debug:pvcName: beszel
+Name of existing attached PVC, the related volume will be cloned
+debug:clonePvc: beszel
 
 Use existing Longhorn volume instead of PVC.
 debug:existingVolume: cloned-volume
@@ -38,21 +38,21 @@ export class Debug extends pulumi.ComponentResource {
         super('orangelab:system:Debug', name, args, opts);
 
         const config = new pulumi.Config('debug');
-        const pvcName = config.get('pvcName');
+        const clonePvc = config.get('clonePvc');
         const existingVolume = config.get('existingVolume');
-        this.namespace = config.get('namespace') ?? pvcName;
+        this.namespace = config.get('namespace') ?? clonePvc;
         this.storageSize = config.require('storageSize');
         this.nodeName = config.get('nodeName');
         this.exportPath = config.require('exportPath');
 
-        const volumeName = pvcName ?? existingVolume;
-        assert(volumeName, 'Either pvcName or existingVolume must be provided');
+        const volumeName = clonePvc ?? existingVolume;
+        assert(volumeName, 'Either clonePvc or existingVolume must be provided');
         this.app = new Application(this, name, {
             existingNamespace: this.namespace,
         }).addStorage({
             size: this.storageSize,
             existingVolume,
-            existingClaim: pvcName,
+            cloneExistingClaim: clonePvc,
         });
         assert(this.app.storage?.volumeClaimName);
 
