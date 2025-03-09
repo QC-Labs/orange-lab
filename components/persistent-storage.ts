@@ -26,7 +26,8 @@ interface PersistentStorageArgs {
      */
     existingVolume?: string;
     /**
-     * Clone volume attached to existing claim. Used by Debug component to inspect already attached volumes
+     * Clone volume attached to existing claim.
+     * Used by Debug component to inspect contents of already attached volumes
      */
     cloneExistingClaim?: string;
 }

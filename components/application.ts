@@ -15,7 +15,7 @@ import { PersistentStorage, PersistentStorageType } from './persistent-storage';
  *
  * Limitations:
  * - only one Deployment supported
- * - one endpoint required for Deployment
+ * - max one endpoint for Deployment
  * - max one DaemonSet
  * - no endpoints for DaemonSet
  */
@@ -83,18 +83,10 @@ export class Application {
     }
 
     addDeployment(args: ContainerSpec) {
-        assert(this.args?.domainName, 'domainName is required');
-        const hostname = this.config.require('hostname');
         if (this.storageOnly) return this;
-
         this.serviceAccount = this.serviceAccount ?? this.createServiceAccount();
         this.deployment = this.createDeployment(args);
-        if (!args.port) return this;
-        this.service = this.createService(args.port);
-        const port = args.port.toString();
-        this.serviceUrl = `http://${hostname}.${this.appName}:${port}`;
-        this.ingress = this.createIngress(this.service, hostname);
-        this.endpointUrl = `https://${hostname}.${this.args.domainName}`;
+        if (args.port) this.createEndpoint(args);
         return this;
     }
 
@@ -126,6 +118,17 @@ export class Application {
             { parent: this.scope },
         );
         return this;
+    }
+
+    private createEndpoint(args: ContainerSpec) {
+        assert(args.port, 'port is required');
+        assert(this.args?.domainName, 'domainName is required');
+        const hostname = this.config.require('hostname');
+        this.service = this.createService(args.port);
+        const port = args.port.toString();
+        this.serviceUrl = `http://${hostname}.${this.appName}:${port}`;
+        this.ingress = this.createIngress(this.service, hostname);
+        this.endpointUrl = `https://${hostname}.${this.args.domainName}`;
     }
 
     private createNamespace(name: string) {
@@ -202,7 +205,6 @@ export class Application {
     }
 
     private createDeployment(args: ContainerSpec) {
-        assert(args.port, 'port required for deployments');
         assert(this.serviceAccount, 'serviceAccount is required');
         const podSpec = new Containers(this.appName, {
             spec: args,
