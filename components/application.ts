@@ -18,6 +18,7 @@ import { PersistentStorage, PersistentStorageType } from './persistent-storage';
  * - max one endpoint for Deployment
  * - max one DaemonSet
  * - no endpoints for DaemonSet
+ * - persistent storage for DaemonSets not supported
  */
 export class Application {
     endpointUrl?: string;
@@ -237,7 +238,6 @@ export class Application {
         const podSpec = new Containers(this.appName, {
             spec: args,
             metadata,
-            storage: this.storage,
             serviceAccount: this.serviceAccount,
         });
         return new kubernetes.apps.v1.DaemonSet(

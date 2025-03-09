@@ -85,7 +85,7 @@ export class Containers {
     }
 
     private createVolumes() {
-        return this.storage && this.spec.volumeMounts
+        return this.storage
             ? [
                   {
                       name: this.appName,
