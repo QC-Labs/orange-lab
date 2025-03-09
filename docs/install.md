@@ -16,7 +16,7 @@ Open project in VSCode. It will install the required dependencies and recommende
 
 ## Prerequisites - Manual
 
-Install dependencies on the management node (where you run Pulumi):
+Install dependencies on the management node:
 
 ```sh
 brew install node pulumi kubectl k9s
