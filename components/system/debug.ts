@@ -80,7 +80,7 @@ export class Debug extends pulumi.ComponentResource {
                             containers: [
                                 {
                                     args: ['sleep', '3600'],
-                                    image: 'busybox',
+                                    image: 'alpine',
                                     name: this.name,
                                     securityContext: { privileged: true },
                                     volumeMounts: [
