@@ -15,8 +15,6 @@ pulumi up
 # Add tag to storage nodes that will be used by Longhorn
 kubectl label nodes <node-name> orangelab/storage=true
 pulumi config set longhorn:enabled true
-# 3 storage nodes is the default
-pulumi config set longhorn:replicaCount 2
 pulumi up
 
 # Label node(s) that should run GPU workloads
@@ -112,8 +110,8 @@ kubectl label nodes <node-name> orangelab/storage=true
 # Enable module
 pulumi config set longhorn:enabled true
 
-# Set replicaCount to 1 or 2 if you have less then 3 storage nodes
-pulumi config set longhorn:replicaCount 2
+# Set replicaCount to 3 if you have 3+ storage nodes
+pulumi config set longhorn:replicaCount 3
 
 # increase size of storage from default 50Gi to 100Gi
 pulumi config set longhorn:storageSize 100Gi
