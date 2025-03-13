@@ -9,8 +9,7 @@ export interface ContainerSpec {
     env?: Record<string, string | undefined>;
     gpu?: boolean;
     hostNetwork?: boolean;
-    volumeMounts?: { mountPath: string; subPath?: string }[];
-    localVolumeMountPath?: string;
+    volumeMounts?: { mountPath: string; name?: string; subPath?: string }[];
     healthChecks?: boolean;
     resources?: {
         limits?: { cpu?: string; memory?: string };
@@ -25,7 +24,7 @@ export class Containers {
     storage?: PersistentStorage;
     spec: ContainerSpec;
     affinity?: kubernetes.types.input.core.v1.Affinity;
-    localStoragePath?: string;
+    localStorage?: { name: string; hostPath: string };
 
     constructor(
         private appName: string,
@@ -35,7 +34,7 @@ export class Containers {
             serviceAccount: kubernetes.core.v1.ServiceAccount;
             storage?: PersistentStorage;
             affinity?: kubernetes.types.input.core.v1.Affinity;
-            localStoragePath?: string;
+            localStorage?: { name: string; hostPath: string };
         },
     ) {
         this.spec = args.spec;
@@ -43,7 +42,7 @@ export class Containers {
         this.serviceAccount = args.serviceAccount;
         this.storage = args.storage;
         this.affinity = args.affinity;
-        this.localStoragePath = args.localStoragePath;
+        this.localStorage = args.localStorage;
     }
 
     public createPodTemplateSpec(): kubernetes.types.input.core.v1.PodTemplateSpec {
@@ -64,7 +63,7 @@ export class Containers {
                         readinessProbe: this.createProbe(),
                         resources: this.createResourceLimits(),
                         securityContext:
-                            this.spec.gpu || this.localStoragePath
+                            this.spec.gpu || this.localStorage
                                 ? { privileged: true }
                                 : undefined,
                         startupProbe: this.createProbe({ failureThreshold: 10 }),
@@ -92,8 +91,11 @@ export class Containers {
     }
 
     private createVolumes() {
-        const localVolume = this.localStoragePath
-            ? { name: 'local', hostPath: { path: this.localStoragePath } }
+        const localVolume = this.localStorage
+            ? {
+                  name: this.localStorage.name,
+                  hostPath: { path: this.localStorage.hostPath },
+              }
             : undefined;
         const persistentVolume = this.storage
             ? {
@@ -107,15 +109,11 @@ export class Containers {
     }
 
     private createVolumeMounts() {
-        const localVolumeMount = this.spec.localVolumeMountPath
-            ? { name: 'local', mountPath: this.spec.localVolumeMountPath }
-            : undefined;
-        const volumeMounts = (this.spec.volumeMounts ?? []).map(volumeMount => ({
-            name: this.appName,
+        return (this.spec.volumeMounts ?? []).map(volumeMount => ({
+            name: volumeMount.name ?? this.appName,
             mountPath: volumeMount.mountPath,
             subPath: volumeMount.subPath,
         }));
-        return [localVolumeMount, ...volumeMounts].filter(v => v !== undefined);
     }
 
     private createPodSecurityContext() {

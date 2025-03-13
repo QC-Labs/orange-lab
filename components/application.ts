@@ -37,7 +37,7 @@ export class Application {
     private ingress?: kubernetes.networking.v1.Ingress;
     private deployment?: kubernetes.apps.v1.Deployment;
     private daemonSet?: kubernetes.apps.v1.DaemonSet;
-    private localStoragePath?: string;
+    private localStorage?: { name: string; hostPath: string };
 
     constructor(
         private readonly scope: pulumi.ComponentResource,
@@ -85,8 +85,8 @@ export class Application {
         return this;
     }
 
-    addLocalStorage(hostPath: string) {
-        this.localStoragePath = hostPath;
+    addLocalStorage(args: { name: string; hostPath: string }) {
+        this.localStorage = args;
         return this;
     }
 
@@ -220,7 +220,7 @@ export class Application {
             storage: this.storage,
             serviceAccount: this.serviceAccount,
             affinity: this.nodes.getAffinity(),
-            localStoragePath: this.localStoragePath,
+            localStorage: this.localStorage,
         });
         return new kubernetes.apps.v1.Deployment(
             `${this.appName}-deployment`,

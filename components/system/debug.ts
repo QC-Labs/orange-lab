@@ -55,7 +55,7 @@ export class Debug extends pulumi.ComponentResource {
                 existingVolume,
                 cloneExistingClaim: clonePvc,
             })
-            .addLocalStorage(this.exportPath);
+            .addLocalStorage({ name: 'local', hostPath: this.exportPath });
         assert(this.app.storage?.volumeClaimName);
 
         // Comment out one method
@@ -67,8 +67,10 @@ export class Debug extends pulumi.ComponentResource {
         this.app.addDeployment({
             image: 'alpine',
             commandArgs: ['sleep', '3600'],
-            volumeMounts: [{ mountPath: '/data' }],
-            localVolumeMountPath: '/export',
+            volumeMounts: [
+                { mountPath: '/data' },
+                { name: 'local', mountPath: '/export' },
+            ],
         });
     }
 
