@@ -1,5 +1,6 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import { PersistentStorage } from './persistent-storage';
+import { Volumes } from './volumes';
 
 export interface ContainerSpec {
     name?: string;
@@ -21,10 +22,10 @@ export interface ContainerSpec {
 export class Containers {
     metadata: kubernetes.types.input.meta.v1.ObjectMeta;
     serviceAccount: kubernetes.core.v1.ServiceAccount;
-    storage?: PersistentStorage;
     spec: ContainerSpec;
     affinity?: kubernetes.types.input.core.v1.Affinity;
-    localStorage?: { name: string; hostPath: string };
+    volumes?: Volumes;
+    storage?: PersistentStorage;
 
     constructor(
         private appName: string,
@@ -32,17 +33,17 @@ export class Containers {
             spec: ContainerSpec;
             metadata: kubernetes.types.input.meta.v1.ObjectMeta;
             serviceAccount: kubernetes.core.v1.ServiceAccount;
+            volumes?: Volumes;
             storage?: PersistentStorage;
             affinity?: kubernetes.types.input.core.v1.Affinity;
-            localStorage?: { name: string; hostPath: string };
         },
     ) {
         this.spec = args.spec;
         this.metadata = args.metadata;
         this.serviceAccount = args.serviceAccount;
+        this.volumes = args.volumes;
         this.storage = args.storage;
         this.affinity = args.affinity;
-        this.localStorage = args.localStorage;
     }
 
     public createPodTemplateSpec(): kubernetes.types.input.core.v1.PodTemplateSpec {
@@ -63,7 +64,7 @@ export class Containers {
                         readinessProbe: this.createProbe(),
                         resources: this.createResourceLimits(),
                         securityContext:
-                            this.spec.gpu || this.localStorage
+                            this.spec.gpu || this.volumes?.hasLocal()
                                 ? { privileged: true }
                                 : undefined,
                         startupProbe: this.createProbe({ failureThreshold: 10 }),
@@ -91,12 +92,6 @@ export class Containers {
     }
 
     private createVolumes() {
-        const localVolume = this.localStorage
-            ? {
-                  name: this.localStorage.name,
-                  hostPath: { path: this.localStorage.hostPath },
-              }
-            : undefined;
         const persistentVolume = this.storage
             ? {
                   name: this.appName,
@@ -105,7 +100,9 @@ export class Containers {
                   },
               }
             : undefined;
-        return [localVolume, persistentVolume].filter(v => v !== undefined);
+        return [...(this.volumes?.create() ?? []), persistentVolume].filter(
+            v => v !== undefined,
+        );
     }
 
     private createVolumeMounts() {

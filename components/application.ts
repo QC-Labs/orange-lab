@@ -6,6 +6,7 @@ import { Containers, ContainerSpec } from './containers';
 import { Metadata } from './metadata';
 import { Nodes } from './nodes';
 import { PersistentStorage, PersistentStorageType } from './persistent-storage';
+import { LocalVolume, Volumes } from './volumes';
 
 /**
  * Application class provides DSL (Domain Specific Language) to simplify creation of Kubernetes manifests.
@@ -37,7 +38,7 @@ export class Application {
     private ingress?: kubernetes.networking.v1.Ingress;
     private deployment?: kubernetes.apps.v1.Deployment;
     private daemonSet?: kubernetes.apps.v1.DaemonSet;
-    private localStorage?: { name: string; hostPath: string };
+    private readonly volumes = new Volumes();
 
     constructor(
         private readonly scope: pulumi.ComponentResource,
@@ -85,8 +86,8 @@ export class Application {
         return this;
     }
 
-    addLocalStorage(args: { name: string; hostPath: string }) {
-        this.localStorage = args;
+    addLocalStorage(args: LocalVolume) {
+        this.volumes.addLocalVolume(args);
         return this;
     }
 
@@ -217,10 +218,10 @@ export class Application {
         const podSpec = new Containers(this.appName, {
             spec: args,
             metadata: this.metadata.get(),
+            volumes: this.volumes,
             storage: this.storage,
             serviceAccount: this.serviceAccount,
             affinity: this.nodes.getAffinity(),
-            localStorage: this.localStorage,
         });
         return new kubernetes.apps.v1.Deployment(
             `${this.appName}-deployment`,
