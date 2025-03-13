@@ -231,7 +231,7 @@ export class Application {
                     selector: { matchLabels: this.metadata.getSelectorLabels() },
                     template: podSpec.createPodTemplateSpec(),
                     strategy: this.storage
-                        ? { type: 'Recreate' }
+                        ? { type: 'Recreate', rollingUpdate: undefined }
                         : { type: 'RollingUpdate' },
                 },
             },
