@@ -13,14 +13,14 @@ debug:clonePvc: beszel
 Use existing Longhorn volume instead of PVC.
 debug:existingVolume: cloned-volume
 
-Namespace volume was created in, defaults to pvcName
+Namespace volume was created in, defaults to clonePvc
 debug:namespace: default
 
 Size has to match the volume
 debug:storageSize: 10Gi
 
 Deploy debug pod to specific node.
-debug:nodeName: my-laptop
+debug:requiredNodeLabel: kubernetes.io/hostname=my-laptop
 
 Local folder that will be mounted at /data-export
 debug:exportPath: /home/user/orangelab-export
@@ -49,57 +49,29 @@ export class Debug extends pulumi.ComponentResource {
         assert(volumeName, 'Either clonePvc or existingVolume must be provided');
         this.app = new Application(this, name, {
             existingNamespace: this.namespace,
-        }).addStorage({
-            size: this.storageSize,
-            existingVolume,
-            cloneExistingClaim: clonePvc,
-        });
+        })
+            .addStorage({
+                size: this.storageSize,
+                existingVolume,
+                cloneExistingClaim: clonePvc,
+            })
+            .addLocalStorage(this.exportPath);
         assert(this.app.storage?.volumeClaimName);
 
         // Comment out one method
-        // this.createDeployment(volumeName, app.storage.volumeClaimName);
-        this.createDeployment(this.app.storage.volumeClaimName);
+        this.createDeployment();
         // this.createExportJob(volumeName, this.app.storage.volumeClaimName);
     }
 
-    private createDeployment(claimName: string) {
-        new kubernetes.apps.v1.Deployment(
-            `${this.name}-deployment`,
-            {
-                metadata: {
-                    name: this.name,
-                    namespace: this.namespace,
-                },
-                spec: {
-                    selector: { matchLabels: { app: this.name } },
-                    replicas: 1,
-                    template: {
-                        metadata: { name: this.name, labels: { app: this.name } },
-                        spec: {
-                            nodeName: this.nodeName,
-                            containers: [
-                                {
-                                    args: ['sleep', '3600'],
-                                    image: 'alpine',
-                                    name: this.name,
-                                    securityContext: { privileged: true },
-                                    volumeMounts: [
-                                        { name: 'source', mountPath: '/data' },
-                                        { name: 'target', mountPath: '/data-export' },
-                                    ],
-                                },
-                            ],
-                            volumes: [
-                                { name: 'source', persistentVolumeClaim: { claimName } },
-                                { name: 'target', hostPath: { path: this.exportPath } },
-                            ],
-                        },
-                    },
-                },
-            },
-            { parent: this, deleteBeforeReplace: true },
-        );
+    private createDeployment() {
+        this.app.addDeployment({
+            image: 'alpine',
+            commandArgs: ['sleep', '3600'],
+            volumeMounts: [{ mountPath: '/data' }],
+            localVolumeMountPath: '/export',
+        });
     }
+
     private createExportJob(volumeName: string, claimName: string) {
         new kubernetes.batch.v1.Job(
             `${this.name}-export-job`,

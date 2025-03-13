@@ -10,6 +10,7 @@ export interface ContainerSpec {
     gpu?: boolean;
     hostNetwork?: boolean;
     volumeMounts?: { mountPath: string; subPath?: string }[];
+    localVolumeMountPath?: string;
     healthChecks?: boolean;
     resources?: {
         limits?: { cpu?: string; memory?: string };
@@ -23,7 +24,8 @@ export class Containers {
     serviceAccount: kubernetes.core.v1.ServiceAccount;
     storage?: PersistentStorage;
     spec: ContainerSpec;
-    affinity: kubernetes.types.input.core.v1.Affinity | undefined;
+    affinity?: kubernetes.types.input.core.v1.Affinity;
+    localStoragePath?: string;
 
     constructor(
         private appName: string,
@@ -33,6 +35,7 @@ export class Containers {
             serviceAccount: kubernetes.core.v1.ServiceAccount;
             storage?: PersistentStorage;
             affinity?: kubernetes.types.input.core.v1.Affinity;
+            localStoragePath?: string;
         },
     ) {
         this.spec = args.spec;
@@ -40,6 +43,7 @@ export class Containers {
         this.serviceAccount = args.serviceAccount;
         this.storage = args.storage;
         this.affinity = args.affinity;
+        this.localStoragePath = args.localStoragePath;
     }
 
     public createPodTemplateSpec(): kubernetes.types.input.core.v1.PodTemplateSpec {
@@ -59,7 +63,10 @@ export class Containers {
                         ports: this.createPorts(),
                         readinessProbe: this.createProbe(),
                         resources: this.createResourceLimits(),
-                        securityContext: this.spec.gpu ? { privileged: true } : undefined,
+                        securityContext:
+                            this.spec.gpu || this.localStoragePath
+                                ? { privileged: true }
+                                : undefined,
                         startupProbe: this.createProbe({ failureThreshold: 10 }),
                         volumeMounts: this.createVolumeMounts(),
                     },
@@ -85,16 +92,30 @@ export class Containers {
     }
 
     private createVolumes() {
-        return this.storage
-            ? [
-                  {
-                      name: this.appName,
-                      persistentVolumeClaim: {
-                          claimName: this.storage.volumeClaimName,
-                      },
-                  },
-              ]
+        const localVolume = this.localStoragePath
+            ? { name: 'local', hostPath: { path: this.localStoragePath } }
             : undefined;
+        const persistentVolume = this.storage
+            ? {
+                  name: this.appName,
+                  persistentVolumeClaim: {
+                      claimName: this.storage.volumeClaimName,
+                  },
+              }
+            : undefined;
+        return [localVolume, persistentVolume].filter(v => v !== undefined);
+    }
+
+    private createVolumeMounts() {
+        const localVolumeMount = this.spec.localVolumeMountPath
+            ? { name: 'local', mountPath: this.spec.localVolumeMountPath }
+            : undefined;
+        const volumeMounts = (this.spec.volumeMounts ?? []).map(volumeMount => ({
+            name: this.appName,
+            mountPath: volumeMount.mountPath,
+            subPath: volumeMount.subPath,
+        }));
+        return [localVolumeMount, ...volumeMounts].filter(v => v !== undefined);
     }
 
     private createPodSecurityContext() {
@@ -105,14 +126,6 @@ export class Containers {
                   fsGroup: this.spec.runAsUser,
               }
             : undefined;
-    }
-
-    private createVolumeMounts() {
-        return (this.spec.volumeMounts ?? []).map(volumeMount => ({
-            name: this.appName,
-            mountPath: volumeMount.mountPath,
-            subPath: volumeMount.subPath,
-        }));
     }
 
     private createResourceLimits() {
@@ -144,9 +157,6 @@ export class Containers {
         if (!this.spec.env) return undefined;
         return Object.entries(this.spec.env)
             .filter(([_, value]) => value)
-            .map(([key, value]) => ({
-                name: key,
-                value,
-            }));
+            .map(([key, value]) => ({ name: key, value }));
     }
 }

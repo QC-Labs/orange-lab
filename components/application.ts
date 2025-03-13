@@ -19,6 +19,7 @@ import { PersistentStorage, PersistentStorageType } from './persistent-storage';
  * - max one DaemonSet
  * - no endpoints for DaemonSet
  * - persistent storage for DaemonSets not supported
+ * - only one local host storage path for deployment supported
  */
 export class Application {
     endpointUrl?: string;
@@ -36,6 +37,7 @@ export class Application {
     private ingress?: kubernetes.networking.v1.Ingress;
     private deployment?: kubernetes.apps.v1.Deployment;
     private daemonSet?: kubernetes.apps.v1.DaemonSet;
+    private localStoragePath?: string;
 
     constructor(
         private readonly scope: pulumi.ComponentResource,
@@ -80,6 +82,11 @@ export class Application {
             },
             { parent: this.scope },
         );
+        return this;
+    }
+
+    addLocalStorage(hostPath: string) {
+        this.localStoragePath = hostPath;
         return this;
     }
 
@@ -213,6 +220,7 @@ export class Application {
             storage: this.storage,
             serviceAccount: this.serviceAccount,
             affinity: this.nodes.getAffinity(),
+            localStoragePath: this.localStoragePath,
         });
         return new kubernetes.apps.v1.Deployment(
             `${this.appName}-deployment`,
