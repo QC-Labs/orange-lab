@@ -35,15 +35,11 @@ export class OpenWebUI extends pulumi.ComponentResource {
                 chart: 'open-webui',
                 namespace: app.namespaceName,
                 version,
-                repositoryOpts: {
-                    repo: 'https://helm.openwebui.com/',
-                },
+                repositoryOpts: { repo: 'https://helm.openwebui.com/' },
                 values: {
                     ollamaUrls: [args.ollamaUrl],
                     openaiBaseApiUrl: args.openAiUrl,
-                    nodeSelector: {
-                        'orangelab/gpu': 'true',
-                    },
+                    nodeSelector: { 'orangelab/gpu': 'true' },
                     extraEnvVars: [
                         {
                             name: 'WEBUI_URL',
@@ -102,19 +98,13 @@ export class OpenWebUI extends pulumi.ComponentResource {
                             value: 'Tailscale-User-Name',
                         },
                     ],
-                    ollama: {
-                        enabled: false,
-                    },
-                    image: {
-                        tag: appVersion,
-                    },
+                    ollama: { enabled: false },
+                    image: { tag: appVersion },
                     persistence: {
                         enabled: true,
-                        existingClaim: app.storage?.volumeClaimName,
+                        existingClaim: app.volumes.getClaimName(),
                     },
-                    pipelines: {
-                        enabled: false,
-                    },
+                    pipelines: { enabled: false },
                     ingress: {
                         enabled: true,
                         class: 'tailscale',

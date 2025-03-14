@@ -5,14 +5,10 @@ import assert from 'node:assert';
 import { Containers, ContainerSpec } from './containers';
 import { Metadata } from './metadata';
 import { Nodes } from './nodes';
-import { PersistentStorage, PersistentStorageType } from './persistent-storage';
-import { LocalVolume, Volumes } from './volumes';
+import { LocalVolume, PersistentVolume, Volumes } from './volumes';
 
 /**
  * Application class provides DSL (Domain Specific Language) to simplify creation of Kubernetes manifests.
- *
- * The `add*` methods use "fluent interface" to allow provisioning resources through "method chaining".
- * Pulumi resources are created here and other classes are used to create Kubernetes manifests without side-effects.
  *
  * Limitations:
  * - only one Deployment supported
@@ -20,7 +16,6 @@ import { LocalVolume, Volumes } from './volumes';
  * - max one DaemonSet
  * - no endpoints for DaemonSet
  * - persistent storage for DaemonSets not supported
- * - only one local host storage path for deployment supported
  */
 export class Application {
     endpointUrl?: string;
@@ -28,7 +23,7 @@ export class Application {
     storageOnly = false;
     readonly metadata: Metadata;
     readonly nodes: Nodes;
-    storage?: PersistentStorage;
+    readonly volumes: Volumes;
     namespaceName: string;
 
     private readonly namespace?: kubernetes.core.v1.Namespace;
@@ -38,7 +33,6 @@ export class Application {
     private ingress?: kubernetes.networking.v1.Ingress;
     private deployment?: kubernetes.apps.v1.Deployment;
     private daemonSet?: kubernetes.apps.v1.DaemonSet;
-    private readonly volumes = new Volumes();
 
     constructor(
         private readonly scope: pulumi.ComponentResource,
@@ -62,32 +56,20 @@ export class Application {
             namespace: this.namespaceName,
         });
         this.nodes = new Nodes(this.config);
+        this.volumes = new Volumes(appName, {
+            scope: this.scope,
+            config: this.config,
+            namespace: this.namespaceName,
+        });
     }
 
-    addStorage(args?: {
-        size?: string;
-        type?: PersistentStorageType;
-        existingVolume?: string;
-        cloneExistingClaim?: string;
-    }) {
-        this.storage = new PersistentStorage(
-            `${this.appName}-storage`,
-            {
-                name: this.appName,
-                namespace: this.namespaceName,
-                size: args?.size ?? this.config.require('storageSize'),
-                type: args?.type ?? PersistentStorageType.Default,
-                storageClass: this.config.get('storageClass'),
-                existingVolume: args?.existingVolume,
-                cloneExistingClaim: args?.cloneExistingClaim,
-            },
-            { parent: this.scope },
-        );
+    addStorage(volume?: PersistentVolume) {
+        this.volumes.addPersistentVolume(volume);
         return this;
     }
 
-    addLocalStorage(args: LocalVolume) {
-        this.volumes.addLocalVolume(args);
+    addLocalStorage(volume: LocalVolume) {
+        this.volumes.addLocalVolume(volume);
         return this;
     }
 
@@ -219,7 +201,6 @@ export class Application {
             spec: args,
             metadata: this.metadata.get(),
             volumes: this.volumes,
-            storage: this.storage,
             serviceAccount: this.serviceAccount,
             affinity: this.nodes.getAffinity(),
         });
@@ -231,7 +212,7 @@ export class Application {
                     replicas: 1,
                     selector: { matchLabels: this.metadata.getSelectorLabels() },
                     template: podSpec.createPodTemplateSpec(),
-                    strategy: this.storage
+                    strategy: this.volumes.hasVolumes()
                         ? { type: 'Recreate', rollingUpdate: undefined }
                         : { type: 'RollingUpdate' },
                 },

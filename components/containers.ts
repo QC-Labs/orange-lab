@@ -1,5 +1,4 @@
 import * as kubernetes from '@pulumi/kubernetes';
-import { PersistentStorage } from './persistent-storage';
 import { Volumes } from './volumes';
 
 export interface ContainerSpec {
@@ -25,7 +24,6 @@ export class Containers {
     spec: ContainerSpec;
     affinity?: kubernetes.types.input.core.v1.Affinity;
     volumes?: Volumes;
-    storage?: PersistentStorage;
 
     constructor(
         private appName: string,
@@ -34,7 +32,6 @@ export class Containers {
             metadata: kubernetes.types.input.meta.v1.ObjectMeta;
             serviceAccount: kubernetes.core.v1.ServiceAccount;
             volumes?: Volumes;
-            storage?: PersistentStorage;
             affinity?: kubernetes.types.input.core.v1.Affinity;
         },
     ) {
@@ -42,7 +39,6 @@ export class Containers {
         this.metadata = args.metadata;
         this.serviceAccount = args.serviceAccount;
         this.volumes = args.volumes;
-        this.storage = args.storage;
         this.affinity = args.affinity;
     }
 
@@ -92,24 +88,13 @@ export class Containers {
     }
 
     private createVolumes() {
-        const persistentVolume = this.storage
-            ? {
-                  name: this.appName,
-                  persistentVolumeClaim: {
-                      claimName: this.storage.volumeClaimName,
-                  },
-              }
-            : undefined;
-        return [...(this.volumes?.create() ?? []), persistentVolume].filter(
-            v => v !== undefined,
-        );
+        return this.volumes?.create();
     }
 
     private createVolumeMounts() {
         return (this.spec.volumeMounts ?? []).map(volumeMount => ({
-            name: volumeMount.name ?? this.appName,
-            mountPath: volumeMount.mountPath,
-            subPath: volumeMount.subPath,
+            ...volumeMount,
+            ...{ name: volumeMount.name ?? this.appName },
         }));
     }
 

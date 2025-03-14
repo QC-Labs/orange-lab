@@ -38,38 +38,25 @@ export class Ollama extends pulumi.ComponentResource {
                 chart: 'ollama',
                 namespace: this.app.namespaceName,
                 version,
-                repositoryOpts: {
-                    repo: 'https://otwld.github.io/ollama-helm/',
-                },
+                repositoryOpts: { repo: 'https://otwld.github.io/ollama-helm/' },
                 values: {
                     affinity: this.app.nodes.getAffinity(),
                     fullnameOverride: 'ollama',
-                    securityContext: {
-                        privileged: true,
-                    },
-                    nodeSelector: {
-                        'orangelab/gpu': 'true',
-                    },
+                    securityContext: { privileged: true },
+                    nodeSelector: { 'orangelab/gpu': 'true' },
                     runtimeClassName: 'nvidia',
-                    extraEnv: [
-                        {
-                            name: 'OLLAMA_DEBUG',
-                            value: 'false',
-                        },
-                    ],
+                    extraEnv: [{ name: 'OLLAMA_DEBUG', value: 'false' }],
                     ollama: {
                         gpu: {
                             enabled: true,
                             type: 'nvidia',
                             number: 1,
                         },
-                        models: {
-                            pull: [],
-                        },
+                        models: { pull: [] },
                     },
                     persistentVolume: {
                         enabled: true,
-                        existingClaim: this.app.storage?.volumeClaimName,
+                        existingClaim: this.app.volumes.getClaimName(),
                     },
                     ingress: {
                         enabled: true,

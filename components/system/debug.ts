@@ -7,14 +7,14 @@ import { Application } from '../application';
 Disable debug first when switching volumes
 debug:enabled true
 
+Namespace volume was created in, defaults to clonePvc
+debug:namespace: default
+
 Name of existing attached PVC, the related volume will be cloned
 debug:clonePvc: beszel
 
 Use existing Longhorn volume instead of PVC.
 debug:existingVolume: cloned-volume
-
-Namespace volume was created in, defaults to clonePvc
-debug:namespace: default
 
 Size has to match the volume
 debug:storageSize: 10Gi
@@ -30,7 +30,6 @@ export class Debug extends pulumi.ComponentResource {
     namespace?: string;
     nodeName?: string;
     exportPath: string;
-    storageSize: string;
     claim?: kubernetes.core.v1.PersistentVolumeClaim;
     app: Application;
 
@@ -41,8 +40,6 @@ export class Debug extends pulumi.ComponentResource {
         const clonePvc = config.get('clonePvc');
         const existingVolume = config.get('existingVolume');
         this.namespace = config.get('namespace') ?? clonePvc;
-        this.storageSize = config.require('storageSize');
-        this.nodeName = config.get('nodeName');
         this.exportPath = config.require('exportPath');
 
         const volumeName = clonePvc ?? existingVolume;
@@ -50,13 +47,11 @@ export class Debug extends pulumi.ComponentResource {
         this.app = new Application(this, name, {
             existingNamespace: this.namespace,
         })
+            .addLocalStorage({ name: 'local', hostPath: this.exportPath })
             .addStorage({
-                size: this.storageSize,
                 existingVolume,
                 cloneExistingClaim: clonePvc,
-            })
-            .addLocalStorage({ name: 'local', hostPath: this.exportPath });
-        assert(this.app.storage?.volumeClaimName);
+            });
 
         // Comment out one method
         this.createDeployment();
