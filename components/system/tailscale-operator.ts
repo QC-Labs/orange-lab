@@ -27,7 +27,7 @@ export class TailscaleOperator extends pulumi.ComponentResource {
         const oauthClientSecret = config.requireSecret('oauthClientSecret');
 
         this.app = new Application(this, name, {
-            namespaceName: args.namespace,
+            namespace: args.namespace,
         }).addDefaultLimits({
             request: { cpu: '10m', memory: '100Mi' },
             limit: { memory: '300Mi' },
@@ -45,7 +45,7 @@ export class TailscaleOperator extends pulumi.ComponentResource {
                     kind: 'ProxyClass',
                     metadata: {
                         name: 'tailscale-proxyclass',
-                        namespace: this.app.namespaceName,
+                        namespace: this.app.namespace,
                     },
                     spec: {
                         metrics: {
@@ -65,7 +65,7 @@ export class TailscaleOperator extends pulumi.ComponentResource {
             name,
             {
                 chart: 'tailscale-operator',
-                namespace: this.app.namespaceName,
+                namespace: this.app.namespace,
                 version,
                 repositoryOpts: { repo: 'https://pkgs.tailscale.com/helmcharts' },
                 values: {

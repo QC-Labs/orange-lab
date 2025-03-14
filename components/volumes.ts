@@ -1,6 +1,7 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import { PersistentStorage, PersistentStorageType } from './persistent-storage';
 import * as pulumi from '@pulumi/pulumi';
+import assert from 'node:assert';
 
 export interface LocalVolume {
     name: string;
@@ -66,8 +67,10 @@ export class Volumes {
         });
     }
 
-    getClaimName(storageName?: string) {
-        return this.persistentStorage.get(storageName ?? this.appName)?.volumeClaimName;
+    getClaimName(storageName?: string): string {
+        const storage = this.persistentStorage.get(storageName ?? this.appName);
+        assert(storage, `Storage ${storageName ?? this.appName} not found`);
+        return storage.volumeClaimName;
     }
 
     hasLocal(): boolean {

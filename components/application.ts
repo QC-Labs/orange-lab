@@ -24,9 +24,8 @@ export class Application {
     readonly metadata: Metadata;
     readonly nodes: Nodes;
     readonly volumes: Volumes;
-    namespaceName: string;
+    readonly namespace: string;
 
-    private readonly namespace?: kubernetes.core.v1.Namespace;
     private readonly config: pulumi.Config;
     private service?: kubernetes.core.v1.Service;
     private serviceAccount?: kubernetes.core.v1.ServiceAccount;
@@ -39,27 +38,27 @@ export class Application {
         private readonly appName: string,
         private readonly args?: {
             domainName?: string;
-            namespaceName?: string;
+            namespace?: string;
             existingNamespace?: string;
         },
     ) {
         this.config = new pulumi.Config(appName);
         this.storageOnly = this.config.getBoolean('storageOnly') ?? false;
         if (args?.existingNamespace) {
-            this.namespaceName = args.existingNamespace;
+            this.namespace = args.existingNamespace;
         } else {
-            this.namespaceName = args?.namespaceName ?? appName;
-            this.namespace = this.createNamespace(this.namespaceName);
+            this.namespace = args?.namespace ?? appName;
+            this.createNamespace(this.namespace);
         }
         this.metadata = new Metadata(appName, {
             config: this.config,
-            namespace: this.namespaceName,
+            namespace: this.namespace,
         });
         this.nodes = new Nodes(this.config);
         this.volumes = new Volumes(appName, {
             scope: this.scope,
             config: this.config,
-            namespace: this.namespaceName,
+            namespace: this.namespace,
         });
     }
 

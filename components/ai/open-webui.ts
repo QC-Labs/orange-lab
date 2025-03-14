@@ -33,7 +33,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
             name,
             {
                 chart: 'open-webui',
-                namespace: app.namespaceName,
+                namespace: app.namespace,
                 version,
                 repositoryOpts: { repo: 'https://helm.openwebui.com/' },
                 values: {

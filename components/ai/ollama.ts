@@ -8,9 +8,10 @@ export interface OllamaArgs {
 }
 
 export class Ollama extends pulumi.ComponentResource {
-    public readonly endpointUrl: string | undefined;
-    public readonly serviceUrl: string | undefined;
-    app: Application;
+    public readonly endpointUrl?: string;
+    public readonly serviceUrl?: string;
+
+    private readonly app: Application;
 
     constructor(private name: string, args: OllamaArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:ai:Ollama', name, args, opts);
@@ -36,7 +37,7 @@ export class Ollama extends pulumi.ComponentResource {
             this.name,
             {
                 chart: 'ollama',
-                namespace: this.app.namespaceName,
+                namespace: this.app.namespace,
                 version,
                 repositoryOpts: { repo: 'https://otwld.github.io/ollama-helm/' },
                 values: {
