@@ -1,4 +1,3 @@
-import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
 import { Application } from '../application';
@@ -27,11 +26,9 @@ debug:exportPath: /home/user/orangelab-export
 debug:exportPath: /run/media/user/usb-1/orangelab-export
 */
 export class Debug extends pulumi.ComponentResource {
-    namespace?: string;
-    nodeName?: string;
-    exportPath: string;
-    claim?: kubernetes.core.v1.PersistentVolumeClaim;
     app: Application;
+    namespace: string;
+    exportPath: string;
 
     constructor(private name: string, args = {}, opts?: pulumi.ResourceOptions) {
         super('orangelab:system:Debug', name, args, opts);
@@ -39,7 +36,7 @@ export class Debug extends pulumi.ComponentResource {
         const config = new pulumi.Config('debug');
         const clonePvc = config.get('clonePvc');
         const existingVolume = config.get('existingVolume');
-        this.namespace = config.get('namespace') ?? clonePvc;
+        this.namespace = config.get('namespace') ?? clonePvc ?? 'default';
         this.exportPath = config.require('exportPath');
 
         const volumeName = clonePvc ?? existingVolume;
@@ -54,8 +51,8 @@ export class Debug extends pulumi.ComponentResource {
             });
 
         // Comment out one method
-        this.createDeployment();
-        // this.createExportJob(volumeName, this.app.storage.volumeClaimName);
+        // this.createDeployment();
+        // this.createExportJob();
     }
 
     private createDeployment() {
@@ -64,53 +61,25 @@ export class Debug extends pulumi.ComponentResource {
             commandArgs: ['sleep', '3600'],
             volumeMounts: [
                 { mountPath: '/data' },
-                { name: 'local', mountPath: '/export' },
+                { name: 'local', mountPath: '/data-export' },
             ],
         });
     }
 
-    private createExportJob(volumeName: string, claimName: string) {
-        new kubernetes.batch.v1.Job(
-            `${this.name}-export-job`,
-            {
-                metadata: {
-                    name: this.name,
-                    namespace: this.namespace,
-                },
-                spec: {
-                    template: {
-                        metadata: {
-                            name: this.name,
-                            labels: { app: this.name, component: 'export' },
-                        },
-                        spec: {
-                            nodeName: this.nodeName,
-                            containers: [
-                                {
-                                    args: [
-                                        '/bin/sh',
-                                        '-c',
-                                        `tar zcvf /data-export/${volumeName}-$(date +"%Y%m%d").tgz /data/`,
-                                    ],
-                                    image: 'busybox',
-                                    name: this.name,
-                                    securityContext: { privileged: true },
-                                    volumeMounts: [
-                                        { name: 'source', mountPath: '/data' },
-                                        { name: 'target', mountPath: '/data-export' },
-                                    ],
-                                },
-                            ],
-                            restartPolicy: 'Never',
-                            volumes: [
-                                { name: 'source', persistentVolumeClaim: { claimName } },
-                                { name: 'target', hostPath: { path: this.exportPath } },
-                            ],
-                        },
-                    },
-                },
-            },
-            { parent: this, deleteBeforeReplace: true },
-        );
+    private createExportJob() {
+        this.app.addJob({
+            name: 'export',
+            image: 'busybox',
+            commandArgs: [
+                'sh',
+                '-c',
+                `tar zcvf /data-export/${this.namespace}-$(date +"%Y%m%d").tgz /data/`,
+            ],
+            volumeMounts: [
+                { mountPath: '/data' },
+                { name: 'local', mountPath: '/data-export' },
+            ],
+            restartPolicy: 'Never',
+        });
     }
 }

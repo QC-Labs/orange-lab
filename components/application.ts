@@ -27,11 +27,7 @@ export class Application {
     readonly namespace: string;
 
     private readonly config: pulumi.Config;
-    private service?: kubernetes.core.v1.Service;
     private serviceAccount?: kubernetes.core.v1.ServiceAccount;
-    private ingress?: kubernetes.networking.v1.Ingress;
-    private deployment?: kubernetes.apps.v1.Deployment;
-    private daemonSet?: kubernetes.apps.v1.DaemonSet;
 
     constructor(
         private readonly scope: pulumi.ComponentResource,
@@ -75,7 +71,7 @@ export class Application {
     addDeployment(args: ContainerSpec) {
         if (this.storageOnly) return this;
         this.serviceAccount = this.serviceAccount ?? this.createServiceAccount();
-        this.deployment = this.createDeployment(args);
+        this.createDeployment(args);
         if (args.port) this.createEndpoint(args);
         return this;
     }
@@ -83,7 +79,14 @@ export class Application {
     addDeamonSet(args: ContainerSpec) {
         if (this.storageOnly) return this;
         this.serviceAccount = this.serviceAccount ?? this.createServiceAccount();
-        this.daemonSet = this.createDaemonSet(args);
+        this.createDaemonSet(args);
+        return this;
+    }
+
+    addJob(args: ContainerSpec) {
+        if (this.storageOnly) return this;
+        this.serviceAccount = this.serviceAccount ?? this.createServiceAccount();
+        this.createJob(args);
         return this;
     }
 
@@ -114,10 +117,10 @@ export class Application {
         assert(args.port, 'port is required');
         assert(this.args?.domainName, 'domainName is required');
         const hostname = this.config.require('hostname');
-        this.service = this.createService(args.port);
+        const service = this.createService(args.port);
         const port = args.port.toString();
         this.serviceUrl = `http://${hostname}.${this.appName}:${port}`;
-        this.ingress = this.createIngress(this.service, hostname);
+        this.createIngress(service, hostname);
         this.endpointUrl = `https://${hostname}.${this.args.domainName}`;
     }
 
@@ -237,6 +240,29 @@ export class Application {
                     selector: {
                         matchLabels: this.metadata.getSelectorLabels(args.name),
                     },
+                    template: podSpec.createPodTemplateSpec(),
+                },
+            },
+            { parent: this.scope },
+        );
+    }
+
+    private createJob(args: ContainerSpec) {
+        assert(args.name, 'name is required for job');
+        assert(this.serviceAccount, 'serviceAccount is required');
+        const metadata = this.metadata.getForComponent(args.name);
+        const podSpec = new Containers(this.appName, {
+            spec: args,
+            metadata,
+            volumes: this.volumes,
+            serviceAccount: this.serviceAccount,
+            affinity: this.nodes.getAffinity(),
+        });
+        return new kubernetes.batch.v1.Job(
+            `${this.appName}-${args.name}-job`,
+            {
+                metadata,
+                spec: {
                     template: podSpec.createPodTemplateSpec(),
                 },
             },

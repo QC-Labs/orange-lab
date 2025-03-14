@@ -16,6 +16,7 @@ export interface ContainerSpec {
         requests?: { cpu?: string; memory?: string };
     };
     runAsUser?: number;
+    restartPolicy?: string;
 }
 
 export class Containers {
@@ -67,6 +68,7 @@ export class Containers {
                         volumeMounts: this.createVolumeMounts(),
                     },
                 ],
+                restartPolicy: this.spec.restartPolicy,
                 serviceAccountName: this.serviceAccount.metadata.name,
                 runtimeClassName: this.spec.gpu ? 'nvidia' : undefined,
                 nodeSelector: this.spec.gpu ? { 'orangelab/gpu': 'true' } : undefined,
