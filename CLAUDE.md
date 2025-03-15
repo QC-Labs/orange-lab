@@ -30,6 +30,8 @@
 ### Type Safety
 - Always use explicit types
 - Avoid `any` type
+- Prefer `variable?: Type` over `variable: Type | undefined`
+- Prefer optional chaining over null checks
 - Prefix unused variables with underscore (_)
 
 ### Components
