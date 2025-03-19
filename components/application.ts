@@ -12,7 +12,6 @@ import { LocalVolume, PersistentVolume, Volumes } from './volumes';
  *
  * Limitations:
  * - only one Deployment supported
- * - max one endpoint for Deployment
  * - max one DaemonSet
  * - no endpoints for DaemonSet
  * - persistent storage for DaemonSets not supported
@@ -68,25 +67,25 @@ export class Application {
         return this;
     }
 
-    addDeployment(args: ContainerSpec) {
+    addDeployment(spec: ContainerSpec) {
         if (this.storageOnly) return this;
         this.serviceAccount = this.serviceAccount ?? this.createServiceAccount();
-        this.createDeployment(args);
-        if (args.port) this.createEndpoint(args);
+        this.createDeployment(spec);
+        this.createEndpoints(spec);
         return this;
     }
 
-    addDeamonSet(args: ContainerSpec) {
+    addDeamonSet(spec: ContainerSpec) {
         if (this.storageOnly) return this;
         this.serviceAccount = this.serviceAccount ?? this.createServiceAccount();
-        this.createDaemonSet(args);
+        this.createDaemonSet(spec);
         return this;
     }
 
-    addJob(args: ContainerSpec) {
+    addJob(spec: ContainerSpec) {
         if (this.storageOnly) return this;
         this.serviceAccount = this.serviceAccount ?? this.createServiceAccount();
-        this.createJob(args);
+        this.createJob(spec);
         return this;
     }
 
@@ -113,14 +112,18 @@ export class Application {
         return this;
     }
 
-    private createEndpoint(args: ContainerSpec) {
-        assert(args.port, 'port is required');
+    private createEndpoints(spec: ContainerSpec) {
         assert(this.args?.domainName, 'domainName is required');
         const hostname = this.config.require('hostname');
-        const service = this.createService(args.port);
-        const port = args.port.toString();
-        this.serviceUrl = `http://${hostname}.${this.appName}:${port}`;
-        this.createIngress(service, hostname);
+        const ports = [
+            ...(spec.port ? [{ name: 'http', port: spec.port, hostname }] : []),
+            ...(spec.ports ?? []),
+        ];
+        if (ports.length === 0) return;
+        const service = this.createService(ports);
+        const port = ports[0].port.toString();
+        this.serviceUrl = `http://${hostname}.${this.namespace}:${port}`;
+        this.createIngress(service, ports);
         this.endpointUrl = `https://${hostname}.${this.args.domainName}`;
     }
 
@@ -140,21 +143,21 @@ export class Application {
         );
     }
 
-    private createService(port: number) {
+    private createService(args: { name: string; port: number }[]) {
+        const ports = args.map(p => ({
+            name: p.name,
+            protocol: 'TCP',
+            port: p.port,
+            targetPort: p.port,
+        }));
+
         return new kubernetes.core.v1.Service(
             `${this.appName}-svc`,
             {
                 metadata: this.metadata.get(),
                 spec: {
                     type: 'ClusterIP',
-                    ports: [
-                        {
-                            name: 'http',
-                            protocol: 'TCP',
-                            port,
-                            targetPort: port,
-                        },
-                    ],
+                    ports,
                     selector: this.metadata.getSelectorLabels(),
                 },
             },
@@ -162,39 +165,48 @@ export class Application {
         );
     }
 
-    private createIngress(service: kubernetes.core.v1.Service, hostname: string) {
-        const serviceName = service.metadata.name;
-        const targetPort = service.spec.ports[0].port;
-        return new kubernetes.networking.v1.Ingress(
-            `${this.appName}-ingress`,
-            {
-                metadata: this.metadata.get(),
-                spec: {
-                    ingressClassName: 'tailscale',
-                    tls: [{ hosts: [hostname] }],
-                    rules: [
-                        {
-                            host: hostname,
-                            http: {
-                                paths: [
-                                    {
-                                        path: '/',
-                                        pathType: 'Prefix',
-                                        backend: {
-                                            service: {
-                                                name: serviceName,
-                                                port: { number: targetPort },
+    private createIngress(
+        service: kubernetes.core.v1.Service,
+        ports: { name: string; port: number; hostname?: string }[],
+    ) {
+        ports.map((p, i) => {
+            assert(p.hostname);
+            const componentName = i === 0 ? this.appName : `${this.appName}-${p.name}`;
+            return new kubernetes.networking.v1.Ingress(
+                `${componentName}-ingress`,
+                {
+                    metadata: {
+                        ...(i === 0
+                            ? this.metadata.get()
+                            : this.metadata.getForComponent(p.name)),
+                    },
+                    spec: {
+                        ingressClassName: 'tailscale',
+                        tls: [{ hosts: [p.hostname] }],
+                        rules: [
+                            {
+                                host: p.hostname,
+                                http: {
+                                    paths: [
+                                        {
+                                            path: '/',
+                                            pathType: 'Prefix',
+                                            backend: {
+                                                service: {
+                                                    name: service.metadata.name,
+                                                    port: { number: p.port },
+                                                },
                                             },
                                         },
-                                    },
-                                ],
+                                    ],
+                                },
                             },
-                        },
-                    ],
+                        ],
+                    },
                 },
-            },
-            { parent: this.scope },
-        );
+                { parent: this.scope },
+            );
+        });
     }
 
     private createDeployment(args: ContainerSpec) {

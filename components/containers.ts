@@ -5,6 +5,7 @@ export interface ContainerSpec {
     name?: string;
     image: string;
     port?: number;
+    ports?: { name: string; port: number; hostname?: string }[];
     commandArgs?: string[];
     env?: Record<string, string | undefined>;
     gpu?: boolean;
@@ -78,15 +79,15 @@ export class Containers {
     }
 
     private createPorts() {
-        return this.spec.port
-            ? [
-                  {
-                      name: 'http',
-                      containerPort: this.spec.port,
-                      protocol: 'TCP',
-                  },
-              ]
-            : [];
+        const ports = [
+            ...(this.spec.port ? [{ name: 'http', port: this.spec.port }] : []),
+            ...(this.spec.ports ?? []),
+        ];
+        return ports.map(port => ({
+            name: port.name,
+            containerPort: port.port,
+            protocol: 'TCP',
+        }));
     }
 
     private createVolumes() {

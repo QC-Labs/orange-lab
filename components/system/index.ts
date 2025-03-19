@@ -2,6 +2,7 @@ import * as pulumi from '@pulumi/pulumi';
 import { rootConfig } from '../root-config';
 import { Debug } from './debug';
 import { Longhorn } from './longhorn';
+import { Minio } from './minio';
 import { NvidiaGPUOperator } from './nvidia-gpu-operator';
 import { Tailscale } from './tailscale';
 import { TailscaleOperator } from './tailscale-operator';
@@ -13,7 +14,8 @@ export class SystemModule extends pulumi.ComponentResource {
     clusterCidr: string;
     serviceCidr: string;
 
-    longhorn: Longhorn | undefined;
+    longhorn?: Longhorn;
+    minio?: Minio;
 
     constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
         super('orangelab:system', name, args, opts);
@@ -34,6 +36,14 @@ export class SystemModule extends pulumi.ComponentResource {
 
         if (rootConfig.isEnabled('nvidia-gpu-operator')) {
             new NvidiaGPUOperator('nvidia-gpu-operator', {}, { parent: this });
+        }
+
+        if (rootConfig.isEnabled('minio')) {
+            this.minio = new Minio(
+                'minio',
+                { domainName: this.domainName },
+                { parent: this },
+            );
         }
 
         if (rootConfig.isEnabled('longhorn')) {

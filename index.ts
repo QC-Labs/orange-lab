@@ -6,6 +6,9 @@ import { SystemModule } from './components/system';
 const systemModule = new SystemModule('system');
 export const system = {
     longhornUrl: systemModule.longhorn?.endpointUrl,
+    minioUrl: systemModule.minio?.endpointUrl,
+    minioS3ClusterEndpoint: systemModule.minio?.s3ClusterEndpoint,
+    minioS3Endpoint: systemModule.minio?.s3Endpoint,
     tailscaleAgentKey: systemModule.tailscaleAgentKey,
     tailscaleServerKey: systemModule.tailscaleServerKey,
     tailscaleDomain: systemModule.domainName,

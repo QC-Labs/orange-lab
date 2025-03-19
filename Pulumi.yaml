@@ -41,6 +41,13 @@ config:
     # tailscale-operator:oauthClientId: OAUTH_CLIENT_ID
     # tailscale-operator:oauthClientSecret: OAUTH_CLIENT_SECRET
 
+    minio:enabled: false
+    minio:hostname: minio
+    minio:hostname-api: minio-api
+    minio:dataPath: /var/srv/minio-data
+    minio:rootUser: minioadmin
+    minio:rootPassword: minioadmin
+
     longhorn:enabled: false
     longhorn:version: 1.8.1
     longhorn:hostname: longhorn
