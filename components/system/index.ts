@@ -49,8 +49,12 @@ export class SystemModule extends pulumi.ComponentResource {
         if (rootConfig.isEnabled('longhorn')) {
             this.longhorn = new Longhorn(
                 'longhorn',
-                { domainName: this.domainName, enableMonitoring },
-                { parent: this },
+                {
+                    domainName: this.domainName,
+                    enableMonitoring,
+                    s3EndpointUrl: this.minio?.s3ClusterEndpoint,
+                },
+                { parent: this, dependsOn: [this.minio].filter(v => v !== undefined) },
             );
         }
 

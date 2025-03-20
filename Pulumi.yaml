@@ -53,6 +53,9 @@ config:
     longhorn:hostname: longhorn
     # Set to 3 when 3+ storage nodes are available
     longhorn:replicaCount: 2
+    longhorn:backupTarget: s3://backup-longhorn@global/
+    # longhorn:backupAccessKeyId: <key_id>
+    # longhorn:backupAccessKeySecret: <key_value>
 
     nvidia-gpu-operator:enabled: false
 

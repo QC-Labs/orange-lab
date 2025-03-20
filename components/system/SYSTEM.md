@@ -120,6 +120,46 @@ pulumi up
 
 ```
 
+### Backup
+
+MinIO S3 storage can be used as backup target. Make sure it is installed before enabling backups in Longhorn.
+
+Go to https://minio.<tsnet>.ts.net/.
+You need to create S3 bucket for backups (`backup-longhorn` by default) and also create new access keys for Longhorn.
+Use the following key aceess policy:
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "GrantLonghornBackupstoreAccess0",
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutObject",
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:DeleteObject"
+            ],
+            "Resource": ["arn:aws:s3:::backup-longhorn", "arn:aws:s3:::backup-longhorn/*"]
+        }
+    ]
+}
+```
+
+Save the generated access key id and secret in Pulumi config:
+
+```sh
+pulumi config set longhorn:backupAccessKeyId <key_id> --secret
+pulumi config set longhorn:backupAccessKeySecret <key_value> --secret
+
+# (Optional) Change S3 bucket name used for backups.
+# Region is required for URL to be valid but value doesn't matter unless you set this in MinIO settings.
+pulumi config set longhorn:backupTarget s3://backup@home/
+
+pulumi up
+```
+
 ### Disable Longhorn (not recommended)
 
 Longhorn requires Linux so when running Windows or MacOS you can disable it and use `local-path` storage class instead.
@@ -146,6 +186,40 @@ https://artifacthub.io/packages/helm/longhorn/longhorn#uninstallation
 kubectl -n longhorn-system patch -p '{"value": "true"}' --type=merge lhs deleting-confirmation-flag
 ```
 
+## Minio (Recommended)
+
+|              |                                                         |
+| ------------ | ------------------------------------------------------- |
+| Homepage     | https://min.io/                                         |
+| Helm chart   | https://github.com/minio/minio/tree/master/chart        |
+| MinIO client | https://min.io/docs/minio/linux/reference/minio-mc.html |
+| Endpoints    | `https://minio.<tsnet>.ts.net/`                         |
+
+Minio is a distributed object storage system compatible with Amazon S3.
+
+It is used by Longhorn as a backup target.
+
+Files are stored on host disk outside of cluster so make sure it's deployed to a specific node with enough disk space.
+
+Currently deployed to a single node only. For high-availability setup use MinIO Operator instead.
+
+### Installation
+
+```sh
+pulumi config set minio:enabled true
+# Run MinIO on a specific node
+pulumi config set minio:requiredNodeLabel kubernetes.io/hostname=my-server
+
+# (Optional) Modify filesystem folder for data
+pulumi config set minio:dataPath /minio-data
+
+# (Recommended) Change root user credentials
+pulumi config set minio:rootUser admin --secret
+pulumi config set minio:rootPassword abcdef12345 --secret
+
+pulumi up
+```
+
 ## NVIDIA GPU operator
 
 |            |                                                                                                                         |
@@ -167,40 +241,6 @@ pulumi config set nvidia-gpu-operator:enabled true
 
 pulumi up
 
-```
-
-## Minio
-
-|              |                                                         |
-| ------------ | ------------------------------------------------------- |
-| Homepage     | https://min.io/                                         |
-| Helm chart   | https://github.com/minio/minio/tree/master/chart        |
-| MinIO client | https://min.io/docs/minio/linux/reference/minio-mc.html |
-| Endpoints    | `https://minio.<tsnet>.ts.net/`                         |
-
-Minio is a distributed object storage system compatible with Amazon S3.
-
-It can be used by Longhorn as a backup target.
-
-Files are stored on host disk outside of cluster so make sure it's deployed to a specific node with enough disk space.
-
-Currently deployed to a single node only. For high-availability setup use MinIO Operator instead.
-
-### Installation
-
-```sh
-pulumi config set minio:enabled true
-# Run MinIO on a specific node
-pulumi config set minio:requiredNodeLabel kubernetes.io/hostname=my-server
-
-# (Optional) Modify filesystem folder for data
-pulumi config set minio:dataPath /minio-data
-
-# (Recommended) Change root user credentials
-pulumi config set minio:rootUser admin --secure
-pulumi config set minio:rootPassword abcdef12345 --secure
-
-pulumi up
 ```
 
 ## Debug (experimental)

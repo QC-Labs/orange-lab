@@ -6,6 +6,7 @@ import dashboardJson from './longhorn-dashboard.json';
 export interface LonghornArgs {
     domainName: string;
     enableMonitoring: boolean;
+    s3EndpointUrl?: pulumi.Output<string>;
 }
 
 export class Longhorn extends pulumi.ComponentResource {
@@ -13,28 +14,80 @@ export class Longhorn extends pulumi.ComponentResource {
     public static defaultStorageClass = 'longhorn';
     public static gpuStorageClass = 'longhorn-gpu';
 
-    constructor(name: string, args: LonghornArgs, opts?: pulumi.ResourceOptions) {
+    private namespace: kubernetes.core.v1.Namespace;
+    private readonly config: pulumi.Config;
+
+    constructor(
+        private name: string,
+        private args: LonghornArgs,
+        opts?: pulumi.ResourceOptions,
+    ) {
         super('orangelab:system:Longhorn', name, args, opts);
 
-        const config = new pulumi.Config('longhorn');
-        const version = config.get('version');
-        const hostname = config.require('hostname');
-        const replicaCount = config.requireNumber('replicaCount');
+        this.config = new pulumi.Config('longhorn');
+        const hostname = this.config.require('hostname');
 
-        const namespace = new kubernetes.core.v1.Namespace(
+        this.namespace = new kubernetes.core.v1.Namespace(
             `${name}-ns`,
             { metadata: { name: `${name}-system` } },
             { parent: this },
         );
 
-        const chart = new kubernetes.helm.v3.Release(
-            name,
+        const backupSecret = this.createBackupSecret();
+
+        const chart = this.createHelmRelease({
+            backupSecretName: backupSecret?.metadata.name,
+            hostname,
+        });
+
+        if (args.enableMonitoring) {
+            new GrafanaDashboard(name, this, { configJson: dashboardJson });
+        }
+
+        new kubernetes.storage.v1.StorageClass(
+            `${name}-gpu-storage`,
+            {
+                metadata: {
+                    name: Longhorn.gpuStorageClass,
+                },
+                allowVolumeExpansion: true,
+                provisioner: 'driver.longhorn.io',
+                volumeBindingMode: 'Immediate',
+                reclaimPolicy: 'Delete',
+                parameters: {
+                    numberOfReplicas: '1',
+                    dataLocality: 'strict-local',
+                },
+            },
+            { dependsOn: chart, parent: this },
+        );
+
+        this.endpointUrl = `https://${hostname}.${args.domainName}`;
+    }
+
+    private createHelmRelease({
+        backupSecretName,
+        hostname,
+    }: {
+        backupSecretName?: pulumi.Output<string>;
+        hostname: string;
+    }) {
+        const replicaCount = this.config.requireNumber('replicaCount');
+
+        return new kubernetes.helm.v3.Release(
+            this.name,
             {
                 chart: 'longhorn',
-                namespace: namespace.metadata.name,
-                version,
+                namespace: this.namespace.metadata.name,
+                version: this.config.get('version'),
                 repositoryOpts: { repo: 'https://charts.longhorn.io' },
                 values: {
+                    defaultBackupStore: backupSecretName
+                        ? {
+                              backupTarget: this.config.get('backupTarget'),
+                              backupTargetCredentialSecret: backupSecretName,
+                          }
+                        : undefined,
                     defaultSettings: {
                         allowEmptyDiskSelectorVolume: false,
                         allowEmptyNodeSelectorVolume: true,
@@ -74,36 +127,36 @@ export class Longhorn extends pulumi.ComponentResource {
                         ingressClassName: 'tailscale',
                         tls: true,
                     },
-                    metrics: args.enableMonitoring
+                    metrics: this.args.enableMonitoring
                         ? { serviceMonitor: { enabled: true } }
                         : undefined,
                 },
             },
             { parent: this },
         );
+    }
 
-        if (args.enableMonitoring) {
-            new GrafanaDashboard(name, this, { configJson: dashboardJson });
-        }
-
-        new kubernetes.storage.v1.StorageClass(
-            `${name}-gpu-storage`,
+    private createBackupSecret() {
+        const AWS_ACCESS_KEY_ID = this.config.get('backupAccessKeyId');
+        const AWS_SECRET_ACCESS_KEY = this.config.get('backupAccessKeySecret');
+        if (!this.args.s3EndpointUrl) return;
+        if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) return;
+        const secretName = `${this.name}-backup-secret`;
+        return new kubernetes.core.v1.Secret(
+            secretName,
             {
                 metadata: {
-                    name: Longhorn.gpuStorageClass,
+                    name: secretName,
+                    namespace: this.namespace.metadata.name,
                 },
-                allowVolumeExpansion: true,
-                provisioner: 'driver.longhorn.io',
-                volumeBindingMode: 'Immediate',
-                reclaimPolicy: 'Delete',
-                parameters: {
-                    numberOfReplicas: '1',
-                    dataLocality: 'strict-local',
+                stringData: {
+                    AWS_ACCESS_KEY_ID,
+                    AWS_SECRET_ACCESS_KEY,
+                    AWS_ENDPOINTS: this.args.s3EndpointUrl,
+                    VIRTUAL_HOSTED_STYLE: 'false',
                 },
             },
-            { dependsOn: chart, parent: this },
+            { parent: this },
         );
-
-        this.endpointUrl = `https://${hostname}.${args.domainName}`;
     }
 }
