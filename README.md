@@ -29,6 +29,7 @@ Private infrastructure for cloud natives.
 [System module](./components/system/SYSTEM.md) (required):
 
 -   `longhorn` - replicated storage
+-   `minio` - S3-compatible storage (used as Longhorn backup target)
 -   `nvidia-gpu-operator` - NVidia GPU support
 -   `tailscale-operator` - ingress support with Tailscale authentication
 
