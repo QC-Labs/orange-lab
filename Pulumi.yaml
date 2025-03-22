@@ -70,6 +70,8 @@ config:
     ### Monitoring ###
 
     prometheus:enabled: false
+    prometheus:requiredNodeLabel: orangelab/prometheus=true
+
     # Additional monitoring for installed components that support it.
     # Only enable once Prometheus has been installed
     # This has to be disabled first before Prometheus can be removed

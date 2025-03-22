@@ -1,5 +1,6 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
+import { Nodes } from '../nodes';
 import { PersistentStorage } from '../persistent-storage';
 
 export interface PrometheusArgs {
@@ -11,15 +12,19 @@ export class Prometheus extends pulumi.ComponentResource {
     public readonly prometheusEndpointUrl: string | undefined;
     public readonly grafanaEndpointUrl: string | undefined;
 
+    private readonly config: pulumi.Config;
+    private readonly nodes: Nodes;
+
     constructor(name: string, args: PrometheusArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:monitoring:Prometheus', name, args, opts);
 
-        const config = new pulumi.Config('prometheus');
-        const version = config.get('version');
-        const grafanaPassword = config.require('grafana-password');
-        const prometheusHostname = config.require('hostname-prometheus');
-        const alertManagerHostname = config.require('hostname-alert-manager');
-        const grafanaHostname = config.require('hostname-grafana');
+        this.config = new pulumi.Config('prometheus');
+        this.nodes = new Nodes(this.config);
+        const version = this.config.get('version');
+        const grafanaPassword = this.config.require('grafana-password');
+        const prometheusHostname = this.config.require('hostname-prometheus');
+        const alertManagerHostname = this.config.require('hostname-alert-manager');
+        const grafanaHostname = this.config.require('hostname-grafana');
 
         const namespace = new kubernetes.core.v1.Namespace(
             `${name}-ns`,
@@ -47,55 +52,61 @@ export class Prometheus extends pulumi.ComponentResource {
                     repo: 'https://prometheus-community.github.io/helm-charts',
                 },
                 values: {
+                    alertmanager: {
+                        alertmanagerSpec: {
+                            affinity: this.nodes.getAffinity(),
+                            storage: {
+                                volumeClaimTemplate: {
+                                    spec: {
+                                        accessModes: ['ReadWriteOnce'],
+                                        resources: { requests: { storage: '5Gi' } },
+                                        storageClassName:
+                                            PersistentStorage.getStorageClass(),
+                                    },
+                                },
+                            },
+                        },
+                        enabled: false,
+                        ingress: {
+                            enabled: true,
+                            hostname: alertManagerHostname,
+                            ingressClassName: 'tailscale',
+                            tls: [{ hosts: [alertManagerHostname] }],
+                        },
+                    },
                     defaultRules: {
                         rules: { etcd: false },
                     },
                     grafana: {
                         adminPassword: grafanaPassword,
+                        affinity: this.nodes.getAffinity(),
                         ingress: {
                             enabled: true,
+                            hostname: grafanaHostname,
                             ingressClassName: 'tailscale',
                             tls: [{ hosts: [grafanaHostname] }],
-                            hostname: grafanaHostname,
                         },
                         persistence: {
                             enabled: true,
                             existingClaim: grafanaStorage.volumeClaimName,
                         },
                     },
-                    kubeEtcd: { enabled: false },
                     kubeControllerManager: { serviceMonitor: { https: false } },
-                    kubeScheduler: { serviceMonitor: { https: false } },
+                    kubeEtcd: { enabled: false },
                     kubeProxy: { serviceMonitor: { https: false } },
-                    alertmanager: {
-                        enabled: false,
-                        ingress: {
-                            enabled: true,
-                            ingressClassName: 'tailscale',
-                            tls: [{ hosts: [alertManagerHostname] }],
-                            hostname: alertManagerHostname,
-                        },
-                        alertmanagerSpec: {
-                            storage: {
-                                volumeClaimTemplate: {
-                                    spec: {
-                                        storageClassName:
-                                            PersistentStorage.getStorageClass(),
-                                        accessModes: ['ReadWriteOnce'],
-                                        resources: { requests: { storage: '5Gi' } },
-                                    },
-                                },
-                            },
-                        },
+                    kubeScheduler: { serviceMonitor: { https: false } },
+                    kubeStateMetrics: {
+                        affinity: this.nodes.getAffinity(),
                     },
                     prometheus: {
                         ingress: {
                             enabled: true,
+                            hostname: prometheusHostname,
                             ingressClassName: 'tailscale',
                             tls: [{ hosts: [prometheusHostname] }],
-                            hostname: prometheusHostname,
                         },
                         prometheusSpec: {
+                            affinity: this.nodes.getAffinity(),
                             podMonitorSelectorNilUsesHelmValues: false,
                             probeSelectorNilUsesHelmValues: false,
                             ruleSelectorNilUsesHelmValues: false,
@@ -103,14 +114,20 @@ export class Prometheus extends pulumi.ComponentResource {
                             storageSpec: {
                                 volumeClaimTemplate: {
                                     spec: {
-                                        storageClassName:
-                                            PersistentStorage.getStorageClass(),
                                         accessModes: ['ReadWriteOnce'],
                                         resources: { requests: { storage: '50Gi' } },
+                                        storageClassName:
+                                            PersistentStorage.getStorageClass(),
                                     },
                                 },
                             },
                         },
+                    },
+                    'prometheus-node-exporter': {
+                        affinity: this.nodes.getAffinity(),
+                    },
+                    prometheusOperator: {
+                        affinity: this.nodes.getAffinity(),
                     },
                 },
             },

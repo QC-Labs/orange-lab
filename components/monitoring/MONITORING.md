@@ -74,7 +74,13 @@ Prometheus provides much more detailed monitoring of the cluster. Many tools (li
 
 Enabling it will increase traffic between nodes. Expect over 1GB of data saved to storage per day, even with just a few nodes.
 
+Any components (including node-exporter DaemonSet) will only be deployed to nodes with label `orangelab/prometheus=true`:
+
 ```sh
+# You need at least one node with orangelab/prometheus label
+kubectl label nodes <node-name> orangelab/prometheus=true
+
+# Enable Prometheus
 pulumi config set prometheus:enabled true
 
 # (optional) Override grafana "admin" password
