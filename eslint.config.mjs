@@ -5,10 +5,10 @@ import pulumiPlugin from '@pulumi/eslint-plugin';
 
 export default tseslint.config(
     {
-        files: ['**/*.{js,mjs,ts}'],
+        ignores: ['node_modules/**', 'bin/**'],
     },
     {
-        ignores: ['node_modules/**'],
+        files: ['**/*.{js,mjs,ts}'],
     },
     {
         languageOptions: {
@@ -16,17 +16,23 @@ export default tseslint.config(
                 ...globals.node,
             },
             parserOptions: {
-                projectService: true,
+                projectService: {
+                    allowDefaultProject: ['*.mjs'],
+                },
                 tsconfigRootDir: import.meta.dirname,
             },
         },
     },
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     eslint.configs.recommended,
     ...tseslint.configs.strictTypeChecked,
     ...tseslint.configs.stylisticTypeChecked,
     {
         plugins: { pulumi: pulumiPlugin },
         rules: {
+            '@typescript-eslint/consistent-type-definitions': 'error',
+            '@typescript-eslint/method-signature-style': ['error', 'property'],
+            '@typescript-eslint/no-explicit-any': 'error',
             '@typescript-eslint/no-unused-vars': [
                 'warn',
                 {
@@ -39,12 +45,9 @@ export default tseslint.config(
                     ignoreRestSiblings: true,
                 },
             ],
-            '@typescript-eslint/consistent-type-definitions': 'error',
-            '@typescript-eslint/prefer-optional-chain': 'error',
-            '@typescript-eslint/prefer-nullish-coalescing': 'error',
-            '@typescript-eslint/method-signature-style': ['error', 'property'],
-            '@typescript-eslint/no-explicit-any': 'error',
             '@typescript-eslint/prefer-includes': 'error',
+            '@typescript-eslint/prefer-nullish-coalescing': 'error',
+            '@typescript-eslint/prefer-optional-chain': 'error',
             '@typescript-eslint/prefer-string-starts-ends-with': 'error',
             '@typescript-eslint/unified-signatures': 'error',
             'no-console': 'error',

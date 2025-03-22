@@ -6,7 +6,7 @@
     "license": "MIT",
     "scripts": {
         "deploy": "pulumi up --refresh",
-        "lint": "node_modules/.bin/eslint **/*.ts",
+        "lint": "node_modules/.bin/eslint .",
         "test": "npm run lint"
     },
     "dependencies": {
