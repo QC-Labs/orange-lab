@@ -157,6 +157,9 @@ pulumi config set longhorn:backupAccessKeySecret <key_value> --secret
 # Region is required for URL to be valid but value doesn't matter unless you set this in MinIO settings.
 pulumi config set longhorn:backupTarget s3://backup@home/
 
+# Enable daily incremental backups for volumes
+pulumi config set longhorn:backupEnabled true
+
 pulumi up
 ```
 
@@ -211,7 +214,7 @@ pulumi config set minio:enabled true
 pulumi config set minio:requiredNodeLabel kubernetes.io/hostname=my-server
 
 # (Optional) Modify filesystem folder for data
-pulumi config set minio:dataPath /minio-data
+pulumi config set minio:dataPath /mnt/my-drive/minio-data
 
 # (Recommended) Change root user credentials
 pulumi config set minio:rootUser admin --secret

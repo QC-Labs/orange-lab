@@ -26,7 +26,7 @@ Private infrastructure for cloud natives.
 
 # Applications
 
-[System module](./components/system/SYSTEM.md) (required):
+[System module](./components/system/SYSTEM.md):
 
 -   `longhorn` - replicated storage
 -   `minio` - S3-compatible storage (used as Longhorn backup target)

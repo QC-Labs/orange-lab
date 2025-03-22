@@ -1,5 +1,6 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
+import { Application } from '../application';
 import { GrafanaDashboard } from '../grafana-dashboard';
 import dashboardJson from './longhorn-dashboard.json';
 
@@ -14,8 +15,9 @@ export class Longhorn extends pulumi.ComponentResource {
     public static defaultStorageClass = 'longhorn';
     public static gpuStorageClass = 'longhorn-gpu';
 
-    private namespace: kubernetes.core.v1.Namespace;
+    private readonly app: Application;
     private readonly config: pulumi.Config;
+    private readonly chart: kubernetes.helm.v3.Release;
 
     constructor(
         private name: string,
@@ -27,28 +29,34 @@ export class Longhorn extends pulumi.ComponentResource {
         this.config = new pulumi.Config('longhorn');
         const hostname = this.config.require('hostname');
 
-        this.namespace = new kubernetes.core.v1.Namespace(
-            `${name}-ns`,
-            { metadata: { name: `${name}-system` } },
-            { parent: this },
-        );
+        this.app = new Application(this, name, { namespace: `${name}-system` });
 
         const backupSecret = this.createBackupSecret();
-
-        const chart = this.createHelmRelease({
+        this.chart = this.createHelmRelease({
             backupSecretName: backupSecret?.metadata.name,
             hostname,
         });
-
+        this.createStorageClasses();
+        if (this.config.getBoolean('snapshotEnabled')) {
+            this.createSnapshotJob();
+        }
+        if (args.s3EndpointUrl && this.config.getBoolean('backupEnabled')) {
+            this.createBackupJob();
+        }
         if (args.enableMonitoring) {
             new GrafanaDashboard(name, this, { configJson: dashboardJson });
         }
 
+        this.endpointUrl = `https://${hostname}.${args.domainName}`;
+    }
+
+    private createStorageClasses() {
         new kubernetes.storage.v1.StorageClass(
-            `${name}-gpu-storage`,
+            `${this.name}-gpu-storage`,
             {
                 metadata: {
                     name: Longhorn.gpuStorageClass,
+                    namespace: this.app.namespace,
                 },
                 allowVolumeExpansion: true,
                 provisioner: 'driver.longhorn.io',
@@ -59,10 +67,8 @@ export class Longhorn extends pulumi.ComponentResource {
                     dataLocality: 'strict-local',
                 },
             },
-            { dependsOn: chart, parent: this },
+            { dependsOn: this.chart, parent: this },
         );
-
-        this.endpointUrl = `https://${hostname}.${args.domainName}`;
     }
 
     private createHelmRelease({
@@ -78,7 +84,7 @@ export class Longhorn extends pulumi.ComponentResource {
             this.name,
             {
                 chart: 'longhorn',
-                namespace: this.namespace.metadata.name,
+                namespace: this.app.namespace,
                 version: this.config.get('version'),
                 repositoryOpts: { repo: 'https://charts.longhorn.io' },
                 values: {
@@ -91,12 +97,14 @@ export class Longhorn extends pulumi.ComponentResource {
                     defaultSettings: {
                         allowEmptyDiskSelectorVolume: false,
                         allowEmptyNodeSelectorVolume: true,
+                        autoCleanupRecurringJobBackupSnapshot: true,
                         defaultDataLocality: 'best-effort',
                         defaultReplicaCount: replicaCount,
                         fastReplicaRebuildEnabled: true,
                         nodeDownPodDeletionPolicy:
                             'delete-both-statefulset-and-deployment-pod',
                         orphanAutoDeletion: true,
+                        recurringJobMaxRetention: 20,
                         replicaAutoBalance: 'best-effort',
                         snapshotMaxCount: 20,
                         storageMinimalAvailablePercentage: 25,
@@ -147,7 +155,7 @@ export class Longhorn extends pulumi.ComponentResource {
             {
                 metadata: {
                     name: secretName,
-                    namespace: this.namespace.metadata.name,
+                    namespace: this.app.namespace,
                 },
                 stringData: {
                     AWS_ACCESS_KEY_ID,
@@ -157,6 +165,59 @@ export class Longhorn extends pulumi.ComponentResource {
                 },
             },
             { parent: this },
+        );
+    }
+
+    private createSnapshotJob() {
+        const cron = this.config.require('snapshotCron');
+        new kubernetes.apiextensions.CustomResource(
+            `${this.name}-snapshot-job`,
+            {
+                apiVersion: 'longhorn.io/v1beta2',
+                kind: 'RecurringJob',
+                metadata: {
+                    name: 'snapshot',
+                    namespace: this.app.namespace,
+                },
+                spec: {
+                    groups: ['default'],
+                    task: 'snapshot',
+                    cron,
+                    name: 'snapshot',
+                    retain: 10,
+                    concurrency: 2,
+                    labels: { cron },
+                },
+            },
+            { dependsOn: this.chart, parent: this },
+        );
+    }
+
+    private createBackupJob() {
+        const cron = this.config.require('backupCron');
+        new kubernetes.apiextensions.CustomResource(
+            `${this.name}-backup-job`,
+            {
+                apiVersion: 'longhorn.io/v1beta2',
+                kind: 'RecurringJob',
+                metadata: {
+                    name: 'backup',
+                    namespace: this.app.namespace,
+                },
+                spec: {
+                    groups: ['default'],
+                    task: 'backup',
+                    cron,
+                    name: 'backup',
+                    retain: 10,
+                    concurrency: 2,
+                    labels: { cron },
+                    parameters: {
+                        'full-backup-interval': this.config.require('backupFullInterval'),
+                    },
+                },
+            },
+            { dependsOn: this.chart, parent: this },
         );
     }
 }

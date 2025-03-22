@@ -43,4 +43,5 @@
 ### Components
 
 -   Applications should use the Application class for Kubernetes resources
+-   For Helm charts, use Application class for namespaces and storage
 -   Follow the established pattern for new modules and components

@@ -53,7 +53,13 @@ config:
     longhorn:hostname: longhorn
     # Set to 3 when 3+ storage nodes are available
     longhorn:replicaCount: 2
+    longhorn:snapshotEnabled: true
+    longhorn:snapshotCron: '0 * * * *' # every hour
+    longhorn:backupEnabled: false
+    longhorn:backupCron: '15 0 * * *' # daily at 0:15
     longhorn:backupTarget: s3://backup-longhorn@global/
+    # Full backup every 7 days, use 0 for incremental only
+    longhorn:backupFullInterval: '7'
     # longhorn:backupAccessKeyId: <key_id>
     # longhorn:backupAccessKeySecret: <key_value>
 
