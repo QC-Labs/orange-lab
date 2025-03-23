@@ -15,6 +15,7 @@ config:
     # - version (lock Helm chart version, use latest if not specified)
     # - storageOnly (disable app but retain storage)
     # - storageSize (expand default storage size if needed)
+    # - fromVolume (attach existing Longhorn volume)
     # - storageClass (force storage class used by app)
     # - preferredNodeLabel (deploy to node with specified label if exists)
     # - requiredNodeLabel (deploy only to node with specified label)
@@ -108,6 +109,7 @@ config:
     ollama:hostname: ollama
     ollama:storageSize: 50Gi
     ollama:storageOnly: false
+    # ollama:fromVolume: ollama
     ollama:preferredNodeLabel: orangelab/ollama
     # Override GPU version for ROCm compatibility
     # ollama:HSA_OVERRIDE_GFX_VERSION: "11.0.2"
