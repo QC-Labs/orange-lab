@@ -1,5 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import { rootConfig } from '../root-config';
+import { AmdGPU } from './amd-gpu';
 import { Debug } from './debug';
 import { Longhorn } from './longhorn';
 import { Minio } from './minio';
@@ -36,6 +37,10 @@ export class SystemModule extends pulumi.ComponentResource {
 
         if (rootConfig.isEnabled('nvidia-gpu-operator')) {
             new NvidiaGPUOperator('nvidia-gpu-operator', {}, { parent: this });
+        }
+
+        if (rootConfig.isEnabled('amd-gpu')) {
+            new AmdGPU('amd-gpu', {}, { parent: this });
         }
 
         if (rootConfig.isEnabled('minio')) {

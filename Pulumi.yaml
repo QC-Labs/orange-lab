@@ -65,6 +65,8 @@ config:
 
     nvidia-gpu-operator:enabled: false
 
+    amd-gpu:enabled: false
+
     debug:enabled: false
 
     ### Monitoring ###

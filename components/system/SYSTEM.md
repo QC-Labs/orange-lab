@@ -246,6 +246,32 @@ pulumi up
 
 ```
 
+## AMD GPU support
+
+|            |                                                           |
+| ---------- | --------------------------------------------------------- |
+| Homepage   | https://github.com/ROCm/k8s-device-plugin                 |
+| Helm chart | https://artifacthub.io/packages/helm/amd-gpu-helm/amd-gpu |
+
+This component is needed to run GPU workloads using AMD devices with ROCm support.
+
+```sh
+# Label node(s) that should run AMD GPU workloads
+kubectl label nodes <node-name> orangelab/gpu=amd
+
+# enable AMD GPU operator
+pulumi config set amd-gpu:enabled true
+
+pulumi up
+```
+
+For applications like Ollama using AMD GPUs, you may need to set `amd-gpu` to true as the docker images used are different:
+
+```sh
+#
+pulumi config set ollama:amd-gpu true
+```
+
 ## Debug (experimental)
 
 Utility containers for troubleshooting the cluster.
