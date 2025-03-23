@@ -9,6 +9,7 @@ export interface LocalVolume {
 }
 
 export interface PersistentVolume {
+    name?: string;
     size?: string;
     type?: PersistentStorageType;
     existingVolume?: string;
@@ -47,10 +48,11 @@ export class Volumes {
     }
 
     addPersistentVolume(volume?: PersistentVolume) {
+        const volumeName = volume?.name ? `${this.appName}-${volume.name}` : this.appName;
         const storage = new PersistentStorage(
-            `${this.appName}-storage`,
+            `${volumeName}-storage`,
             {
-                name: this.appName,
+                name: volumeName,
                 namespace: this.namespace,
                 size: volume?.size ?? this.config.require('storageSize'),
                 type: volume?.type ?? PersistentStorageType.Default,
@@ -60,16 +62,17 @@ export class Volumes {
             },
             { parent: this.scope },
         );
-        this.persistentStorage.set(this.appName, storage);
-        this.volumes.set(this.appName, {
-            name: this.appName,
+        this.persistentStorage.set(volumeName, storage);
+        this.volumes.set(volumeName, {
+            name: volumeName,
             persistentVolumeClaim: { claimName: storage.volumeClaimName },
         });
     }
 
     getClaimName(storageName?: string): string {
-        const storage = this.persistentStorage.get(storageName ?? this.appName);
-        assert(storage, `Storage ${storageName ?? this.appName} not found`);
+        const volumeName = storageName ? `${this.appName}-${storageName}` : this.appName;
+        const storage = this.persistentStorage.get(volumeName);
+        assert(storage, `Storage ${volumeName} not found`);
         return storage.volumeClaimName;
     }
 
