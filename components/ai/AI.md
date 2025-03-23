@@ -40,6 +40,24 @@ pulumi config set ollama:storageOnly true
 pulumi up
 ```
 
+### AMD GPU support
+
+https://github.com/ollama/ollama/blob/main/docs/gpu.md#overrides-on-linux
+
+```sh
+# Enable AMD GPU support
+pulumi config set amd-gpu:enabled true
+pulumi up
+
+pulumi config set ollama:enabled true
+# Switch to ROCm image
+pulumi config set ollama:amd-gpu true
+# Override version if not detected, f.e. Radeon 780M (glx1103)
+pulumi config set ollama:HSA_OVERRIDE_GFX_VERSION "11.0.2"
+
+pulumi up
+```
+
 ### Ollama CLI
 
 Set CLI to use our `ollama` endpoint instead of the default `localhost:11434`. We'll also add 'ai' alias. Save this as `~/.bashrc.d/ollama`:
