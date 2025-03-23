@@ -10,10 +10,10 @@ Namespace volume was created in, defaults to clonePvc
 debug:namespace: default
 
 Name of existing attached PVC, the related volume will be cloned
-debug:clonePvc: beszel
+debug:cloneFromClaim: beszel
 
 Use existing Longhorn volume instead of PVC.
-debug:existingVolume: cloned-volume
+debug:fromVolume: restored-volume
 
 Size has to match the volume
 debug:storageSize: 10Gi
@@ -34,20 +34,20 @@ export class Debug extends pulumi.ComponentResource {
         super('orangelab:system:Debug', name, args, opts);
 
         const config = new pulumi.Config('debug');
-        const clonePvc = config.get('clonePvc');
-        const existingVolume = config.get('existingVolume');
-        this.namespace = config.get('namespace') ?? clonePvc ?? 'default';
+        const cloneFromClaim = config.get('cloneFromClaim');
+        const fromVolume = config.get('fromVolume');
+        this.namespace = config.get('namespace') ?? cloneFromClaim ?? 'default';
         this.exportPath = config.require('exportPath');
 
-        const volumeName = clonePvc ?? existingVolume;
-        assert(volumeName, 'Either clonePvc or existingVolume must be provided');
+        const volumeName = cloneFromClaim ?? fromVolume;
+        assert(volumeName, 'Either cloneFromClaim or fromVolume must be provided');
         this.app = new Application(this, name, {
             existingNamespace: this.namespace,
         })
             .addLocalStorage({ name: 'local', hostPath: this.exportPath })
             .addStorage({
-                existingVolume,
-                cloneExistingClaim: clonePvc,
+                fromVolume,
+                cloneFromClaim,
             });
 
         // Comment out one method

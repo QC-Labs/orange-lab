@@ -1,7 +1,7 @@
 import * as kubernetes from '@pulumi/kubernetes';
-import { PersistentStorage, PersistentStorageType } from './persistent-storage';
 import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
+import { PersistentStorage, PersistentStorageType } from './persistent-storage';
 
 export interface LocalVolume {
     name: string;
@@ -12,8 +12,8 @@ export interface PersistentVolume {
     name?: string;
     size?: string;
     type?: PersistentStorageType;
-    existingVolume?: string;
-    cloneExistingClaim?: string;
+    fromVolume?: string;
+    cloneFromClaim?: string;
 }
 
 export class Volumes {
@@ -49,7 +49,7 @@ export class Volumes {
 
     addPersistentVolume(volume?: PersistentVolume) {
         const volumeName = volume?.name ? `${this.appName}-${volume.name}` : this.appName;
-        const existingVolume = volume?.existingVolume ?? this.config.get('fromVolume');
+        const fromVolume = volume?.fromVolume ?? this.config.get('fromVolume');
         const storage = new PersistentStorage(
             `${volumeName}-storage`,
             {
@@ -58,8 +58,8 @@ export class Volumes {
                 size: volume?.size ?? this.config.require('storageSize'),
                 type: volume?.type ?? PersistentStorageType.Default,
                 storageClass: this.config.get('storageClass'),
-                existingVolume,
-                cloneExistingClaim: volume?.cloneExistingClaim,
+                fromVolume,
+                cloneFromClaim: volume?.cloneFromClaim,
             },
             { parent: this.scope },
         );

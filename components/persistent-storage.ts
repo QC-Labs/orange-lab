@@ -22,14 +22,14 @@ interface PersistentStorageArgs {
     storageClass?: string;
     /**
      * Name of currently detached Longhorn volume.
-     * New volume won't be created.
+     * Use with volumes restored from backup. New volume won't be created.
      */
-    existingVolume?: string;
+    fromVolume?: string;
     /**
      * Clone volume attached to existing claim.
      * Used by Debug component to inspect contents of already attached volumes
      */
-    cloneExistingClaim?: string;
+    cloneFromClaim?: string;
 }
 
 export class PersistentStorage extends pulumi.ComponentResource {
@@ -42,21 +42,21 @@ export class PersistentStorage extends pulumi.ComponentResource {
     ) {
         super('orangelab:PersistentStorage', name, args, opts);
         assert(
-            !(args.cloneExistingClaim && args.existingVolume),
-            'Cannot use both cloneExistingClaim and existingVolume',
+            !(args.cloneFromClaim && args.fromVolume),
+            'Cannot use both cloneFromClaim and fromVolume',
         );
         assert(
-            !(args.existingVolume && args.storageClass),
+            !(args.fromVolume && args.storageClass),
             'StorageClass cannot be changed when using existing Longhorn volumes',
         );
 
-        const existingVolume = args.existingVolume
-            ? this.createPV({ name: args.name, volumeHandle: args.existingVolume })
+        const existingVolume = args.fromVolume
+            ? this.createPV({ name: args.name, volumeHandle: args.fromVolume })
             : undefined;
         this.createPVC({
             name: args.name,
             existingVolume,
-            cloneExistingClaim: args.cloneExistingClaim,
+            cloneFromClaim: args.cloneFromClaim,
         });
         this.volumeClaimName = args.name;
     }
@@ -64,11 +64,11 @@ export class PersistentStorage extends pulumi.ComponentResource {
     private createPVC({
         name,
         existingVolume,
-        cloneExistingClaim,
+        cloneFromClaim,
     }: {
         name: string;
         existingVolume?: kubernetes.core.v1.PersistentVolume;
-        cloneExistingClaim?: string;
+        cloneFromClaim?: string;
     }) {
         const storageClassName =
             this.args.storageClass ?? PersistentStorage.getStorageClass(this.args.type);
@@ -81,10 +81,10 @@ export class PersistentStorage extends pulumi.ComponentResource {
                     storageClassName: existingVolume
                         ? existingVolume.spec.storageClassName
                         : storageClassName,
-                    dataSource: cloneExistingClaim
+                    dataSource: cloneFromClaim
                         ? {
                               kind: 'PersistentVolumeClaim',
-                              name: cloneExistingClaim,
+                              name: cloneFromClaim,
                           }
                         : undefined,
                     volumeName: existingVolume?.metadata.name,
