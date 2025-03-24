@@ -5,7 +5,7 @@ type NodeSelectorTerm = kubernetes.types.input.core.v1.NodeSelectorTerm;
 
 export interface NodesArgs {
     config: pulumi.Config;
-    gpu?: boolean;
+    gpu?: 'nvidia' | 'amd';
 }
 
 export class Nodes {
@@ -38,16 +38,15 @@ export class Nodes {
     private getRequiredNodeSelectorTerms(): NodeSelectorTerm[] {
         const terms: NodeSelectorTerm[] = [];
         const requiredNodeLabel = this.args.config.get('requiredNodeLabel');
-        const useAmdGpu = this.args.config.getBoolean('amd-gpu') ?? false;
 
         if (requiredNodeLabel) {
             terms.push(this.getNodeSelectorTerm(requiredNodeLabel));
         }
 
-        if (this.args.gpu && useAmdGpu) {
+        if (this.args.gpu === 'amd') {
             terms.push(this.getNodeSelectorTerm('orangelab/gpu=amd'));
         }
-        if (this.args.gpu && !useAmdGpu) {
+        if (this.args.gpu === 'nvidia') {
             terms.push(this.getNodeSelectorTerm('orangelab/gpu=true|nvidia'));
         }
         return terms;

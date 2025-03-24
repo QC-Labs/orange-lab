@@ -8,7 +8,6 @@ export interface ContainerSpec {
     ports?: { name: string; port: number; hostname?: string }[];
     commandArgs?: string[];
     env?: Record<string, string | undefined>;
-    gpu?: boolean;
     hostNetwork?: boolean;
     volumeMounts?: { mountPath: string; name?: string; subPath?: string }[];
     healthChecks?: boolean;
@@ -29,12 +28,13 @@ export class Containers {
 
     constructor(
         private appName: string,
-        args: {
+        private args: {
             spec: ContainerSpec;
             metadata: kubernetes.types.input.meta.v1.ObjectMeta;
             serviceAccount: kubernetes.core.v1.ServiceAccount;
             volumes?: Volumes;
             affinity?: kubernetes.types.input.core.v1.Affinity;
+            gpu?: 'nvidia' | 'amd';
         },
     ) {
         this.spec = args.spec;
@@ -62,7 +62,7 @@ export class Containers {
                         readinessProbe: this.createProbe(),
                         resources: this.createResourceLimits(),
                         securityContext:
-                            this.spec.gpu || this.volumes?.hasLocal()
+                            this.args.gpu || this.volumes?.hasLocal()
                                 ? { privileged: true }
                                 : undefined,
                         startupProbe: this.createProbe({ failureThreshold: 10 }),
@@ -71,8 +71,7 @@ export class Containers {
                 ],
                 restartPolicy: this.spec.restartPolicy,
                 serviceAccountName: this.serviceAccount.metadata.name,
-                runtimeClassName: this.spec.gpu ? 'nvidia' : undefined,
-                nodeSelector: this.spec.gpu ? { 'orangelab/gpu': 'true' } : undefined,
+                runtimeClassName: this.args.gpu === 'nvidia' ? 'nvidia' : undefined,
                 volumes: this.createVolumes(),
             },
         };
@@ -112,19 +111,26 @@ export class Containers {
     }
 
     private createResourceLimits() {
-        return this.spec.gpu
-            ? {
-                  ...this.spec.resources,
-                  requests: {
-                      ...this.spec.resources?.requests,
-                      'nvidia.com/gpu': '1',
-                  },
-                  limits: {
-                      ...this.spec.resources?.limits,
-                      'nvidia.com/gpu': '1',
-                  },
-              }
-            : this.spec.resources;
+        switch (this.args.gpu) {
+            case 'nvidia':
+                return {
+                    ...this.spec.resources,
+                    limits: {
+                        ...this.spec.resources?.limits,
+                        'nvidia.com/gpu': '1',
+                    },
+                };
+            case 'amd':
+                return {
+                    ...this.spec.resources,
+                    limits: {
+                        ...this.spec.resources?.limits,
+                        'amd.com/gpu': '1',
+                    },
+                };
+            default:
+                return this.spec.resources;
+        }
     }
 
     private createProbe(opts?: { failureThreshold?: number }) {

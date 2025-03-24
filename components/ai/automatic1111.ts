@@ -27,11 +27,10 @@ export class Automatic1111 extends pulumi.ComponentResource {
             .addStorage({ type: PersistentStorageType.GPU })
             .addDeployment({
                 image: 'universonic/stable-diffusion-webui:full',
-                commandArgs: ['--listen', '--api'],
+                commandArgs: ['--listen', '--api', '--skip-torch-cuda-test'],
                 env: {
                     COMMANDLINE_ARGS: cliArgs,
                 },
-                gpu: true,
                 port: 8080,
                 runAsUser: 1000,
                 volumeMounts: [

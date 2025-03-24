@@ -37,7 +37,6 @@ export class SDNext extends pulumi.ComponentResource {
                 env: {
                     SD_DEBUG: 'true',
                 },
-                gpu: true,
                 healthChecks: true,
                 volumeMounts: [{ mountPath: '/webui/data' }],
                 resources: { requests: { cpu: '50m', memory: '2.5Gi' } },

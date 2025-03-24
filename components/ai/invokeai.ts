@@ -33,7 +33,6 @@ export class InvokeAi extends pulumi.ComponentResource {
                         ? `[{"url_regex":"huggingface.co", "token": "${huggingfaceToken.get()}"}]`
                         : undefined,
                 },
-                gpu: true,
                 healthChecks: true,
                 volumeMounts: [{ mountPath: '/invokeai' }],
                 resources: { requests: { cpu: '50m', memory: '1.5Gi' } },

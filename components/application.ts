@@ -29,6 +29,7 @@ export class Application {
 
     private readonly config: pulumi.Config;
     private serviceAccount?: kubernetes.core.v1.ServiceAccount;
+    private gpu?: 'nvidia' | 'amd';
 
     constructor(
         private readonly scope: pulumi.ComponentResource,
@@ -42,6 +43,11 @@ export class Application {
     ) {
         this.config = new pulumi.Config(appName);
         this.storageOnly = this.config.getBoolean('storageOnly') ?? false;
+        if (args?.gpu) {
+            const useAmdGpu = this.config.getBoolean('amd-gpu') ?? false;
+            this.gpu = useAmdGpu ? 'amd' : 'nvidia';
+        }
+
         if (args?.existingNamespace) {
             this.namespace = args.existingNamespace;
         } else {
@@ -54,7 +60,7 @@ export class Application {
         });
         this.nodes = new Nodes({
             config: this.config,
-            gpu: args?.gpu,
+            gpu: this.gpu,
         });
         this.volumes = new Volumes(appName, {
             scope: this.scope,
@@ -152,6 +158,7 @@ export class Application {
             volumes: this.volumes,
             serviceAccount: this.serviceAccount,
             affinity: this.nodes.getAffinity(),
+            gpu: this.gpu,
         });
         return new kubernetes.apps.v1.Deployment(
             `${this.appName}-deployment`,
