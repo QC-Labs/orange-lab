@@ -37,6 +37,7 @@ export class Application {
             domainName?: string;
             namespace?: string;
             existingNamespace?: string;
+            gpu?: boolean;
         },
     ) {
         this.config = new pulumi.Config(appName);
@@ -51,7 +52,10 @@ export class Application {
             config: this.config,
             namespace: this.namespace,
         });
-        this.nodes = new Nodes(this.config);
+        this.nodes = new Nodes({
+            config: this.config,
+            gpu: args?.gpu,
+        });
         this.volumes = new Volumes(appName, {
             scope: this.scope,
             config: this.config,

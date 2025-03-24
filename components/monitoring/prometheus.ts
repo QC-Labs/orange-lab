@@ -19,7 +19,7 @@ export class Prometheus extends pulumi.ComponentResource {
         super('orangelab:monitoring:Prometheus', name, args, opts);
 
         this.config = new pulumi.Config('prometheus');
-        this.nodes = new Nodes(this.config);
+        this.nodes = new Nodes({ config: this.config });
         const version = this.config.get('version');
         const grafanaPassword = this.config.require('grafana-password');
         const prometheusHostname = this.config.require('hostname-prometheus');
