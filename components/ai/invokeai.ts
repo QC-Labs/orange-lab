@@ -16,7 +16,10 @@ export class InvokeAi extends pulumi.ComponentResource {
         const config = new pulumi.Config(name);
         const huggingfaceToken = config.getSecret('huggingfaceToken');
 
-        const app = new Application(this, name, { domainName: args.domainName })
+        const app = new Application(this, name, {
+            domainName: args.domainName,
+            gpu: true,
+        })
             .addStorage({ type: PersistentStorageType.GPU })
             .addDeployment({
                 image: 'ghcr.io/invoke-ai/invokeai:latest',

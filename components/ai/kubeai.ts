@@ -22,7 +22,7 @@ export class KubeAi extends pulumi.ComponentResource {
         const huggingfaceToken = config.getSecret('huggingfaceToken');
         const models = config.get('models')?.split(',') ?? [];
 
-        const app = new Application(this, name);
+        const app = new Application(this, name, { gpu: true });
 
         const kubeAi = new kubernetes.helm.v3.Release(
             name,
@@ -65,7 +65,6 @@ export class KubeAi extends pulumi.ComponentResource {
                         },
                     },
                     ['open-webui']: { enabled: false },
-                    nodeSelector: { 'orangelab/gpu': 'true' },
                     resourceProfiles: {
                         nvidia: {
                             runtimeClassName: 'nvidia',

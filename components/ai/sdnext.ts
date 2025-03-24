@@ -16,7 +16,10 @@ export class SDNext extends pulumi.ComponentResource {
         const config = new pulumi.Config(name);
         const cliArgs = config.require('cliArgs');
 
-        const app = new Application(this, name, { domainName: args.domainName })
+        const app = new Application(this, name, {
+            domainName: args.domainName,
+            gpu: true,
+        })
             .addStorage({ type: PersistentStorageType.GPU })
             .addDeployment({
                 image: 'saladtechnologies/sdnext:base',

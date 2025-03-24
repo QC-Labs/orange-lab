@@ -20,21 +20,13 @@ export class NvidiaGPUOperator extends pulumi.ComponentResource {
                 chart: 'gpu-operator',
                 namespace: namespace.metadata.name,
                 version,
-                repositoryOpts: {
-                    repo: 'https://helm.ngc.nvidia.com/nvidia',
-                },
+                repositoryOpts: { repo: 'https://helm.ngc.nvidia.com/nvidia' },
                 values: {
                     // NVIDIA Confidential Computing Manager for Kubernetes
-                    ccManager: {
-                        enabled: false,
-                    },
+                    ccManager: { enabled: false },
                     // NVidia Data Center GPU Manager - https://docs.nvidia.com/datacenter/dcgm/latest/user-guide/index.html
-                    dcgm: {
-                        enabled: false,
-                    },
-                    dcgmExporter: {
-                        enabled: false,
-                    },
+                    dcgm: { enabled: false },
+                    dcgmExporter: { enabled: false },
                     // https://github.com/NVIDIA/k8s-device-plugin
                     devicePlugin: {
                         enabled: true,
@@ -65,37 +57,21 @@ export class NvidiaGPUOperator extends pulumi.ComponentResource {
                     // NVidia driver already installed on host
                     driver: {
                         enabled: false,
-                        nodeSelector: {
-                            'orangelab/gpu': 'true',
-                        },
+                        nodeSelector: { 'orangelab/gpu': 'true' },
                     },
-                    gdrcopy: {
-                        enabled: false,
-                    },
+                    gdrcopy: { enabled: false },
                     // GPUDirect Storage kernel driver - https://github.com/NVIDIA/gds-nvidia-fs
-                    gds: {
-                        enabled: false,
-                    },
+                    gds: { enabled: false },
                     // GPU Feature Discovery
-                    gfd: {
-                        enabled: true,
-                    },
-                    kataManager: {
-                        enabled: false,
-                    },
-                    migManager: {
-                        enabled: false,
-                    },
+                    gfd: { enabled: true },
+                    kataManager: { enabled: false },
+                    migManager: { enabled: false },
                     // Node Feature Discovery dependent chart
-                    nfd: {
-                        enabled: true,
-                    },
+                    nfd: { enabled: true },
                     // https://github.com/kubernetes-sigs/node-feature-discovery
                     'node-feature-discovery': {
                         worker: {
-                            nodeSelector: {
-                                'orangelab/gpu': 'true',
-                            },
+                            nodeSelector: { 'orangelab/gpu': 'true' },
                             // set as priviledged to allow access to /etc/kubernetes/node-feature-discovery/features.d/
                             securityContext: {
                                 allowPrivilegeEscalation: true,
@@ -103,15 +79,9 @@ export class NvidiaGPUOperator extends pulumi.ComponentResource {
                             },
                         },
                     },
-                    nodeStatusExporter: {
-                        enabled: false,
-                    },
-                    operator: {
-                        defaultRuntime: 'containerd',
-                    },
-                    sandboxDevicePlugin: {
-                        enabled: false,
-                    },
+                    nodeStatusExporter: { enabled: false },
+                    operator: { defaultRuntime: 'containerd' },
+                    sandboxDevicePlugin: { enabled: false },
                     // NVidia container toolkit
                     toolkit: {
                         enabled: true,
@@ -134,16 +104,10 @@ export class NvidiaGPUOperator extends pulumi.ComponentResource {
                             },
                         ],
                     },
-                    vfioManager: {
-                        enabled: false,
-                    },
+                    vfioManager: { enabled: false },
                     // https://github.com/NVIDIA/vgpu-device-manager
-                    vgpuDeviceManager: {
-                        enabled: false,
-                    },
-                    vgpuManager: {
-                        enabled: false,
-                    },
+                    vgpuDeviceManager: { enabled: false },
+                    vgpuManager: { enabled: false },
                 },
             },
             { parent: this, deleteBeforeReplace: true },

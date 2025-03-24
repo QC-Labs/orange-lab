@@ -23,7 +23,10 @@ export class OpenWebUI extends pulumi.ComponentResource {
 
         this.endpointUrl = `https://${hostname}.${args.domainName}`;
 
-        const app = new Application(this, name, { domainName: args.domainName })
+        const app = new Application(this, name, {
+            domainName: args.domainName,
+            gpu: true,
+        })
             .addDefaultLimits({ request: { cpu: '5m', memory: '1.2Gi' } })
             .addStorage({ type: PersistentStorageType.GPU });
 
@@ -37,58 +40,25 @@ export class OpenWebUI extends pulumi.ComponentResource {
                 version,
                 repositoryOpts: { repo: 'https://helm.openwebui.com/' },
                 values: {
+                    affinity: app.nodes.getAffinity(),
                     ollamaUrls: [args.ollamaUrl],
                     openaiBaseApiUrl: args.openAiUrl,
-                    nodeSelector: { 'orangelab/gpu': 'true' },
                     extraEnvVars: [
-                        {
-                            name: 'WEBUI_URL',
-                            value: this.endpointUrl,
-                        },
-                        {
-                            name: 'ENABLE_SIGNUP',
-                            value: 'True',
-                        },
-                        {
-                            name: 'BYPASS_MODEL_ACCESS_CONTROL',
-                            value: 'True',
-                        },
-                        {
-                            name: 'DEFAULT_USER_ROLE',
-                            value: 'user',
-                        },
-                        {
-                            name: 'ENABLE_EVALUATION_ARENA_MODELS',
-                            value: 'False',
-                        },
-                        {
-                            name: 'ENABLE_RAG_WEB_SEARCH',
-                            value: 'True',
-                        },
-                        {
-                            name: 'ENABLE_SEARCH_QUERY_GENERATION',
-                            value: 'True',
-                        },
-                        {
-                            name: 'RAG_WEB_SEARCH_ENGINE',
-                            value: 'duckduckgo',
-                        },
+                        { name: 'WEBUI_URL', value: this.endpointUrl },
+                        { name: 'ENABLE_SIGNUP', value: 'True' },
+                        { name: 'BYPASS_MODEL_ACCESS_CONTROL', value: 'True' },
+                        { name: 'DEFAULT_USER_ROLE', value: 'user' },
+                        { name: 'ENABLE_EVALUATION_ARENA_MODELS', value: 'False' },
+                        { name: 'ENABLE_RAG_WEB_SEARCH', value: 'True' },
+                        { name: 'ENABLE_SEARCH_QUERY_GENERATION', value: 'True' },
+                        { name: 'RAG_WEB_SEARCH_ENGINE', value: 'duckduckgo' },
                         {
                             name: 'ENABLE_IMAGE_GENERATION',
                             value: args.automatic1111Url ? 'True' : 'False',
                         },
-                        {
-                            name: 'IMAGE_GENERATION_ENGINE',
-                            value: 'automatic1111',
-                        },
-                        {
-                            name: 'AUTOMATIC1111_BASE_URL',
-                            value: args.automatic1111Url,
-                        },
-                        {
-                            name: 'WEBUI_AUTH',
-                            value: 'False',
-                        },
+                        { name: 'IMAGE_GENERATION_ENGINE', value: 'automatic1111' },
+                        { name: 'AUTOMATIC1111_BASE_URL', value: args.automatic1111Url },
+                        { name: 'WEBUI_AUTH', value: 'False' },
                         {
                             name: 'WEBUI_AUTH_TRUSTED_EMAIL_HEADER',
                             value: 'Tailscale-User-Login',
