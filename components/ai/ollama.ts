@@ -20,7 +20,10 @@ export class Ollama extends pulumi.ComponentResource {
         this.config = new pulumi.Config(name);
         const hostname = this.config.require('hostname');
 
-        this.app = new Application(this, name, { domainName: args.domainName })
+        this.app = new Application(this, name, {
+            domainName: args.domainName,
+            gpu: true,
+        })
             .addDefaultLimits({ request: { cpu: '5m', memory: '3Gi' } })
             .addStorage({ type: PersistentStorageType.GPU });
 
@@ -35,6 +38,13 @@ export class Ollama extends pulumi.ComponentResource {
     private createHelmRelease(hostname: string) {
         const amdGpu = this.config.requireBoolean('amd-gpu');
         const gfxVersion = this.config.get('HSA_OVERRIDE_GFX_VERSION');
+        const extraEnv = [{ name: 'OLLAMA_DEBUG', value: 'false' }];
+        if (amdGpu && gfxVersion) {
+            extraEnv.push({
+                name: 'HSA_OVERRIDE_GFX_VERSION',
+                value: gfxVersion,
+            });
+        }
         new kubernetes.helm.v3.Release(
             this.name,
             {
@@ -46,21 +56,8 @@ export class Ollama extends pulumi.ComponentResource {
                     affinity: this.app.nodes.getAffinity(),
                     fullnameOverride: 'ollama',
                     securityContext: { privileged: true },
-                    nodeSelector: amdGpu
-                        ? { 'orangelab/gpu': 'amd' }
-                        : { 'orangelab/gpu': 'true' },
                     runtimeClassName: amdGpu ? undefined : 'nvidia',
-                    extraEnv: [
-                        { name: 'OLLAMA_DEBUG', value: 'false' },
-                        ...(amdGpu && gfxVersion
-                            ? [
-                                  {
-                                      name: 'HSA_OVERRIDE_GFX_VERSION',
-                                      value: gfxVersion,
-                                  },
-                              ]
-                            : []),
-                    ],
+                    extraEnv,
                     ollama: {
                         gpu: {
                             enabled: true,
