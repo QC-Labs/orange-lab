@@ -3,6 +3,7 @@
 ## Build/Lint/Test Commands
 
 -   Deployment: `pulumi up`
+-   Preview changes: `pulumi preview --diff`
 -   Lint: `npm run lint`
 -   Test: `npm run test` (runs lint)
 
@@ -38,6 +39,7 @@
 -   Avoid `any` type
 -   Prefer `variable?: Type` over `variable: Type | undefined`
 -   Prefer optional chaining over null checks
+-   Prefer nullish coalescing operator (??) over logical OR (||)
 -   Prefix unused variables with underscore (\_)
 
 ### Components
@@ -45,3 +47,4 @@
 -   Applications should use the Application class for Kubernetes resources
 -   For Helm charts, use Application class for namespaces and storage
 -   Follow the established pattern for new modules and components
+-   Use constructor parameter properties with access modifiers (e.g., `constructor(private readonly args: Args)`)
