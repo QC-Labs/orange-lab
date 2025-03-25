@@ -6,6 +6,7 @@ import { PersistentStorage, PersistentStorageType } from './persistent-storage';
 export interface LocalVolume {
     name: string;
     hostPath: string;
+    type?: 'Directory' | 'DirectoryOrCreate' | 'FileOrCreate' | 'CharDevice';
 }
 
 export interface PersistentVolume {
@@ -43,7 +44,7 @@ export class Volumes {
     addLocalVolume(volume: LocalVolume) {
         this.volumes.set(volume.name, {
             name: volume.name,
-            hostPath: { path: volume.hostPath },
+            hostPath: { path: volume.hostPath, type: volume.type },
         });
     }
 

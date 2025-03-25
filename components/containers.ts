@@ -61,10 +61,7 @@ export class Containers {
                         ports: this.createPorts(),
                         readinessProbe: this.createProbe(),
                         resources: this.createResourceLimits(),
-                        securityContext:
-                            this.args.gpu || this.volumes?.hasLocal()
-                                ? { privileged: true }
-                                : undefined,
+                        securityContext: this.createSecurityContext(),
                         startupProbe: this.createProbe({ failureThreshold: 10 }),
                         volumeMounts: this.createVolumeMounts(),
                     },
@@ -75,6 +72,12 @@ export class Containers {
                 volumes: this.createVolumes(),
             },
         };
+    }
+
+    private createSecurityContext() {
+        return this.args.gpu || this.volumes?.hasLocal()
+            ? { privileged: true }
+            : undefined;
     }
 
     private createPorts() {
@@ -90,14 +93,33 @@ export class Containers {
     }
 
     private createVolumes() {
+        if (this.args.gpu === 'amd') {
+            this.volumes?.addLocalVolume({
+                name: 'dev-kfd',
+                hostPath: '/dev/kfd',
+                type: 'CharDevice',
+            });
+            this.volumes?.addLocalVolume({
+                name: 'dev-dri',
+                hostPath: '/dev/dri',
+                type: 'Directory',
+            });
+        }
         return this.volumes?.create();
     }
 
-    private createVolumeMounts() {
-        return (this.spec.volumeMounts ?? []).map(volumeMount => ({
+    private createVolumeMounts():
+        | kubernetes.types.input.core.v1.VolumeMount[]
+        | undefined {
+        const mounts = (this.spec.volumeMounts ?? []).map(volumeMount => ({
             ...volumeMount,
             ...{ name: volumeMount.name ?? this.appName },
         }));
+        if (this.args.gpu === 'amd') {
+            mounts.push({ name: 'dev-kfd', mountPath: '/dev/kfd' });
+            mounts.push({ name: 'dev-dri', mountPath: '/dev/dri' });
+        }
+        return mounts;
     }
 
     private createPodSecurityContext() {
