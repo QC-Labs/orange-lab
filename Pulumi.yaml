@@ -74,15 +74,14 @@ config:
 
     prometheus:enabled: false
     prometheus:requiredNodeLabel: orangelab/prometheus=true
-
-    # Additional monitoring for installed components that support it.
-    # Only enable once Prometheus has been installed
-    # This has to be disabled first before Prometheus can be removed
-    prometheus:enableComponentMonitoring: false
     prometheus:grafana-password: admin
     prometheus:hostname-prometheus: prometheus
     prometheus:hostname-alert-manager: alertmanager
     prometheus:hostname-grafana: grafana
+    # Additional monitoring for installed components that support it.
+    # Only enable once Prometheus has been installed
+    # This has to be disabled first before Prometheus can be removed
+    prometheus:enableComponentMonitoring: false
     # Required for Grafana Dashboards when enableComponentMonitoring is set
     # grafana:url: https://grafana.<tsnet>.ts.net/
     # grafana:auth: admin:admin
@@ -140,7 +139,8 @@ config:
     # Set token to access gated repos
     # kubeai:huggingfaceToken: ''
     # Comma-separated list of models from https://github.com/substratusai/kubeai/blob/main/charts/models/values.yaml
-    kubeai:models: qwen2.5-coder-1.5b-rtx4070-8gb,faster-whisper-medium-en-cpu
+    # <model>/<profile>
+    kubeai:models: qwen2.5-coder-1.5b-rtx4070-8gb/nvidia,faster-whisper-medium-en-cpu,gemma2-2b-cpu/amd/0
 
     invokeai:enabled: false
     invokeai:preferredNodeLabel: orangelab/invokeai

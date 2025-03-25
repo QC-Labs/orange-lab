@@ -13,26 +13,29 @@ export class KubeAi extends pulumi.ComponentResource {
     public readonly endpointUrl: string | undefined;
     public readonly serviceUrl: string | undefined;
 
+    private readonly app: Application;
+    private readonly config: pulumi.Config;
+
     constructor(private name: string, args: KubeAiArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:ai:KubeAi', name, args, opts);
 
-        const config = new pulumi.Config(name);
-        const version = config.get('version');
-        const hostname = config.require('hostname');
-        const huggingfaceToken = config.getSecret('huggingfaceToken');
-        const models = config.get('models')?.split(',') ?? [];
+        this.config = new pulumi.Config(name);
+        const version = this.config.get('version');
+        const hostname = this.config.require('hostname');
+        const huggingfaceToken = this.config.getSecret('huggingfaceToken');
+        const models = this.config.get('models')?.split(',') ?? [];
 
-        const app = new Application(this, name, { gpu: true });
+        this.app = new Application(this, name, { gpu: true });
 
         const kubeAi = new kubernetes.helm.v3.Release(
             name,
             {
                 chart: 'kubeai',
-                namespace: app.namespace,
+                namespace: this.app.namespace,
                 version,
                 repositoryOpts: { repo: 'https://www.kubeai.org' },
                 values: {
-                    affinity: app.nodes.getAffinity(),
+                    affinity: this.app.nodes.getAffinity(),
                     ingress: {
                         enabled: true,
                         className: 'tailscale',
@@ -56,6 +59,13 @@ export class KubeAi extends pulumi.ComponentResource {
                               },
                           }
                         : undefined,
+                    modelServers: {
+                        OLlama: {
+                            images: {
+                                'amd-gpu': 'ollama/ollama:rocm',
+                            },
+                        },
+                    },
                     modelAutoscaling: { timeWindow: '30m' },
                     modelServerPods: {
                         // required for NVidia detection
@@ -73,6 +83,15 @@ export class KubeAi extends pulumi.ComponentResource {
                                 'nvidia.com/gpu.present': 'true',
                             },
                         },
+                        amd: {
+                            imageName: 'amd-gpu',
+                            nodeSelector: {
+                                'orangelab/gpu': 'amd',
+                            },
+                            limits: {
+                                'amd.com/gpu': 1,
+                            },
+                        },
                     },
                     secrets: { huggingface: { token: huggingfaceToken } },
                 },
@@ -84,12 +103,10 @@ export class KubeAi extends pulumi.ComponentResource {
             `${name}-models`,
             {
                 chart: 'models',
-                namespace: app.namespace,
+                namespace: this.app.namespace,
                 version,
                 repositoryOpts: { repo: 'https://www.kubeai.org' },
-                values: {
-                    catalog: this.createModelCatalog(models),
-                },
+                values: { catalog: this.createModelCatalog(models) },
             },
             { parent: this, dependsOn: [kubeAi] },
         );
@@ -103,14 +120,24 @@ export class KubeAi extends pulumi.ComponentResource {
     }
 
     private createModelCatalog(models: string[]): Record<string, object> {
-        const modelList = models.map(model => ({
-            [model]: {
-                enabled: true,
-                resourceProfile: 'nvidia:1',
-                // model downloaded on first request
-                minReplicas: 0,
-            },
-        }));
+        const gfxVersion = this.config.require('HSA_OVERRIDE_GFX_VERSION');
+        const modelProfiles = new Map<string, object>();
+        modelProfiles.set('amd', {
+            enabled: true,
+            resourceProfile: 'amd:1',
+            minReplicas: 0,
+            env: { HSA_OVERRIDE_GFX_VERSION: gfxVersion },
+        });
+        modelProfiles.set('nvidia', {
+            enabled: true,
+            resourceProfile: 'nvidia:1',
+            minReplicas: 0,
+        });
+        const modelList = models.map(model => {
+            const [modelName, profile, minReplicas = 0] = model.split('/');
+            const info = { ...modelProfiles.get(profile || 'nvidia'), minReplicas };
+            return { [modelName]: info };
+        });
         const catalog = Object.assign({}, ...modelList) as Record<string, object>;
         return catalog;
     }
