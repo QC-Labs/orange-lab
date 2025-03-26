@@ -195,6 +195,7 @@ export class Longhorn extends pulumi.ComponentResource {
 
     private createBackupJob() {
         const cron = this.config.require('backupCron');
+        const backupAll = this.config.getBoolean('backupAllVolumes');
         new kubernetes.apiextensions.CustomResource(
             `${this.name}-backup-job`,
             {
@@ -205,7 +206,7 @@ export class Longhorn extends pulumi.ComponentResource {
                     namespace: this.app.namespace,
                 },
                 spec: {
-                    groups: ['default'],
+                    groups: [backupAll ? 'default' : 'backup'],
                     task: 'backup',
                     cron,
                     name: 'backup',

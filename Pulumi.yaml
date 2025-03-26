@@ -56,6 +56,7 @@ config:
     longhorn:snapshotEnabled: true
     longhorn:snapshotCron: '0 * * * *' # every hour
     longhorn:backupEnabled: false
+    longhorn:backupAllVolumes: false
     longhorn:backupCron: '15 0 * * *' # daily at 0:15
     longhorn:backupTarget: s3://backup-longhorn@global/
     # Full backup every 7 days, use 0 for incremental only

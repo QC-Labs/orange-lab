@@ -120,7 +120,27 @@ pulumi up
 
 ```
 
-### Backup
+### Backups
+
+To enable automated backups you need to setup MinIO for S3 storage and then add volumes to "backup" group in Longhorn UI or enable `longhorn:backupAllVolumes` setting.
+
+Snapshots are taken for all volumes every hour. You can adjust the schedule with `longhorn:snapshotCron`.
+
+Incremental backups happen at 0:15 every night. The setting controlling this is `longhorn:backupCron`. If no changes were made to a volume, then no data will be transferred.
+
+Every week a full backup will be stored. Use `longhorn:backupFullInterval` to adjust amount of days, 0 means no full backups (you can always trigger them manually).
+
+```sh
+# (Optional) Enable automatic backups for all volumes (default is off)
+pulumi config set longhorn:backupAllVolumes true
+
+# Enable backups based on schedule
+pulumi config set longhorn:backupEnabled true
+
+pulumi up
+```
+
+#### Setting up S3 storage
 
 MinIO S3 storage can be used as backup target. Make sure it is installed before enabling backups in Longhorn.
 
@@ -156,11 +176,23 @@ pulumi config set longhorn:backupAccessKeySecret <key_value> --secret
 # (Optional) Change S3 bucket name used for backups.
 # Region is required for URL to be valid but value doesn't matter unless you set this in MinIO settings.
 pulumi config set longhorn:backupTarget s3://backup@home/
+```
 
-# Enable daily incremental backups for volumes
-pulumi config set longhorn:backupEnabled true
+#### Configuring Volumes
 
-pulumi up
+By default, volumes need to be manually added to the "backup" group to be backed up. When `longhorn:backupAllVolumes` is enabled, all volumes will be backed up automatically.
+
+To add a volume to the backup group using Longhorn UI:
+
+1. Select a volume in Longhorn UI
+2. Click "Recurring Jobs Schedule"
+3. Add the volume to the "backup" group
+
+Using kubectl:
+
+```sh
+# Add volume to backup group (replace volume-name with actual volume name)
+kubectl -n longhorn-system patch volume volume-name --type merge -p '{"spec":{"recurringJobSelector":{"backup":"true"}}}'
 ```
 
 ### Disable Longhorn (not recommended)
