@@ -6,6 +6,7 @@
     "license": "MIT",
     "scripts": {
         "deploy": "pulumi up --refresh",
+        "preview": "pulumi preview --diff",
         "lint": "node_modules/.bin/eslint .",
         "test": "npm run lint"
     },
