@@ -28,6 +28,9 @@ pulumi config set nvidia-gpu-operator:enabled true
 # Increase volume size if needed for bigger models (50 by default, can be expanded later)
 pulumi config set ollama:storageSize "100Gi"
 
+# Preload models at startup (comma-separated list)
+pulumi config set ollama:models "qwen2.5-coder:1.5b,llama3.2"
+
 pulumi config set ollama:enabled true
 pulumi up
 ```
@@ -87,7 +90,9 @@ ollama pull qwen2.5-coder:7b
 ollama pull qwen2.5-coder:1.5b
 ```
 
-By default models are stopped after 5 minutes. You can see loaded models and stop them with:
+By default models are stopped after 5 minutes of inactivity. Models specified in the `ollama:models` configuration will be automatically loaded at startup and stay loaded.
+
+You can see loaded models and stop them with:
 
 ```sh
 ollama ps

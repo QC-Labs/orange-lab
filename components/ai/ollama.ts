@@ -64,8 +64,11 @@ export class Ollama extends pulumi.ComponentResource {
                             type: amdGpu ? 'amd' : 'nvidia',
                             number: 1,
                         },
-                        models: { pull: [] },
+                        models: { 
+                            run: this.config.get('models')?.split(',') ?? [] 
+                        },
                     },
+                    replicaCount: 1,
                     persistentVolume: {
                         enabled: true,
                         existingClaim: this.app.volumes.getClaimName(),
