@@ -61,6 +61,7 @@ export class Volumes {
                 storageClass: this.config.get('storageClass'),
                 fromVolume,
                 cloneFromClaim: volume?.cloneFromClaim,
+                enableBackup: this.config.getBoolean('backupVolume'),
             },
             { parent: this.scope },
         );

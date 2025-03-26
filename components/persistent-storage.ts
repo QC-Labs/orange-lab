@@ -30,6 +30,10 @@ interface PersistentStorageArgs {
      * Used by Debug component to inspect contents of already attached volumes
      */
     cloneFromClaim?: string;
+    /**
+     * Enable automated backups for volume by adding it to "backup" group
+     */
+    enableBackup?: boolean;
 }
 
 export class PersistentStorage extends pulumi.ComponentResource {
@@ -75,7 +79,17 @@ export class PersistentStorage extends pulumi.ComponentResource {
         new kubernetes.core.v1.PersistentVolumeClaim(
             `${this.name}-pvc`,
             {
-                metadata: { name, namespace: this.args.namespace },
+                metadata: {
+                    name,
+                    namespace: this.args.namespace,
+                    labels: this.args.enableBackup
+                        ? {
+                              'recurring-job.longhorn.io/source': 'enabled',
+                              'recurring-job-group.longhorn.io/default': 'enabled',
+                              'recurring-job-group.longhorn.io/backup': 'enabled',
+                          }
+                        : undefined,
+                },
                 spec: {
                     accessModes: ['ReadWriteOnce'],
                     storageClassName: existingVolume

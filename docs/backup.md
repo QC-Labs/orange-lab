@@ -49,42 +49,33 @@ pulumi config set longhorn:backupAccessKeySecret <key_value> --secret
 pulumi config set longhorn:backupTarget s3://backup-longhorn@us-east-1/
 ```
 
-## Configure Longhorn
+## Managing Volume Backups
 
-Longhorn uses several settings to control backup behavior:
+There are two ways to configure which volumes get backed up:
 
-| Setting                       | Description               | Default                       |
-| ----------------------------- | ------------------------- | ----------------------------- |
-| `longhorn:backupEnabled`      | Enable automatic backups  | `false`                       |
-| `longhorn:backupAllVolumes`   | Backup all volumes        | `false`                       |
-| `longhorn:snapshotCron`       | Schedule for snapshots    | `0 * * * *` (hourly)          |
-| `longhorn:backupCron`         | Schedule for backups      | `15 0 * * *` (daily at 00:15) |
-| `longhorn:backupFullInterval` | Days between full backups | `7` (weekly)                  |
+### Option 1: Back up all volumes
+
+Enable automatic backups for all volumes in the cluster:
 
 ```sh
-# Enable automated backups
 pulumi config set longhorn:backupEnabled true
-
-# Enable backups for all volumes (optional, default is off)
 pulumi config set longhorn:backupAllVolumes true
 
 pulumi up
 ```
 
-## Managing Volume Backups
+### Option 2: Back up specific application volumes
 
-When `longhorn:backupAllVolumes` is disabled (default), you must manually add volumes to the backup group.
+To enable backups for a specific application volume you need to add it to `backup` group.
 
-### Adding Volumes to Backup Group via UI
-
-1. Navigate to Longhorn UI at `https://longhorn.<tsnet>.ts.net/`
-2. Select the desired volume from the list
-3. Click "Recurring Jobs Schedule"
-4. Add the volume to the "backup" group
-
-### Adding Volumes to Backup Group via kubectl
+You can manage groups in volume details -> Recurring Jobs Schedule -> Groups, however it's best to use `backupVolume` in Pulumi to make sure configuration is persisted.
 
 ```sh
-# Add a volume to the backup group
-kubectl -n longhorn-system label volume/<VOLUME-NAME> recurring-job-group.longhorn.io/backup=enabled
+pulumi config set longhorn:backupEnabled true
+pulumi config set longhorn:backupAllVolumes false # default value
+
+# Enable backups for a specific application's volumes
+pulumi config set <app>:backupVolume true
+
+pulumi up
 ```
