@@ -52,7 +52,6 @@ config:
     longhorn:enabled: false
     longhorn:version: 1.8.1
     longhorn:hostname: longhorn
-    # Set to 3 when 3+ storage nodes are available
     longhorn:replicaCount: 2
     longhorn:snapshotEnabled: true
     longhorn:snapshotCron: '0 * * * *' # every hour
