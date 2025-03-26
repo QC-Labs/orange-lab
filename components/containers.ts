@@ -82,7 +82,7 @@ export class Containers {
         | kubernetes.types.input.core.v1.SecurityContext
         | undefined {
         if (this.args.gpu === 'amd') {
-            return { seccompProfile: { type: 'Unconfined' }, privileged: true };
+            return { seccompProfile: { type: 'Unconfined' } };
         }
         return this.args.gpu || this.volumes?.hasLocal()
             ? { privileged: true }
