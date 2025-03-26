@@ -141,6 +141,7 @@ config:
     # Comma-separated list of models from https://github.com/substratusai/kubeai/blob/main/charts/models/values.yaml
     # <model>/<profile>
     kubeai:models: qwen2.5-coder-1.5b-rtx4070-8gb/nvidia,faster-whisper-medium-en-cpu,gemma2-2b-cpu/amd/0
+    # kubeai:HSA_OVERRIDE_GFX_VERSION: '11.0.2'
 
     invokeai:enabled: false
     invokeai:preferredNodeLabel: orangelab/invokeai

@@ -1,4 +1,5 @@
 import * as kubernetes from '@pulumi/kubernetes';
+import * as pulumi from '@pulumi/pulumi';
 import { Volumes } from './volumes';
 
 export interface ContainerSpec {
@@ -25,6 +26,7 @@ export class Containers {
     spec: ContainerSpec;
     affinity?: kubernetes.types.input.core.v1.Affinity;
     volumes?: Volumes;
+    config: pulumi.Config;
 
     constructor(
         private appName: string,
@@ -35,6 +37,7 @@ export class Containers {
             volumes?: Volumes;
             affinity?: kubernetes.types.input.core.v1.Affinity;
             gpu?: 'nvidia' | 'amd';
+            config: pulumi.Config;
         },
     ) {
         this.spec = args.spec;
@@ -42,6 +45,7 @@ export class Containers {
         this.serviceAccount = args.serviceAccount;
         this.volumes = args.volumes;
         this.affinity = args.affinity;
+        this.config = args.config;
     }
 
     public createPodTemplateSpec(): kubernetes.types.input.core.v1.PodTemplateSpec {
@@ -74,7 +78,12 @@ export class Containers {
         };
     }
 
-    private createSecurityContext() {
+    private createSecurityContext():
+        | kubernetes.types.input.core.v1.SecurityContext
+        | undefined {
+        if (this.args.gpu === 'amd') {
+            return { seccompProfile: { type: 'Unconfined' }, privileged: true };
+        }
         return this.args.gpu || this.volumes?.hasLocal()
             ? { privileged: true }
             : undefined;
@@ -165,8 +174,13 @@ export class Containers {
     }
 
     private createEnv() {
-        if (!this.spec.env) return undefined;
-        return Object.entries(this.spec.env)
+        const gfxVersion = this.config.get('HSA_OVERRIDE_GFX_VERSION');
+        const env = {
+            ...this.spec.env,
+            HSA_OVERRIDE_GFX_VERSION:
+                this.args.gpu === 'amd' && gfxVersion ? gfxVersion : undefined,
+        };
+        return Object.entries(env)
             .filter(([_, value]) => value)
             .map(([key, value]) => ({ name: key, value }));
     }

@@ -159,6 +159,7 @@ export class Application {
             serviceAccount: this.serviceAccount,
             affinity: this.nodes.getAffinity(),
             gpu: this.gpu,
+            config: this.config,
         });
         return new kubernetes.apps.v1.Deployment(
             `${this.appName}-deployment`,
@@ -185,6 +186,7 @@ export class Application {
             spec: args,
             metadata,
             serviceAccount: this.serviceAccount,
+            config: this.config,
         });
         return new kubernetes.apps.v1.DaemonSet(
             `${this.appName}-${args.name}-daemonset`,
@@ -211,6 +213,7 @@ export class Application {
             volumes: this.volumes,
             serviceAccount: this.serviceAccount,
             affinity: this.nodes.getAffinity(),
+            config: this.config,
         });
         return new kubernetes.batch.v1.Job(
             `${this.appName}-${args.name}-job`,

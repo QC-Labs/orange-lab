@@ -15,6 +15,7 @@ export class SDNext extends pulumi.ComponentResource {
 
         const config = new pulumi.Config(name);
         const cliArgs = config.require('cliArgs');
+        const amdGpu = config.get('amd-gpu');
 
         const app = new Application(this, name, {
             domainName: args.domainName,
@@ -36,8 +37,8 @@ export class SDNext extends pulumi.ComponentResource {
                 ],
                 env: {
                     SD_DEBUG: 'true',
+                    SD_USEROCM: amdGpu ? 'True' : undefined,
                 },
-                healthChecks: true,
                 volumeMounts: [{ mountPath: '/webui/data' }],
                 resources: { requests: { cpu: '50m', memory: '2.5Gi' } },
             });
