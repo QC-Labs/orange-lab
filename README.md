@@ -118,4 +118,5 @@ pulumi up
 
 # Documentation
 
-Troubleshooting - [docs/troubleshooting.md](./docs/troubleshooting.md)
+- [Backup and Restore](./docs/backup.md) - Using Longhorn backups with S3 storage
+- [Troubleshooting](./docs/troubleshooting.md) - Common issues and solutions
