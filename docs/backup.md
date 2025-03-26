@@ -6,7 +6,7 @@ Backup behavior:
 
 -   **Snapshots**: Taken hourly for all volumes (configurable with `longhorn:snapshotCron`)
 -   **Incremental Backups**: Run daily at 00:15 (configurable with `longhorn:backupCron`)
--   **Full Backups**: Taken weekly (configurable with `longhorn:backupFullInterval`)
+    Please refer to the official MinIO installation documentation for detailed instructions on setting up MinIO: [https://min.io/docs/minio/user-guide/install.html]
 -   If a volume has no changes since the last backup, no data is transferred
 
 ## Setup S3 storage (MinIO)
@@ -79,3 +79,35 @@ pulumi config set <app>:backupVolume true
 
 pulumi up
 ```
+
+## Restoring from Backup
+
+There are two ways to restore volumes from backups:
+
+### Option 1: Using the `fromBackup` parameter
+
+You can directly restore from a backup by providing the S3 URL in your application configuration:
+
+```sh
+pulumi config set <app>:fromBackup "s3://backup-longhorn@global/?backup=backup-12345&volume=my-volume"
+```
+
+Notes:
+
+-   The S3 URL must be copied exactly from the Longhorn UI's backup page
+-   Navigate to Backup → select backup → Copy URL
+-   Volumes are provisioned dynamically with system-generated names
+
+### Option 2: Restore via UI then use `fromVolume` (Recommended)
+
+For more control over the process and to get meaningful volume names:
+
+1. Restore the volume through the Longhorn UI first
+2. Use the `fromVolume` parameter to attach the existing volume:
+
+```sh
+# First, restore volume through Longhorn UI and note its name
+pulumi config set <app>:fromVolume "my-restored-volume"
+```
+
+This approach gives you better volume naming and allows you to verify the restore before attaching it to your application.

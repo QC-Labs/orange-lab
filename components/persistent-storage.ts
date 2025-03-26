@@ -2,6 +2,7 @@ import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
 import { rootConfig } from './root-config';
+import { Longhorn } from './system/longhorn';
 
 export enum PersistentStorageType {
     Default,
@@ -34,6 +35,10 @@ interface PersistentStorageArgs {
      * Enable automated backups for volume by adding it to "backup" group
      */
     enableBackup?: boolean;
+    /**
+     * Location of the backup volume
+     */
+    fromBackup?: string;
 }
 
 export class PersistentStorage extends pulumi.ComponentResource {
@@ -53,29 +58,68 @@ export class PersistentStorage extends pulumi.ComponentResource {
             !(args.fromVolume && args.storageClass),
             'StorageClass cannot be changed when using existing Longhorn volumes',
         );
-
+        assert(
+            !(args.fromVolume && args.fromBackup),
+            'Either use fromVolume or fromBackup',
+        );
+        
+        let backupStorageClass;
+        if (args.fromBackup) {
+            backupStorageClass = this.createBackupStorageClass();
+        }
+        
         const existingVolume = args.fromVolume
-            ? this.createPV({ name: args.name, volumeHandle: args.fromVolume })
+            ? this.createPV({
+                  name: args.name,
+                  volumeHandle: args.fromVolume,
+              })
             : undefined;
+            
+        const storageClass =
+            existingVolume?.spec.storageClassName ??
+            backupStorageClass ??
+            args.storageClass ??
+            PersistentStorage.getStorageClass(this.args.type) ??
+            Longhorn.defaultStorageClass;
+            
         this.createPVC({
             name: args.name,
+            storageClass,
             existingVolume,
             cloneFromClaim: args.cloneFromClaim,
         });
+        
         this.volumeClaimName = args.name;
+    }
+    
+    private createBackupStorageClass(): pulumi.Output<string> {
+        const restored = new kubernetes.storage.v1.StorageClass(`${this.name}-sc`, {
+            metadata: {
+                name: `longhorn-${this.args.name}`,
+                namespace: 'longhorn-system',
+            },
+            provisioner: 'driver.longhorn.io',
+            parameters: {
+                numberOfReplicas: '1',
+                ...(this.args.fromBackup && { fromBackup: this.args.fromBackup }),
+            },
+            volumeBindingMode: 'WaitForFirstConsumer',
+        });
+        
+        return restored.metadata.name;
     }
 
     private createPVC({
         name,
         existingVolume,
         cloneFromClaim,
+        storageClass,
     }: {
         name: string;
+        storageClass: pulumi.Input<string>;
         existingVolume?: kubernetes.core.v1.PersistentVolume;
         cloneFromClaim?: string;
     }) {
-        const storageClassName =
-            this.args.storageClass ?? PersistentStorage.getStorageClass(this.args.type);
         new kubernetes.core.v1.PersistentVolumeClaim(
             `${this.name}-pvc`,
             {
@@ -92,9 +136,7 @@ export class PersistentStorage extends pulumi.ComponentResource {
                 },
                 spec: {
                     accessModes: ['ReadWriteOnce'],
-                    storageClassName: existingVolume
-                        ? existingVolume.spec.storageClassName
-                        : storageClassName,
+                    storageClassName: storageClass,
                     dataSource: cloneFromClaim
                         ? {
                               kind: 'PersistentVolumeClaim',
