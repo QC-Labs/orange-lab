@@ -67,7 +67,9 @@ config:
 
     nvidia-gpu-operator:enabled: false
 
-    amd-gpu:enabled: false
+    amd-gpu-operator:enabled: false
+
+    cert-manager:enabled: false
 
     debug:enabled: false
 

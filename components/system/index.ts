@@ -1,6 +1,7 @@
 import * as pulumi from '@pulumi/pulumi';
 import { rootConfig } from '../root-config';
-import { AmdGPU } from './amd-gpu';
+import { AmdGPUOperator } from './amd-gpu-operator';
+import { CertManager } from './cert-manager';
 import { Debug } from './debug';
 import { Longhorn } from './longhorn';
 import { Minio } from './minio';
@@ -36,11 +37,27 @@ export class SystemModule extends pulumi.ComponentResource {
         }
 
         if (rootConfig.isEnabled('nvidia-gpu-operator')) {
-            new NvidiaGPUOperator('nvidia-gpu-operator', {}, { parent: this });
+            new NvidiaGPUOperator(
+                'nvidia-gpu-operator',
+                {},
+                {
+                    parent: this,
+                    dependsOn: nfd ? [nfd] : undefined,
+                },
+            );
         }
 
-        if (rootConfig.isEnabled('amd-gpu')) {
-            new AmdGPU('amd-gpu', {}, { parent: this });
+        if (rootConfig.isEnabled('amd-gpu-operator')) {
+            // CertManager is required for AMD GPU Operator
+            const certManager = new CertManager('cert-manager', {}, { parent: this });
+            new AmdGPUOperator(
+                'amd-gpu-operator',
+                {},
+                {
+                    parent: this,
+                    dependsOn: [certManager],
+                },
+            );
         }
 
         if (rootConfig.isEnabled('minio')) {

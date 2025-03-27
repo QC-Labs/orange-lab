@@ -217,12 +217,12 @@ pulumi up
 
 ```
 
-## AMD GPU support
+## AMD GPU operator
 
-|            |                                                           |
-| ---------- | --------------------------------------------------------- |
-| Homepage   | https://github.com/ROCm/k8s-device-plugin                 |
-| Helm chart | https://artifacthub.io/packages/helm/amd-gpu-helm/amd-gpu |
+|          |                                                     |
+| -------- | --------------------------------------------------- |
+| Homepage | https://github.com/ROCm/gpu-operator                |
+| Docs     | https://instinct.docs.amd.com/projects/gpu-operator |
 
 This component is needed to run GPU workloads using AMD devices with ROCm support.
 
@@ -231,7 +231,7 @@ This component is needed to run GPU workloads using AMD devices with ROCm suppor
 kubectl label nodes <node-name> orangelab/gpu=amd
 
 # enable AMD GPU operator
-pulumi config set amd-gpu:enabled true
+pulumi config set amd-gpu-operator:enabled true
 
 pulumi up
 ```
@@ -243,6 +243,42 @@ For applications like Ollama using AMD GPUs, you may need to set `amd-gpu` to tr
 pulumi config set ollama:amd-gpu true
 ```
 
+### Uninstall
+
+For detailed uninstallation instructions, see the [official documentation](https://instinct.docs.amd.com/projects/gpu-operator/en/latest/uninstallation/uninstallation.html).
+
+```sh
+kubectl delete deviceconfigs --all -n amd-gpu-operator
+kubectl delete crds deviceconfigs.amd.com
+
+pulumi config set amd-gpu-operator:enabled false
+pulumi up
+```
+
+## Cert-manager
+
+|            |                            |
+| ---------- | -------------------------- |
+| Homepage   | https://cert-manager.io/   |
+| Helm chart | https://charts.jetstack.io |
+
+Cert-manager is a Kubernetes certificate management controller that automates the management and issuance of TLS certificates.
+
+It is installed automatically when AMD GPU operator is enabled. You don't need to install it separately.
+
+### Uninstall
+
+To uninstall cert-manager and clean up its custom resource definitions:
+
+```sh
+kubectl delete crd \
+  certificaterequests.cert-manager.io \
+  certificates.cert-manager.io \
+  challenges.acme.cert-manager.io \
+  clusterissuers.cert-manager.io \
+  issuers.cert-manager.io \
+  orders.acme.cert-manager.io
+```
 ## Debug (experimental)
 
 Utility containers for troubleshooting the cluster.
