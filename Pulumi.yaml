@@ -43,13 +43,6 @@ config:
     # tailscale-operator:oauthClientId: OAUTH_CLIENT_ID
     # tailscale-operator:oauthClientSecret: OAUTH_CLIENT_SECRET
 
-    minio:enabled: false
-    minio:hostname: minio
-    minio:hostname-api: minio-api
-    minio:dataPath: /var/srv/minio-data
-    minio:rootUser: minioadmin
-    minio:rootPassword: minioadmin
-
     longhorn:enabled: false
     longhorn:version: 1.8.1
     longhorn:hostname: longhorn
@@ -59,11 +52,18 @@ config:
     longhorn:backupEnabled: false
     longhorn:backupAllVolumes: false
     longhorn:backupCron: '15 0 * * *' # daily at 0:15
-    longhorn:backupTarget: s3://backup-longhorn@global/
+    longhorn:backupTarget: s3://backup-longhorn@lab/
     # Full backup every 7 days, use 0 for incremental only
     longhorn:backupFullInterval: '7'
     # longhorn:backupAccessKeyId: <key_id>
     # longhorn:backupAccessKeySecret: <key_value>
+
+    minio:enabled: false
+    minio:hostname: minio
+    minio:hostname-api: minio-api
+    minio:dataPath: /var/srv/minio-data
+    minio:rootUser: minioadmin
+    minio:rootPassword: minioadmin
 
     nvidia-gpu-operator:enabled: false
 

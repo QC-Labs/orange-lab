@@ -46,7 +46,7 @@ pulumi config set longhorn:backupAccessKeyId <key_id> --secret
 pulumi config set longhorn:backupAccessKeySecret <key_value> --secret
 
 # (Optional) Customize S3 bucket name/path
-pulumi config set longhorn:backupTarget s3://backup-longhorn@us-east-1/
+pulumi config set longhorn:backupTarget s3://backup-longhorn@lab/
 ```
 
 ## Managing Volume Backups
@@ -89,7 +89,7 @@ There are two ways to restore volumes from backups:
 You can directly restore from a backup by providing the S3 URL in your application configuration:
 
 ```sh
-pulumi config set <app>:fromBackup "s3://backup-longhorn@global/?backup=backup-12345&volume=my-volume"
+pulumi config set <app>:fromBackup "s3://backup-longhorn@lab/?backup=backup-12345&volume=my-volume"
 ```
 
 Notes:
