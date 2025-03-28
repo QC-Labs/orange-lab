@@ -249,7 +249,9 @@ For detailed uninstallation instructions, see the [official documentation](https
 
 ```sh
 kubectl delete deviceconfigs --all -n amd-gpu-operator
-kubectl delete crds deviceconfigs.amd.com
+kubectl delete crds deviceconfigs.amd.com \
+    modules.kmm.sigs.x-k8s.io \
+    nodemodulesconfigs.kmm.sigs.x-k8s.io
 
 pulumi config set amd-gpu-operator:enabled false
 pulumi up
