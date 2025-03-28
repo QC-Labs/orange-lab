@@ -1,9 +1,22 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
+import { GrafanaDashboard } from '../grafana-dashboard';
+import dashboardOverviewJson from './amd-dashboard_overview.json';
+import dashboardGpuJson from './amd-dashboard_gpu.json';
+import dashboardJobJson from './amd-dashboard_job.json';
+import dashboardNodeJson from './amd-dashboard_node.json';
+
+interface AmdGPUOperatorArgs {
+    enableMonitoring?: boolean;
+}
 
 export class AmdGPUOperator extends pulumi.ComponentResource {
-    constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
+    constructor(
+        name: string,
+        args: AmdGPUOperatorArgs = {},
+        opts?: pulumi.ResourceOptions,
+    ) {
         super('orangelab:system:AmdGPUOperator', name, args, opts);
 
         const config = new pulumi.Config(name);
@@ -43,5 +56,24 @@ export class AmdGPUOperator extends pulumi.ComponentResource {
             },
             { parent: this, dependsOn: chart },
         );
+
+        if (args.enableMonitoring) {
+            new GrafanaDashboard(`${name}-overview`, this, {
+                configJson: dashboardOverviewJson,
+                title: 'AMD - Overview',
+            });
+            new GrafanaDashboard(`${name}-gpu`, this, {
+                configJson: dashboardGpuJson,
+                title: 'AMD - GPU',
+            });
+            new GrafanaDashboard(`${name}-job`, this, {
+                configJson: dashboardJobJson,
+                title: 'AMD - Job',
+            });
+            new GrafanaDashboard(`${name}-node`, this, {
+                configJson: dashboardNodeJson,
+                title: 'AMD - Compute Node',
+            });
+        }
     }
 }

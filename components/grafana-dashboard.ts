@@ -1,8 +1,13 @@
 import * as pulumi from '@pulumi/pulumi';
 import * as grafana from '@pulumiverse/grafana';
 
+interface GrafanaJson {
+    title: string;
+}
+
 interface GrafanaDashboardArgs {
-    configJson: unknown;
+    configJson: GrafanaJson;
+    title?: string;
 }
 
 export class GrafanaDashboard {
@@ -11,7 +16,7 @@ export class GrafanaDashboard {
     constructor(
         private appName: string,
         private scope: pulumi.ComponentResource,
-        args: GrafanaDashboardArgs,
+        private args: GrafanaDashboardArgs,
     ) {
         GrafanaDashboard.folder = GrafanaDashboard.folder ?? this.createFolder();
         this.createDashboard(args.configJson);
@@ -24,12 +29,18 @@ export class GrafanaDashboard {
         });
     }
 
-    private createDashboard(configJson: unknown) {
+    private createDashboard(configJson: GrafanaJson) {
+        if (this.args.title) {
+            configJson.title = this.args.title;
+        }
         new grafana.oss.Dashboard(
             `${this.appName}-dashboard`,
             {
                 folder: GrafanaDashboard.folder?.uid,
-                configJson: JSON.stringify(configJson),
+                configJson: JSON.stringify(configJson).replace(
+                    /\${DS_PROMETHEUS}/g,
+                    'Prometheus',
+                ),
             },
             { parent: this.scope },
         );
