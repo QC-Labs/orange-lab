@@ -112,20 +112,8 @@ Example config fragment:
 ```json
   "models": [
     {
-      "model": "llama3.2",
-      "title": "Ollama llama3.2",
-      "apiBase": "https://ollama.<tsnet>.ts.net/",
-      "provider": "ollama"
-    },
-    {
-      "model": "qwen2.5-coder:7b",
-      "title": "Ollama qwen2.5-coder",
-      "apiBase": "https://ollama.<tsnet>.ts.net/",
-      "provider": "ollama"
-    },
-    {
-      "model": "deepseek-coder-v2",
-      "title": "Ollama deepseek-coder-v2",
+      "model": "AUTODETECT",
+      "title": "Autodetect",
       "apiBase": "https://ollama.<tsnet>.ts.net/",
       "provider": "ollama"
     }

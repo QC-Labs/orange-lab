@@ -131,6 +131,9 @@ pulumi config set longhorn:backupEnabled true
 # (Optional) Enable automatic backups for all volumes
 pulumi config set longhorn:backupAllVolumes true
 
+# (Optional) or just enable backup for single app
+pulumi config set ollama:backupVolume true
+
 pulumi up
 ```
 
@@ -160,7 +163,7 @@ https://artifacthub.io/packages/helm/longhorn/longhorn#uninstallation
 kubectl -n longhorn-system patch -p '{"value": "true"}' --type=merge lhs deleting-confirmation-flag
 ```
 
-## Minio (Recommended)
+## Minio (Optional)
 
 |              |                                                         |
 | ------------ | ------------------------------------------------------- |
