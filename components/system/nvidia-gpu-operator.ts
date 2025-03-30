@@ -67,18 +67,7 @@ export class NvidiaGPUOperator extends pulumi.ComponentResource {
                     kataManager: { enabled: false },
                     migManager: { enabled: false },
                     // Node Feature Discovery dependent chart
-                    nfd: { enabled: true },
-                    // https://github.com/kubernetes-sigs/node-feature-discovery
-                    'node-feature-discovery': {
-                        worker: {
-                            nodeSelector: { 'orangelab/gpu': 'true' },
-                            // set as priviledged to allow access to /etc/kubernetes/node-feature-discovery/features.d/
-                            securityContext: {
-                                allowPrivilegeEscalation: true,
-                                privileged: true,
-                            },
-                        },
-                    },
+                    nfd: { enabled: false },
                     nodeStatusExporter: { enabled: false },
                     operator: { defaultRuntime: 'containerd' },
                     sandboxDevicePlugin: { enabled: false },

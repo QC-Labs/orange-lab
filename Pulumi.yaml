@@ -65,11 +65,13 @@ config:
     minio:rootUser: minioadmin
     minio:rootPassword: minioadmin
 
+    cert-manager:enabled: false
+
+    nfd:enabled: false
+
     nvidia-gpu-operator:enabled: false
 
     amd-gpu-operator:enabled: false
-
-    cert-manager:enabled: false
 
     debug:enabled: false
 

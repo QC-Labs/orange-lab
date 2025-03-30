@@ -194,6 +194,65 @@ pulumi config set minio:rootPassword abcdef12345 --secret
 pulumi up
 ```
 
+## Cert-manager
+
+|            |                            |
+| ---------- | -------------------------- |
+| Homepage   | https://cert-manager.io/   |
+| Helm chart | https://charts.jetstack.io |
+
+Cert-manager is a Kubernetes certificate management controller that automates the management and issuance of TLS certificates.
+
+It is installed automatically when AMD GPU operator is enabled.
+
+```sh
+pulumi config set cert-manager:enabled true
+pulumi up
+```
+
+### Uninstall
+
+To uninstall cert-manager and clean up its custom resource definitions:
+
+```sh
+kubectl delete crd \
+  certificaterequests.cert-manager.io \
+  certificates.cert-manager.io \
+  challenges.acme.cert-manager.io \
+  clusterissuers.cert-manager.io \
+  issuers.cert-manager.io \
+  orders.acme.cert-manager.io
+```
+
+## Node Feature Discovery (NFD)
+
+|          |                                                           |
+| -------- | --------------------------------------------------------- |
+| Homepage | https://kubernetes-sigs.github.io/node-feature-discovery/ |
+| GitHub   | https://github.com/kubernetes-sigs/node-feature-discovery |
+
+Node Feature Discovery (NFD) is a Kubernetes add-on that detects and advertises hardware features and system configuration as node labels. It's primarily used for GPU workloads to make hardware features available for node selection and scheduling decisions.
+
+### Installation
+
+NFD is installed automatically when either NVIDIA or AMD GPU operators are enabled.
+
+```sh
+pulumi config set nfd:enabled true
+pulumi up
+```
+
+### Uninstall
+
+To uninstall NFD and clean up its custom resource definitions:
+
+```sh
+kubectl delete crd \
+  nodefeaturegroups.nfd.k8s-sigs.io \
+  nodefeaturerules.nfd.k8s-sigs.io \
+  nodefeatures.nfd.k8s-sigs.io
+```
+
 ## NVIDIA GPU operator
 
 |            |                                                                                                                         |
@@ -219,10 +278,11 @@ pulumi up
 
 ## AMD GPU operator
 
-|          |                                                     |
-| -------- | --------------------------------------------------- |
-| Homepage | https://github.com/ROCm/gpu-operator                |
-| Docs     | https://instinct.docs.amd.com/projects/gpu-operator |
+|             |                                                                        |
+| ----------- | ---------------------------------------------------------------------- |
+| Homepage    | https://github.com/ROCm/gpu-operator                                   |
+| Docs        | https://instinct.docs.amd.com/projects/gpu-operator                    |
+| Helm values | https://github.com/ROCm/gpu-operator/blob/main/helm-charts/values.yaml |
 
 This component is needed to run GPU workloads using AMD devices with ROCm support.
 
@@ -248,39 +308,15 @@ pulumi config set ollama:amd-gpu true
 For detailed uninstallation instructions, see the [official documentation](https://instinct.docs.amd.com/projects/gpu-operator/en/latest/uninstallation/uninstallation.html).
 
 ```sh
-kubectl delete deviceconfigs --all -n amd-gpu-operator
-kubectl delete crds deviceconfigs.amd.com \
-    modules.kmm.sigs.x-k8s.io \
-    nodemodulesconfigs.kmm.sigs.x-k8s.io
-
 pulumi config set amd-gpu-operator:enabled false
 pulumi up
+
+kubectl delete crds deviceconfigs.amd.com \
+    modules.kmm.sigs.x-k8s.io \
+    nodemodulesconfigs.kmm.sigs.x-k8s.io \
+    preflightvalidations.kmm.sigs.x-k8s.io
 ```
 
-## Cert-manager
-
-|            |                            |
-| ---------- | -------------------------- |
-| Homepage   | https://cert-manager.io/   |
-| Helm chart | https://charts.jetstack.io |
-
-Cert-manager is a Kubernetes certificate management controller that automates the management and issuance of TLS certificates.
-
-It is installed automatically when AMD GPU operator is enabled. You don't need to install it separately.
-
-### Uninstall
-
-To uninstall cert-manager and clean up its custom resource definitions:
-
-```sh
-kubectl delete crd \
-  certificaterequests.cert-manager.io \
-  certificates.cert-manager.io \
-  challenges.acme.cert-manager.io \
-  clusterissuers.cert-manager.io \
-  issuers.cert-manager.io \
-  orders.acme.cert-manager.io
-```
 ## Debug (experimental)
 
 Utility containers for troubleshooting the cluster.

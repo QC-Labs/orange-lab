@@ -5,6 +5,7 @@ import { CertManager } from './cert-manager';
 import { Debug } from './debug';
 import { Longhorn } from './longhorn';
 import { Minio } from './minio';
+import { NodeFeatureDiscovery } from './nfd';
 import { NvidiaGPUOperator } from './nvidia-gpu-operator';
 import { Tailscale } from './tailscale';
 import { TailscaleOperator } from './tailscale-operator';
@@ -36,26 +37,41 @@ export class SystemModule extends pulumi.ComponentResource {
             );
         }
 
+        let nfd: NodeFeatureDiscovery | undefined;
+        if (
+            rootConfig.isEnabled('nfd') ||
+            rootConfig.isEnabled('nvidia-gpu-operator') ||
+            rootConfig.isEnabled('amd-gpu-operator')
+        ) {
+            nfd = new NodeFeatureDiscovery('nfd', { enableMonitoring }, { parent: this });
+        }
+
+        let certManager: CertManager | undefined;
+        if (
+            rootConfig.isEnabled('cert-manager') ||
+            rootConfig.isEnabled('amd-gpu-operator')
+        ) {
+            certManager = new CertManager('cert-manager', {}, { parent: this });
+        }
+
         if (rootConfig.isEnabled('nvidia-gpu-operator')) {
             new NvidiaGPUOperator(
                 'nvidia-gpu-operator',
                 {},
-                {
-                    parent: this,
-                    dependsOn: nfd ? [nfd] : undefined,
-                },
+                { parent: this, dependsOn: nfd },
             );
         }
 
         if (rootConfig.isEnabled('amd-gpu-operator')) {
-            // CertManager is required for AMD GPU Operator
-            const certManager = new CertManager('cert-manager', {}, { parent: this });
             new AmdGPUOperator(
                 'amd-gpu-operator',
-                {},
+                { enableMonitoring },
                 {
                     parent: this,
-                    dependsOn: [certManager],
+                    dependsOn: [
+                        ...(certManager ? [certManager] : []),
+                        ...(nfd ? [nfd] : []),
+                    ],
                 },
             );
         }
