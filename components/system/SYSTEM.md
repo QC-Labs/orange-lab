@@ -17,9 +17,12 @@ kubectl label nodes <node-name> orangelab/storage=true
 pulumi config set longhorn:enabled true
 pulumi up
 
-# Label node(s) that should run GPU workloads
-kubectl label nodes <node-name> orangelab/gpu=true
+# Enable NFD for automatic GPU detection
+pulumi config set nfd:enabled true
+# Enable NVIDIA GPUs driver
 pulumi config set nvidia-gpu-operator:enabled true
+# Enable AMD GPUs driver
+pulumi config set amd-gpu-operator:enabled true
 pulumi up
 ```
 
@@ -159,8 +162,14 @@ pulumi up
 
 https://artifacthub.io/packages/helm/longhorn/longhorn#uninstallation
 
+Before you uninstall Longhorn you need to remove all apps/storage using Longhorn volumes.
+
 ```sh
+# Disable uninstall protection
 kubectl -n longhorn-system patch -p '{"value": "true"}' --type=merge lhs deleting-confirmation-flag
+
+pulumi config set longhorn:enabled false
+pulumi up
 ```
 
 ## Minio (Optional)
@@ -218,6 +227,9 @@ pulumi up
 To uninstall cert-manager and clean up its custom resource definitions:
 
 ```sh
+pulumi config set cert-manager:enabled false
+pulumi up
+
 kubectl delete crd \
   certificaterequests.cert-manager.io \
   certificates.cert-manager.io \
@@ -234,7 +246,7 @@ kubectl delete crd \
 | Homepage | https://kubernetes-sigs.github.io/node-feature-discovery/ |
 | GitHub   | https://github.com/kubernetes-sigs/node-feature-discovery |
 
-Node Feature Discovery (NFD) is a Kubernetes add-on that detects and advertises hardware features and system configuration as node labels. It's primarily used for GPU workloads to make hardware features available for node selection and scheduling decisions.
+Node Feature Discovery (NFD) is a Kubernetes add-on that detects and advertises hardware features and system configuration as node labels. It's used to detect nodes with GPU hardware installed.
 
 ### Installation
 
@@ -245,11 +257,45 @@ pulumi config set nfd:enabled true
 pulumi up
 ```
 
+### GPU node labels
+
+Automatic detection of AMD and NVIDIA GPUs is enabled by default.
+
+Nodes with GPUs will have the following labels added:
+
+For NVIDIA GPUs:
+
+-   `orangelab/gpu: "true"`
+-   `orangelab/gpu-nvidia: "true"`
+
+For AMD GPUs:
+
+-   `orangelab/gpu: "amd"`
+-   `orangelab/gpu-amd: "true"`
+
+These labels can be used for node selection in applications.
+
+If there are some nodes with GPU that should not be used for GPU workloads, you can disable auto detection and remove related labels from the node.
+
+```sh
+# Disable automatic GPU detection
+pulumi config set nfd:gpu-autodetect false
+pulumi up
+
+# Remove node labels
+kubectl label nodes <node_name> orangelab/gpu-
+kubectl label nodes <node_name> orangelab/gpu-nvidia-
+kubectl label nodes <node_name> orangelab/gpu-amd-
+```
+
 ### Uninstall
 
 To uninstall NFD and clean up its custom resource definitions:
 
 ```sh
+pulumi config set nfd:enabled false
+pulumi up
+
 kubectl delete crd \
   nodefeaturegroups.nfd.k8s-sigs.io \
   nodefeaturerules.nfd.k8s-sigs.io \
@@ -266,13 +312,13 @@ kubectl delete crd \
 
 This component is needed to run GPU workloads using NVidia devices.
 
-Designate one or more nodes as GPU, then enable the operator.
+Enable the NVIDIA GPU operator to support NVIDIA GPU workloads.
 
 ```sh
-# Label node(s) that should run GPU workloads
-kubectl label nodes <node-name> orangelab/gpu=true
+# Enable automatic GPU detection with NFD
+pulumi config set nfd:enabled true
 
-# enable GPU operator
+# Enable NVIDIA GPU operator
 pulumi config set nvidia-gpu-operator:enabled true
 
 pulumi up
@@ -290,10 +336,10 @@ pulumi up
 This component is needed to run GPU workloads using AMD devices with ROCm support.
 
 ```sh
-# Label node(s) that should run AMD GPU workloads
-kubectl label nodes <node-name> orangelab/gpu=amd
+# Enable automatic GPU detection with NFD
+pulumi config set nfd:enabled true
 
-# enable AMD GPU operator
+# Enable AMD GPU operator
 pulumi config set amd-gpu-operator:enabled true
 
 pulumi up

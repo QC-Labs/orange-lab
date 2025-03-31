@@ -43,6 +43,7 @@ export class AmdGPUOperator extends pulumi.ComponentResource {
                 namespace: this.app.namespace,
                 values: {
                     kmm: { enabled: true },
+                    installdefaultNFDRule: false,
                     nodeSelector: { 'orangelab/gpu': 'amd' },
                     'node-feature-discovery': { enabled: false },
                 },
@@ -51,9 +52,7 @@ export class AmdGPUOperator extends pulumi.ComponentResource {
         );
     }
 
-    private createDeviceConfig(
-        chart: kubernetes.helm.v3.Release,
-    ): kubernetes.apiextensions.CustomResource {
+    private createDeviceConfig(chart: kubernetes.helm.v3.Release) {
         return new kubernetes.apiextensions.CustomResource(
             `${this.name}-config`,
             {

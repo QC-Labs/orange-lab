@@ -68,6 +68,7 @@ config:
     cert-manager:enabled: false
 
     nfd:enabled: false
+    nfd:gpu-autodetect: true
 
     nvidia-gpu-operator:enabled: false
 

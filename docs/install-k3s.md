@@ -149,9 +149,8 @@ You can set node labels later when installing applications. Examples:
 # Storage node used by Longhorn, at least one is needed
 kubectl label nodes <node-name> orangelab/storage=true
 
-# GPU node for Ollama
-kubectl label nodes <node-name> orangelab/gpu=true
-
 # Set zone, used f.e. by home-assistant to deploy to node on same network as sensors
 kubectl label nodes <node-name> topology.kubernetes.io/zone=home
 ```
+
+> Note: GPU nodes are automatically detected and labeled by the [Node Feature Discovery](/components/system/SYSTEM.md#node-feature-discovery-nfd) component.
