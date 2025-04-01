@@ -57,7 +57,7 @@ export class NvidiaGPUOperator extends pulumi.ComponentResource {
                     // NVidia driver already installed on host
                     driver: {
                         enabled: false,
-                        nodeSelector: { 'orangelab/gpu': 'true' },
+                        nodeSelector: { 'orangelab/gpu-nvidia': 'true' },
                     },
                     gdrcopy: { enabled: false },
                     // GPUDirect Storage kernel driver - https://github.com/NVIDIA/gds-nvidia-fs

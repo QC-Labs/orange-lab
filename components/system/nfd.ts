@@ -68,7 +68,7 @@ export class NodeFeatureDiscovery extends pulumi.ComponentResource {
                         {
                             name: 'amd-gpu',
                             labels: {
-                                'orangelab/gpu': 'amd',
+                                'orangelab/gpu': 'true',
                                 'orangelab/gpu-amd': 'true',
                             },
                             matchAny: [

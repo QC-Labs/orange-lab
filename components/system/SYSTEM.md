@@ -270,7 +270,7 @@ For NVIDIA GPUs:
 
 For AMD GPUs:
 
--   `orangelab/gpu: "amd"`
+-   `orangelab/gpu: "true"`
 -   `orangelab/gpu-amd: "true"`
 
 These labels can be used for node selection in applications.

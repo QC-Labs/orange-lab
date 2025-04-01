@@ -44,7 +44,7 @@ export class AmdGPUOperator extends pulumi.ComponentResource {
                 values: {
                     kmm: { enabled: true },
                     installdefaultNFDRule: false,
-                    nodeSelector: { 'orangelab/gpu': 'amd' },
+                    nodeSelector: { 'orangelab/gpu-amd': 'true' },
                     'node-feature-discovery': { enabled: false },
                 },
             },
@@ -63,7 +63,7 @@ export class AmdGPUOperator extends pulumi.ComponentResource {
                     driver: { enable: false },
                     devicePlugin: { enableNodeLabeller: true },
                     metricsExporter: { enable: this.args.enableMonitoring },
-                    selector: { 'orangelab/gpu': 'amd' },
+                    selector: { 'orangelab/gpu-amd': 'true' },
                     testRunner: { enable: false },
                 },
             },

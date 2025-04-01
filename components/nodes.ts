@@ -44,10 +44,10 @@ export class Nodes {
         }
 
         if (this.args.gpu === 'amd') {
-            terms.push(this.getNodeSelectorTerm('orangelab/gpu=amd'));
+            terms.push(this.getNodeSelectorTerm('orangelab/gpu-amd=true'));
         }
         if (this.args.gpu === 'nvidia') {
-            terms.push(this.getNodeSelectorTerm('orangelab/gpu=true|nvidia'));
+            terms.push(this.getNodeSelectorTerm('orangelab/gpu-nvidia=true'));
         }
         return terms;
     }

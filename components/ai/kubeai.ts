@@ -78,19 +78,12 @@ export class KubeAi extends pulumi.ComponentResource {
                     resourceProfiles: {
                         nvidia: {
                             runtimeClassName: 'nvidia',
-                            nodeSelector: {
-                                'orangelab/gpu': 'true',
-                                'nvidia.com/gpu.present': 'true',
-                            },
+                            nodeSelector: { 'orangelab/gpu-nvidia': 'true' },
                         },
                         amd: {
                             imageName: 'amd-gpu',
-                            nodeSelector: {
-                                'orangelab/gpu': 'amd',
-                            },
-                            limits: {
-                                'amd.com/gpu': 1,
-                            },
+                            nodeSelector: { 'orangelab/gpu-amd': 'true' },
+                            limits: { 'amd.com/gpu': 1 },
                         },
                     },
                     secrets: { huggingface: { token: huggingfaceToken } },
