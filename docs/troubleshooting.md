@@ -3,8 +3,8 @@
 It's easiest to use _Headlamp_ or _k9s_ to connect to cluster. Below are some useful commands when troubleshooting issues.
 
 ```sh
-# Check logs of the app
-kubectl logs -l app=<app> -n <app> -f
+# Check logs of the app, namespace optional if same as app name
+./scripts/logs.sh <app> [namespace]
 
 # Watch cluster events
 kubectl events -A -w
