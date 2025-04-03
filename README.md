@@ -64,63 +64,29 @@ Not a tested configuration but feedback welcome. The issue is Longhorn, which on
 
 Steps to disable Longhorn and switch to `local-path-provisioner` at [install-system.md](./components/system/SYSTEM.md#disable-longhorn)
 
-NVIDIA and AMD GPUs are supported. See [AMD GPU support](/docs/amd-gpu.md) for more information on AMD GPUs.
+Both NVIDIA and AMD GPUs are supported. See [AMD GPU support](/docs/amd-gpu.md) for more information.
 
 # Installation
 
-## Initial cluster setup
+## Cluster setup
 
-The first time you configure the cluster, it's best to run `pulumi up` after each component. Make sure all pods are running fine before moving to next step.
-
-Click on the links for detailed instructions:
-
-1.  configure Pulumi and Tailscale on management node [docs/install.md](docs/install.md)
-2.  _(optional)_ configure SSH on nodes for easier access [docs/install-ssh.mc](docs/install-ssh.md)
-3.  install K3s and label nodes [docs/install-k3s.md](docs/install-k3s.md)
-4.  deploy system components [components/system/SYSTEM.md](./components/system/SYSTEM.md)
+-   [Installation - Setup Guide](./docs/install.md) - Initial Pulumi and Tailscale setup
+-   (optional) [Installation - SSH Configuration](./docs/install-ssh.md) - Configure SSH keys on nodes for easier access
+-   [Installation - K3s Cluster](./docs/install-k3s.md) - Install Kubernetes cluster and label nodes
+-   Deploy system components [components/system/SYSTEM.md](./components/system/SYSTEM.md)
 
 ## Deploying applications
 
-After system components have been deployed, you can add any of the optional [#Applications](#applications).
+After system components have been deployed, you can add any of the optional [#Applications](#applications). Details in each module documentation.
 
-All available settings can be found in `Pulumi.yaml`. Override defaults with `pulumi config` or by directly modifying `Pulumi.<stack>.yaml`.
-
-```sh
-# enable app
-pulumi config set <app>:enabled true
-
-# configure app-specific settings from Pulumi.yaml if needed
-pulumi config set ollama:hostname ollama-api
-pulumi config set ollama:storageSize 100Gi
-
-# deploy
-pulumi up
-# or
-pulumi up -r # --refresh Pulumi state if out of sync
-
-# Make request to provision HTTP certificate and activate endpoint
-curl https://<app>.<tsnet>.ts.net/
-```
-
-## Enable/disable applications
-
-To remove an application, set the `enabled` flag to `false`. This will remove all resources associated with the app.
-
-To keep storage around (for example downloaded ollama models) but remove all other resources, use `storageOnly`:
-
-```sh
-# Remove application including storage
-pulumi config set <app>:enabled false
-pulumi up
-
-# Remove application resources but keep related storage
-pulumi config set <app>:enabled true
-pulumi config set <app>:storageOnly true
-pulumi up
-```
+For general application configuration and deployment instructions, see [Configuration Guide](./docs/configuration.md).
 
 # Documentation
 
-- [AMD GPU support](./docs/amd-gpu.md) - Using AMD GPUs with OrangeLab
-- [Backup and Restore](./docs/backup.md) - Using Longhorn backups with S3 storage
-- [Troubleshooting](./docs/troubleshooting.md) - Common issues and solutions
+-   [Installation - Setup Guide](./docs/install.md) - Initial Pulumi and Tailscale setup
+-   [Installation - SSH Configuration](./docs/install-ssh.md) - Configure SSH keys on nodes
+-   [Installation - K3s Cluster](./docs/install-k3s.md) - Install and configure Kubernetes cluster and label nodes
+-   [Configuration Guide](./docs/configuration.md) - Application configuration and settings
+-   [AMD GPU support](./docs/amd-gpu.md) - Using AMD GPUs with OrangeLab
+-   [Backup and Restore](./docs/backup.md) - Using Longhorn backups with S3 storage
+-   [Troubleshooting](./docs/troubleshooting.md) - Common issues and solutions

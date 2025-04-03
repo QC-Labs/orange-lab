@@ -2,6 +2,18 @@
 
 Core components required before any other apps can de deployed.
 
+The first time you configure the cluster, it's best to run `pulumi up` after each component. Make sure all pods are running fine before moving to next step.
+
+**Tailscale operator** used for internal HTTPS endpoints.
+
+**Longhorn** required for storage nodes and only runs on Linux. You can use local storage when using MacOS, Windows or when running single node only.
+
+**MinIO** also required for automatic backups.
+
+To run GPU workloads, either **NVidia or AMD operator** has to be installed.
+
+**NFD** will also be installed for automatic detection of nodes with GPU hardware.
+
 Recommended setup/tldr:
 
 ```sh
@@ -172,7 +184,7 @@ pulumi config set longhorn:enabled false
 pulumi up
 ```
 
-## Minio (Optional)
+## Minio
 
 |              |                                                         |
 | ------------ | ------------------------------------------------------- |

@@ -9,17 +9,7 @@ config:
     # Below is list of all settings with default values assuming a single node cluster.
     # Do NOT modify this file but add overrides in your Pulumi.<stack>.yaml.
 
-    # Standard settings supported by most apps:
-    # - enabled (enable/disable app)
-    # - hostname (hostname for HTTPS endpoint)
-    # - version (lock Helm chart version, use latest if not specified)
-    # - storageOnly (disable app but retain storage)
-    # - storageSize (expand default storage size if needed)
-    # - fromVolume (attach existing Longhorn volume)
-    # - storageClass (force storage class used by app)
-    # - preferredNodeLabel (deploy to node with specified label if exists)
-    # - requiredNodeLabel (deploy only to node with specified label)
-    # - backupVolume (enable volume backups to S3)
+    # Common settings supported by apps at ./docs/configuration.md
 
     ### SYSTEM ###
 
@@ -120,8 +110,8 @@ config:
     # Override GPU version for ROCm compatibility
     # ollama:HSA_OVERRIDE_GFX_VERSION: "11.0.2"
     # LLM parameter tuning (-1 = keep models loaded indefinitely)
-    ollama:OLLAMA_KEEP_ALIVE: "30m"
-    ollama:OLLAMA_CONTEXT_LENGTH: "32768"
+    ollama:OLLAMA_KEEP_ALIVE: '30m'
+    ollama:OLLAMA_CONTEXT_LENGTH: '32768'
 
     automatic1111:enabled: false
     automatic1111:hostname: 'automatic1111'
