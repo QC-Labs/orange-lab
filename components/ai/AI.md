@@ -22,9 +22,15 @@ pulumi up
 | Endpoints             | `https://ollama.<tsnet>.ts.net/`                               |
 | Environment variables | https://github.com/ollama/ollama/blob/main/envconfig/config.go |
 
+Ollama requires to be run on GPU nodes. You need to install NVidia or AMD operator first.
+
+For detailed AMD GPU setup, see the [AMD GPU Guide](/docs/amd-gpu.md).
+
 ```sh
 # Enable NVidia integration
 pulumi config set nvidia-gpu-operator:enabled true
+# or AMD
+pulumi config set amd-gpu-operator:enabled true
 
 # Increase volume size if needed for bigger models (50 by default, can be expanded later)
 pulumi config set ollama:storageSize "100Gi"
@@ -33,7 +39,7 @@ pulumi config set ollama:storageSize "100Gi"
 pulumi config set ollama:models "qwen2.5-coder:1.5b,llama3.2"
 
 # Configure model keep-alive (-1 = keep loaded indefinitely)
-pulumi config set ollama:OLLAMA_KEEP_ALIVE "-1"
+pulumi config set ollama:OLLAMA_KEEP_ALIVE "1h"
 
 # Configure maximum context length
 pulumi config set ollama:OLLAMA_CONTEXT_LENGTH "65536"
@@ -48,24 +54,6 @@ You can disable the app but keep model storage with:
 
 ```sh
 pulumi config set ollama:storageOnly true
-pulumi up
-```
-
-### AMD GPU support
-
-https://github.com/ollama/ollama/blob/main/docs/gpu.md#overrides-on-linux
-
-```sh
-# Enable AMD GPU support
-pulumi config set amd-gpu:enabled true
-pulumi up
-
-pulumi config set ollama:enabled true
-# Switch to ROCm image
-pulumi config set ollama:amd-gpu true
-# Override version if not detected, f.e. Radeon 780M (glx1103)
-pulumi config set ollama:HSA_OVERRIDE_GFX_VERSION "11.0.2"
-
 pulumi up
 ```
 

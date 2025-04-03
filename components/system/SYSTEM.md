@@ -349,9 +349,10 @@ pulumi up
 For applications like Ollama using AMD GPUs, you may need to set `amd-gpu` to true as the docker images used are different:
 
 ```sh
-#
 pulumi config set ollama:amd-gpu true
 ```
+
+For detailed information, see the [AMD GPU Guide](/docs/amd-gpu.md).
 
 ### Uninstall
 

@@ -28,8 +28,11 @@ Private infrastructure for cloud natives.
 
 [System module](./components/system/SYSTEM.md):
 
+-   `amd-gpu-operator` - AMD GPU support
+-   `cert-manager` - certificate management
 -   `longhorn` - replicated storage
 -   `minio` - S3-compatible storage (used as Longhorn backup target)
+-   `nfd` - Node Feature Discovery (GPU autodetection)
 -   `nvidia-gpu-operator` - NVidia GPU support
 -   `tailscale-operator` - ingress support with Tailscale authentication
 
@@ -61,7 +64,7 @@ Not a tested configuration but feedback welcome. The issue is Longhorn, which on
 
 Steps to disable Longhorn and switch to `local-path-provisioner` at [install-system.md](./components/system/SYSTEM.md#disable-longhorn)
 
-Currently only NVidia GPUs are supported.
+NVIDIA and AMD GPUs are supported. See [AMD GPU support](/docs/amd-gpu.md) for more information on AMD GPUs.
 
 # Installation
 
@@ -118,5 +121,6 @@ pulumi up
 
 # Documentation
 
+- [AMD GPU support](./docs/amd-gpu.md) - Using AMD GPUs with OrangeLab
 - [Backup and Restore](./docs/backup.md) - Using Longhorn backups with S3 storage
 - [Troubleshooting](./docs/troubleshooting.md) - Common issues and solutions
