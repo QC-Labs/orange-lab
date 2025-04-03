@@ -38,7 +38,12 @@ export class Ollama extends pulumi.ComponentResource {
     private createHelmRelease(hostname: string) {
         const amdGpu = this.config.requireBoolean('amd-gpu');
         const gfxVersion = this.config.get('HSA_OVERRIDE_GFX_VERSION');
-        const extraEnv = [{ name: 'OLLAMA_DEBUG', value: 'false' }];
+        const extraEnv = [
+            { name: 'OLLAMA_DEBUG', value: 'false' },
+            { name: 'OLLAMA_KEEP_ALIVE', value: this.config.get('OLLAMA_KEEP_ALIVE') ?? '5m' },
+            { name: 'OLLAMA_LOAD_TIMEOUT', value: '5m' },
+            { name: 'OLLAMA_CONTEXT_LENGTH', value: this.config.get('OLLAMA_CONTEXT_LENGTH') ?? '2048' },
+        ];
         if (amdGpu && gfxVersion) {
             extraEnv.push({
                 name: 'HSA_OVERRIDE_GFX_VERSION',
@@ -64,8 +69,8 @@ export class Ollama extends pulumi.ComponentResource {
                             type: amdGpu ? 'amd' : 'nvidia',
                             number: 1,
                         },
-                        models: { 
-                            run: this.config.get('models')?.split(',') ?? [] 
+                        models: {
+                            run: this.config.get('models')?.split(',') ?? [],
                         },
                     },
                     replicaCount: 1,

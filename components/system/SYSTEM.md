@@ -327,11 +327,12 @@ pulumi up
 
 ## AMD GPU operator
 
-|             |                                                                        |
-| ----------- | ---------------------------------------------------------------------- |
-| Homepage    | https://github.com/ROCm/gpu-operator                                   |
-| Docs        | https://instinct.docs.amd.com/projects/gpu-operator                    |
-| Helm values | https://github.com/ROCm/gpu-operator/blob/main/helm-charts/values.yaml |
+|                  |                                                                                     |
+| ---------------- | ----------------------------------------------------------------------------------- |
+| Homepage         | https://github.com/ROCm/gpu-operator                                                |
+| Docs             | https://instinct.docs.amd.com/projects/gpu-operator                                 |
+| Helm values      | https://github.com/ROCm/gpu-operator/blob/main/helm-charts/values.yaml              |
+| DeviceConfig ref | https://instinct.docs.amd.com/projects/gpu-operator/en/latest/fulldeviceconfig.html |
 
 This component is needed to run GPU workloads using AMD devices with ROCm support.
 
