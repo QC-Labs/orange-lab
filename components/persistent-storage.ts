@@ -62,36 +62,36 @@ export class PersistentStorage extends pulumi.ComponentResource {
             !(args.fromVolume && args.fromBackup),
             'Either use fromVolume or fromBackup',
         );
-        
+
         let backupStorageClass;
         if (args.fromBackup) {
             backupStorageClass = this.createBackupStorageClass();
         }
-        
+
         const existingVolume = args.fromVolume
             ? this.createPV({
                   name: args.name,
                   volumeHandle: args.fromVolume,
               })
             : undefined;
-            
+
         const storageClass =
             existingVolume?.spec.storageClassName ??
             backupStorageClass ??
             args.storageClass ??
             PersistentStorage.getStorageClass(this.args.type) ??
             Longhorn.defaultStorageClass;
-            
+
         this.createPVC({
             name: args.name,
             storageClass,
             existingVolume,
             cloneFromClaim: args.cloneFromClaim,
         });
-        
+
         this.volumeClaimName = args.name;
     }
-    
+
     private createBackupStorageClass(): pulumi.Output<string> {
         const restored = new kubernetes.storage.v1.StorageClass(`${this.name}-sc`, {
             metadata: {
@@ -99,13 +99,14 @@ export class PersistentStorage extends pulumi.ComponentResource {
                 namespace: 'longhorn-system',
             },
             provisioner: 'driver.longhorn.io',
+            allowVolumeExpansion: true,
             parameters: {
                 numberOfReplicas: '1',
                 ...(this.args.fromBackup && { fromBackup: this.args.fromBackup }),
             },
             volumeBindingMode: 'WaitForFirstConsumer',
         });
-        
+
         return restored.metadata.name;
     }
 
