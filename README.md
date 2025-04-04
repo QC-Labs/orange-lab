@@ -68,14 +68,11 @@ Both NVIDIA and AMD GPUs are supported. See [AMD GPU support](/docs/amd-gpu.md) 
 
 # Installation
 
-## Cluster setup
-
 -   [Installation - Setup Guide](./docs/install.md) - Initial Pulumi and Tailscale setup
--   (optional) [Installation - SSH Configuration](./docs/install-ssh.md) - Configure SSH keys on nodes for easier access
+-   [Installation - SSH Configuration](./docs/install-ssh.md) (optional) - Configure SSH keys on nodes for easier access
+-   [Installation - Node Configuration](./docs/install-nodes.md) - Configure nodes (firewall, suspend settings)
 -   [Installation - K3s Cluster](./docs/install-k3s.md) - Install Kubernetes cluster and label nodes
--   Deploy system components [components/system/SYSTEM.md](./components/system/SYSTEM.md)
-
-## Deploying applications
+-   [components/system/SYSTEM.md](./components/system/SYSTEM.md) - Deploy system components
 
 After system components have been deployed, you can add any of the optional [#Applications](#applications). Details in each module documentation.
 
@@ -83,10 +80,7 @@ For general application configuration and deployment instructions, see [Configur
 
 # Documentation
 
--   [Installation - Setup Guide](./docs/install.md) - Initial Pulumi and Tailscale setup
--   [Installation - SSH Configuration](./docs/install-ssh.md) - Configure SSH keys on nodes
--   [Installation - K3s Cluster](./docs/install-k3s.md) - Install and configure Kubernetes cluster and label nodes
--   [Configuration Guide](./docs/configuration.md) - Application configuration and settings
+-   [Configuration Guide](./docs/configuration.md) - Application configuration and deployment
 -   [AMD GPU support](./docs/amd-gpu.md) - Using AMD GPUs with OrangeLab
 -   [Backup and Restore](./docs/backup.md) - Using Longhorn backups with S3 storage
 -   [Troubleshooting](./docs/troubleshooting.md) - Common issues and solutions
