@@ -6,13 +6,13 @@ The first time you configure the cluster, it's best to run `pulumi up` after eac
 
 **Tailscale operator** used for internal HTTPS endpoints.
 
-**Longhorn** required for storage nodes and only runs on Linux. You can use local storage when using MacOS, Windows or when running single node only.
+**Longhorn** required for storage nodes but only runs on Linux. You can use local storage when using MacOS, Windows or when running [single node](../../docs/single-node.md) only.
 
-**MinIO** also required for automatic backups.
+**MinIO** is used by Longhorn and required for automatic backups.
 
 To run GPU workloads, either **NVidia or AMD operator** has to be installed.
 
-**NFD** will also be installed for automatic detection of nodes with GPU hardware.
+**NFD** is used for automatic detection of nodes with GPU hardware.
 
 Recommended setup/tldr:
 
@@ -139,36 +139,11 @@ pulumi up
 
 Longhorn supports automated backups to S3-compatible storage (MinIO). For detailed instructions on setting up and using backups, see [Backup Guide](/docs/backup.md).
 
-```sh
-# Enable backups based on schedule
-pulumi config set longhorn:backupEnabled true
+### Disable Longhorn
 
-# (Optional) Enable automatic backups for all volumes
-pulumi config set longhorn:backupAllVolumes true
+Longhorn requires Linux and works best with multiple nodes for replication.
 
-# (Optional) or just enable backup for single app
-pulumi config set ollama:backupVolume true
-
-pulumi up
-```
-
-### Disable Longhorn (not recommended)
-
-Longhorn requires Linux so when running Windows or MacOS you can disable it and use `local-path` storage class instead.
-This is also useful when running a single-node cluster as Longhorn adds some overhead and extra containers. Note that disabling Longhorn will mean that replicated storage won't be available.
-
-When using the local provisioner, the persistent volumes will be stored in `/var/lib/rancher/k3s/storage`.
-
-On SELinux systems, if deployment fails due to directory creation permissions on `/var/lib/rancher/k3s/storage/` you can temporarily loosen SELinux restrictions with `sudo setenforce 0` and then set it back to `1` when completed.
-
-To override the storage classes used run:
-
-```sh
-pulumi config set longhorn:enabled false
-pulumi config set orangelab:storageClass local-path
-pulumi config set orangelab:storageClass-gpu local-path
-pulumi up
-```
+For single-node deployments, non-Linux platforms (Windows, macOS), or systems with limited resources, see the [Disabling Longhorn Guide](/docs/longhorn-disable.md) for detailed instructions.
 
 ### Uninstall
 

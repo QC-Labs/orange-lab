@@ -59,10 +59,9 @@ Private infrastructure for cloud natives.
 Installation instructions assume your machines are running Bluefin (Developer edition, https://projectbluefin.io/) based on Fedora Silverblue unless otherwise noted.
 It should run on any modern Linux distribution with Linux kernel 6.11.6+, even including Raspberry Pi.
 
-Windows and MacOS support is limited. K3s requires Linux to run workloads using _containerd_ directly, however you could have some luck running https://k3d.io/ which uses Docker wrapper to run some containers as long as they do not use persistent storage.
-Not a tested configuration but feedback welcome. The issue is Longhorn, which only runs on Linux. More info at https://github.com/k3d-io/k3d/blob/main/docs/faq/faq.md#longhorn-in-k3d
+Windows and MacOS support is limited, specifically they cannot be used as storage nodes.
 
-Steps to disable Longhorn and switch to `local-path-provisioner` at [install-system.md](./components/system/SYSTEM.md#disable-longhorn)
+See [Disabling Longhorn Guide](./docs/longhorn-disable.md) with instructions on using `local-path-provisioner` instead of Longhorn.
 
 Both NVIDIA and AMD GPUs are supported. See [AMD GPU support](/docs/amd-gpu.md) for more information.
 
@@ -81,6 +80,7 @@ For general application configuration and deployment instructions, see [Configur
 # Documentation
 
 -   [Configuration Guide](./docs/configuration.md) - Application configuration and deployment
+-   [Disabling Longhorn](./docs/longhorn-disable.md) - Running OrangeLab without distributed storage
 -   [AMD GPU support](./docs/amd-gpu.md) - Using AMD GPUs with OrangeLab
 -   [Backup and Restore](./docs/backup.md) - Using Longhorn backups with S3 storage
 -   [Troubleshooting](./docs/troubleshooting.md) - Common issues and solutions
