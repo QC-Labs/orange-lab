@@ -53,19 +53,20 @@ export class Volumes {
         const storage = new PersistentStorage(
             `${volumeName}-storage`,
             {
-                name: volumeName,
-                namespace: this.namespace,
-                size: volume?.size ?? this.config.require('storageSize'),
-                type: volume?.type ?? PersistentStorageType.Default,
-                storageClass: this.config.get('storageClass'),
-                fromVolume: volume?.fromVolume ?? this.config.get('fromVolume'),
                 cloneFromClaim: volume?.cloneFromClaim,
                 enableBackup: this.config.getBoolean('backupVolume'),
                 fromBackup: this.config.get('fromBackup'),
+                fromVolume: volume?.fromVolume ?? this.config.get('fromVolume'),
+                name: volumeName,
+                namespace: this.namespace,
+                size: volume?.size ?? this.config.require('storageSize'),
+                storageClass: this.config.get('storageClass'),
+                type: volume?.type ?? PersistentStorageType.Default,
             },
             { parent: this.scope },
         );
         this.persistentStorage.set(volumeName, storage);
+
         this.volumes.set(volumeName, {
             name: volumeName,
             persistentVolumeClaim: { claimName: storage.volumeClaimName },
@@ -77,6 +78,13 @@ export class Volumes {
         const storage = this.persistentStorage.get(volumeName);
         assert(storage, `Storage ${volumeName} not found`);
         return storage.volumeClaimName;
+    }
+
+    getStorageClass(storageName?: string): pulumi.Output<string> {
+        const volumeName = storageName ? `${this.appName}-${storageName}` : this.appName;
+        const storage = this.persistentStorage.get(volumeName);
+        assert(storage, `Storage ${volumeName} not found`);
+        return storage.storageClassName;
     }
 
     hasLocal(): boolean {

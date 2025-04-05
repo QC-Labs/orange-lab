@@ -43,6 +43,7 @@ interface PersistentStorageArgs {
 
 export class PersistentStorage extends pulumi.ComponentResource {
     volumeClaimName: string;
+    storageClassName: pulumi.Output<string>;
 
     constructor(
         private name: string,
@@ -62,6 +63,13 @@ export class PersistentStorage extends pulumi.ComponentResource {
             !(args.fromVolume && args.fromBackup),
             'Either use fromVolume or fromBackup',
         );
+        assert(
+            !(
+                args.storageClass &&
+                (args.fromVolume ?? args.fromBackup ?? args.cloneFromClaim)
+            ),
+            'Cannot specify fromVolume, cloneFromClaim, fromBackup when using custom storageClass',
+        );
 
         let backupStorageClass;
         if (args.fromBackup) {
@@ -75,20 +83,21 @@ export class PersistentStorage extends pulumi.ComponentResource {
               })
             : undefined;
 
-        const storageClass =
-            existingVolume?.spec.storageClassName ??
-            backupStorageClass ??
-            args.storageClass ??
-            PersistentStorage.getStorageClass(this.args.type) ??
-            Longhorn.defaultStorageClass;
+        this.storageClassName = pulumi
+            .output(
+                existingVolume?.spec.storageClassName ??
+                    backupStorageClass ??
+                    args.storageClass ??
+                    PersistentStorage.getStorageClass(this.args.type) ??
+                    Longhorn.defaultStorageClass,
+            )
+            .apply(sc => sc);
 
         this.createPVC({
             name: args.name,
-            storageClass,
             existingVolume,
             cloneFromClaim: args.cloneFromClaim,
         });
-
         this.volumeClaimName = args.name;
     }
 
@@ -114,10 +123,8 @@ export class PersistentStorage extends pulumi.ComponentResource {
         name,
         existingVolume,
         cloneFromClaim,
-        storageClass,
     }: {
         name: string;
-        storageClass: pulumi.Input<string>;
         existingVolume?: kubernetes.core.v1.PersistentVolume;
         cloneFromClaim?: string;
     }) {
@@ -137,7 +144,7 @@ export class PersistentStorage extends pulumi.ComponentResource {
                 },
                 spec: {
                     accessModes: ['ReadWriteOnce'],
-                    storageClassName: storageClass,
+                    storageClassName: this.storageClassName,
                     dataSource: cloneFromClaim
                         ? {
                               kind: 'PersistentVolumeClaim',

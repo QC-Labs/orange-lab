@@ -6,7 +6,7 @@ runtime:
         packagemanager: npm
 description: Private infrastructure for cloud natives
 config:
-    # Below is list of all settings with default values assuming a single node cluster.
+    # Below is list of all settings with default values.
     # Do NOT modify this file but add overrides in your Pulumi.<stack>.yaml.
 
     # Common settings supported by apps at ./docs/configuration.md

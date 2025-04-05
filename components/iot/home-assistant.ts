@@ -1,7 +1,6 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
-import { PersistentStorage } from '../persistent-storage';
 
 export interface HomeAssistantArgs {
     domainName: string;
@@ -17,9 +16,10 @@ export class HomeAssistant extends pulumi.ComponentResource {
         const config = new pulumi.Config('home-assistant');
         const version = config.get('version');
         const hostname = config.require('hostname');
-        const storageClass = config.get('storageClass');
 
-        const app = new Application(this, name, { domainName: args.domainName });
+        const app = new Application(this, name, {
+            domainName: args.domainName,
+        }).addStorage({ name: `${name}-0` });
 
         if (app.storageOnly) return;
 
@@ -35,18 +35,14 @@ export class HomeAssistant extends pulumi.ComponentResource {
                 values: {
                     affinity: app.nodes.getAffinity(),
                     hostNetwork: true,
+                    fullnameOverride: name,
                     ingress: {
                         enabled: true,
                         className: 'tailscale',
                         hosts: [
                             {
                                 host: hostname,
-                                paths: [
-                                    {
-                                        path: '/',
-                                        pathType: 'ImplementationSpecific',
-                                    },
-                                ],
+                                paths: [{ path: '/', pathType: 'Prefix' }],
                             },
                         ],
                         tls: [{ hosts: [hostname] }],
@@ -57,7 +53,7 @@ export class HomeAssistant extends pulumi.ComponentResource {
                     },
                     persistence: {
                         enabled: true,
-                        storageClass: storageClass ?? PersistentStorage.getStorageClass(),
+                        storageClass: app.volumes.getStorageClass(`${name}-0`),
                     },
                     replicaCount: 1,
                 },
