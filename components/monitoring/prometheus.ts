@@ -1,5 +1,6 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
+import { Application } from '../application';
 import { Nodes } from '../nodes';
 import { PersistentStorage } from '../persistent-storage';
 
@@ -14,6 +15,7 @@ export class Prometheus extends pulumi.ComponentResource {
 
     private readonly config: pulumi.Config;
     private readonly nodes: Nodes;
+    private readonly app: Application;
 
     constructor(name: string, args: PrometheusArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:monitoring:Prometheus', name, args, opts);
@@ -26,28 +28,20 @@ export class Prometheus extends pulumi.ComponentResource {
         const alertManagerHostname = this.config.require('hostname-alert-manager');
         const grafanaHostname = this.config.require('hostname-grafana');
 
-        const namespace = new kubernetes.core.v1.Namespace(
-            `${name}-ns`,
-            { metadata: { name } },
-            { parent: this },
-        );
+        this.app = new Application(this, name, {
+            domainName: args.domainName,
+        });
 
-        const grafanaStorage = new PersistentStorage(
-            `${name}-grafana-storage`,
-            {
-                name: `${name}-grafana`,
-                namespace: namespace.metadata.name,
-                size: '10Gi',
-            },
-            { parent: this },
-        );
+        this.app.addStorage({ name: 'grafana', size: '10Gi' });
+        
+        if (this.app.storageOnly) return;
 
         new kubernetes.helm.v3.Release(
             name,
             {
                 chart: 'kube-prometheus-stack',
                 version,
-                namespace: namespace.metadata.name,
+                namespace: this.app.namespace,
                 repositoryOpts: {
                     repo: 'https://prometheus-community.github.io/helm-charts',
                 },
@@ -88,7 +82,7 @@ export class Prometheus extends pulumi.ComponentResource {
                         },
                         persistence: {
                             enabled: true,
-                            existingClaim: grafanaStorage.volumeClaimName,
+                            existingClaim: this.app.volumes.getClaimName('grafana'),
                         },
                     },
                     kubeControllerManager: { serviceMonitor: { https: false } },
