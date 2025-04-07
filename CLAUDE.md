@@ -14,6 +14,8 @@
 -   TypeScript with strict type checking
 -   Pulumi for infrastructure as code
 -   Modular architecture with clear separation of concerns
+-   Prefer self-documenting code over comments
+-   Use descriptive variable names and clear function signatures
 
 ### Naming Conventions
 
@@ -48,3 +50,4 @@
 -   For Helm charts, use Application class for namespaces and storage
 -   Follow the established pattern for new modules and components
 -   Use constructor parameter properties with access modifiers (e.g., `constructor(private readonly args: Args)`)
+-   Prefer composition over inheritance for component relationships
