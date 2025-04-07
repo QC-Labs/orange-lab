@@ -39,6 +39,10 @@ interface PersistentStorageArgs {
      * Location of the backup volume
      */
     fromBackup?: string;
+    /**
+     * Labels to apply to the volume
+     */
+    labels?: Record<string, string>;
 }
 
 export class PersistentStorage extends pulumi.ComponentResource {
@@ -128,19 +132,21 @@ export class PersistentStorage extends pulumi.ComponentResource {
         existingVolume?: kubernetes.core.v1.PersistentVolume;
         cloneFromClaim?: string;
     }) {
+        const labels = { ...(this.args.labels ?? {}) };
+
+        if (this.args.enableBackup) {
+            labels['recurring-job.longhorn.io/source'] = 'enabled';
+            labels['recurring-job-group.longhorn.io/default'] = 'enabled';
+            labels['recurring-job-group.longhorn.io/backup'] = 'enabled';
+        }
+
         new kubernetes.core.v1.PersistentVolumeClaim(
             `${this.name}-pvc`,
             {
                 metadata: {
                     name,
                     namespace: this.args.namespace,
-                    labels: this.args.enableBackup
-                        ? {
-                              'recurring-job.longhorn.io/source': 'enabled',
-                              'recurring-job-group.longhorn.io/default': 'enabled',
-                              'recurring-job-group.longhorn.io/backup': 'enabled',
-                          }
-                        : undefined,
+                    labels,
                 },
                 spec: {
                     accessModes: ['ReadWriteOnce'],

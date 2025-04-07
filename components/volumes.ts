@@ -1,6 +1,7 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
+import { Metadata } from './metadata';
 import { PersistentStorage, PersistentStorageType } from './persistent-storage';
 
 export interface LocalVolume {
@@ -23,6 +24,7 @@ export class Volumes {
     private readonly config: pulumi.Config;
     private readonly namespace: string;
     private readonly scope: pulumi.ComponentResource;
+    private readonly metadata: Metadata;
 
     constructor(
         private readonly appName: string,
@@ -30,11 +32,13 @@ export class Volumes {
             readonly scope: pulumi.ComponentResource;
             readonly config: pulumi.Config;
             readonly namespace: string;
+            readonly metadata: Metadata;
         },
     ) {
         this.config = args.config;
         this.namespace = args.namespace;
         this.scope = args.scope;
+        this.metadata = args.metadata;
     }
 
     create(): kubernetes.types.input.core.v1.Volume[] {
@@ -57,6 +61,9 @@ export class Volumes {
                 enableBackup: this.config.getBoolean('backupVolume'),
                 fromBackup: this.config.get('fromBackup'),
                 fromVolume: volume?.fromVolume ?? this.config.get('fromVolume'),
+                labels: volume?.name
+                    ? this.metadata.getForComponent(volume.name).labels
+                    : this.metadata.get().labels,
                 name: volumeName,
                 namespace: this.namespace,
                 size: volume?.size ?? this.config.require('storageSize'),
