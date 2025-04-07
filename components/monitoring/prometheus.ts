@@ -23,10 +23,10 @@ export class Prometheus extends pulumi.ComponentResource {
         this.config = new pulumi.Config('prometheus');
         this.nodes = new Nodes({ config: this.config });
         const version = this.config.get('version');
-        const grafanaPassword = this.config.require('grafana-password');
-        const prometheusHostname = this.config.require('hostname-prometheus');
-        const alertManagerHostname = this.config.require('hostname-alert-manager');
-        const grafanaHostname = this.config.require('hostname-grafana');
+        const grafanaPassword = this.config.require('grafana/password');
+        const prometheusHostname = this.config.require('hostname');
+        const alertManagerHostname = this.config.require('alertmanager/hostname');
+        const grafanaHostname = this.config.require('grafana/hostname');
 
         this.app = new Application(this, name, {
             domainName: args.domainName,

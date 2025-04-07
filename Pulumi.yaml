@@ -70,10 +70,10 @@ config:
 
     prometheus:enabled: false
     prometheus:requiredNodeLabel: orangelab/prometheus=true
-    prometheus:grafana-password: admin
-    prometheus:hostname-prometheus: prometheus
-    prometheus:hostname-alert-manager: alertmanager
-    prometheus:hostname-grafana: grafana
+    prometheus:grafana/password: admin
+    prometheus:hostname: prometheus
+    prometheus:alertmanager/hostname: alertmanager
+    prometheus:grafana/hostname: grafana
     # Additional monitoring for installed components that support it.
     # Only enable once Prometheus has been installed
     # This has to be disabled first before Prometheus can be removed
@@ -94,6 +94,7 @@ config:
     home-assistant:enabled: false
     home-assistant:hostname: home-assistant
     home-assistant:storageSize: 5Gi
+    home-assistant:home-assistant-0/storageSize: 5Gi
     # Set zone for deployment on nodes with topology.kubernetes.io/zone=<value> label
     # This gives access to sensors on local host network
     # home-assistant:requiredNodeLabel: topology.kubernetes.io/zone=<value>

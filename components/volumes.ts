@@ -54,20 +54,22 @@ export class Volumes {
 
     addPersistentVolume(volume?: PersistentVolume) {
         const volumeName = volume?.name ? `${this.appName}-${volume.name}` : this.appName;
+        const prefix = volume?.name ? `${volume.name}/` : '';
+
         const storage = new PersistentStorage(
             `${volumeName}-storage`,
             {
                 cloneFromClaim: volume?.cloneFromClaim,
-                enableBackup: this.config.getBoolean('backupVolume'),
-                fromBackup: this.config.get('fromBackup'),
-                fromVolume: volume?.fromVolume ?? this.config.get('fromVolume'),
+                enableBackup: this.config.getBoolean(`${prefix}backupVolume`),
+                fromBackup: this.config.get(`${prefix}fromBackup`),
+                fromVolume: volume?.fromVolume ?? this.config.get(`${prefix}fromVolume`),
                 labels: volume?.name
                     ? this.metadata.getForComponent(volume.name).labels
                     : this.metadata.get().labels,
                 name: volumeName,
                 namespace: this.namespace,
-                size: volume?.size ?? this.config.require('storageSize'),
-                storageClass: this.config.get('storageClass'),
+                size: volume?.size ?? this.config.require(`${prefix}storageSize`),
+                storageClass: this.config.get(`${prefix}storageClass`),
                 type: volume?.type ?? PersistentStorageType.Default,
             },
             { parent: this.scope },
