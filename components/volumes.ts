@@ -11,11 +11,43 @@ export interface LocalVolume {
 }
 
 export interface PersistentVolume {
+    /**
+     * The optional name suffix for the volume.
+     * If provided, the full volume name will be `${appName}-${name}`.
+     * If not provided, the `appName` will be used as the volume name.
+     * This name also acts as a prefix for configuration lookups (e.g., `<name>/storageSize`).
+     */
     name?: string;
+    /**
+     * The desired size of the persistent volume (e.g., "10Gi", "100Mi").
+     * If not provided, the value will be sourced from the Pulumi config key
+     * `${name}/storageSize` or `storageSize` if `name` is not set.
+     */
     size?: string;
+    /**
+     * The type of persistent storage to use.
+     * Defaults to `PersistentStorageType.Default` if not specified.
+     */
     type?: PersistentStorageType;
+    /**
+     * Specifies an existing volume name to potentially restore data from.
+     * This is typically used in conjunction with backup/restore mechanisms.
+     * If not provided, the value might be sourced from the Pulumi config key
+     * `${name}/fromVolume` or `fromVolume` if `name` is not set.
+     */
     fromVolume?: string;
+    /**
+     * Specifies the name of an existing PersistentVolumeClaim (PVC) from which to clone data.
+     * This directly populates the `dataSource` field of the new PVC.
+     */
     cloneFromClaim?: string;
+    /**
+     * Allows explicitly setting the full name of the resulting PersistentVolumeClaim resource.
+     * This is particularly useful for integration with StatefulSets using volume claim templates,
+     * where Kubernetes automatically generates PVC names like `<volumeClaimTemplate.name>-<statefulSet.name>-<ordinalIndex>`.
+     * If not provided, the name defaults to `${appName}-${name}` or just `appName`.
+     */
+    overrideFullname?: string;
 }
 
 export class Volumes {
@@ -66,7 +98,7 @@ export class Volumes {
                 labels: volume?.name
                     ? this.metadata.getForComponent(volume.name).labels
                     : this.metadata.get().labels,
-                name: volumeName,
+                name: volume?.overrideFullname ?? volumeName,
                 namespace: this.namespace,
                 size: volume?.size ?? this.config.require(`${prefix}storageSize`),
                 storageClass: this.config.get(`${prefix}storageClass`),

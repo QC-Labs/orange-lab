@@ -94,7 +94,6 @@ config:
     home-assistant:enabled: false
     home-assistant:hostname: home-assistant
     home-assistant:storageSize: 5Gi
-    home-assistant:home-assistant-0/storageSize: 5Gi
     # Set zone for deployment on nodes with topology.kubernetes.io/zone=<value> label
     # This gives access to sensors on local host network
     # home-assistant:requiredNodeLabel: topology.kubernetes.io/zone=<value>

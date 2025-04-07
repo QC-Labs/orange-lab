@@ -19,7 +19,7 @@ export class HomeAssistant extends pulumi.ComponentResource {
 
         const app = new Application(this, name, {
             domainName: args.domainName,
-        }).addStorage({ name: `${name}-0` });
+        }).addStorage({ overrideFullname: 'home-assistant-home-assistant-0' });
 
         if (app.storageOnly) return;
 
@@ -53,7 +53,7 @@ export class HomeAssistant extends pulumi.ComponentResource {
                     },
                     persistence: {
                         enabled: true,
-                        storageClass: app.volumes.getStorageClass(`${name}-0`),
+                        storageClass: app.volumes.getStorageClass(),
                     },
                     replicaCount: 1,
                 },

@@ -131,6 +131,7 @@ export class PersistentStorage extends pulumi.ComponentResource {
         name: string;
         existingVolume?: kubernetes.core.v1.PersistentVolume;
         cloneFromClaim?: string;
+        overrideFullname?: string;
     }) {
         const labels = { ...(this.args.labels ?? {}) };
 
