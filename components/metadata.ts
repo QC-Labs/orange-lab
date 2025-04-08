@@ -26,21 +26,22 @@ export class Metadata {
         return {
             ...this.get(),
             name: `${this.appName}-${name}`,
-            labels: this.createLabelsForComponent(name),
+            labels: this.createLabels(name),
         };
     }
 
     getSelectorLabels(component?: string) {
-        const selectorLabels = { app: this.appName };
-        return component ? { ...selectorLabels, component } : selectorLabels;
+        const selectorLabels = { 'app.kubernetes.io/name': this.appName };
+        return component
+            ? { ...selectorLabels, 'app.kubernetes.io/component': component }
+            : selectorLabels;
     }
 
-    private createLabels() {
+    private createLabels(componentName?: string) {
         const labels: Record<string, string> = {
-            app: this.appName,
-            component: 'default',
             'app.kubernetes.io/name': this.appName,
             'app.kubernetes.io/managed-by': 'OrangeLab',
+            'app.kubernetes.io/component': componentName ?? 'default',
         };
         const version = this.config.get('version');
         const appVersion = this.config.get('appVersion');
@@ -48,13 +49,5 @@ export class Metadata {
             labels['app.kubernetes.io/version'] = appVersion ?? version;
         }
         return labels;
-    }
-
-    private createLabelsForComponent(name: string) {
-        return {
-            ...this.labels,
-            component: name,
-            'app.kubernetes.io/component': name,
-        };
     }
 }

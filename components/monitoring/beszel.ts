@@ -1,4 +1,3 @@
-import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
 
@@ -9,9 +8,6 @@ export interface BeszelArgs {
 export class Beszel extends pulumi.ComponentResource {
     public readonly endpointUrl: string | undefined;
     public readonly serviceUrl: string | undefined;
-
-    readonly deployment: kubernetes.apps.v1.Deployment | undefined;
-    readonly appLabels = { app: 'beszel' };
 
     constructor(name: string, args: BeszelArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:monitoring:Beszel', name, args, opts);
