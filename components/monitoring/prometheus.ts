@@ -70,9 +70,7 @@ export class Prometheus extends pulumi.ComponentResource {
                     },
                     cleanPrometheusOperatorObjectNames: true,
                     coreDns: { enabled: true },
-                    defaultRules: {
-                        rules: { etcd: false },
-                    },
+                    defaultRules: { rules: { etcd: false } },
                     fullnameOverride: name,
                     grafana: {
                         enabled: true,
@@ -98,14 +96,8 @@ export class Prometheus extends pulumi.ComponentResource {
                     kubeEtcd: { enabled: false },
                     kubeProxy: { enabled: true, serviceMonitor: { https: false } },
                     kubeScheduler: { serviceMonitor: { https: false } },
-                    kubeStateMetrics: {
-                        enabled: true,
-                        affinity: this.nodes.getAffinity(),
-                    },
-                    kubelet: {
-                        enabled: true,
-                        serviceMonitor: { https: false },
-                    },
+                    kubeStateMetrics: { enabled: true },
+                    kubelet: { enabled: true, serviceMonitor: { https: false } },
                     nodeExporter: { enabled: true },
                     prometheus: {
                         enabled: true,
