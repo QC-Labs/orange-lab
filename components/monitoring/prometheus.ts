@@ -2,7 +2,6 @@ import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
 import { Nodes } from '../nodes';
-import { PersistentStorage } from '../persistent-storage';
 
 export interface PrometheusArgs {
     domainName: string;
@@ -28,12 +27,18 @@ export class Prometheus extends pulumi.ComponentResource {
         const alertManagerHostname = this.config.require('alertmanager/hostname');
         const grafanaHostname = this.config.require('grafana/hostname');
 
-        this.app = new Application(this, name, {
-            domainName: args.domainName,
-        });
+        this.app = new Application(this, name, { domainName: args.domainName });
 
-        this.app.addStorage({ name: 'grafana', size: '10Gi' });
-        
+        this.app
+            .addStorage({
+                overrideFullname: `prometheus-${name}-db-prometheus-${name}-0`,
+            })
+            .addStorage({ name: 'grafana' })
+            .addStorage({
+                name: 'alertmanager',
+                overrideFullname: `alertmanager-${name}-db-alertmanager-${name}-0`,
+            });
+
         if (this.app.storageOnly) return;
 
         new kubernetes.helm.v3.Release(
@@ -47,31 +52,30 @@ export class Prometheus extends pulumi.ComponentResource {
                 },
                 values: {
                     alertmanager: {
+                        enabled: true,
                         alertmanagerSpec: {
                             affinity: this.nodes.getAffinity(),
                             storage: {
-                                volumeClaimTemplate: {
-                                    spec: {
-                                        accessModes: ['ReadWriteOnce'],
-                                        resources: { requests: { storage: '5Gi' } },
-                                        storageClassName:
-                                            PersistentStorage.getStorageClass(),
-                                    },
-                                },
+                                volumeClaimTemplate:
+                                    this.createVolumeClaimTemplate('alertmanager'),
                             },
                         },
-                        enabled: false,
                         ingress: {
                             enabled: true,
                             hostname: alertManagerHostname,
                             ingressClassName: 'tailscale',
                             tls: [{ hosts: [alertManagerHostname] }],
                         },
+                        replicas: 1,
                     },
+                    cleanPrometheusOperatorObjectNames: true,
+                    coreDns: { enabled: true },
                     defaultRules: {
                         rules: { etcd: false },
                     },
+                    fullnameOverride: name,
                     grafana: {
+                        enabled: true,
                         adminPassword: grafanaPassword,
                         affinity: this.nodes.getAffinity(),
                         ingress: {
@@ -85,14 +89,26 @@ export class Prometheus extends pulumi.ComponentResource {
                             existingClaim: this.app.volumes.getClaimName('grafana'),
                         },
                     },
-                    kubeControllerManager: { serviceMonitor: { https: false } },
+                    kubeApiServer: { enabled: true },
+                    kubeControllerManager: {
+                        enabled: true,
+                        serviceMonitor: { https: false },
+                    },
+                    kubeDns: { enabled: false },
                     kubeEtcd: { enabled: false },
-                    kubeProxy: { serviceMonitor: { https: false } },
+                    kubeProxy: { enabled: true, serviceMonitor: { https: false } },
                     kubeScheduler: { serviceMonitor: { https: false } },
                     kubeStateMetrics: {
+                        enabled: true,
                         affinity: this.nodes.getAffinity(),
                     },
+                    kubelet: {
+                        enabled: true,
+                        serviceMonitor: { https: false },
+                    },
+                    nodeExporter: { enabled: true },
                     prometheus: {
+                        enabled: true,
                         ingress: {
                             enabled: true,
                             hostname: prometheusHostname,
@@ -106,22 +122,15 @@ export class Prometheus extends pulumi.ComponentResource {
                             ruleSelectorNilUsesHelmValues: false,
                             serviceMonitorSelectorNilUsesHelmValues: false,
                             storageSpec: {
-                                volumeClaimTemplate: {
-                                    spec: {
-                                        accessModes: ['ReadWriteOnce'],
-                                        resources: { requests: { storage: '50Gi' } },
-                                        storageClassName:
-                                            PersistentStorage.getStorageClass(),
-                                    },
-                                },
+                                volumeClaimTemplate: this.createVolumeClaimTemplate(),
                             },
                         },
                     },
-                    'prometheus-node-exporter': {
-                        affinity: this.nodes.getAffinity(),
-                    },
+                    'prometheus-node-exporter': { affinity: this.nodes.getAffinity() },
                     prometheusOperator: {
+                        enabled: true,
                         affinity: this.nodes.getAffinity(),
+                        tls: { enabled: false },
                     },
                 },
             },
@@ -131,5 +140,20 @@ export class Prometheus extends pulumi.ComponentResource {
         this.alertmanagerEndpointUrl = `https://${alertManagerHostname}.${args.domainName}`;
         this.grafanaEndpointUrl = `https://${grafanaHostname}.${args.domainName}`;
         this.prometheusEndpointUrl = `https://${prometheusHostname}.${args.domainName}`;
+    }
+
+    private createVolumeClaimTemplate(componentName?: string) {
+        return {
+            spec: this.app.volumes.isDynamic(componentName)
+                ? { storageClassName: this.app.volumes.getStorageClass(componentName) }
+                : {
+                      selector: {
+                          matchLabels: {
+                              'app.kubernetes.io/name': 'prometheus',
+                              'app.kubernetes.io/component': componentName ?? 'default',
+                          },
+                      },
+                  },
+        };
     }
 }

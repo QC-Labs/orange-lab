@@ -46,6 +46,7 @@ export interface PersistentVolume {
      * This is particularly useful for integration with StatefulSets using volume claim templates,
      * where Kubernetes automatically generates PVC names like `<volumeClaimTemplate.name>-<statefulSet.name>-<ordinalIndex>`.
      * If not provided, the name defaults to `${appName}-${name}` or just `appName`.
+     * More info at https://longhorn.io/docs/1.8.1/snapshots-and-backups/backup-and-restore/restore-statefulset/
      */
     overrideFullname?: string;
 }
@@ -134,5 +135,18 @@ export class Volumes {
 
     hasVolumes(): boolean {
         return this.volumes.size > 0;
+    }
+
+    /**
+     * Determines if storage was provisioned dynamically or manually (clone, restore).
+     *
+     * @param storageName volume name or default when not specified
+     * @returns True if storage was provisioned dynamically
+     */
+    isDynamic(storageName?: string): boolean {
+        const volumeName = storageName ? `${this.appName}-${storageName}` : this.appName;
+        const storage = this.persistentStorage.get(volumeName);
+        assert(storage, `Storage ${volumeName} not found`);
+        return storage.isDynamic();
     }
 }

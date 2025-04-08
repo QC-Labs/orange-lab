@@ -74,6 +74,9 @@ config:
     prometheus:hostname: prometheus
     prometheus:alertmanager/hostname: alertmanager
     prometheus:grafana/hostname: grafana
+    prometheus:storageSize: 100Gi
+    prometheus:alertmanager/storageSize: 5Gi
+    prometheus:grafana/storageSize: 10Gi
     # Additional monitoring for installed components that support it.
     # Only enable once Prometheus has been installed
     # This has to be disabled first before Prometheus can be removed
