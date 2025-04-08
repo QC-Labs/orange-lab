@@ -40,13 +40,13 @@ config:
     longhorn:snapshotEnabled: true
     longhorn:snapshotCron: '0 * * * *' # every hour
     longhorn:backupEnabled: false
-    longhorn:backupAllVolumes: false
-    longhorn:backupCron: '15 0 * * *' # daily at 0:15
     longhorn:backupTarget: s3://backup-longhorn@lab/
-    # Full backup every 7 days, use 0 for incremental only
-    longhorn:backupFullInterval: '7'
     # longhorn:backupAccessKeyId: <key_id>
     # longhorn:backupAccessKeySecret: <key_value>
+    longhorn:backupCron: '15 0 * * *' # daily at 0:15
+    # Full backup every 7 days, use 0 for incremental only
+    longhorn:backupFullInterval: '7'
+    longhorn:backupAllVolumes: false
 
     minio:enabled: false
     minio:hostname: minio
@@ -90,7 +90,6 @@ config:
     beszel:hostname: beszel
     beszel:storageSize: 5Gi
     beszel:storageOnly: false
-    beszel:backupVolume: true
 
     ### IoT ###
 

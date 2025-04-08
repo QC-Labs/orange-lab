@@ -14,6 +14,13 @@ class RootConfig {
         );
     }
 
+    public isBackupEnabled(appName: string, volumeName?: string): boolean {
+        const config = new pulumi.Config(appName);
+        const volumePrefix = volumeName ? `${volumeName}/` : '';
+        const appSetting = config.getBoolean(`${volumePrefix}backupVolume`);
+        return appSetting ?? new pulumi.Config('longhorn').getBoolean('backupAllVolumes') ?? false;
+    }
+
     public enableMonitoring() {
         const config = new pulumi.Config('prometheus');
         const prometheusEnabled = config.requireBoolean('enabled');

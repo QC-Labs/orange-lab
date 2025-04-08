@@ -3,6 +3,7 @@ import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
 import { Metadata } from './metadata';
 import { PersistentStorage, PersistentStorageType } from './persistent-storage';
+import { rootConfig } from './root-config';
 
 export interface LocalVolume {
     name: string;
@@ -93,7 +94,7 @@ export class Volumes {
             `${volumeName}-storage`,
             {
                 cloneFromClaim: volume?.cloneFromClaim,
-                enableBackup: this.config.getBoolean(`${prefix}backupVolume`),
+                enableBackup: rootConfig.isBackupEnabled(this.appName, volume?.name),
                 fromBackup: this.config.get(`${prefix}fromBackup`),
                 fromVolume: volume?.fromVolume ?? this.config.get(`${prefix}fromVolume`),
                 labels: volume?.name

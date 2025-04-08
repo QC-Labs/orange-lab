@@ -6,8 +6,9 @@ Backup behavior:
 
 -   **Snapshots**: Taken hourly for all volumes (configurable with `longhorn:snapshotCron`)
 -   **Incremental Backups**: Run daily at 00:15 (configurable with `longhorn:backupCron`)
-    Please refer to the official MinIO installation documentation for detailed instructions on setting up MinIO: [https://min.io/docs/minio/user-guide/install.html]
 -   If a volume has no changes since the last backup, no data is transferred
+
+Please refer to the official MinIO installation documentation for detailed instructions on setting up MinIO: [https://min.io/docs/minio/user-guide/install.html]
 
 ## Setup S3 storage (MinIO)
 
@@ -51,34 +52,45 @@ pulumi config set longhorn:backupTarget s3://backup-longhorn@lab/
 
 ## Managing Volume Backups
 
-There are two ways to configure which volumes get backed up:
+You can configure which volumes to back up through two main approaches:
 
-### Option 1: Back up all volumes
+### Option 1: Back up all volumes by default
 
-Enable automatic backups for all volumes in the cluster:
+Enable automatic backups for all volumes in the cluster, with the ability to exclude specific volumes:
 
 ```sh
+# Enable backup functionality
 pulumi config set longhorn:backupEnabled true
+
+# Back up all volumes by default
 pulumi config set longhorn:backupAllVolumes true
+
+# Optional: Exclude specific volumes from backup
+pulumi config set <app>:backupVolume false
 
 pulumi up
 ```
 
-### Option 2: Back up specific application volumes
+### Option 2: Back up only specific volumes
 
-To enable backups for a specific application volume you need to add it to `backup` group.
-
-You can manage groups in volume details -> Recurring Jobs Schedule -> Groups, however it's best to use `backupVolume` in Pulumi to make sure configuration is persisted.
+Only back up volumes that are explicitly configured for backup:
 
 ```sh
+# Enable backup functionality
 pulumi config set longhorn:backupEnabled true
-pulumi config set longhorn:backupAllVolumes false # default value
 
-# Enable backups for a specific application's volumes
+# Don't back up volumes by default (this is the default setting)
+pulumi config set longhorn:backupAllVolumes false
+
+# Enable backup for specific application volumes
 pulumi config set <app>:backupVolume true
 
 pulumi up
 ```
+
+The backup setting precedence is:
+1. App-specific setting (`<app>:backupVolume`) if specified
+2. Global setting (`longhorn:backupAllVolumes`) if no app-specific setting exists
 
 ## Restoring from Backup
 

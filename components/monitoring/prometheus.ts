@@ -134,6 +134,7 @@ export class Prometheus extends pulumi.ComponentResource {
         this.prometheusEndpointUrl = `https://${prometheusHostname}.${args.domainName}`;
     }
 
+    // https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/platform/storage.md
     private createVolumeClaimTemplate(componentName?: string) {
         return {
             spec: this.app.volumes.isDynamic(componentName)

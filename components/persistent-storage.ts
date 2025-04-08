@@ -134,9 +134,10 @@ export class PersistentStorage extends pulumi.ComponentResource {
     }) {
         const labels = { ...(this.args.labels ?? {}) };
 
+        labels['recurring-job.longhorn.io/source'] = 'enabled';
+        labels['recurring-job-group.longhorn.io/default'] = 'enabled';
+        
         if (this.args.enableBackup) {
-            labels['recurring-job.longhorn.io/source'] = 'enabled';
-            labels['recurring-job-group.longhorn.io/default'] = 'enabled';
             labels['recurring-job-group.longhorn.io/backup'] = 'enabled';
         }
 
