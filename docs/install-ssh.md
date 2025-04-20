@@ -14,6 +14,9 @@ We'll use ssh-agent so you don't have to enter it too often.
 ssh-keygen # interactive
 ssh-keygen -f ~/.ssh/orangelab -C "user@orangelab.space"
 
+# Add ssh key to agent
+ssh-add ~/.ssh/orangelab
+
 # Confirm the key is available to ssh-agent
 ssh-add -l
 
