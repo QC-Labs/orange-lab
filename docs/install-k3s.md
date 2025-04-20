@@ -29,6 +29,20 @@ Make sure the service is running and enabled on startup:
 systemctl enable k3s.service --now
 ```
 
+## Missing k3s token
+
+If this file is empty or missing, K3s cannot start.
+
+### Generate a New Token with k3s CLI
+If the token file is empty or invalid, generate a new one using the built-in k3s token command:
+
+```bash
+sudo k3s token generate
+```
+
+The expected token file is usually at:
+```/var/lib/rancher/k3s/server/token```
+
 ## Save server configuration
 
 Add the tailscale IP of the server to Pulumi configuration:
