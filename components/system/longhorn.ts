@@ -40,6 +40,9 @@ export class Longhorn extends pulumi.ComponentResource {
         if (this.config.getBoolean('snapshotEnabled')) {
             this.createSnapshotJob();
         }
+        if (this.config.getBoolean('trimEnabled')) {
+            this.createTrimJob();
+        }
         if (args.s3EndpointUrl && this.config.getBoolean('backupEnabled')) {
             this.createBackupJob();
         }
@@ -215,6 +218,31 @@ export class Longhorn extends pulumi.ComponentResource {
                     parameters: {
                         'full-backup-interval': this.config.require('backupFullInterval'),
                     },
+                },
+            },
+            { dependsOn: this.chart, parent: this },
+        );
+    }
+
+    private createTrimJob() {
+        const cron = this.config.require('trimCron');
+        new kubernetes.apiextensions.CustomResource(
+            `${this.name}-trim-job`,
+            {
+                apiVersion: 'longhorn.io/v1beta2',
+                kind: 'RecurringJob',
+                metadata: {
+                    name: 'trim',
+                    namespace: this.app.namespace,
+                },
+                spec: {
+                    groups: ['default'],
+                    task: 'filesystem-trim',
+                    cron,
+                    name: 'trim',
+                    retain: 2,
+                    concurrency: 2,
+                    labels: { cron },
                 },
             },
             { dependsOn: this.chart, parent: this },

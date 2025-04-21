@@ -39,6 +39,8 @@ config:
     longhorn:replicaCount: 2
     longhorn:snapshotEnabled: true
     longhorn:snapshotCron: '0 * * * *' # every hour
+    longhorn:trimEnabled: true
+    longhorn:trimCron: '0 0 * * 0' # once a week on Sunday at midnight
     longhorn:backupEnabled: false
     longhorn:backupTarget: s3://backup-longhorn@lab/
     # longhorn:backupAccessKeyId: <key_id>
