@@ -175,10 +175,13 @@ export class Containers {
 
     private createEnv() {
         const gfxVersion = this.config.get('HSA_OVERRIDE_GFX_VERSION');
+        const amdTargets = this.config.get('HCC_AMDGPU_TARGETS');
         const env = {
             ...this.spec.env,
             HSA_OVERRIDE_GFX_VERSION:
                 this.args.gpu === 'amd' && gfxVersion ? gfxVersion : undefined,
+            HCC_AMDGPU_TARGETS:
+                this.args.gpu === 'amd' && amdTargets ? amdTargets : undefined,
         };
         return Object.entries(env)
             .filter(([_, value]) => value)

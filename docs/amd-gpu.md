@@ -35,15 +35,18 @@ pulumi config set ollama:amd-gpu true
 pulumi up
 ```
 
-#### HSA_OVERRIDE_GFX_VERSION Configuration
+#### AMD GPU Configuration Overrides
 
-For certain AMD GPUs, you may need to override the GPU version if not properly detected:
+For certain AMD GPUs, you may need to override configuration settings if not properly detected:
 
 ```sh
 # Example for Radeon 780M
-pulumi config set ollama:HSA_OVERRIDE_GFX_VERSION "11.0.2"
+pulumi config set ollama:HSA_OVERRIDE_GFX_VERSION "11.0.0"
+pulumi config set ollama:HCC_AMDGPU_TARGETS "gfx1103"
 pulumi up
 ```
+
+The `HSA_OVERRIDE_GFX_VERSION` setting can help with ROCm compatibility, while `HCC_AMDGPU_TARGETS` specifies the architecture target for ROCm applications.
 
 More information at https://github.com/ollama/ollama/blob/main/docs/gpu.md#overrides-on-linux
 

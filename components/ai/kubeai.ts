@@ -114,12 +114,16 @@ export class KubeAi extends pulumi.ComponentResource {
 
     private createModelCatalog(models: string[]): Record<string, object> {
         const gfxVersion = this.config.require('HSA_OVERRIDE_GFX_VERSION');
+        const amdTargets = this.config.get('HCC_AMDGPU_TARGETS');
         const modelProfiles = new Map<string, object>();
         modelProfiles.set('amd', {
             enabled: true,
             resourceProfile: 'amd:1',
             minReplicas: 0,
-            env: { HSA_OVERRIDE_GFX_VERSION: gfxVersion },
+            env: { 
+                HSA_OVERRIDE_GFX_VERSION: gfxVersion,
+                ...(amdTargets ? { HCC_AMDGPU_TARGETS: amdTargets } : {}),
+            },
         });
         modelProfiles.set('nvidia', {
             enabled: true,

@@ -113,6 +113,7 @@ config:
     ollama:preferredNodeLabel: orangelab/ollama
     # Override GPU version for ROCm compatibility
     # ollama:HSA_OVERRIDE_GFX_VERSION: "11.0.2"
+    # ollama:HCC_AMDGPU_TARGETS: "gfx1103"
     # LLM parameter tuning (-1 = keep models loaded indefinitely)
     ollama:OLLAMA_KEEP_ALIVE: '30m'
     ollama:OLLAMA_CONTEXT_LENGTH: '32768'
@@ -145,6 +146,7 @@ config:
     # <model>/<profile>/<replicas>
     kubeai:models: qwen2.5-coder-1.5b-rtx4070-8gb/nvidia,faster-whisper-medium-en-cpu,gemma2-2b-cpu/amd/0
     # kubeai:HSA_OVERRIDE_GFX_VERSION: '11.0.2'
+    # kubeai:HCC_AMDGPU_TARGETS: 'gfx1103'
 
     invokeai:enabled: false
     invokeai:preferredNodeLabel: orangelab/invokeai

@@ -38,6 +38,7 @@ export class Ollama extends pulumi.ComponentResource {
     private createHelmRelease(hostname: string) {
         const amdGpu = this.config.requireBoolean('amd-gpu');
         const gfxVersion = this.config.get('HSA_OVERRIDE_GFX_VERSION');
+        const amdTargets = this.config.get('HCC_AMDGPU_TARGETS');
         const extraEnv = [
             { name: 'OLLAMA_DEBUG', value: 'false' },
             { name: 'OLLAMA_KEEP_ALIVE', value: this.config.get('OLLAMA_KEEP_ALIVE') ?? '5m' },
@@ -48,6 +49,12 @@ export class Ollama extends pulumi.ComponentResource {
             extraEnv.push({
                 name: 'HSA_OVERRIDE_GFX_VERSION',
                 value: gfxVersion,
+            });
+        }
+        if (amdGpu && amdTargets) {
+            extraEnv.push({
+                name: 'HCC_AMDGPU_TARGETS',
+                value: amdTargets,
             });
         }
         new kubernetes.helm.v3.Release(
