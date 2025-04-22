@@ -240,7 +240,7 @@ export class Longhorn extends pulumi.ComponentResource {
                     task: 'filesystem-trim',
                     cron,
                     name: 'trim',
-                    retain: 2,
+                    retain: 0,
                     concurrency: 2,
                     labels: { cron },
                 },
