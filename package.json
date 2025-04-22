@@ -4,6 +4,9 @@
     "version": "0.3.0",
     "main": "index.ts",
     "license": "MIT",
+    "engines": {
+        "node": ">= 22.0.0"
+    },
     "scripts": {
         "deploy": "pulumi up --refresh",
         "preview": "pulumi preview --diff",
