@@ -1,6 +1,6 @@
 ## How to Use Dagger to Manage This Project
 
-Dagger is an open-source runtime for composable, containerized workflows-ideal for orchestrating complex, multi-component systems like your OrangeLab project. Below is a step-by-step guide to integrating Dagger with your TypeScript/Node.js, Pulumi-based infrastructure, tailored for your repo structure and open-source preferences.
+Dagger is an open-source runtime for composable, containerized workflows-ideal for orchestrating complex, multi-component systems. Below is a step-by-step guide to integrating Dagger with Orange Lab which is basically advanced CI scaffolding.
 
 ---
 
@@ -139,4 +139,3 @@ Dagger’s universal type system lets you compose workflows across languages (e.
 - [Pulumi Integration](https://www.pulumi.com/)
 
 **If you choose to use dagger for your CI, you now have a reproducible, modular, and observable workflow engine** If you want a more advanced, multi-language pipeline or need to integrate with your AI/LLM workflows, Dagger’s universal type system and module system make it easy to extend.
-
