@@ -25,6 +25,10 @@ Dagger is an open-source runtime for composable, containerized workflows-ideal f
   This sets up the expected structure and dagger.json.
   Without this, Dagger can’t find your modules.
 
+  You may also wish to disable telemetry out of the box and add this to your shell rc file:
+
+  ```export DO_NOT_TRACK=1```
+
 ---
 
 ### **2. Initialize Dagger in Your Project**
