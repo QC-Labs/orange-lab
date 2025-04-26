@@ -19,6 +19,11 @@ Dagger is an open-source runtime for composable, containerized workflows-ideal f
   ```sh
   npm install @dagger.io/dagger
   ```
+  Then you should run:
+
+  ```dagger init --sdk=typescript```
+  This sets up the expected structure and dagger.json.
+  Without this, Dagger can’t find your modules.
 
 ---
 
