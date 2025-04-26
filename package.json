@@ -3,23 +3,32 @@
     "description": "Private infrastructure for cloud natives",
     "version": "0.3.0",
     "main": "index.ts",
+    "type": "module",
     "license": "MIT",
     "engines": {
-        "node": ">= 22.0.0"
+        "node": ">= 20.9.0"
+    },
+    "dagger": {
+        "runtime": "node@20.15.0"
     },
     "scripts": {
         "deploy": "pulumi up --refresh",
         "preview": "pulumi preview --diff",
         "lint": "node_modules/.bin/eslint .",
-        "test": "npm run lint"
+        "test": "npm run lint",
+        "ci:preview": "dagger run node dagger-workflow.ts",
+        "ci:deploy": "dagger run node dagger-workflow.ts -- --deploy"
     },
     "dependencies": {
         "@pulumi/kubernetes": "4.21.1",
         "@pulumi/pulumi": "3.150.0",
         "@pulumi/tailscale": "0.17.5",
-        "@pulumiverse/grafana": "^0.12.3"
+        "@pulumiverse/grafana": "^0.12.3",
+        "@typescript-eslint/eslint-plugin": "^8.31.0",
+        "eslint": "^9.25.1"
     },
     "devDependencies": {
+        "@dagger.io/dagger": "^0.9.0",
         "@pulumi/eslint-plugin": "0.2.0",
         "@types/node": "22.13.4",
         "typescript-eslint": "8.24.0"
