@@ -179,12 +179,12 @@ You can either use the website endpoint or OpenWebUI integration to generate ima
 
 ## Open-WebUI
 
-|                       |                                                                              |
-| --------------------- | ---------------------------------------------------------------------------- |
-| Homepage              | https://openwebui.com/                                                       |
-| Helm chart            | https://artifacthub.io/packages/helm/open-webui/open-webui                   |
-| Environment variables | https://docs.openwebui.com/getting-started/advanced-topics/env-configuration |
-| Endpoints             | `https://webui.<tsnet>.ts.net/`                                              |
+|                       |                                                              |
+| --------------------- | ------------------------------------------------------------ |
+| Homepage              | https://openwebui.com/                                       |
+| Helm chart            | https://artifacthub.io/packages/helm/open-webui/open-webui   |
+| Environment variables | https://docs.openwebui.com/getting-started/env-configuration |
+| Endpoints             | `https://webui.<tsnet>.ts.net/`                              |
 
 Authentication happens automatically based on your Tailnet credentials.
 

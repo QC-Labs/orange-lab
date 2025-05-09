@@ -20,6 +20,8 @@ export class OpenWebUI extends pulumi.ComponentResource {
         const version = config.get('version');
         const hostname = config.require('hostname');
         const appVersion = config.get('appVersion');
+        const amdGpu = config.get('amd-gpu');
+        const DEFAULT_MODELS = config.get('DEFAULT_MODELS') ?? '';
 
         this.endpointUrl = `https://${hostname}.${args.domainName}`;
 
@@ -44,20 +46,45 @@ export class OpenWebUI extends pulumi.ComponentResource {
                     ollamaUrls: [args.ollamaUrl],
                     openaiBaseApiUrl: args.openAiUrl,
                     extraEnvVars: [
-                        { name: 'WEBUI_URL', value: this.endpointUrl },
-                        { name: 'ENABLE_SIGNUP', value: 'True' },
+                        { name: 'AUTOMATIC1111_BASE_URL', value: args.automatic1111Url },
                         { name: 'BYPASS_MODEL_ACCESS_CONTROL', value: 'True' },
+                        { name: 'DEFAULT_MODELS', value: DEFAULT_MODELS },
                         { name: 'DEFAULT_USER_ROLE', value: 'user' },
+                        { name: 'ENABLE_ADMIN_CHAT_ACCESS', value: 'False' },
                         { name: 'ENABLE_EVALUATION_ARENA_MODELS', value: 'False' },
-                        { name: 'ENABLE_RAG_WEB_SEARCH', value: 'True' },
-                        { name: 'ENABLE_SEARCH_QUERY_GENERATION', value: 'True' },
-                        { name: 'RAG_WEB_SEARCH_ENGINE', value: 'duckduckgo' },
                         {
                             name: 'ENABLE_IMAGE_GENERATION',
                             value: args.automatic1111Url ? 'True' : 'False',
                         },
+                        { name: 'ENABLE_LOGIN_FORM', value: 'False' },
+                        { name: 'ENABLE_PERSISTENT_CONFIG', value: 'False' },
+                        { name: 'ENABLE_SEARCH_QUERY_GENERATION', value: 'True' },
+                        { name: 'ENABLE_SIGNUP', value: 'True' },
+                        { name: 'ENABLE_WEB_SEARCH', value: 'True' },
                         { name: 'IMAGE_GENERATION_ENGINE', value: 'automatic1111' },
-                        { name: 'AUTOMATIC1111_BASE_URL', value: args.automatic1111Url },
+                        { name: 'USE_CUDA_DOCKER', value: amdGpu ? 'False' : 'True' },
+                        { name: 'USE_OLLAMA_DOCKER', value: 'False' },
+                        {
+                            name: 'USER_PERMISSIONS_FEATURES_DIRECT_TOOL_SERVERS',
+                            value: 'True',
+                        },
+                        {
+                            name: 'USER_PERMISSIONS_WORKSPACE_KNOWLEDGE_ACCESS',
+                            value: 'True',
+                        },
+                        {
+                            name: 'USER_PERMISSIONS_WORKSPACE_MODELS_ACCESS',
+                            value: 'True',
+                        },
+                        {
+                            name: 'USER_PERMISSIONS_WORKSPACE_PROMPTS_ACCESS',
+                            value: 'True',
+                        },
+                        {
+                            name: 'USER_PERMISSIONS_WORKSPACE_TOOLS_ACCESS',
+                            value: 'True',
+                        },
+                        { name: 'WEB_SEARCH_ENGINE', value: 'duckduckgo' },
                         { name: 'WEBUI_AUTH', value: 'False' },
                         {
                             name: 'WEBUI_AUTH_TRUSTED_EMAIL_HEADER',
@@ -67,6 +94,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
                             name: 'WEBUI_AUTH_TRUSTED_NAME_HEADER',
                             value: 'Tailscale-User-Name',
                         },
+                        { name: 'WEBUI_URL', value: this.endpointUrl },
                     ],
                     ollama: { enabled: false },
                     image: { tag: appVersion },
