@@ -35,11 +35,12 @@ export class Network {
     }
 
     createEndpoints(spec: ContainerSpec) {
+        const hostname = this.config.get('hostname');
+        if (!hostname) return;
         assert(this.domainName, 'domainName is required');
         const metadata = this.metadata.get();
         assert(metadata.namespace, 'namespace is required');
 
-        const hostname = this.config.require('hostname');
         const ports: ServicePort[] = [
             ...(spec.port ? [{ name: 'http', port: spec.port, hostname }] : []),
             ...(spec.ports ?? []),

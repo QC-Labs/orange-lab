@@ -51,7 +51,7 @@ export class Debug extends pulumi.ComponentResource {
             });
 
         // Comment out one method
-        // this.createDeployment();
+        this.createDeployment();
         // this.createExportJob();
     }
 
