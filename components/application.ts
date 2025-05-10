@@ -1,5 +1,5 @@
 import * as kubernetes from '@pulumi/kubernetes';
-import { LimitRange } from '@pulumi/kubernetes/core/v1';
+import { ConfigMap, LimitRange } from '@pulumi/kubernetes/core/v1';
 import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
 import { Containers, ContainerSpec } from './containers';
@@ -132,6 +132,30 @@ export class Application {
             },
             { parent: this.scope },
         );
+        return this;
+    }
+
+    addConfigFile(filename: string, content: pulumi.Input<string>) {
+        if (this.storageOnly) return this;
+
+        const configMapName = `${this.appName}-${filename}-config`;
+        const configMapData = { [filename]: content };
+
+        new ConfigMap(
+            `${this.appName}-${filename}-config`,
+            {
+                metadata: {
+                    name: configMapName,
+                    namespace: this.namespace,
+                    labels: this.metadata.get().labels,
+                },
+                data: configMapData,
+            },
+            { parent: this.scope },
+        );
+
+        this.volumes.addConfigMapVolume(configMapName, configMapName);
+
         return this;
     }
 

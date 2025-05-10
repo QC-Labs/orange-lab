@@ -105,13 +105,13 @@ config:
     ### AI ###
 
     ollama:enabled: false
-    ollama:amd-gpu: false
     ollama:hostname: ollama
     ollama:storageSize: 50Gi
     ollama:storageOnly: false
     # ollama:fromVolume: ollama
     ollama:preferredNodeLabel: orangelab/ollama
-    # Override GPU version for ROCm compatibility
+    ollama:amd-gpu: false
+    # Override GPU version for AMD ROCm compatibility
     # ollama:HSA_OVERRIDE_GFX_VERSION: "11.0.2"
     # ollama:HCC_AMDGPU_TARGETS: "gfx1103"
     # LLM parameter tuning (-1 = keep models loaded indefinitely)

@@ -138,6 +138,15 @@ export class Volumes {
         return this.volumes.size > 0;
     }
 
+    addConfigMapVolume(name: string, configMapName: string) {
+        this.volumes.set(name, {
+            name,
+            configMap: {
+                name: configMapName,
+            },
+        });
+    }
+
     /**
      * Determines if storage was provisioned dynamically or manually (clone, restore).
      *
