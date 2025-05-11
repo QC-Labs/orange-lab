@@ -2,7 +2,6 @@ import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
 import { rootConfig } from './root-config';
-import { Longhorn } from './system/longhorn';
 
 export enum PersistentStorageType {
     Default,
@@ -45,10 +44,12 @@ interface PersistentStorageArgs {
     labels?: Record<string, string>;
 }
 
+const staleReplicaTimeout = (48 * 60).toString();
+
 export class PersistentStorage extends pulumi.ComponentResource {
     volumeClaimName: string;
     storageClassName: pulumi.Output<string>;
-    existingVolume?: kubernetes.core.v1.PersistentVolume;
+    isDynamic: boolean;
 
     constructor(
         private name: string,
@@ -76,38 +77,45 @@ export class PersistentStorage extends pulumi.ComponentResource {
             'Cannot specify fromVolume, cloneFromClaim, fromBackup when using custom storageClass',
         );
 
-        let backupStorageClass;
-        if (args.fromBackup) {
-            backupStorageClass = this.createBackupStorageClass();
-        }
-
-        this.existingVolume = args.fromVolume
-            ? this.createPV({
-                  name: args.name,
-                  volumeHandle: args.fromVolume,
-              })
-            : undefined;
-
-        this.storageClassName = pulumi
-            .output(
-                this.existingVolume?.spec.storageClassName ??
-                    backupStorageClass ??
-                    args.storageClass ??
-                    PersistentStorage.getStorageClass(this.args.type) ??
-                    Longhorn.defaultStorageClass,
-            )
-            .apply(sc => sc);
-
-        this.createPVC({ name: args.name, cloneFromClaim: args.cloneFromClaim });
         this.volumeClaimName = args.name;
+        this.isDynamic = !args.fromVolume;
+        if (args.fromVolume) {
+            this.storageClassName = this.attachVolume(args);
+        } else {
+            this.storageClassName = this.createVolume(args);
+        }
     }
 
-    public isDynamic(): boolean {
-        return this.existingVolume === undefined;
+    private createVolume(args: PersistentStorageArgs) {
+        assert(!args.fromVolume);
+        const storageClassName =
+            this.args.storageClass ?? this.createLonghornStorageClass();
+        const pvc = this.createPVC({
+            name: this.volumeClaimName,
+            cloneFromClaim: args.cloneFromClaim,
+            storageClassName,
+        });
+        return pvc.spec.storageClassName;
     }
 
-    private createBackupStorageClass(): pulumi.Output<string> {
-        const restored = new kubernetes.storage.v1.StorageClass(`${this.name}-sc`, {
+    private attachVolume(args: PersistentStorageArgs) {
+        assert(args.fromVolume && !args.storageClass);
+        const existingVolume = this.createLonghornPV({
+            name: args.name,
+            volumeHandle: args.fromVolume,
+        });
+        const pvc = this.createPVC({
+            name: this.volumeClaimName,
+            storageClassName: existingVolume.spec.storageClassName,
+            volumeName: existingVolume.metadata.name,
+        });
+        return pvc.spec.storageClassName;
+    }
+
+    private createLonghornStorageClass(): pulumi.Output<string> {
+        const isLocalOnly = this.args.type === PersistentStorageType.GPU;
+        const isDefault = this.args.type === PersistentStorageType.Default;
+        const storageClass = new kubernetes.storage.v1.StorageClass(`${this.name}-sc`, {
             metadata: {
                 name: `longhorn-${this.args.name}`,
                 namespace: 'longhorn-system',
@@ -115,58 +123,25 @@ export class PersistentStorage extends pulumi.ComponentResource {
             provisioner: 'driver.longhorn.io',
             allowVolumeExpansion: true,
             parameters: {
-                numberOfReplicas: '1',
+                numberOfReplicas: isDefault
+                    ? rootConfig.longhorn.replicaCount.toString()
+                    : '1',
+                dataLocality: isLocalOnly ? 'strict-local' : 'best-effort',
                 ...(this.args.fromBackup && { fromBackup: this.args.fromBackup }),
+                staleReplicaTimeout: isDefault ? '30' : staleReplicaTimeout,
             },
-            volumeBindingMode: 'WaitForFirstConsumer',
+            volumeBindingMode: isLocalOnly ? 'WaitForFirstConsumer' : 'Immediate',
         });
-
-        return restored.metadata.name;
+        return storageClass.metadata.name;
     }
 
-    private createPVC({
+    private createLonghornPV({
         name,
-        cloneFromClaim,
+        volumeHandle,
     }: {
         name: string;
-        cloneFromClaim?: string;
-        overrideFullname?: string;
+        volumeHandle: string;
     }) {
-        const labels = { ...(this.args.labels ?? {}) };
-
-        labels['recurring-job.longhorn.io/source'] = 'enabled';
-        labels['recurring-job-group.longhorn.io/default'] = 'enabled';
-
-        if (this.args.enableBackup) {
-            labels['recurring-job-group.longhorn.io/backup'] = 'enabled';
-        }
-
-        new kubernetes.core.v1.PersistentVolumeClaim(
-            `${this.name}-pvc`,
-            {
-                metadata: {
-                    name,
-                    namespace: this.args.namespace,
-                    labels,
-                },
-                spec: {
-                    accessModes: ['ReadWriteOnce'],
-                    storageClassName: this.storageClassName,
-                    dataSource: cloneFromClaim
-                        ? {
-                              kind: 'PersistentVolumeClaim',
-                              name: cloneFromClaim,
-                          }
-                        : undefined,
-                    volumeName: this.existingVolume?.metadata.name,
-                    resources: { requests: { storage: this.args.size } },
-                },
-            },
-            { parent: this },
-        );
-    }
-
-    private createPV({ name, volumeHandle }: { name: string; volumeHandle: string }) {
         return new kubernetes.core.v1.PersistentVolume(
             `${this.name}-pv`,
             {
@@ -185,7 +160,7 @@ export class PersistentStorage extends pulumi.ComponentResource {
                         fsType: 'ext4',
                         volumeAttributes: {
                             numberOfReplicas: '1',
-                            staleReplicaTimeout: '2880',
+                            staleReplicaTimeout,
                         },
                         volumeHandle,
                     },
@@ -195,12 +170,48 @@ export class PersistentStorage extends pulumi.ComponentResource {
         );
     }
 
-    public static getStorageClass(storageType?: PersistentStorageType) {
-        switch (storageType) {
-            case PersistentStorageType.GPU:
-                return rootConfig.get('storageClass-gpu');
-            default:
-                return rootConfig.get('storageClass');
+    private createPVC({
+        name,
+        cloneFromClaim,
+        volumeName,
+        storageClassName,
+    }: {
+        name: string;
+        cloneFromClaim?: string;
+        volumeName?: pulumi.Output<string>;
+        storageClassName: pulumi.Output<string> | string;
+    }) {
+        const labels = { ...(this.args.labels ?? {}) };
+
+        labels['recurring-job.longhorn.io/source'] = 'enabled';
+        labels['recurring-job-group.longhorn.io/default'] = 'enabled';
+
+        if (this.args.enableBackup) {
+            labels['recurring-job-group.longhorn.io/backup'] = 'enabled';
         }
+
+        return new kubernetes.core.v1.PersistentVolumeClaim(
+            `${this.name}-pvc`,
+            {
+                metadata: {
+                    name,
+                    namespace: this.args.namespace,
+                    labels,
+                },
+                spec: {
+                    accessModes: ['ReadWriteOnce'],
+                    storageClassName,
+                    dataSource: cloneFromClaim
+                        ? {
+                              kind: 'PersistentVolumeClaim',
+                              name: cloneFromClaim,
+                          }
+                        : undefined,
+                    volumeName,
+                    resources: { requests: { storage: this.args.size } },
+                },
+            },
+            { parent: this },
+        );
     }
 }

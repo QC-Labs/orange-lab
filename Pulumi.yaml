@@ -21,12 +21,6 @@ config:
     k3s:clusterCidr: 10.42.0.0/16
     k3s:serviceCidr: 10.43.0.0/16
 
-    # Storage class to use, set to 'local-path' when not using Longhorn
-    # Use Longhorn replicated storage
-    orangelab:storageClass: longhorn
-    # Use Longhorn strict-local for GPU workloads
-    orangelab:storageClass-gpu: longhorn-gpu
-
     tailscale-operator:enabled: false
     # Hostname for Tailscale operator proxy for Kubernetes API
     tailscale-operator:hostname: k8s

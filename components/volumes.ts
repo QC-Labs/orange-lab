@@ -157,6 +157,6 @@ export class Volumes {
         const volumeName = storageName ? `${this.appName}-${storageName}` : this.appName;
         const storage = this.persistentStorage.get(volumeName);
         assert(storage, `Storage ${volumeName} not found`);
-        return storage.isDynamic();
+        return storage.isDynamic;
     }
 }

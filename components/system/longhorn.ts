@@ -2,6 +2,7 @@ import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
 import { GrafanaDashboard } from '../grafana-dashboard';
+import { rootConfig } from '../root-config';
 import dashboardJson from './longhorn-dashboard.json';
 
 export interface LonghornArgs {
@@ -12,8 +13,6 @@ export interface LonghornArgs {
 
 export class Longhorn extends pulumi.ComponentResource {
     public readonly endpointUrl: string | undefined;
-    public static defaultStorageClass = 'longhorn';
-    public static gpuStorageClass = 'longhorn-gpu';
 
     private readonly app: Application;
     private readonly config: pulumi.Config;
@@ -27,6 +26,7 @@ export class Longhorn extends pulumi.ComponentResource {
         super('orangelab:system:Longhorn', name, args, opts);
 
         this.config = new pulumi.Config('longhorn');
+
         const hostname = this.config.require('hostname');
 
         this.app = new Application(this, name, { namespace: `${name}-system` });
@@ -36,7 +36,6 @@ export class Longhorn extends pulumi.ComponentResource {
             backupSecretName: backupSecret?.metadata.name,
             hostname,
         });
-        this.createStorageClasses();
         if (this.config.getBoolean('snapshotEnabled')) {
             this.createSnapshotJob();
         }
@@ -53,27 +52,6 @@ export class Longhorn extends pulumi.ComponentResource {
         this.endpointUrl = `https://${hostname}.${args.domainName}`;
     }
 
-    private createStorageClasses() {
-        new kubernetes.storage.v1.StorageClass(
-            `${this.name}-gpu-storage`,
-            {
-                metadata: {
-                    name: Longhorn.gpuStorageClass,
-                    namespace: this.app.namespace,
-                },
-                allowVolumeExpansion: true,
-                provisioner: 'driver.longhorn.io',
-                volumeBindingMode: 'Immediate',
-                reclaimPolicy: 'Delete',
-                parameters: {
-                    numberOfReplicas: '1',
-                    dataLocality: 'strict-local',
-                },
-            },
-            { dependsOn: this.chart, parent: this },
-        );
-    }
-
     private createHelmRelease({
         backupSecretName,
         hostname,
@@ -81,8 +59,6 @@ export class Longhorn extends pulumi.ComponentResource {
         backupSecretName?: pulumi.Output<string>;
         hostname: string;
     }) {
-        const replicaCount = this.config.requireNumber('replicaCount');
-
         return new kubernetes.helm.v3.Release(
             this.name,
             {
@@ -102,7 +78,7 @@ export class Longhorn extends pulumi.ComponentResource {
                         allowEmptyNodeSelectorVolume: true,
                         autoCleanupRecurringJobBackupSnapshot: true,
                         defaultDataLocality: 'best-effort',
-                        defaultReplicaCount: replicaCount,
+                        defaultReplicaCount: rootConfig.longhorn.replicaCount,
                         fastReplicaRebuildEnabled: true,
                         nodeDownPodDeletionPolicy:
                             'delete-both-statefulset-and-deployment-pod',
@@ -129,7 +105,7 @@ export class Longhorn extends pulumi.ComponentResource {
                         replicas: 1,
                     },
                     persistence: {
-                        defaultClassReplicaCount: replicaCount,
+                        defaultClassReplicaCount: rootConfig.longhorn.replicaCount,
                         defaultDataLocality: 'best-effort',
                     },
                     ingress: {

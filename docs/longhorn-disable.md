@@ -30,30 +30,16 @@ Using k3d, you can run some OrangeLab components, but you will need to set up th
 
 For more information on k3d limitations with Longhorn, see: https://github.com/k3d-io/k3d/blob/main/docs/faq/faq.md#longhorn-in-k3d
 
-## Storage Configuration Options
+## Use Local Storage for an Application
 
-### Option 1: Disable Longhorn and Change Default Storage Class
-
-To use local storage for all applications:
+To disable Longhorn and use local storage for each application:
 
 ```sh
 pulumi config set longhorn:enabled false
-pulumi config set orangelab:storageClass local-path
-pulumi config set orangelab:storageClass-gpu local-path
-pulumi up
-```
-
-### Option 2: Use Local Storage for a Specific Application
-
-To configure just a single application to use local storage:
-
-```sh
 # Example: Configure Ollama to use local-path storage
 pulumi config set ollama:storageClass local-path
 pulumi up
 ```
-
-This configuration applies to any application that supports the `storageClass` parameter.
 
 ## Node Selection with Local Storage
 
