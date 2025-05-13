@@ -1,6 +1,6 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
-import { Volumes } from './volumes';
+import { Storage } from './storage';
 
 export interface ContainerSpec {
     name?: string;
@@ -25,7 +25,7 @@ export class Containers {
     serviceAccount: kubernetes.core.v1.ServiceAccount;
     spec: ContainerSpec;
     affinity?: kubernetes.types.input.core.v1.Affinity;
-    volumes?: Volumes;
+    storage?: Storage;
     config: pulumi.Config;
 
     constructor(
@@ -34,7 +34,7 @@ export class Containers {
             spec: ContainerSpec;
             metadata: kubernetes.types.input.meta.v1.ObjectMeta;
             serviceAccount: kubernetes.core.v1.ServiceAccount;
-            volumes?: Volumes;
+            storage?: Storage;
             affinity?: kubernetes.types.input.core.v1.Affinity;
             gpu?: 'nvidia' | 'amd';
             config: pulumi.Config;
@@ -43,7 +43,7 @@ export class Containers {
         this.spec = args.spec;
         this.metadata = args.metadata;
         this.serviceAccount = args.serviceAccount;
-        this.volumes = args.volumes;
+        this.storage = args.storage;
         this.affinity = args.affinity;
         this.config = args.config;
     }
@@ -84,7 +84,7 @@ export class Containers {
         if (this.args.gpu === 'amd') {
             return { seccompProfile: { type: 'Unconfined' } };
         }
-        return this.args.gpu || this.volumes?.hasLocal()
+        return this.args.gpu || this.storage?.hasLocal()
             ? { privileged: true }
             : undefined;
     }
@@ -103,18 +103,18 @@ export class Containers {
 
     private createVolumes() {
         if (this.args.gpu === 'amd') {
-            this.volumes?.addLocalVolume({
+            this.storage?.addLocalVolume({
                 name: 'dev-kfd',
                 hostPath: '/dev/kfd',
                 type: 'CharDevice',
             });
-            this.volumes?.addLocalVolume({
+            this.storage?.addLocalVolume({
                 name: 'dev-dri',
                 hostPath: '/dev/dri',
                 type: 'Directory',
             });
         }
-        return this.volumes?.create();
+        return this.storage?.createVolumes();
     }
 
     private createVolumeMounts():

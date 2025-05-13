@@ -53,7 +53,7 @@ export interface PersistentVolume {
     overrideFullname?: string;
 }
 
-export class Volumes {
+export class Storage extends pulumi.ComponentResource {
     private readonly longhornVolumes = new Map<string, LonghornVolume>();
     private readonly volumes = new Map<string, kubernetes.types.input.core.v1.Volume>();
     private readonly config: pulumi.Config;
@@ -70,13 +70,14 @@ export class Volumes {
             readonly metadata: Metadata;
         },
     ) {
+        super('orangelab:Storage', `${appName}-storage`, args, { parent: args.scope });
         this.config = args.config;
         this.namespace = args.namespace;
         this.scope = args.scope;
         this.metadata = args.metadata;
     }
 
-    create(): kubernetes.types.input.core.v1.Volume[] {
+    createVolumes(): kubernetes.types.input.core.v1.Volume[] {
         return Array.from(this.volumes.values());
     }
 
@@ -107,7 +108,7 @@ export class Volumes {
                 storageClass: this.config.get(`${prefix}storageClass`),
                 type: volume?.type ?? StorageType.Default,
             },
-            { parent: this.scope },
+            { parent: this },
         );
         this.longhornVolumes.set(volumeName, storage);
 
@@ -132,19 +133,17 @@ export class Volumes {
     }
 
     hasLocal(): boolean {
-        return this.create().some(volume => volume.hostPath !== undefined);
+        return this.createVolumes().some(volume => volume.hostPath !== undefined);
     }
 
     hasVolumes(): boolean {
         return this.volumes.size > 0;
     }
 
-    addConfigMapVolume(name: string, configMapName: string) {
+    addConfigMapVolume(name: string) {
         this.volumes.set(name, {
             name,
-            configMap: {
-                name: configMapName,
-            },
+            configMap: { name },
         });
     }
 

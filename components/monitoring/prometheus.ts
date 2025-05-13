@@ -84,7 +84,7 @@ export class Prometheus extends pulumi.ComponentResource {
                         },
                         persistence: {
                             enabled: true,
-                            existingClaim: this.app.volumes.getClaimName('grafana'),
+                            existingClaim: this.app.storage.getClaimName('grafana'),
                         },
                     },
                     kubeApiServer: { enabled: true },
@@ -137,8 +137,8 @@ export class Prometheus extends pulumi.ComponentResource {
     // https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/platform/storage.md
     private createVolumeClaimTemplate(componentName?: string) {
         return {
-            spec: this.app.volumes.isDynamic(componentName)
-                ? { storageClassName: this.app.volumes.getStorageClass(componentName) }
+            spec: this.app.storage.isDynamic(componentName)
+                ? { storageClassName: this.app.storage.getStorageClass(componentName) }
                 : {
                       selector: {
                           matchLabels: {

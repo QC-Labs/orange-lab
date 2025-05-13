@@ -41,9 +41,15 @@ export class Ollama extends pulumi.ComponentResource {
         const amdTargets = this.config.get('HCC_AMDGPU_TARGETS');
         const extraEnv = [
             { name: 'OLLAMA_DEBUG', value: 'false' },
-            { name: 'OLLAMA_KEEP_ALIVE', value: this.config.get('OLLAMA_KEEP_ALIVE') ?? '5m' },
+            {
+                name: 'OLLAMA_KEEP_ALIVE',
+                value: this.config.get('OLLAMA_KEEP_ALIVE') ?? '5m',
+            },
             { name: 'OLLAMA_LOAD_TIMEOUT', value: '5m' },
-            { name: 'OLLAMA_CONTEXT_LENGTH', value: this.config.get('OLLAMA_CONTEXT_LENGTH') ?? '2048' },
+            {
+                name: 'OLLAMA_CONTEXT_LENGTH',
+                value: this.config.get('OLLAMA_CONTEXT_LENGTH') ?? '2048',
+            },
         ];
         if (amdGpu && gfxVersion) {
             extraEnv.push({
@@ -83,7 +89,7 @@ export class Ollama extends pulumi.ComponentResource {
                     replicaCount: 1,
                     persistentVolume: {
                         enabled: true,
-                        existingClaim: this.app.volumes.getClaimName(),
+                        existingClaim: this.app.storage.getClaimName(),
                     },
                     ingress: {
                         enabled: true,

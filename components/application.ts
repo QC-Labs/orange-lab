@@ -6,7 +6,7 @@ import { Containers, ContainerSpec } from './containers';
 import { Metadata } from './metadata';
 import { Network } from './network';
 import { Nodes } from './nodes';
-import { LocalVolume, PersistentVolume, Volumes } from './volumes';
+import { LocalVolume, PersistentVolume, Storage } from './storage';
 
 /**
  * Application class provides DSL (Domain Specific Language) to simplify creation of Kubernetes manifests.
@@ -23,7 +23,7 @@ export class Application {
     storageOnly = false;
     readonly metadata: Metadata;
     readonly nodes: Nodes;
-    readonly volumes: Volumes;
+    readonly storage: Storage;
     readonly network: Network;
     readonly namespace: string;
 
@@ -62,7 +62,7 @@ export class Application {
             config: this.config,
             gpu: this.gpu,
         });
-        this.volumes = new Volumes(appName, {
+        this.storage = new Storage(appName, {
             scope: this.scope,
             config: this.config,
             namespace: this.namespace,
@@ -77,12 +77,12 @@ export class Application {
     }
 
     addStorage(volume?: PersistentVolume) {
-        this.volumes.addPersistentVolume(volume);
+        this.storage.addPersistentVolume(volume);
         return this;
     }
 
     addLocalStorage(volume: LocalVolume) {
-        this.volumes.addLocalVolume(volume);
+        this.storage.addLocalVolume(volume);
         return this;
     }
 
@@ -151,9 +151,7 @@ export class Application {
             },
             { parent: this.scope },
         );
-
-        this.volumes.addConfigMapVolume(configMapName, configMapName);
-
+        this.storage.addConfigMapVolume(configMapName);
         return this;
     }
 
@@ -178,7 +176,7 @@ export class Application {
         const podSpec = new Containers(this.appName, {
             spec: args,
             metadata: this.metadata.get(),
-            volumes: this.volumes,
+            storage: this.storage,
             serviceAccount: this.serviceAccount,
             affinity: this.nodes.getAffinity(),
             gpu: this.gpu,
@@ -192,12 +190,16 @@ export class Application {
                     replicas: 1,
                     selector: { matchLabels: this.metadata.getSelectorLabels() },
                     template: podSpec.createPodTemplateSpec(),
-                    strategy: this.volumes.hasVolumes()
+                    strategy: this.storage.hasVolumes()
                         ? { type: 'Recreate', rollingUpdate: undefined }
                         : { type: 'RollingUpdate' },
                 },
             },
-            { parent: this.scope, deleteBeforeReplace: true },
+            {
+                parent: this.scope,
+                deleteBeforeReplace: true,
+                dependsOn: this.storage,
+            },
         );
     }
 
@@ -222,7 +224,7 @@ export class Application {
                     template: podSpec.createPodTemplateSpec(),
                 },
             },
-            { parent: this.scope },
+            { parent: this.scope, dependsOn: this.storage },
         );
     }
 
@@ -233,7 +235,7 @@ export class Application {
         const podSpec = new Containers(this.appName, {
             spec: args,
             metadata,
-            volumes: this.volumes,
+            storage: this.storage,
             serviceAccount: this.serviceAccount,
             affinity: this.nodes.getAffinity(),
             config: this.config,
@@ -246,7 +248,7 @@ export class Application {
                     template: podSpec.createPodTemplateSpec(),
                 },
             },
-            { parent: this.scope },
+            { parent: this.scope, dependsOn: this.storage },
         );
     }
 }

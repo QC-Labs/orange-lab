@@ -58,10 +58,6 @@ export class LonghornVolume extends pulumi.ComponentResource {
             'Cannot use both cloneFromClaim and fromVolume',
         );
         assert(
-            !(args.fromVolume && args.storageClass),
-            'StorageClass cannot be changed when using existing Longhorn volumes',
-        );
-        assert(
             !(args.fromVolume && args.fromBackup),
             'Either use fromVolume or fromBackup',
         );

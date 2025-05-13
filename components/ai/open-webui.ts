@@ -100,7 +100,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
                     image: { tag: appVersion },
                     persistence: {
                         enabled: true,
-                        existingClaim: app.volumes.getClaimName(),
+                        existingClaim: app.storage.getClaimName(),
                     },
                     pipelines: { enabled: false },
                     ingress: {
