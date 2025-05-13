@@ -4,7 +4,7 @@ import assert from 'node:assert';
 import { rootConfig } from './root-config';
 import { StorageType } from './types';
 
-interface PersistentStorageArgs {
+interface LonghornVolumeArgs {
     name: string;
     namespace: pulumi.Output<string> | string;
     size: string;
@@ -42,17 +42,17 @@ interface PersistentStorageArgs {
 
 const staleReplicaTimeout = (48 * 60).toString();
 
-export class PersistentStorage extends pulumi.ComponentResource {
+export class LonghornVolume extends pulumi.ComponentResource {
     volumeClaimName: string;
     storageClassName: pulumi.Output<string>;
     isDynamic: boolean;
 
     constructor(
         private name: string,
-        private args: PersistentStorageArgs,
+        private args: LonghornVolumeArgs,
         opts?: pulumi.ComponentResourceOptions,
     ) {
-        super('orangelab:PersistentStorage', name, args, opts);
+        super('orangelab:LonghornVolume', name, args, opts);
         assert(
             !(args.cloneFromClaim && args.fromVolume),
             'Cannot use both cloneFromClaim and fromVolume',
@@ -82,7 +82,7 @@ export class PersistentStorage extends pulumi.ComponentResource {
         }
     }
 
-    private createVolume(args: PersistentStorageArgs) {
+    private createVolume(args: LonghornVolumeArgs) {
         assert(!args.fromVolume);
         const storageClassName =
             this.args.storageClass ?? this.createLonghornStorageClass();
@@ -94,7 +94,7 @@ export class PersistentStorage extends pulumi.ComponentResource {
         return pvc.spec.storageClassName;
     }
 
-    private attachVolume(args: PersistentStorageArgs) {
+    private attachVolume(args: LonghornVolumeArgs) {
         assert(args.fromVolume && !args.storageClass);
         const existingVolume = this.createLonghornPV({
             name: args.name,

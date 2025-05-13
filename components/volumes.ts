@@ -1,10 +1,10 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
+import { LonghornVolume } from './longhorn-volume';
 import { Metadata } from './metadata';
-import { PersistentStorage } from './persistent-storage';
-import { StorageType } from './types';
 import { rootConfig } from './root-config';
+import { StorageType } from './types';
 
 export interface LocalVolume {
     name: string;
@@ -28,7 +28,7 @@ export interface PersistentVolume {
     size?: string;
     /**
      * The type of persistent storage to use.
-     * Defaults to `PersistentStorageType.Default` if not specified.
+     * Defaults to `StorageType.Default` if not specified.
      */
     type?: StorageType;
     /**
@@ -54,7 +54,7 @@ export interface PersistentVolume {
 }
 
 export class Volumes {
-    private readonly persistentStorage = new Map<string, PersistentStorage>();
+    private readonly longhornVolumes = new Map<string, LonghornVolume>();
     private readonly volumes = new Map<string, kubernetes.types.input.core.v1.Volume>();
     private readonly config: pulumi.Config;
     private readonly namespace: string;
@@ -91,7 +91,7 @@ export class Volumes {
         const volumeName = volume?.name ? `${this.appName}-${volume.name}` : this.appName;
         const prefix = volume?.name ? `${volume.name}/` : '';
 
-        const storage = new PersistentStorage(
+        const storage = new LonghornVolume(
             `${volumeName}-storage`,
             {
                 cloneFromClaim: volume?.cloneFromClaim,
@@ -109,7 +109,7 @@ export class Volumes {
             },
             { parent: this.scope },
         );
-        this.persistentStorage.set(volumeName, storage);
+        this.longhornVolumes.set(volumeName, storage);
 
         this.volumes.set(volumeName, {
             name: volumeName,
@@ -119,14 +119,14 @@ export class Volumes {
 
     getClaimName(storageName?: string): string {
         const volumeName = storageName ? `${this.appName}-${storageName}` : this.appName;
-        const storage = this.persistentStorage.get(volumeName);
+        const storage = this.longhornVolumes.get(volumeName);
         assert(storage, `Storage ${volumeName} not found`);
         return storage.volumeClaimName;
     }
 
     getStorageClass(storageName?: string): pulumi.Output<string> {
         const volumeName = storageName ? `${this.appName}-${storageName}` : this.appName;
-        const storage = this.persistentStorage.get(volumeName);
+        const storage = this.longhornVolumes.get(volumeName);
         assert(storage, `Storage ${volumeName} not found`);
         return storage.storageClassName;
     }
@@ -156,7 +156,7 @@ export class Volumes {
      */
     isDynamic(storageName?: string): boolean {
         const volumeName = storageName ? `${this.appName}-${storageName}` : this.appName;
-        const storage = this.persistentStorage.get(volumeName);
+        const storage = this.longhornVolumes.get(volumeName);
         assert(storage, `Storage ${volumeName} not found`);
         return storage.isDynamic;
     }
