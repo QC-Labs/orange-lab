@@ -1,6 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
-import { PersistentStorageType } from '../persistent-storage';
+import { StorageType } from '../types';
 
 export interface SDNextArgs {
     domainName: string;
@@ -21,7 +21,7 @@ export class SDNext extends pulumi.ComponentResource {
             domainName: args.domainName,
             gpu: true,
         })
-            .addStorage({ type: PersistentStorageType.GPU })
+            .addStorage({ type: StorageType.GPU })
             .addDeployment({
                 image: 'saladtechnologies/sdnext:base',
                 port: 7860,

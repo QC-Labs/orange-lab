@@ -1,7 +1,7 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
-import { PersistentStorageType } from '../persistent-storage';
+import { StorageType } from '../types';
 
 export interface OpenWebUIArgs {
     domainName: string;
@@ -30,7 +30,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
             gpu: true,
         })
             .addDefaultLimits({ request: { cpu: '5m', memory: '1.2Gi' } })
-            .addStorage({ type: PersistentStorageType.GPU });
+            .addStorage({ type: StorageType.GPU });
 
         if (app.storageOnly) return;
 

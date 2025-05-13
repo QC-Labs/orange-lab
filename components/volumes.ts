@@ -2,7 +2,8 @@ import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
 import { Metadata } from './metadata';
-import { PersistentStorage, PersistentStorageType } from './persistent-storage';
+import { PersistentStorage } from './persistent-storage';
+import { StorageType } from './types';
 import { rootConfig } from './root-config';
 
 export interface LocalVolume {
@@ -29,7 +30,7 @@ export interface PersistentVolume {
      * The type of persistent storage to use.
      * Defaults to `PersistentStorageType.Default` if not specified.
      */
-    type?: PersistentStorageType;
+    type?: StorageType;
     /**
      * Specifies an existing volume name to potentially restore data from.
      * This is typically used in conjunction with backup/restore mechanisms.
@@ -104,7 +105,7 @@ export class Volumes {
                 namespace: this.namespace,
                 size: volume?.size ?? this.config.require(`${prefix}storageSize`),
                 storageClass: this.config.get(`${prefix}storageClass`),
-                type: volume?.type ?? PersistentStorageType.Default,
+                type: volume?.type ?? StorageType.Default,
             },
             { parent: this.scope },
         );

@@ -1,6 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
-import { PersistentStorageType } from '../persistent-storage';
+import { StorageType } from '../types';
 
 export interface InvokeAiArgs {
     domainName: string;
@@ -21,7 +21,7 @@ export class InvokeAi extends pulumi.ComponentResource {
             domainName: args.domainName,
             gpu: true,
         })
-            .addStorage({ type: PersistentStorageType.GPU })
+            .addStorage({ type: StorageType.GPU })
             .addDeployment({
                 image: `ghcr.io/invoke-ai/invokeai:${imageTag}`,
                 port: 9090,

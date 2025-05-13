@@ -2,11 +2,7 @@ import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
 import { rootConfig } from './root-config';
-
-export enum PersistentStorageType {
-    Default,
-    GPU,
-}
+import { StorageType } from './types';
 
 interface PersistentStorageArgs {
     name: string;
@@ -15,7 +11,7 @@ interface PersistentStorageArgs {
     /**
      * Determine storage class based on workload type
      */
-    type?: PersistentStorageType;
+    type?: StorageType;
     /**
      * Override storage class used
      */
@@ -113,25 +109,29 @@ export class PersistentStorage extends pulumi.ComponentResource {
     }
 
     private createLonghornStorageClass(): pulumi.Output<string> {
-        const isLocalOnly = this.args.type === PersistentStorageType.GPU;
-        const isDefault = this.args.type === PersistentStorageType.Default;
-        const storageClass = new kubernetes.storage.v1.StorageClass(`${this.name}-sc`, {
-            metadata: {
-                name: `longhorn-${this.args.name}`,
-                namespace: 'longhorn-system',
+        const isLocalOnly = this.args.type === StorageType.GPU;
+        const isDefault = this.args.type === StorageType.Default;
+        const storageClass = new kubernetes.storage.v1.StorageClass(
+            `${this.name}-sc`,
+            {
+                metadata: {
+                    name: `longhorn-${this.args.name}`,
+                    namespace: 'longhorn-system',
+                },
+                provisioner: 'driver.longhorn.io',
+                allowVolumeExpansion: true,
+                parameters: {
+                    numberOfReplicas: isDefault
+                        ? rootConfig.longhorn.replicaCount.toString()
+                        : '1',
+                    dataLocality: isLocalOnly ? 'strict-local' : 'best-effort',
+                    ...(this.args.fromBackup && { fromBackup: this.args.fromBackup }),
+                    staleReplicaTimeout: isDefault ? '30' : staleReplicaTimeout,
+                },
+                volumeBindingMode: isLocalOnly ? 'WaitForFirstConsumer' : 'Immediate',
             },
-            provisioner: 'driver.longhorn.io',
-            allowVolumeExpansion: true,
-            parameters: {
-                numberOfReplicas: isDefault
-                    ? rootConfig.longhorn.replicaCount.toString()
-                    : '1',
-                dataLocality: isLocalOnly ? 'strict-local' : 'best-effort',
-                ...(this.args.fromBackup && { fromBackup: this.args.fromBackup }),
-                staleReplicaTimeout: isDefault ? '30' : staleReplicaTimeout,
-            },
-            volumeBindingMode: isLocalOnly ? 'WaitForFirstConsumer' : 'Immediate',
-        });
+            { parent: this },
+        );
         return storageClass.metadata.name;
     }
 

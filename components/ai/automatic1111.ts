@@ -1,6 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
-import { PersistentStorageType } from '../persistent-storage';
+import { StorageType } from '../types';
 
 export interface Automatic1111Args {
     domainName: string;
@@ -24,7 +24,7 @@ export class Automatic1111 extends pulumi.ComponentResource {
             domainName: args.domainName,
             gpu: true,
         })
-            .addStorage({ type: PersistentStorageType.GPU })
+            .addStorage({ type: StorageType.GPU })
             .addDeployment({
                 image: 'universonic/stable-diffusion-webui:full',
                 commandArgs: ['--listen', '--api', '--skip-torch-cuda-test'],

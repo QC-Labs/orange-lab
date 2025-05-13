@@ -1,7 +1,7 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
-import { PersistentStorageType } from '../persistent-storage';
+import { StorageType } from '../types';
 
 export interface OllamaArgs {
     domainName: string;
@@ -25,7 +25,7 @@ export class Ollama extends pulumi.ComponentResource {
             gpu: true,
         })
             .addDefaultLimits({ request: { cpu: '5m', memory: '3Gi' } })
-            .addStorage({ type: PersistentStorageType.GPU });
+            .addStorage({ type: StorageType.GPU });
 
         if (this.app.storageOnly) return;
 

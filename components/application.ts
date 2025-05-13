@@ -137,10 +137,8 @@ export class Application {
 
     addConfigFile(filename: string, content: pulumi.Input<string>) {
         if (this.storageOnly) return this;
-
         const configMapName = `${this.appName}-${filename}-config`;
         const configMapData = { [filename]: content };
-
         new ConfigMap(
             `${this.appName}-${filename}-config`,
             {
