@@ -58,7 +58,7 @@ export class HomeAssistant extends pulumi.ComponentResource {
                     replicaCount: 1,
                 },
             },
-            { parent: this },
+            { parent: this, dependsOn: app.storage },
         );
 
         this.endpointUrl = `https://${hostname}.${args.domainName}`;

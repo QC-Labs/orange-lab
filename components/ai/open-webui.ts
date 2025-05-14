@@ -111,7 +111,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
                     },
                 },
             },
-            { parent: this },
+            { parent: this, dependsOn: app.storage },
         );
     }
 }

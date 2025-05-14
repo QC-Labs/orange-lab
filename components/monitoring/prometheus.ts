@@ -126,7 +126,7 @@ export class Prometheus extends pulumi.ComponentResource {
                     },
                 },
             },
-            { parent: this },
+            { parent: this, dependsOn: this.app.storage },
         );
 
         this.alertmanagerEndpointUrl = `https://${alertManagerHostname}.${args.domainName}`;
