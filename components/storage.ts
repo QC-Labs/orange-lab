@@ -1,4 +1,5 @@
 import * as kubernetes from '@pulumi/kubernetes';
+import { ConfigMap } from '@pulumi/kubernetes/core/v1';
 import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
 import { LonghornVolume } from './longhorn-volume';
@@ -140,11 +141,28 @@ export class Storage extends pulumi.ComponentResource {
         return this.volumes.size > 0;
     }
 
-    addConfigMapVolume(name: string) {
-        this.volumes.set(name, {
-            name,
-            configMap: { name },
+    addConfigFile(filename: string, content: pulumi.Input<string>): string {
+        const configMapName = `${this.appName}-${filename}-config`;
+        const configMapData = { [filename]: content };
+
+        new ConfigMap(
+            configMapName,
+            {
+                metadata: {
+                    name: configMapName,
+                    namespace: this.namespace,
+                    labels: this.metadata.get().labels,
+                },
+                data: configMapData,
+            },
+            { parent: this },
+        );
+
+        this.volumes.set(configMapName, {
+            name: configMapName,
+            configMap: { name: configMapName },
         });
+        return configMapName;
     }
 
     /**
