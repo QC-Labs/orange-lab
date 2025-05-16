@@ -89,6 +89,7 @@ pulumi up
 ```
 
 The backup setting precedence is:
+
 1. App-specific setting (`<app>:backupVolume`) if specified
 2. Global setting (`longhorn:backupAllVolumes`) if no app-specific setting exists
 
@@ -115,11 +116,13 @@ Notes:
 For more control over the process and to get meaningful volume names:
 
 1. Restore the volume through the Longhorn UI first
+    - Name the volume after the application (e.g., "ollama")
 2. Use the `fromVolume` parameter to attach the existing volume:
 
 ```sh
 # First, restore volume through Longhorn UI and note its name
 pulumi config set <app>:fromVolume "my-restored-volume"
+pulumi up
 ```
 
 This approach gives you better volume naming and allows you to verify the restore before attaching it to your application.

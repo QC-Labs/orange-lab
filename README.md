@@ -80,6 +80,7 @@ For general application configuration and deployment instructions, see [Configur
 # Documentation
 
 -   [Configuration Guide](./docs/configuration.md) - Application configuration and deployment
+-   [Upgrade Guide](./docs/upgrade.md) - Upgrading your OrangeLab installation
 -   [Disabling Longhorn](./docs/longhorn-disable.md) - Running OrangeLab without distributed storage
 -   [AMD GPU support](./docs/amd-gpu.md) - Using AMD GPUs with OrangeLab
 -   [Backup and Restore](./docs/backup.md) - Using Longhorn backups with S3 storage

@@ -94,7 +94,7 @@ pulumi config set prometheus:requiredNodeLabel orangelab/prometheus=true
 
 ### AMD GPU
 
-GPU node labeling is automatic with Node Feature Discovery (NFD) enabled. Nodes with GPUs get labeled with:
+GPU node labeling is automatic with Node Feature Discovery (NFD) enabled.
 
 To deploy to nodes with `orangelab/gpu-amd` label and switch to ROCm image if needed:
 
@@ -108,9 +108,12 @@ More details at [docs/amd-gpu.md](./amd-gpu.md)
 
 ```sh
 # Removes all resources (incl. storage) when false
-pulumi config set ollama:enabled true
-# Disable application but retain its storage volumes:
+pulumi config set ollama:enabled false
+pulumi up
+
+# Disable application but retain its storage volumes (when using dynamic volumes):
 pulumi config set ollama:storageOnly true
+pulumi up
 
 # Expand storage size to 100GB (not supported when using existing volumes)
 pulumi config set ollama:storageSize 100Gi
@@ -122,6 +125,32 @@ pulumi config set ollama:fromVolume existing-volume-name
 # Enable backups to S3-compatible storage
 # Ignored when `longhorn:backupAllVolumes` is enabled
 pulumi config set ollama:backupVolume true
+```
+
+This approach allows you to safely disable applications without losing data, even during breaking changes.
+
+#### Using Static Volume Names
+
+While dynamically provisioned volumes are convenient for initial deployments, using static volumes allows you to shutdown all application resources without loss of data. It also helps with having descriptive names for volumes instead of auto-generated ones.
+
+Recommended Workflow to create static volumes:
+
+```sh
+# Start with dynamic volumes for initial deployment
+pulumi config set <app>:enabled true
+pulumi up
+
+# Once app is stable, stop it but leave storage around
+pulumi config set <app>:storageOnly true
+pulumi up
+
+# Clone the volume in Longhorn UI and give it descriptive name, f.e. the app name
+
+# Attach the cloned/restored volume and start the app
+pulumi config set <app>:fromVolume "<volume>"
+pulumi config set <app>:enabled true
+pulumi config delete <app>:storageOnly
+pulumi up
 ```
 
 ### Storage class
