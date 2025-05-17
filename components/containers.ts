@@ -1,24 +1,7 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Storage } from './storage';
-
-export interface ContainerSpec {
-    name?: string;
-    image: string;
-    port?: number;
-    ports?: { name: string; port: number; hostname?: string }[];
-    commandArgs?: string[];
-    env?: Record<string, string | pulumi.Output<string> | undefined>;
-    hostNetwork?: boolean;
-    volumeMounts?: { mountPath: string; name?: string; subPath?: string }[];
-    healthChecks?: boolean;
-    resources?: {
-        limits?: { cpu?: string; memory?: string };
-        requests?: { cpu?: string; memory?: string };
-    };
-    runAsUser?: number;
-    restartPolicy?: string;
-}
+import { ContainerSpec } from './types';
 
 export class Containers {
     metadata: kubernetes.types.input.meta.v1.ObjectMeta;

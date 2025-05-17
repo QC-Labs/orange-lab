@@ -2,13 +2,7 @@ import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
 import { Metadata } from './metadata';
-import { ContainerSpec } from './containers';
-
-export interface ServicePort {
-    name: string;
-    port: number;
-    hostname?: string;
-}
+import { ContainerSpec, ServicePort } from './types';
 
 export class Network {
     serviceUrl?: string;
@@ -47,8 +41,15 @@ export class Network {
         ];
         if (ports.length === 0) return;
 
-        const service = this.createService(ports);
-        this.createIngress(service, ports);
+        const httpPorts = ports.filter(p => !p.tcp);
+        const tcpPorts = ports.filter(p => p.tcp);
+        if (httpPorts.length) {
+            const service = this.createService(httpPorts);
+            this.createIngress(service, httpPorts);
+        }
+        if (tcpPorts.length) {
+            this.createLoadBalancers(tcpPorts);
+        }
         const port = ports[0].port.toString();
         this.serviceUrl = `http://${hostname}.${metadata.namespace}:${port}`;
         this.endpointUrl = `https://${hostname}.${this.domainName}`;
@@ -76,6 +77,38 @@ export class Network {
         );
     }
 
+    private createLoadBalancers(ports: ServicePort[]) {
+        ports.map(
+            p =>
+                new kubernetes.core.v1.Service(
+                    `${this.appName}-${p.name}-lb`,
+                    {
+                        metadata: {
+                            ...this.metadata.get(),
+                            annotations: {
+                                'tailscale.com/hostname':
+                                    p.hostname ?? this.config.require('hostname'),
+                            },
+                        },
+                        spec: {
+                            type: 'LoadBalancer',
+                            loadBalancerClass: 'tailscale',
+                            ports: [
+                                {
+                                    name: p.name,
+                                    protocol: 'TCP',
+                                    port: p.port,
+                                    targetPort: p.port,
+                                },
+                            ],
+                            selector: this.metadata.getSelectorLabels(),
+                        },
+                    },
+                    { parent: this.scope },
+                ),
+        );
+    }
+
     private createIngress(
         service: kubernetes.core.v1.Service,
         ports: ServicePort[],
@@ -85,14 +118,15 @@ export class Network {
         return ports.map((p, i) => {
             assert(p.hostname, `hostname is required for port ${p.name}`);
             const componentName = i === 0 ? this.appName : `${this.appName}-${p.name}`;
+            const metadata = {
+                ...(i === 0
+                    ? this.metadata.get()
+                    : this.metadata.getForComponent(p.name)),
+            };
             return new kubernetes.networking.v1.Ingress(
                 `${componentName}-ingress`,
                 {
-                    metadata: {
-                        ...(i === 0
-                            ? this.metadata.get()
-                            : this.metadata.getForComponent(p.name)),
-                    },
+                    metadata,
                     spec: {
                         ingressClassName: 'tailscale',
                         tls: [{ hosts: [p.hostname] }],
