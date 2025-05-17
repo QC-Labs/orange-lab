@@ -43,8 +43,6 @@ export class OpenWebUI extends pulumi.ComponentResource {
                 repositoryOpts: { repo: 'https://helm.openwebui.com/' },
                 values: {
                     affinity: app.nodes.getAffinity(),
-                    ollamaUrls: [args.ollamaUrl],
-                    openaiBaseApiUrl: args.openAiUrl,
                     extraEnvVars: [
                         { name: 'AUTOMATIC1111_BASE_URL', value: args.automatic1111Url },
                         { name: 'BYPASS_MODEL_ACCESS_CONTROL', value: 'True' },
@@ -96,19 +94,21 @@ export class OpenWebUI extends pulumi.ComponentResource {
                         },
                         { name: 'WEBUI_URL', value: this.endpointUrl },
                     ],
-                    ollama: { enabled: false },
                     image: { tag: appVersion },
-                    persistence: {
-                        enabled: true,
-                        existingClaim: app.storage.getClaimName(),
-                    },
-                    pipelines: { enabled: false },
                     ingress: {
                         enabled: true,
                         class: 'tailscale',
                         host: hostname,
                         tls: true,
                     },
+                    ollama: { enabled: false },
+                    ollamaUrls: [args.ollamaUrl],
+                    openaiBaseApiUrl: args.openAiUrl,
+                    persistence: {
+                        enabled: true,
+                        existingClaim: app.storage.getClaimName(),
+                    },
+                    pipelines: { enabled: false },
                 },
             },
             { parent: this, dependsOn: app.storage },

@@ -72,25 +72,8 @@ export class Ollama extends pulumi.ComponentResource {
                 repositoryOpts: { repo: 'https://otwld.github.io/ollama-helm/' },
                 values: {
                     affinity: this.app.nodes.getAffinity(),
-                    fullnameOverride: 'ollama',
-                    securityContext: { privileged: true },
-                    runtimeClassName: amdGpu ? undefined : 'nvidia',
                     extraEnv,
-                    ollama: {
-                        gpu: {
-                            enabled: true,
-                            type: amdGpu ? 'amd' : 'nvidia',
-                            number: 1,
-                        },
-                        models: {
-                            run: this.config.get('models')?.split(',') ?? [],
-                        },
-                    },
-                    replicaCount: 1,
-                    persistentVolume: {
-                        enabled: true,
-                        existingClaim: this.app.storage.getClaimName(),
-                    },
+                    fullnameOverride: 'ollama',
                     ingress: {
                         enabled: true,
                         className: 'tailscale',
@@ -102,6 +85,23 @@ export class Ollama extends pulumi.ComponentResource {
                         ],
                         tls: [{ hosts: [hostname] }],
                     },
+                    ollama: {
+                        gpu: {
+                            enabled: true,
+                            type: amdGpu ? 'amd' : 'nvidia',
+                            number: 1,
+                        },
+                        models: {
+                            run: this.config.get('models')?.split(',') ?? [],
+                        },
+                    },
+                    persistentVolume: {
+                        enabled: true,
+                        existingClaim: this.app.storage.getClaimName(),
+                    },
+                    replicaCount: 1,
+                    runtimeClassName: amdGpu ? undefined : 'nvidia',
+                    securityContext: { privileged: true },
                 },
             },
             { parent: this, dependsOn: this.app.storage },

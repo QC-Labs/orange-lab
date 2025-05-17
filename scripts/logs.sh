@@ -5,6 +5,7 @@
 
 appName=$1
 namespace=${2:-$1}  # app name as namespace if not provided
+label=app.kubernetes.io/name
 
 if [ -z "$appName" ]; then
   echo "Error: Application name is required"
@@ -12,4 +13,8 @@ if [ -z "$appName" ]; then
   exit 1
 fi
 
-kubectl logs -f -l app.kubernetes.io/name=$appName -n $namespace --all-containers=true
+if [[ "$appName" == "open-webui" ]]; then
+    label=app.kubernetes.io/component
+fi
+
+kubectl logs -f -l $label=$appName -n $namespace --all-containers=true
