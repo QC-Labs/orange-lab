@@ -3,7 +3,6 @@ import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
 import { rootConfig } from './root-config';
 import { StorageType } from './types';
-import { Longhorn } from './system/longhorn';
 
 interface LonghornVolumeArgs {
     name: string;
