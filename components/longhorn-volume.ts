@@ -3,6 +3,7 @@ import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
 import { rootConfig } from './root-config';
 import { StorageType } from './types';
+import { Longhorn } from './system/longhorn';
 
 interface LonghornVolumeArgs {
     name: string;
@@ -80,14 +81,30 @@ export class LonghornVolume extends pulumi.ComponentResource {
 
     private createVolume(args: LonghornVolumeArgs) {
         assert(!args.fromVolume);
-        const storageClassName =
-            this.args.storageClass ?? this.createLonghornStorageClass();
+        let storageClassName: pulumi.Output<string> | undefined;
+        if (args.fromBackup) {
+            storageClassName = this.createBackupStorageClass().apply(x => x);
+        }
         const pvc = this.createPVC({
             name: this.volumeClaimName,
             cloneFromClaim: args.cloneFromClaim,
-            storageClassName,
+            storageClassName:
+                this.args.storageClass ??
+                storageClassName ??
+                LonghornVolume.getStorageClass(args.type),
         });
         return pvc.spec.storageClassName;
+    }
+
+    public static getStorageClass(storageType?: StorageType): string {
+        switch (storageType) {
+            case StorageType.GPU:
+                return rootConfig.storageClass.GPU;
+            case StorageType.Large:
+                return rootConfig.storageClass.Large;
+            default:
+                return rootConfig.storageClass.Default;
+        }
     }
 
     private attachVolume(args: LonghornVolumeArgs) {
@@ -104,7 +121,7 @@ export class LonghornVolume extends pulumi.ComponentResource {
         return pvc.spec.storageClassName;
     }
 
-    private createLonghornStorageClass(): pulumi.Output<string> {
+    private createBackupStorageClass(): pulumi.Output<string> {
         const isLocalOnly = this.args.type === StorageType.GPU;
         const isDefault = this.args.type === StorageType.Default;
         const storageClass = new kubernetes.storage.v1.StorageClass(

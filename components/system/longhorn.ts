@@ -12,6 +12,9 @@ export interface LonghornArgs {
 }
 
 export class Longhorn extends pulumi.ComponentResource {
+    public static defaultStorageClass = 'longhorn';
+    public static gpuStorageClass = 'longhorn-gpu';
+    public static largeStorageClass = 'longhorn-large';
     public readonly endpointUrl: string | undefined;
 
     private readonly app: Application;
@@ -36,6 +39,8 @@ export class Longhorn extends pulumi.ComponentResource {
             backupSecretName: backupSecret?.metadata.name,
             hostname,
         });
+        this.createStorageClasses();
+
         if (this.config.getBoolean('snapshotEnabled')) {
             this.createSnapshotJob();
         }
@@ -125,6 +130,47 @@ export class Longhorn extends pulumi.ComponentResource {
                 },
             },
             { parent: this },
+        );
+    }
+
+    private createStorageClasses() {
+        new kubernetes.storage.v1.StorageClass(
+            `${this.name}-gpu-storage`,
+            {
+                metadata: {
+                    name: Longhorn.gpuStorageClass,
+                    namespace: this.app.namespace,
+                },
+                allowVolumeExpansion: true,
+                provisioner: 'driver.longhorn.io',
+                volumeBindingMode: 'WaitForFirstConsumer',
+                reclaimPolicy: 'Delete',
+                parameters: {
+                    numberOfReplicas: '1',
+                    dataLocality: 'strict-local',
+                    staleReplicaTimeout: (48 * 60).toString(),
+                },
+            },
+            { dependsOn: this.chart, parent: this },
+        );
+        new kubernetes.storage.v1.StorageClass(
+            `${this.name}-large-storage`,
+            {
+                metadata: {
+                    name: Longhorn.largeStorageClass,
+                    namespace: this.app.namespace,
+                },
+                allowVolumeExpansion: true,
+                provisioner: 'driver.longhorn.io',
+                volumeBindingMode: 'WaitForFirstConsumer',
+                reclaimPolicy: 'Delete',
+                parameters: {
+                    numberOfReplicas: '1',
+                    dataLocality: 'best-effort',
+                    staleReplicaTimeout: (48 * 60).toString(),
+                },
+            },
+            { dependsOn: this.chart, parent: this },
         );
     }
 

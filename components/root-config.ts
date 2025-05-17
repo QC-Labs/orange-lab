@@ -4,6 +4,11 @@ class RootConfig {
     public longhorn = {
         replicaCount: parseInt(this.getAppConfig('longhorn', 'replicaCount')),
     };
+    public storageClass = {
+        Default: this.getAppConfig('orangelab', 'storageClass'),
+        GPU: this.getAppConfig('orangelab', 'storageClass-gpu'),
+        Large: this.getAppConfig('orangelab', 'storageClass-large'),
+    };
 
     public isEnabled(name: string): boolean {
         const config = new pulumi.Config(name);
