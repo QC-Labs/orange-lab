@@ -1,7 +1,7 @@
 {
     "name": "orange-lab",
     "description": "Private infrastructure for cloud natives",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "main": "index.ts",
     "license": "MIT",
     "engines": {
