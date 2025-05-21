@@ -67,6 +67,10 @@ export class NodeFeatureDiscovery extends pulumi.ComponentResource {
                     rules: [
                         {
                             name: 'amd-gpu',
+                            annotations: {
+                                'node.longhorn.io/default-node-tags':
+                                    '["gpu", "gpu-amd"]',
+                            },
                             labels: {
                                 'orangelab/gpu': 'true',
                                 'orangelab/gpu-amd': 'true',
@@ -105,6 +109,10 @@ export class NodeFeatureDiscovery extends pulumi.ComponentResource {
                     rules: [
                         {
                             name: 'nvidia-gpu',
+                            annotations: {
+                                'node.longhorn.io/default-node-tags':
+                                    '["gpu","gpu-nvidia"]',
+                            },
                             labels: {
                                 'orangelab/gpu': 'true',
                                 'orangelab/gpu-nvidia': 'true',
