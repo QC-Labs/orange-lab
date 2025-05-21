@@ -124,6 +124,39 @@ Example config fragment:
 
 ```
 
+### Mods CLI
+
+[Mods](https://github.com/charmbracelet/mods) is a command-line AI assistant that can be configured to use our Ollama instance.
+
+Configure it with `mods --settings` and update the configuration file:
+
+```yaml
+ollama:
+  base-url: https://ollama.<tsnet>.ts.net/api
+  default-model: qwen3
+  models: # https://ollama.com/library
+    "qwen3:8b":
+      aliases: ["qwen3"]
+      max-input-chars: 650000
+    "gemma3:12b-it-qat":
+      aliases: ["gemma3"]
+      max-input-chars: 650000
+```
+
+After configuration, you can use `mods` from any terminal to access your Ollama models.
+
+Example usage:
+```sh
+# General prompt (specify model with -m)
+mods -m gemma3 "explain kubernetes operators"
+
+# Pipe command output to mods for analysis
+rpm-ostree status -v | mods "is my system up to date?"
+
+# Process files
+mods -f config.yaml "explain this configuration"
+```
+
 ## Automatic1111 Stable Diffusion WebUI
 
 |                       |                                                                                                  |
