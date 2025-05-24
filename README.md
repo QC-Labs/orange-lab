@@ -1,5 +1,7 @@
 # OrangeLab
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/QC-Labs/orange-lab)
+
 Private infrastructure for cloud natives.
 
 <img src="docs/orange-lab-910-512.png" alt="OrangeLab logo" height="250"/>
@@ -19,7 +21,7 @@ Private infrastructure for cloud natives.
 -   automation - use Pulumi and Helm to automate most tasks and configuration
 -   easy to use - no deep Kubernetes knowledge required, sensible defaults
 -   offline mode - continue working (with some limitations) over local network when internet connection lost
--   lightweight - can be run on a single laptop using default configuration
+-   lightweight - can be run on a single laptop using default configuration, focus on consumer hardware
 -   scalable - distribute workloads across multiple machines as they become available, optional use of cloud instances for autoscaling
 -   self-healing - in case of problems, the system should recover with no user intervention
 -   immutable - no snowflakes, as long as there is at least one Longhorn replica available, components can be destroyed and easily recreated
@@ -79,6 +81,7 @@ For general application configuration and deployment instructions, see [Configur
 
 # Documentation
 
+-   [Ask Devin/DeepWiki](https://deepwiki.com/QC-Labs/orange-lab) - AI generated documentation and good place to ask questions
 -   [Configuration Guide](./docs/configuration.md) - Application configuration and deployment
 -   [Upgrade Guide](./docs/upgrade.md) - Upgrading your OrangeLab installation
 -   [Disabling Longhorn](./docs/longhorn-disable.md) - Running OrangeLab without distributed storage
