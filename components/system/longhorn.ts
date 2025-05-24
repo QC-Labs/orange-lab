@@ -96,8 +96,9 @@ export class Longhorn extends pulumi.ComponentResource {
                         replicaSoftAntiAffinity: false,
                         replicaZoneSoftAntiAffinity: false,
                         snapshotMaxCount: 20,
-                        storageMinimalAvailablePercentage: 25,
+                        storageMinimalAvailablePercentage: 10,
                         storageOverProvisioningPercentage: 100,
+                        storageReservedPercentageForDefaultDisk: 30,
                         systemManagedComponentsNodeSelector: 'orangelab/storage:true',
                     },
                     global: {
