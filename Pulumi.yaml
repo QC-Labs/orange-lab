@@ -40,7 +40,7 @@ config:
     longhorn:hostname: longhorn
     # Initial value for default storage. Adjust each volume in Longhorn UI
     longhorn:replicaCount: 2
-    longhorn:snapshotEnabled: true
+    longhorn:snapshotEnabled: false
     longhorn:snapshotCron: '0 * * * *' # every hour
     longhorn:trimEnabled: true
     longhorn:trimCron: '0 0 * * 0' # once a week on Sunday at midnight

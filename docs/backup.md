@@ -2,11 +2,13 @@
 
 Longhorn provides automated snapshots and backups of persistent volumes to S3-compatible storage (MinIO). This guide explains how to set up, configure, and use this functionality.
 
-Backup behavior:
+Longhorn jobs:
 
 -   **Snapshots**: Taken hourly for all volumes (configurable with `longhorn:snapshotCron`)
 -   **Incremental Backups**: Run daily at 00:15 (configurable with `longhorn:backupCron`)
 -   If a volume has no changes since the last backup, no data is transferred
+
+**Note:** Snapshots are disabled by default to save storage space. You can enable them with `longhorn:snapshotEnabled` to be able to revert storage to previous state. It's recommneded however to enable daily backups instead as a snapshot is also taked during backup operation.
 
 Please refer to the official MinIO installation documentation for detailed instructions on setting up MinIO: [https://min.io/docs/minio/user-guide/install.html]
 
