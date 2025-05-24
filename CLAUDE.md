@@ -51,3 +51,10 @@
 -   Follow the established pattern for new modules and components
 -   Use constructor parameter properties with access modifiers (e.g., `constructor(private readonly args: Args)`)
 -   Prefer composition over inheritance for component relationships
+
+### Secrets and Security
+
+-   Use `envSecret` field in `ContainerSpec` for sensitive data instead of command args
+-   Application class automatically creates Kubernetes Secrets and configures envFrom
+-   Environment variable names should be UPPERCASE following conventions
+-   Never expose passwords or sensitive data in command line arguments
