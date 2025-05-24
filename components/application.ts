@@ -90,6 +90,9 @@ export class Application {
     addDeployment(spec: ContainerSpec) {
         if (this.storageOnly) return this;
         this.serviceAccount = this.serviceAccount ?? this.createServiceAccount();
+        if (spec.envSecret) {
+            this.createEnvSecret(spec.envSecret);
+        }
         this.createDeployment(spec);
 
         this.network.createEndpoints(spec);
@@ -236,6 +239,24 @@ export class Application {
                 },
             },
             { parent: this.scope, dependsOn: this.storage },
+        );
+    }
+
+    private createEnvSecret(
+        secretData: Record<string, string | pulumi.Output<string> | undefined>,
+    ) {
+        return new kubernetes.core.v1.Secret(
+            `${this.appName}-secret`,
+            {
+                metadata: this.metadata.get(),
+                // filter out undefined values
+                stringData: Object.fromEntries(
+                    Object.entries(secretData)
+                        .filter(([_, v]) => v !== undefined)
+                        .map(([k, v]) => [k, pulumi.output(v).apply(String)]),
+                ),
+            },
+            { parent: this.scope },
         );
     }
 }

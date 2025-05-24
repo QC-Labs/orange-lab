@@ -18,8 +18,10 @@ export interface ContainerSpec {
     image: string;
     port?: number;
     ports?: ServicePort[];
-    commandArgs?: string[];
+    command?: string[];
+    commandArgs?: string[] | pulumi.Output<string[]>;
     env?: Record<string, string | pulumi.Output<string> | undefined>;
+    envSecret?: Record<string, string | pulumi.Output<string> | undefined>;
     hostNetwork?: boolean;
     volumeMounts?: { mountPath: string; name?: string; subPath?: string }[];
     healthChecks?: boolean;

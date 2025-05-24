@@ -59,7 +59,6 @@ export class Storage extends pulumi.ComponentResource {
     private readonly volumes = new Map<string, kubernetes.types.input.core.v1.Volume>();
     private readonly config: pulumi.Config;
     private readonly namespace: string;
-    private readonly scope: pulumi.ComponentResource;
     private readonly metadata: Metadata;
 
     constructor(
@@ -74,7 +73,6 @@ export class Storage extends pulumi.ComponentResource {
         super('orangelab:Storage', `${appName}-storage`, args, { parent: args.scope });
         this.config = args.config;
         this.namespace = args.namespace;
-        this.scope = args.scope;
         this.metadata = args.metadata;
     }
 
@@ -141,28 +139,27 @@ export class Storage extends pulumi.ComponentResource {
         return this.volumes.size > 0;
     }
 
-    addConfigFile(filename: string, content: pulumi.Input<string>): string {
-        const configMapName = `${this.appName}-${filename}-config`;
-        const configMapData = { [filename]: content };
+    addConfigFile(filename: string, content: pulumi.Input<string>) {
+        const configMapName = `${this.appName}-${filename}`;
 
         new ConfigMap(
-            configMapName,
+            `${configMapName}-config`,
             {
                 metadata: {
                     name: configMapName,
                     namespace: this.namespace,
                     labels: this.metadata.get().labels,
                 },
-                data: configMapData,
+                data: { [filename]: content },
             },
             { parent: this },
         );
 
-        this.volumes.set(configMapName, {
-            name: configMapName,
+        const volumeName = filename.replace('.', '-');
+        this.volumes.set(volumeName, {
+            name: volumeName,
             configMap: { name: configMapName },
         });
-        return configMapName;
     }
 
     /**

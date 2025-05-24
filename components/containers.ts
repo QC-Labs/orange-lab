@@ -41,7 +41,9 @@ export class Containers {
                 containers: [
                     {
                         args: this.spec.commandArgs,
+                        command: this.spec.command,
                         env: this.createEnv(),
+                        envFrom: this.createEnvSecret(),
                         image: this.spec.image,
                         livenessProbe: this.createProbe(),
                         name: this.metadata.name ?? this.appName,
@@ -105,7 +107,7 @@ export class Containers {
         | undefined {
         const mounts = (this.spec.volumeMounts ?? []).map(volumeMount => ({
             ...volumeMount,
-            ...{ name: volumeMount.name ?? this.appName },
+            ...{ name: volumeMount.name?.replace('.', '-') ?? this.appName },
         }));
         if (this.args.gpu === 'amd') {
             mounts.push({ name: 'dev-kfd', mountPath: '/dev/kfd' });
@@ -169,5 +171,9 @@ export class Containers {
         return Object.entries(env)
             .filter(([_, value]) => value)
             .map(([key, value]) => ({ name: key, value }));
+    }
+
+    private createEnvSecret() {
+        return this.spec.envSecret ? [{ secretRef: { name: this.appName } }] : undefined;
     }
 }
