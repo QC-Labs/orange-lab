@@ -3,11 +3,11 @@ import { LimitRange } from '@pulumi/kubernetes/core/v1';
 import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
 import { Containers } from './containers';
-import { ContainerSpec } from './types';
 import { Metadata } from './metadata';
 import { Network } from './network';
 import { Nodes } from './nodes';
-import { LocalVolume, PersistentVolume, Storage } from './storage';
+import { Storage } from './storage';
+import { ConfigVolume, ContainerSpec, LocalVolume, PersistentVolume } from './types';
 
 /**
  * Application class provides DSL (Domain Specific Language) to simplify creation of Kubernetes manifests.
@@ -139,9 +139,13 @@ export class Application {
         return this;
     }
 
-    addConfigFile(filename: string, content: pulumi.Input<string>) {
+    /**
+     * Adds a config volume that contains multiple configuration files mounted in the same folder.
+     * @param configVolume The config volume definition (name and files)
+     */
+    addConfigVolume(configVolume: ConfigVolume) {
         if (this.storageOnly) return this;
-        this.storage.addConfigFile(filename, content);
+        this.storage.addConfigVolume(configVolume);
         return this;
     }
 

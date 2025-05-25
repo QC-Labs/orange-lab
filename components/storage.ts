@@ -5,54 +5,7 @@ import assert from 'node:assert';
 import { LonghornVolume } from './longhorn-volume';
 import { Metadata } from './metadata';
 import { rootConfig } from './root-config';
-import { StorageType } from './types';
-
-export interface LocalVolume {
-    name: string;
-    hostPath: string;
-    type?: 'Directory' | 'DirectoryOrCreate' | 'FileOrCreate' | 'CharDevice';
-}
-
-export interface PersistentVolume {
-    /**
-     * The optional name suffix for the volume.
-     * If provided, the full volume name will be `${appName}-${name}`.
-     * If not provided, the `appName` will be used as the volume name.
-     * This name also acts as a prefix for configuration lookups (e.g., `<name>/storageSize`).
-     */
-    name?: string;
-    /**
-     * The desired size of the persistent volume (e.g., "10Gi", "100Mi").
-     * If not provided, the value will be sourced from the Pulumi config key
-     * `${name}/storageSize` or `storageSize` if `name` is not set.
-     */
-    size?: string;
-    /**
-     * The type of persistent storage to use.
-     * Defaults to `StorageType.Default` if not specified.
-     */
-    type?: StorageType;
-    /**
-     * Specifies an existing volume name to potentially restore data from.
-     * This is typically used in conjunction with backup/restore mechanisms.
-     * If not provided, the value might be sourced from the Pulumi config key
-     * `${name}/fromVolume` or `fromVolume` if `name` is not set.
-     */
-    fromVolume?: string;
-    /**
-     * Specifies the name of an existing PersistentVolumeClaim (PVC) from which to clone data.
-     * This directly populates the `dataSource` field of the new PVC.
-     */
-    cloneFromClaim?: string;
-    /**
-     * Allows explicitly setting the full name of the resulting PersistentVolumeClaim resource.
-     * This is particularly useful for integration with StatefulSets using volume claim templates,
-     * where Kubernetes automatically generates PVC names like `<volumeClaimTemplate.name>-<statefulSet.name>-<ordinalIndex>`.
-     * If not provided, the name defaults to `${appName}-${name}` or just `appName`.
-     * More info at https://longhorn.io/docs/1.8.1/snapshots-and-backups/backup-and-restore/restore-statefulset/
-     */
-    overrideFullname?: string;
-}
+import { ConfigVolume, LocalVolume, PersistentVolume, StorageType } from './types';
 
 export class Storage extends pulumi.ComponentResource {
     private readonly longhornVolumes = new Map<string, LonghornVolume>();
@@ -139,23 +92,25 @@ export class Storage extends pulumi.ComponentResource {
         return this.volumes.size > 0;
     }
 
-    addConfigFile(filename: string, content: pulumi.Input<string>) {
-        const configMapName = `${this.appName}-${filename}`;
-
+    /**
+     * Adds a config volume that contains multiple configuration files mounted in the same folder.
+     * @param configVolume The config volume definition (name and files)
+     */
+    addConfigVolume(configVolume: ConfigVolume) {
+        const volumeName = configVolume.name ?? 'config';
+        const configMapName = `${this.appName}-${volumeName}`;
         new ConfigMap(
-            `${configMapName}-config`,
+            configMapName,
             {
                 metadata: {
                     name: configMapName,
                     namespace: this.namespace,
                     labels: this.metadata.get().labels,
                 },
-                data: { [filename]: content },
+                data: configVolume.files,
             },
             { parent: this },
         );
-
-        const volumeName = filename.replace('.', '-');
         this.volumes.set(volumeName, {
             name: volumeName,
             configMap: { name: configMapName },
