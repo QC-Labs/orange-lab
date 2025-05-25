@@ -56,6 +56,11 @@ Private infrastructure for cloud natives.
 -   `open-webui` - Open WebUI frontend
 -   `sdnext` - SD.Next Stable Diffusion WebUI
 
+[Bitcoin module](./components/bitcoin/BITCOIN.md):
+
+-   `bitcoin-core` - Bitcoin Core full node
+-   `bitcoin-knots` - Bitcoin Knots full node
+
 # Platforms and limitations
 
 Installation instructions assume your machines are running Bluefin (Developer edition, https://projectbluefin.io/) based on Fedora Silverblue unless otherwise noted.

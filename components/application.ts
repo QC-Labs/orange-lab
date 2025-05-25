@@ -248,11 +248,12 @@ export class Application {
 
     private createEnvSecret(
         secretData: Record<string, string | pulumi.Output<string> | undefined>,
-    ) {
+    ): kubernetes.core.v1.Secret {
         return new kubernetes.core.v1.Secret(
             `${this.appName}-secret`,
             {
                 metadata: this.metadata.get(),
+                immutable: true,
                 // filter out undefined values
                 stringData: Object.fromEntries(
                     Object.entries(secretData)

@@ -1,4 +1,6 @@
+import * as pulumi from '@pulumi/pulumi';
 import { AIModule } from './components/ai';
+import { BitcoinModule } from './components/bitcoin';
 import { IoTModule } from './components/iot';
 import { MonitoringModule } from './components/monitoring';
 import { SystemModule } from './components/system';
@@ -54,4 +56,24 @@ export const ai = {
     automatic1111ClusterUrl: aiModule.automatic1111?.serviceUrl,
     sdnextUrl: aiModule.sdnext?.endpointUrl,
     sdnextClusterUrl: aiModule.sdnext?.serviceUrl,
+};
+
+const bitcoinModule = new BitcoinModule(
+    'bitcoin',
+    {
+        domainName: systemModule.domainName,
+    },
+    { dependsOn: systemModule },
+);
+export const bitcoin = {
+    bitcoinUsers: Object.fromEntries(
+        Object.entries(bitcoinModule.bitcoinUsers).map(([user, password]) => [
+            user,
+            pulumi.secret(password),
+        ]),
+    ),
+    bitcoinCoreUrl: bitcoinModule.bitcoinCore?.endpointUrl,
+    bitcoinCoreServiceUrl: bitcoinModule.bitcoinCore?.serviceUrl,
+    bitcoinKnotsUrl: bitcoinModule.bitcoinKnots?.endpointUrl,
+    bitcoinKnotsServiceUrl: bitcoinModule.bitcoinKnots?.serviceUrl,
 };
