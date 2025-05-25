@@ -40,7 +40,9 @@ export class Containers {
                 hostNetwork: this.spec.hostNetwork,
                 containers: [
                     {
-                        args: this.spec.commandArgs,
+                        args: Array.isArray(this.spec.commandArgs)
+                            ? this.spec.commandArgs.filter(Boolean)
+                            : this.spec.commandArgs,
                         command: this.spec.command,
                         env: this.createEnv(),
                         envFrom: this.createEnvSecret(),
