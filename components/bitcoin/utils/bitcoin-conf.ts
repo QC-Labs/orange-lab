@@ -14,11 +14,13 @@ function create({ prune }: { prune: number }): pulumi.Output<string> {
 ${prune > 0 ? `prune=${prune.toString()}` : 'txindex=1'}
 blocksonly=0
 debug=all
+debugexclude=addrman
 debugexclude=bench
 debugexclude=leveldb
 debugexclude=libevent
 debugexclude=mempool
 debugexclude=net
+debugexclude=txpackages
 debugexclude=validation
 disablewallet=1
 listen=0
