@@ -6,6 +6,7 @@ import { LonghornVolume } from './longhorn-volume';
 import { Metadata } from './metadata';
 import { rootConfig } from './root-config';
 import { ConfigVolume, LocalVolume, PersistentVolume, StorageType } from './types';
+import { Nodes } from './nodes';
 
 export class Storage extends pulumi.ComponentResource {
     private readonly longhornVolumes = new Map<string, LonghornVolume>();
@@ -13,6 +14,7 @@ export class Storage extends pulumi.ComponentResource {
     private readonly config: pulumi.Config;
     private readonly namespace: string;
     private readonly metadata: Metadata;
+    private readonly nodes: Nodes;
 
     constructor(
         private readonly appName: string,
@@ -21,12 +23,14 @@ export class Storage extends pulumi.ComponentResource {
             readonly config: pulumi.Config;
             readonly namespace: string;
             readonly metadata: Metadata;
+            readonly nodes: Nodes;
         },
     ) {
         super('orangelab:Storage', `${appName}-storage`, args, { parent: args.scope });
         this.config = args.config;
         this.namespace = args.namespace;
         this.metadata = args.metadata;
+        this.nodes = args.nodes;
     }
 
     createVolumes(): kubernetes.types.input.core.v1.Volume[] {
@@ -47,6 +51,7 @@ export class Storage extends pulumi.ComponentResource {
         const storage = new LonghornVolume(
             `${volumeName}-storage`,
             {
+                affinity: this.nodes.getVolumeAffinity(),
                 cloneFromClaim: volume?.cloneFromClaim,
                 enableBackup: rootConfig.isBackupEnabled(this.appName, volume?.name),
                 fromBackup: this.config.get(`${prefix}fromBackup`),

@@ -38,6 +38,10 @@ interface LonghornVolumeArgs {
      * Labels to apply to the volume
      */
     labels?: Record<string, string>;
+    /**
+     * Volume node affinity
+     */
+    affinity?: kubernetes.types.input.core.v1.VolumeNodeAffinity;
 }
 
 const staleReplicaTimeout = (48 * 60).toString();
@@ -162,6 +166,7 @@ export class LonghornVolume extends pulumi.ComponentResource {
                     namespace: this.args.namespace,
                 },
                 spec: {
+                    nodeAffinity: this.args.affinity,
                     accessModes: ['ReadWriteOnce'],
                     storageClassName: `longhorn-${volumeHandle}`,
                     capacity: { storage: this.args.size },

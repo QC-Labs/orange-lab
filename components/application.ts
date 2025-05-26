@@ -68,6 +68,7 @@ export class Application {
             config: this.config,
             namespace: this.namespace,
             metadata: this.metadata,
+            nodes: this.nodes,
         });
         this.network = new Network(appName, {
             scope: this.scope,
