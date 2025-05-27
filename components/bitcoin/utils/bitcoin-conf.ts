@@ -32,10 +32,6 @@ rest=0
 rpcallowip=0.0.0.0/0
 rpcbind=0.0.0.0
 server=1
-
-# OP_RETURN filtering
-datacarrier=1
-datacarriersize=83
 `;
 }
 
