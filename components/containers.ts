@@ -109,7 +109,11 @@ export class Containers {
         | undefined {
         const mounts = (this.spec.volumeMounts ?? []).map(volumeMount => ({
             ...volumeMount,
-            ...{ name: volumeMount.name?.replace('.', '-') ?? this.appName },
+            ...{
+                name: volumeMount.name
+                    ? `${this.appName}-${volumeMount.name}`
+                    : this.appName,
+            },
         }));
         if (this.args.gpu === 'amd') {
             mounts.push({ name: 'dev-kfd', mountPath: '/dev/kfd' });

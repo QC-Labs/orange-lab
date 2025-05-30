@@ -13,6 +13,9 @@ export interface ServicePort {
     tcp?: boolean;
 }
 
+/**
+ * Represents the specification for a container in a Kubernetes deployment.
+ */
 export interface ContainerSpec {
     name?: string;
     image: string;
@@ -23,7 +26,12 @@ export interface ContainerSpec {
     env?: Record<string, string | pulumi.Output<string> | undefined>;
     envSecret?: Record<string, string | pulumi.Output<string> | undefined>;
     hostNetwork?: boolean;
-    volumeMounts?: { mountPath: string; name?: string; subPath?: string }[];
+    volumeMounts?: {
+        mountPath: string;
+        name?: string;
+        subPath?: string;
+        readOnly?: boolean;
+    }[];
     healthChecks?: boolean;
     resources?: {
         limits?: { cpu?: string; memory?: string };
@@ -32,6 +40,7 @@ export interface ContainerSpec {
     runAsUser?: number;
     restartPolicy?: string;
 }
+
 /**
  * Represents a local volume using local-path provisioner.
  */
