@@ -1,3 +1,4 @@
+import * as minio from '@pulumi/minio';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
 
@@ -9,6 +10,7 @@ export class Minio extends pulumi.ComponentResource {
     public readonly endpointUrl?: string;
     public readonly s3Endpoint?: pulumi.Output<string>;
     public readonly s3ClusterEndpoint?: pulumi.Output<string>;
+    public readonly minioProvider: minio.Provider;
 
     constructor(name: string, args: MinioArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:system:Minio', name, args, opts);
@@ -41,5 +43,16 @@ export class Minio extends pulumi.ComponentResource {
         this.endpointUrl = app.endpointUrl;
         this.s3ClusterEndpoint = pulumi.interpolate`http://${name}.minio:9000`;
         this.s3Endpoint = pulumi.interpolate`https://${hostnameApi}.${args.domainName}`;
+
+        this.minioProvider = new minio.Provider(
+            `${name}-provider`,
+            {
+                minioServer: `${hostnameApi}.${args.domainName}:443`,
+                minioUser: rootUser,
+                minioPassword: rootPassword,
+                minioSsl: true,
+            },
+            { parent: this },
+        );
     }
 }

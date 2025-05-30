@@ -45,9 +45,8 @@ config:
     longhorn:trimEnabled: true
     longhorn:trimCron: '0 0 * * 0' # once a week on Sunday at midnight
     longhorn:backupEnabled: false
-    longhorn:backupTarget: s3://backup-longhorn@lab/
-    # longhorn:backupAccessKeyId: <key_id>
-    # longhorn:backupAccessKeySecret: <key_value>
+    longhorn:backupBucket: backup-longhorn
+    longhorn:backupBucketCreate: false # create new or import existing bucket
     longhorn:backupCron: '15 0 * * *' # daily at 0:15
     # Full backup every 7 days, use 0 for incremental only
     longhorn:backupFullInterval: '7'

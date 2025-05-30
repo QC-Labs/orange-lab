@@ -4,11 +4,14 @@ import { Application } from '../application';
 import { GrafanaDashboard } from '../grafana-dashboard';
 import { rootConfig } from '../root-config';
 import dashboardJson from './longhorn-dashboard.json';
+import { MinioS3Bucket } from './minio-s3-bucket';
+import { MinioS3User } from './minio-s3-user';
 
 export interface LonghornArgs {
     domainName: string;
     enableMonitoring: boolean;
     s3EndpointUrl?: pulumi.Output<string>;
+    minioProvider?: pulumi.ProviderResource;
 }
 
 export class Longhorn extends pulumi.ComponentResource {
@@ -33,10 +36,23 @@ export class Longhorn extends pulumi.ComponentResource {
         const hostname = this.config.require('hostname');
 
         this.app = new Application(this, name, { namespace: `${name}-system` });
-
-        const backupSecret = this.createBackupSecret();
+        const backupEnabled =
+            this.config.getBoolean('backupEnabled') &&
+            args.s3EndpointUrl &&
+            args.minioProvider;
+        let backupSecret: kubernetes.core.v1.Secret | undefined;
+        if (backupEnabled) {
+            const s3User = this.createBackupUser();
+            backupSecret = this.createBackupSecret(s3User);
+            this.createBackupBucket(s3User);
+        }
+        if (this.config.get('backupTarget')) {
+            // eslint-disable-next-line no-console
+            console.warn('backupTarget is deprecated, use backupBucket instead');
+        }
         this.chart = this.createHelmRelease({
             backupSecretName: backupSecret?.metadata.name,
+            backupTarget: `s3://${this.config.require('backupBucket')}@lab/`,
             hostname,
         });
         this.createStorageClasses();
@@ -47,7 +63,7 @@ export class Longhorn extends pulumi.ComponentResource {
         if (this.config.getBoolean('trimEnabled')) {
             this.createTrimJob();
         }
-        if (args.s3EndpointUrl && this.config.getBoolean('backupEnabled')) {
+        if (backupEnabled) {
             this.createBackupJob();
         }
         if (args.enableMonitoring) {
@@ -59,9 +75,11 @@ export class Longhorn extends pulumi.ComponentResource {
 
     private createHelmRelease({
         backupSecretName,
+        backupTarget,
         hostname,
     }: {
         backupSecretName?: pulumi.Output<string>;
+        backupTarget?: string;
         hostname: string;
     }) {
         return new kubernetes.helm.v3.Release(
@@ -74,7 +92,7 @@ export class Longhorn extends pulumi.ComponentResource {
                 values: {
                     defaultBackupStore: backupSecretName
                         ? {
-                              backupTarget: this.config.get('backupTarget'),
+                              backupTarget,
                               backupTargetCredentialSecret: backupSecretName,
                           }
                         : undefined,
@@ -175,28 +193,50 @@ export class Longhorn extends pulumi.ComponentResource {
         );
     }
 
-    private createBackupSecret() {
+    private createBackupSecret(s3User: MinioS3User) {
+        if (!this.args.s3EndpointUrl) return;
         const AWS_ACCESS_KEY_ID = this.config.get('backupAccessKeyId');
         const AWS_SECRET_ACCESS_KEY = this.config.get('backupAccessKeySecret');
-        if (!this.args.s3EndpointUrl) return;
-        if (!AWS_ACCESS_KEY_ID || !AWS_SECRET_ACCESS_KEY) return;
-        const secretName = `${this.name}-backup-secret`;
+        if (AWS_ACCESS_KEY_ID || AWS_SECRET_ACCESS_KEY) {
+            // eslint-disable-next-line no-console
+            console.warn('backupAccessKeyId and backupAccessKeySecret deprecated');
+        }
+        const secretName = `${this.name}-backup`;
         return new kubernetes.core.v1.Secret(
-            secretName,
+            `${secretName}-secret`,
             {
                 metadata: {
                     name: secretName,
                     namespace: this.app.namespace,
                 },
                 stringData: {
-                    AWS_ACCESS_KEY_ID,
-                    AWS_SECRET_ACCESS_KEY,
+                    AWS_ACCESS_KEY_ID: s3User.accessKey,
+                    AWS_SECRET_ACCESS_KEY: s3User.secretKey,
                     AWS_ENDPOINTS: this.args.s3EndpointUrl,
                     VIRTUAL_HOSTED_STYLE: 'false',
                 },
             },
-            { parent: this },
+            { parent: this, dependsOn: s3User },
         );
+    }
+
+    private createBackupUser() {
+        return new MinioS3User(
+            `${this.name}-minio-user`,
+            { username: this.name },
+            { parent: this, provider: this.args.minioProvider },
+        );
+    }
+
+    private createBackupBucket(s3User: MinioS3User) {
+        const bucketName = this.config.require('backupBucket');
+        const createBucket = this.config.requireBoolean('backupBucketCreate');
+        const bucket = new MinioS3Bucket(
+            `${this.name}-minio-backup-bucket`,
+            { bucketName, createBucket },
+            { parent: this, provider: this.args.minioProvider },
+        );
+        bucket.grantReadWrite(s3User);
     }
 
     private createSnapshotJob() {

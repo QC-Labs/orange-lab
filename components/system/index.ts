@@ -91,6 +91,7 @@ export class SystemModule extends pulumi.ComponentResource {
                     domainName: this.domainName,
                     enableMonitoring,
                     s3EndpointUrl: this.minio?.s3ClusterEndpoint,
+                    minioProvider: this.minio?.minioProvider,
                 },
                 { parent: this, dependsOn: [this.minio].filter(v => v !== undefined) },
             );

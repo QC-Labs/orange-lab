@@ -16,40 +16,16 @@ Please refer to the official MinIO installation documentation for detailed instr
 
 Make sure MinIO is installed and functioning before enabling backups. See [MinIO installation instructions](/components/system/SYSTEM.md#minio-recommended) for details.
 
-Now let's create an S3 Bucket for Longhorn backups:
-
-1. Access the MinIO web interface at `https://minio.<tsnet>.ts.net/`
-2. Create a new bucket named `backup-longhorn` (or your preferred name)
-3. Create new access keys with the following policy:
-
-```json
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "GrantLonghornBackupstoreAccess0",
-            "Effect": "Allow",
-            "Action": [
-                "s3:PutObject",
-                "s3:GetObject",
-                "s3:ListBucket",
-                "s3:DeleteObject"
-            ],
-            "Resource": ["arn:aws:s3:::backup-longhorn", "arn:aws:s3:::backup-longhorn/*"]
-        }
-    ]
-}
-```
-
-Add the S3 access keys to Pulumi config:
-
 ```sh
-# Store S3 credentials securely
-pulumi config set longhorn:backupAccessKeyId <key_id> --secret
-pulumi config set longhorn:backupAccessKeySecret <key_value> --secret
+# S3 bucket that will be used for backups. Default: backup-longhorn
+pulumi config set longhorn:backupBucket backup-longhorn
 
-# (Optional) Customize S3 bucket name/path
-pulumi config set longhorn:backupTarget s3://backup-longhorn@lab/
+# If bucket already created, set to false so Pulumi imports it
+# Set to true to create the bucket
+pulumi config set longhorn:backupBucketCreate false
+
+# Enable backup functionality in Longhorn. MinIO has to be running.
+pulumi config set longhorn:backupEnabled true
 ```
 
 ## Managing Volume Backups
