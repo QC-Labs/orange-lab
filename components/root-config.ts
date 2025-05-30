@@ -1,13 +1,28 @@
+/* eslint-disable no-console */
 import * as pulumi from '@pulumi/pulumi';
 
 class RootConfig {
+    constructor() {
+        if (this.getAppConfig('longhorn', 'backupAccessKeyId')) {
+            console.warn('longhorn:backupAccessKeyId is deprecated.');
+        }
+        if (this.getAppConfig('longhorn', 'backupAccessKeySecret')) {
+            console.warn('longhorn:backupAccessKeySecret is deprecated.');
+        }
+        if (this.getAppConfig('longhorn', 'backupTarget')) {
+            console.warn(
+                'longhorn:backupTarget is deprecated. Use longhorn:backupBucket instead.',
+            );
+        }
+    }
+
     public longhorn = {
-        replicaCount: parseInt(this.getAppConfig('longhorn', 'replicaCount')),
+        replicaCount: parseInt(this.requireAppConfig('longhorn', 'replicaCount')),
     };
     public storageClass = {
-        Default: this.getAppConfig('orangelab', 'storageClass'),
-        GPU: this.getAppConfig('orangelab', 'storageClass-gpu'),
-        Large: this.getAppConfig('orangelab', 'storageClass-large'),
+        Default: this.requireAppConfig('orangelab', 'storageClass'),
+        GPU: this.requireAppConfig('orangelab', 'storageClass-gpu'),
+        Large: this.requireAppConfig('orangelab', 'storageClass-large'),
     };
 
     public isEnabled(name: string): boolean {
@@ -33,7 +48,12 @@ class RootConfig {
         return prometheusEnabled && componentsEnabled;
     }
 
-    private getAppConfig(appName: string, key: string): string {
+    private getAppConfig(appName: string, key: string): string | undefined {
+        const config = new pulumi.Config(appName);
+        return config.get(key);
+    }
+
+    private requireAppConfig(appName: string, key: string): string {
         const config = new pulumi.Config(appName);
         return config.require(key);
     }

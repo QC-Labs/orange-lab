@@ -46,10 +46,6 @@ export class Longhorn extends pulumi.ComponentResource {
             backupSecret = this.createBackupSecret(s3User);
             this.createBackupBucket(s3User);
         }
-        if (this.config.get('backupTarget')) {
-            // eslint-disable-next-line no-console
-            console.warn('backupTarget is deprecated, use backupBucket instead');
-        }
         this.chart = this.createHelmRelease({
             backupSecretName: backupSecret?.metadata.name,
             backupTarget: `s3://${this.config.require('backupBucket')}@lab/`,
@@ -195,12 +191,6 @@ export class Longhorn extends pulumi.ComponentResource {
 
     private createBackupSecret(s3User: MinioS3User) {
         if (!this.args.s3EndpointUrl) return;
-        const AWS_ACCESS_KEY_ID = this.config.get('backupAccessKeyId');
-        const AWS_SECRET_ACCESS_KEY = this.config.get('backupAccessKeySecret');
-        if (AWS_ACCESS_KEY_ID || AWS_SECRET_ACCESS_KEY) {
-            // eslint-disable-next-line no-console
-            console.warn('backupAccessKeyId and backupAccessKeySecret deprecated');
-        }
         const secretName = `${this.name}-backup`;
         return new kubernetes.core.v1.Secret(
             `${secretName}-secret`,
