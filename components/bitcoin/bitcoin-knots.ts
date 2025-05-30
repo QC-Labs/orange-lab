@@ -34,6 +34,7 @@ export class BitcoinKnots extends pulumi.ComponentResource {
         })
             .addStorage({ type: StorageType.Large })
             .addConfigVolume({
+                name: 'config',
                 files: {
                     'bitcoin.conf': BitcoinConf.create({ prune }),
                     'rpc.conf': BitcoinConf.createRpc(this.args.rpcUsers),
@@ -53,7 +54,7 @@ export class BitcoinKnots extends pulumi.ComponentResource {
 
         this.app.addDeployment({
             resources: {
-                requests: { cpu: '100m', memory: '3Gi' },
+                requests: { cpu: '100m', memory: '4Gi' },
                 limits: { cpu: '2000m', memory: '8Gi' },
             },
             image: `btcpayserver/bitcoinknots:${this.config.require('version')}`,

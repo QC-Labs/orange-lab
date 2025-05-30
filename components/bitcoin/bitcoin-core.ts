@@ -33,6 +33,7 @@ export class BitcoinCore extends pulumi.ComponentResource {
         this.app = new Application(this, name, { domainName: args.domainName })
             .addStorage({ type: StorageType.Large })
             .addConfigVolume({
+                name: 'config',
                 files: {
                     'bitcoin.conf': BitcoinConf.create({ prune: this.prune }),
                     'rpc.conf': BitcoinConf.createRpc(this.args.rpcUsers),
@@ -52,7 +53,7 @@ export class BitcoinCore extends pulumi.ComponentResource {
 
         this.app.addDeployment({
             resources: {
-                requests: { cpu: '100m', memory: '3Gi' },
+                requests: { cpu: '100m', memory: '4Gi' },
                 limits: { cpu: '2000m', memory: '8Gi' },
             },
             image: `btcpayserver/bitcoin:${this.config.require('version')}`,
