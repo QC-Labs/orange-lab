@@ -8,8 +8,9 @@ export interface MinioArgs {
 
 export class Minio extends pulumi.ComponentResource {
     public readonly endpointUrl?: string;
-    public readonly s3Endpoint?: pulumi.Output<string>;
-    public readonly s3ClusterEndpoint?: pulumi.Output<string>;
+    public readonly s3ApiUrl?: pulumi.Output<string>;
+    public readonly s3ApiClusterUrl?: pulumi.Output<string>;
+    public readonly s3WebUrl?: pulumi.Output<string>;
     public readonly minioProvider: minio.Provider;
 
     constructor(name: string, args: MinioArgs, opts?: pulumi.ResourceOptions) {
@@ -41,8 +42,9 @@ export class Minio extends pulumi.ComponentResource {
             });
 
         this.endpointUrl = app.endpointUrl;
-        this.s3ClusterEndpoint = pulumi.interpolate`http://${name}.minio:9000`;
-        this.s3Endpoint = pulumi.interpolate`https://${hostnameApi}.${args.domainName}`;
+        this.s3ApiClusterUrl = pulumi.interpolate`http://${name}.minio:9000`;
+        this.s3ApiUrl = pulumi.interpolate`https://${hostnameApi}.${args.domainName}`;
+        this.s3WebUrl = pulumi.interpolate`https://${hostname}.${args.domainName}`;
 
         this.minioProvider = new minio.Provider(
             `${name}-provider`,
