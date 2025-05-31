@@ -48,7 +48,7 @@ export class Network {
             this.createIngress(service, httpPorts);
         }
         if (tcpPorts.length) {
-            this.createLoadBalancers(tcpPorts);
+            this.createLoadBalancer(hostname, tcpPorts);
         }
         const port = ports[0].port.toString();
         this.serviceUrl = `http://${hostname}.${metadata.namespace}:${port}`;
@@ -77,35 +77,27 @@ export class Network {
         );
     }
 
-    private createLoadBalancers(ports: ServicePort[]) {
-        ports.map(
-            p =>
-                new kubernetes.core.v1.Service(
-                    `${this.appName}-${p.name}-lb`,
-                    {
-                        metadata: {
-                            ...this.metadata.get(),
-                            annotations: {
-                                'tailscale.com/hostname':
-                                    p.hostname ?? this.config.require('hostname'),
-                            },
-                        },
-                        spec: {
-                            type: 'LoadBalancer',
-                            loadBalancerClass: 'tailscale',
-                            ports: [
-                                {
-                                    name: p.name,
-                                    protocol: 'TCP',
-                                    port: p.port,
-                                    targetPort: p.port,
-                                },
-                            ],
-                            selector: this.metadata.getSelectorLabels(),
-                        },
-                    },
-                    { parent: this.scope },
-                ),
+    private createLoadBalancer(hostname: string, ports: ServicePort[]) {
+        new kubernetes.core.v1.Service(
+            `${this.appName}-lb`,
+            {
+                metadata: {
+                    ...this.metadata.get(),
+                    annotations: { 'tailscale.com/hostname': hostname },
+                },
+                spec: {
+                    type: 'LoadBalancer',
+                    loadBalancerClass: 'tailscale',
+                    ports: ports.map(p => ({
+                        name: p.name,
+                        protocol: 'TCP',
+                        port: p.port,
+                        targetPort: p.port,
+                    })),
+                    selector: this.metadata.getSelectorLabels(),
+                },
+            },
+            { parent: this.scope },
         );
     }
 
