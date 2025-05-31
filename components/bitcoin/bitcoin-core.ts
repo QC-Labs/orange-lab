@@ -5,6 +5,7 @@ import { BitcoinConf } from './utils/bitcoin-conf';
 import { RpcUser } from './utils/rpc-user';
 
 const RPC_PORT = 8332;
+const P2P_PORT = 8333;
 
 export interface BitcoinCoreArgs {
     domainName: string;
@@ -12,8 +13,10 @@ export interface BitcoinCoreArgs {
 }
 
 export class BitcoinCore extends pulumi.ComponentResource {
-    public readonly endpointUrl?: string;
-    public readonly serviceUrl?: string;
+    public readonly rpcUrl?: string;
+    public readonly rpcClusterUrl?: string;
+    public readonly p2pClusterUrl?: string;
+    public readonly p2pUrl?: string;
 
     private readonly app: Application;
     private readonly config: pulumi.Config;
@@ -44,8 +47,10 @@ export class BitcoinCore extends pulumi.ComponentResource {
 
         this.createDeployment();
 
-        this.endpointUrl = `${hostname}.${args.domainName}:${RPC_PORT.toString()}`;
-        this.serviceUrl = `${name}.${this.app.namespace}:${RPC_PORT.toString()}`;
+        this.rpcClusterUrl = `${name}.${this.app.namespace}:${RPC_PORT.toString()}`;
+        this.rpcUrl = `${hostname}.${args.domainName}:${RPC_PORT.toString()}`;
+        this.p2pClusterUrl = `${name}.${this.app.namespace}:${P2P_PORT.toString()}`;
+        this.p2pUrl = `${hostname}.${args.domainName}:${P2P_PORT.toString()}`;
     }
 
     private createDeployment() {
@@ -53,7 +58,7 @@ export class BitcoinCore extends pulumi.ComponentResource {
 
         this.app.addDeployment({
             resources: {
-                requests: { cpu: '100m', memory: '4Gi' },
+                requests: { cpu: '100m', memory: '2Gi' },
                 limits: { cpu: '2000m', memory: '8Gi' },
             },
             image: `btcpayserver/bitcoin:${this.config.require('version')}`,
@@ -61,7 +66,11 @@ export class BitcoinCore extends pulumi.ComponentResource {
                 {
                     name: 'rpc',
                     port: RPC_PORT,
-                    hostname: this.config.require('hostname'),
+                    tcp: true,
+                },
+                {
+                    name: 'p2p',
+                    port: P2P_PORT,
                     tcp: true,
                 },
             ],
@@ -76,7 +85,6 @@ export class BitcoinCore extends pulumi.ComponentResource {
                 { mountPath: '/data' },
                 { name: 'config', mountPath: '/conf' },
             ],
-            healthChecks: false,
         });
     }
 }

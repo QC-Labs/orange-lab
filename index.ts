@@ -72,8 +72,8 @@ export const bitcoin = {
             pulumi.secret(password),
         ]),
     ),
-    bitcoinCoreUrl: bitcoinModule.bitcoinCore?.endpointUrl,
-    bitcoinCoreServiceUrl: bitcoinModule.bitcoinCore?.serviceUrl,
-    bitcoinKnotsUrl: bitcoinModule.bitcoinKnots?.endpointUrl,
-    bitcoinKnotsServiceUrl: bitcoinModule.bitcoinKnots?.serviceUrl,
+    bitcoinCoreUrl: bitcoinModule.bitcoinCore?.rpcUrl,
+    bitcoinCoreServiceUrl: bitcoinModule.bitcoinCore?.rpcClusterUrl,
+    bitcoinKnotsUrl: bitcoinModule.bitcoinKnots?.rpcUrl,
+    bitcoinKnotsServiceUrl: bitcoinModule.bitcoinKnots?.rpcClusterUrl,
 };
