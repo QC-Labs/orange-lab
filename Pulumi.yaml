@@ -57,7 +57,6 @@ config:
     minio:hostname-api: minio-api
     minio:dataPath: /var/srv/minio-data
     minio:rootUser: minioadmin
-    minio:rootPassword: minioadmin
 
     cert-manager:enabled: false
 

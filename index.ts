@@ -12,6 +12,7 @@ export const system = {
     minioS3ApiClusterUrl: systemModule.minio?.s3ApiClusterUrl,
     minioS3ApiUrl: systemModule.minio?.s3ApiUrl,
     minioS3WebUrl: systemModule.minio?.s3WebUrl,
+    minioUsers: systemModule.minio?.users,
     tailscaleAgentKey: systemModule.tailscaleAgentKey,
     tailscaleServerKey: systemModule.tailscaleServerKey,
     tailscaleDomain: systemModule.domainName,

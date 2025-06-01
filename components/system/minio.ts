@@ -1,5 +1,6 @@
 import * as minio from '@pulumi/minio';
 import * as pulumi from '@pulumi/pulumi';
+import * as random from '@pulumi/random';
 import { Application } from '../application';
 
 export interface MinioArgs {
@@ -12,8 +13,9 @@ export class Minio extends pulumi.ComponentResource {
     public readonly s3ApiClusterUrl?: pulumi.Output<string>;
     public readonly s3WebUrl?: pulumi.Output<string>;
     public readonly minioProvider: minio.Provider;
+    public readonly users: Record<string, pulumi.Output<string>> = {};
 
-    constructor(name: string, args: MinioArgs, opts?: pulumi.ResourceOptions) {
+    constructor(private name: string, args: MinioArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:system:Minio', name, args, opts);
 
         const config = new pulumi.Config('minio');
@@ -21,7 +23,9 @@ export class Minio extends pulumi.ComponentResource {
         const hostnameApi = config.require('hostname-api');
         const dataPath = config.require('dataPath');
         const rootUser = config.require('rootUser');
-        const rootPassword = config.require('rootPassword');
+        this.users = {
+            [rootUser]: pulumi.output(this.createPassword()),
+        };
 
         const app = new Application(this, name, { domainName: args.domainName })
             .addLocalStorage({ name: 'data', hostPath: dataPath })
@@ -34,7 +38,7 @@ export class Minio extends pulumi.ComponentResource {
                 env: {
                     MINIO_CONSOLE_TLS_ENABLE: 'off',
                     MINIO_ROOT_USER: rootUser,
-                    MINIO_ROOT_PASSWORD: rootPassword,
+                    MINIO_ROOT_PASSWORD: this.users[rootUser],
                     MINIO_BROWSER_REDIRECT_URL: `https://${hostname}.${args.domainName}/`,
                 },
                 commandArgs: ['server', '/data', '--console-address', ':9001'],
@@ -51,10 +55,18 @@ export class Minio extends pulumi.ComponentResource {
             {
                 minioServer: `${hostnameApi}.${args.domainName}:443`,
                 minioUser: rootUser,
-                minioPassword: rootPassword,
+                minioPassword: this.users[rootUser],
                 minioSsl: true,
             },
             { parent: this },
         );
+    }
+
+    private createPassword() {
+        return new random.RandomPassword(
+            `${this.name}-root-password`,
+            { length: 32, special: false },
+            { parent: this },
+        ).result;
     }
 }
