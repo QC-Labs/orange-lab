@@ -1,14 +1,14 @@
 import * as pulumi from '@pulumi/pulumi';
 import { rootConfig } from '../root-config';
-import { AmdGPUOperator } from './amd-gpu-operator';
+import { AmdGPUOperator } from './amd-gpu-operator/amd-gpu-operator';
 import { CertManager } from './cert-manager';
 import { Debug } from './debug';
-import { Longhorn } from './longhorn';
-import { Minio } from './minio';
+import { Longhorn } from './longhorn/longhorn';
+import { Minio } from './minio/minio';
 import { NodeFeatureDiscovery } from './nfd';
 import { NvidiaGPUOperator } from './nvidia-gpu-operator';
-import { Tailscale } from './tailscale';
-import { TailscaleOperator } from './tailscale-operator';
+import { Tailscale } from './tailscale/tailscale';
+import { TailscaleOperator } from './tailscale/tailscale-operator';
 
 export class SystemModule extends pulumi.ComponentResource {
     tailscaleServerKey: pulumi.Output<string> | undefined;

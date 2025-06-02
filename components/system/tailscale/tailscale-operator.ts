@@ -1,8 +1,8 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import { ClusterRole } from '@pulumi/kubernetes/rbac/v1';
 import * as pulumi from '@pulumi/pulumi';
-import { Application } from '../application';
-import { GrafanaDashboard } from '../grafana-dashboard';
+import { Application } from '../../application';
+import { GrafanaDashboard } from '../../grafana-dashboard';
 import dashboardJson from './tailscale-dashboard.json';
 
 interface TailscaleOperatorArgs {
