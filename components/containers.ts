@@ -110,9 +110,7 @@ export class Containers {
         const mounts = (this.spec.volumeMounts ?? []).map(volumeMount => ({
             ...volumeMount,
             ...{
-                name: volumeMount.name
-                    ? `${this.appName}-${volumeMount.name}`
-                    : this.appName,
+                name: volumeMount.name ?? this.appName,
             },
         }));
         if (this.args.gpu === 'amd') {

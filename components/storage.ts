@@ -38,7 +38,7 @@ export class Storage extends pulumi.ComponentResource {
     }
 
     addLocalVolume(volume: LocalVolume) {
-        const volumeName = `${this.appName}-${volume.name}`;
+        const volumeName = volume.name;
         this.volumes.set(volumeName, {
             name: volumeName,
             hostPath: { path: volume.hostPath, type: volume.type },
@@ -103,9 +103,9 @@ export class Storage extends pulumi.ComponentResource {
      * @param configVolume The config volume definition (name and files)
      */
     addConfigVolume(configVolume: ConfigVolume) {
-        const volumeName = `${this.appName}-${configVolume.name ?? 'config'}`;
+        const volumeName = configVolume.name ?? 'config';
         new ConfigMap(
-            `${volumeName}-cm`,
+            `${this.appName}-${volumeName}-cm`,
             {
                 metadata: {
                     name: volumeName,
