@@ -33,7 +33,7 @@ export class MinioS3User extends pulumi.ComponentResource {
         this.serviceAccount = new minio.IamServiceAccount(
             `${name}-sa`,
             { targetUser: this.iamUser.name },
-            { parent: this, provider: opts?.provider },
+            { parent: this, provider: opts?.provider, ignoreChanges: ['policy'] },
         );
 
         this.username = args.username;
