@@ -167,7 +167,7 @@ config:
     bitcoin-core:storageSize: 1000Gi
     bitcoin-core:prune: 0
     bitcoin-core:version: '29.0'
-    bitcoin-core:requiredNodeLabel: orangelab/bitcoin
+    # electrs:requiredNodeLabel: kubernetes.io/hostname=<hostname>
     # bitcoin-core:extraArgs: -maxuploadtarget=500
 
     bitcoin-knots:enabled: false
@@ -175,5 +175,11 @@ config:
     bitcoin-knots:storageSize: 1000Gi
     bitcoin-knots:prune: 0
     bitcoin-knots:version: '28.1'
-    bitcoin-knots:requiredNodeLabel: orangelab/bitcoin
+    # electrs:requiredNodeLabel: kubernetes.io/hostname=<hostname>
     # bitcoin-knots:extraArgs: -reindex-chainstate
+
+    electrs:enabled: false
+    electrs:storageSize: 200Gi
+    electrs:hostname: electrs
+    electrs:version: 'v0.10.9'
+    # electrs:requiredNodeLabel: kubernetes.io/hostname=<hostname>

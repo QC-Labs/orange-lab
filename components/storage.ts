@@ -58,7 +58,7 @@ export class Storage extends pulumi.ComponentResource {
                 fromBackup: this.config.get(`${prefix}fromBackup`),
                 fromVolume: volume?.fromVolume ?? this.config.get(`${prefix}fromVolume`),
                 labels: volume?.name
-                    ? this.metadata.getForComponent(volume.name).labels
+                    ? this.metadata.get({ component: volume.name }).labels
                     : this.metadata.get().labels,
                 name: volume?.overrideFullname ?? volumeName,
                 namespace: this.namespace,

@@ -60,6 +60,7 @@ Private infrastructure for cloud natives.
 
 -   `bitcoin-core` - Bitcoin Core full node
 -   `bitcoin-knots` - Bitcoin Knots full node
+-   `electrs` - Electrs (Electrum) server implementation
 
 # Platforms and limitations
 
@@ -91,5 +92,6 @@ For general application configuration and deployment instructions, see [Configur
 -   [Upgrade Guide](./docs/upgrade.md) - Upgrading your OrangeLab installation
 -   [Disabling Longhorn](./docs/longhorn-disable.md) - Running OrangeLab without distributed storage
 -   [AMD GPU support](./docs/amd-gpu.md) - Using AMD GPUs with OrangeLab
+-   [Electrs Wallet Guide](./docs/electrs-wallet.md) - Connecting Bitcoin wallets to your Electrs server
 -   [Backup and Restore](./docs/backup.md) - Using Longhorn backups with S3 storage
 -   [Troubleshooting](./docs/troubleshooting.md) - Common issues and solutions

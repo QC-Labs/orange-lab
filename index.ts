@@ -75,7 +75,9 @@ export const bitcoin = {
         ]),
     ),
     bitcoinCoreUrl: bitcoinModule.bitcoinCore?.rpcUrl,
-    bitcoinCoreServiceUrl: bitcoinModule.bitcoinCore?.rpcClusterUrl,
+    bitcoinCoreClusterUrl: bitcoinModule.bitcoinCore?.rpcClusterUrl,
     bitcoinKnotsUrl: bitcoinModule.bitcoinKnots?.rpcUrl,
-    bitcoinKnotsServiceUrl: bitcoinModule.bitcoinKnots?.rpcClusterUrl,
+    bitcoinKnotsClusterUrl: bitcoinModule.bitcoinKnots?.rpcClusterUrl,
+    electrsUrl: bitcoinModule.electrs?.rpcUrl,
+    electrsClusterUrl: bitcoinModule.electrs?.rpcClusterUrl,
 };

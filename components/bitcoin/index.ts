@@ -2,6 +2,7 @@ import * as pulumi from '@pulumi/pulumi';
 import { rootConfig } from '../root-config';
 import { BitcoinCore } from './bitcoin-core';
 import { BitcoinKnots } from './bitcoin-knots';
+import { Electrs } from './electrs';
 import { RpcUser } from './utils/rpc-user';
 
 interface BitcoinModuleArgs {
@@ -11,6 +12,7 @@ interface BitcoinModuleArgs {
 export class BitcoinModule extends pulumi.ComponentResource {
     bitcoinKnots?: BitcoinKnots;
     bitcoinCore?: BitcoinCore;
+    electrs?: Electrs;
     /**
      * Map of username to password
      */
@@ -42,6 +44,23 @@ export class BitcoinModule extends pulumi.ComponentResource {
             this.bitcoinCore = new BitcoinCore(
                 'bitcoin-core',
                 { domainName: args.domainName, rpcUsers },
+                { parent: this },
+            );
+        }
+
+        if (rootConfig.isEnabled('electrs')) {
+            this.electrs = new Electrs(
+                'electrs',
+                {
+                    domainName: args.domainName,
+                    rpcUser: rpcUsers.electrs,
+                    bitcoinRpcUrl:
+                        this.bitcoinKnots?.rpcClusterUrl ??
+                        this.bitcoinCore?.rpcClusterUrl,
+                    bitcoinP2pUrl:
+                        this.bitcoinKnots?.p2pClusterUrl ??
+                        this.bitcoinCore?.p2pClusterUrl,
+                },
                 { parent: this },
             );
         }
