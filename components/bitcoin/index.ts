@@ -25,7 +25,11 @@ export class BitcoinModule extends pulumi.ComponentResource {
     ) {
         super('orangelab:bitcoin', name, args, opts);
 
-        const usernames = ['admin', 'electrs'];
+        const config = new pulumi.Config('bitcoin');
+        const usernames = config
+            .require('rpcUsers')
+            .split(',')
+            .map(u => u.trim());
         const rpcUsers: Record<string, RpcUser> = {};
         usernames.forEach(username => {
             rpcUsers[username] = new RpcUser(name, { username }, { parent: this });
