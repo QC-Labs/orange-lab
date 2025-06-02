@@ -146,6 +146,7 @@ export class Application {
      */
     addConfigVolume(configVolume: ConfigVolume) {
         if (this.storageOnly) return this;
+        this.metadata.addConfigHash(configVolume);
         this.storage.addConfigVolume(configVolume);
         return this;
     }
@@ -170,7 +171,7 @@ export class Application {
         assert(this.serviceAccount, 'serviceAccount is required');
         const podSpec = new Containers(this.appName, {
             spec: args,
-            metadata: this.metadata.get(),
+            metadata: this.metadata.get({ includeAnnotations: true }),
             storage: this.storage,
             serviceAccount: this.serviceAccount,
             affinity: this.nodes.getAffinity(),
@@ -201,17 +202,19 @@ export class Application {
     private createDaemonSet(args: ContainerSpec) {
         assert(args.name, 'name is required for daemonset');
         assert(this.serviceAccount, 'serviceAccount is required');
-        const metadata = this.metadata.getForComponent(args.name);
         const podSpec = new Containers(this.appName, {
             spec: args,
-            metadata,
+            metadata: this.metadata.get({
+                component: args.name,
+                includeAnnotations: true,
+            }),
             serviceAccount: this.serviceAccount,
             config: this.config,
         });
         return new kubernetes.apps.v1.DaemonSet(
             `${this.appName}-${args.name}-daemonset`,
             {
-                metadata,
+                metadata: this.metadata.get({ component: args.name }),
                 spec: {
                     selector: {
                         matchLabels: this.metadata.getSelectorLabels(args.name),
@@ -226,10 +229,12 @@ export class Application {
     private createJob(args: ContainerSpec) {
         assert(args.name, 'name is required for job');
         assert(this.serviceAccount, 'serviceAccount is required');
-        const metadata = this.metadata.getForComponent(args.name);
         const podSpec = new Containers(this.appName, {
             spec: args,
-            metadata,
+            metadata: this.metadata.get({
+                component: args.name,
+                includeAnnotations: true,
+            }),
             storage: this.storage,
             serviceAccount: this.serviceAccount,
             affinity: this.nodes.getAffinity(),
@@ -238,7 +243,7 @@ export class Application {
         return new kubernetes.batch.v1.Job(
             `${this.appName}-${args.name}-job`,
             {
-                metadata,
+                metadata: this.metadata.get({ component: args.name }),
                 spec: {
                     template: podSpec.createPodTemplateSpec(),
                 },

@@ -110,11 +110,9 @@ export class Network {
         return ports.map((p, i) => {
             assert(p.hostname, `hostname is required for port ${p.name}`);
             const componentName = i === 0 ? this.appName : `${this.appName}-${p.name}`;
-            const metadata = {
-                ...(i === 0
-                    ? this.metadata.get()
-                    : this.metadata.getForComponent(p.name)),
-            };
+            const metadata = this.metadata.get({
+                component: i === 0 ? undefined : p.name,
+            });
             return new kubernetes.networking.v1.Ingress(
                 `${componentName}-ingress`,
                 {
