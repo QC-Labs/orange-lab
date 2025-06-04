@@ -2,3 +2,4 @@ bin
 /node_modules/
 Pulumi.*.yaml
 .goose/
+.github/copilot.yml
