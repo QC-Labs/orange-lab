@@ -25,7 +25,7 @@ Use `electrs:50001` to connect your wallet software. SSL is not used as Tailscal
 ## BitBox App
 
 1. Open BitBox App
-2. Go to **Settings > Electrum server**
+2. Go to **Settings > Advanced settings > Connect your own full node**
 3. Add your Electrs server `electrs:50001`
 4. Remove all existing public Electrum server entries so only your instance is used
 5. Save and restart the app if needed
@@ -37,8 +37,8 @@ Use `electrs:50001` to connect your wallet software. SSL is not used as Tailscal
 ## Sparrow Wallet
 
 1. Open Sparrow Wallet
-2. Go to **Preferences > Server**
-3. Set the server type to **Electrum**
+2. Go to **File > Settings... > Server**
+3. Set the server type to **Private Electrum**
 4. Add your Electrs server `electrs:50001`
 5. Click **Test Connection**
 6. Save settings
