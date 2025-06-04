@@ -22,6 +22,7 @@ export class Electrs extends pulumi.ComponentResource {
 
         this.config = new pulumi.Config(name);
         const hostname = this.config.require('hostname');
+        const debug = this.config.getBoolean('debug');
 
         this.app = new Application(this, name, {
             domainName: args.domainName,
@@ -38,7 +39,7 @@ export class Electrs extends pulumi.ComponentResource {
                         daemon_p2p_addr = "${this.args.bitcoinP2pUrl ?? ''}"
                         db_dir = "/data"
                         electrum_rpc_addr = "0.0.0.0:50001"
-                        log_filters = "DEBUG"
+                        log_filters = ${debug ? '"DEBUG"' : '"INFO"'}
                     `,
                 },
             });
