@@ -160,6 +160,12 @@ config:
     invokeai:storageSize: 20Gi
     # invokeai:huggingfaceToken: TOKEN
 
+    vllm:enabled: false
+    vllm:hostname: vllm
+    vllm:model: 'deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B'
+    # vllm:HUGGING_FACE_HUB_TOKEN: hfToken
+    vllm:amd-gpu: false
+
     ### Bitcoin ###
 
     # Default RPC users that will be created (comma-separated)

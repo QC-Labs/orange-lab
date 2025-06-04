@@ -6,6 +6,7 @@ import { Ollama } from './ollama';
 import { OpenWebUI } from './open-webui';
 import { SDNext } from './sdnext';
 import { InvokeAi } from './invokeai';
+import { Vllm } from './vllm';
 
 interface AIModuleArgs {
     domainName: string;
@@ -18,6 +19,7 @@ export class AIModule extends pulumi.ComponentResource {
     automatic1111?: Automatic1111;
     sdnext?: SDNext;
     invokeAi?: InvokeAi;
+    vllm?: Vllm;
 
     constructor(
         name: string,
@@ -83,6 +85,14 @@ export class AIModule extends pulumi.ComponentResource {
         if (rootConfig.isEnabled('invokeai')) {
             this.invokeAi = new InvokeAi(
                 'invokeai',
+                { domainName: args.domainName },
+                { parent: this },
+            );
+        }
+
+        if (rootConfig.isEnabled('vllm')) {
+            this.vllm = new Vllm(
+                'vllm',
                 { domainName: args.domainName },
                 { parent: this },
             );
