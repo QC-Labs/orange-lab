@@ -13,6 +13,28 @@ export interface ServicePort {
     tcp?: boolean;
 }
 
+export interface VolumeMount {
+    mountPath: string;
+    name?: string;
+    subPath?: string;
+    readOnly?: boolean;
+}
+
+export interface InitContainerSpec {
+    name: string;
+    /**
+     * The Docker image to use for the init container.
+     * Defaults to 'alpine:latest'.
+     */
+    image?: string;
+    command?: string[];
+    /**
+     * Optional volume mounts for the init container.
+     * If not provided, it will use the main container's volume mounts.
+     */
+    volumeMounts?: VolumeMount[];
+}
+
 /**
  * Represents the specification for a container in a Kubernetes deployment.
  */
@@ -26,12 +48,8 @@ export interface ContainerSpec {
     env?: Record<string, string | pulumi.Output<string> | undefined>;
     envSecret?: Record<string, string | pulumi.Output<string> | undefined>;
     hostNetwork?: boolean;
-    volumeMounts?: {
-        mountPath: string;
-        name?: string;
-        subPath?: string;
-        readOnly?: boolean;
-    }[];
+    initContainers?: InitContainerSpec[];
+    volumeMounts?: VolumeMount[];
     healthChecks?: boolean;
     resources?: {
         limits?: { cpu?: string; memory?: string };
@@ -44,12 +62,12 @@ export interface ContainerSpec {
 /**
  * Represents a local volume using local-path provisioner.
  */
-
 export interface LocalVolume {
     name: string;
     hostPath: string;
     type?: 'Directory' | 'DirectoryOrCreate' | 'FileOrCreate' | 'CharDevice';
 }
+
 /**
  * Represents a persistent volume configuration for Longhorn.
  */
@@ -94,10 +112,10 @@ export interface PersistentVolume {
      */
     overrideFullname?: string;
 }
+
 /**
  * Represents a volume that contains configuration files mounted in the same folder.
  */
-
 export interface ConfigVolume {
     /**
      * The name of the config volume.

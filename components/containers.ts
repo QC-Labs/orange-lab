@@ -1,7 +1,7 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Storage } from './storage';
-import { ContainerSpec } from './types';
+import { ContainerSpec, VolumeMount, InitContainerSpec } from './types';
 
 export class Containers {
     metadata: kubernetes.types.input.meta.v1.ObjectMeta;
@@ -54,15 +54,31 @@ export class Containers {
                         resources: this.createResourceLimits(),
                         securityContext: this.createSecurityContext(),
                         startupProbe: this.createProbe({ failureThreshold: 10 }),
-                        volumeMounts: this.createVolumeMounts(),
+                        volumeMounts: this.createVolumeMounts(this.spec.volumeMounts),
                     },
                 ],
+                initContainers: this.createInitContainers(this.spec.initContainers),
                 restartPolicy: this.spec.restartPolicy,
                 serviceAccountName: this.serviceAccount.metadata.name,
                 runtimeClassName: this.args.gpu === 'nvidia' ? 'nvidia' : undefined,
                 volumes: this.createVolumes(),
             },
         };
+    }
+
+    createInitContainers(
+        initContainers?: InitContainerSpec[],
+    ):
+        | pulumi.Input<pulumi.Input<kubernetes.types.input.core.v1.Container>[]>
+        | undefined {
+        return initContainers?.map(initContainer => ({
+            name: initContainer.name,
+            image: initContainer.image ?? 'alpine:latest',
+            command: initContainer.command,
+            volumeMounts: this.createVolumeMounts(
+                initContainer.volumeMounts ?? this.spec.volumeMounts,
+            ),
+        }));
     }
 
     private createSecurityContext():
@@ -104,14 +120,12 @@ export class Containers {
         return this.storage?.createVolumes();
     }
 
-    private createVolumeMounts():
-        | kubernetes.types.input.core.v1.VolumeMount[]
-        | undefined {
-        const mounts = (this.spec.volumeMounts ?? []).map(volumeMount => ({
+    private createVolumeMounts(
+        volumeMounts?: VolumeMount[],
+    ): kubernetes.types.input.core.v1.VolumeMount[] | undefined {
+        const mounts = (volumeMounts ?? []).map(volumeMount => ({
             ...volumeMount,
-            ...{
-                name: volumeMount.name ?? this.appName,
-            },
+            ...{ name: volumeMount.name ?? this.appName },
         }));
         if (this.args.gpu === 'amd') {
             mounts.push({ name: 'dev-kfd', mountPath: '/dev/kfd' });
