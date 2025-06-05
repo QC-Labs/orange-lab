@@ -46,11 +46,11 @@ export class Storage extends pulumi.ComponentResource {
     }
 
     addPersistentVolume(volume?: PersistentVolume) {
-        const volumeName = volume?.name ? `${this.appName}-${volume.name}` : this.appName;
+        const volumeName = volume?.name ?? this.appName;
+        const id = volume?.name ? `${this.appName}-${volume.name}` : this.appName;
         const prefix = volume?.name ? `${volume.name}/` : '';
-
         const storage = new LonghornVolume(
-            `${volumeName}-storage`,
+            `${id}-storage`,
             {
                 affinity: this.nodes.getVolumeAffinity(),
                 cloneFromClaim: volume?.cloneFromClaim,
@@ -69,7 +69,6 @@ export class Storage extends pulumi.ComponentResource {
             { parent: this },
         );
         this.longhornVolumes.set(volumeName, storage);
-
         this.volumes.set(volumeName, {
             name: volumeName,
             persistentVolumeClaim: { claimName: storage.volumeClaimName },
