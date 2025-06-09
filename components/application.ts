@@ -1,11 +1,10 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import { LimitRange } from '@pulumi/kubernetes/core/v1';
 import * as pulumi from '@pulumi/pulumi';
-import assert from 'node:assert';
-import { Containers } from './containers';
 import { Metadata } from './metadata';
 import { Network } from './network';
 import { Nodes } from './nodes';
+import { Services } from './services';
 import { Storage } from './storage';
 import { ConfigVolume, ContainerSpec, LocalVolume, PersistentVolume } from './types';
 
@@ -29,13 +28,13 @@ export class Application {
     readonly namespace: string;
 
     private readonly config: pulumi.Config;
-    private serviceAccount?: kubernetes.core.v1.ServiceAccount;
     private gpu?: 'nvidia' | 'amd';
+    private readonly services: Services;
 
     constructor(
         private readonly scope: pulumi.ComponentResource,
         private readonly appName: string,
-        private readonly args?: {
+        args?: {
             domainName?: string;
             namespace?: string;
             existingNamespace?: string;
@@ -76,6 +75,15 @@ export class Application {
             metadata: this.metadata,
             domainName: args?.domainName,
         });
+        this.services = new Services(
+            this.scope,
+            this.appName,
+            this.metadata,
+            this.storage,
+            this.nodes,
+            this.config,
+            this.gpu,
+        );
     }
 
     addStorage(volume?: PersistentVolume) {
@@ -100,30 +108,25 @@ export class Application {
 
     addDeployment(spec: ContainerSpec) {
         if (this.storageOnly) return this;
-        this.serviceAccount = this.serviceAccount ?? this.createServiceAccount();
         if (spec.envSecret) {
             this.createEnvSecret(spec.envSecret);
         }
-        this.createDeployment(spec);
-
+        this.services.createDeployment(spec);
         this.network.createEndpoints(spec);
         this.serviceUrl = this.network.serviceUrl;
         this.endpointUrl = this.network.endpointUrl;
-
         return this;
     }
 
     addDeamonSet(spec: ContainerSpec) {
         if (this.storageOnly) return this;
-        this.serviceAccount = this.serviceAccount ?? this.createServiceAccount();
-        this.createDaemonSet(spec);
+        this.services.createDaemonSet(spec);
         return this;
     }
 
     addJob(spec: ContainerSpec) {
         if (this.storageOnly) return this;
-        this.serviceAccount = this.serviceAccount ?? this.createServiceAccount();
-        this.createJob(spec);
+        this.services.createJob(spec);
         return this;
     }
 
@@ -155,101 +158,6 @@ export class Application {
             `${this.appName}-ns`,
             { metadata: { name } },
             { parent: this.scope },
-        );
-    }
-
-    private createServiceAccount() {
-        return new kubernetes.core.v1.ServiceAccount(
-            `${this.appName}-sa`,
-            { metadata: this.metadata.get() },
-            { parent: this.scope },
-        );
-    }
-
-    private createDeployment(args: ContainerSpec) {
-        assert(this.serviceAccount, 'serviceAccount is required');
-        const podSpec = new Containers(this.appName, {
-            spec: args,
-            metadata: this.metadata.get({
-                annotations: { 'checksum/config': this.storage.configFilesHash },
-            }),
-            storage: this.storage,
-            serviceAccount: this.serviceAccount,
-            affinity: this.nodes.getAffinity(),
-            gpu: this.gpu,
-            config: this.config,
-        });
-        return new kubernetes.apps.v1.Deployment(
-            `${this.appName}-deployment`,
-            {
-                metadata: this.metadata.get(),
-                spec: {
-                    replicas: 1,
-                    selector: { matchLabels: this.metadata.getSelectorLabels() },
-                    template: podSpec.createPodTemplateSpec(),
-                    strategy: this.storage.hasVolumes()
-                        ? { type: 'Recreate', rollingUpdate: undefined }
-                        : { type: 'RollingUpdate' },
-                },
-            },
-            {
-                parent: this.scope,
-                deleteBeforeReplace: true,
-                dependsOn: this.storage,
-            },
-        );
-    }
-
-    private createDaemonSet(args: ContainerSpec) {
-        assert(args.name, 'name is required for daemonset');
-        assert(this.serviceAccount, 'serviceAccount is required');
-        const podSpec = new Containers(this.appName, {
-            spec: args,
-            metadata: this.metadata.get({
-                component: args.name,
-                annotations: { 'checksum/config': this.storage.configFilesHash },
-            }),
-            serviceAccount: this.serviceAccount,
-            config: this.config,
-        });
-        return new kubernetes.apps.v1.DaemonSet(
-            `${this.appName}-${args.name}-daemonset`,
-            {
-                metadata: this.metadata.get({ component: args.name }),
-                spec: {
-                    selector: {
-                        matchLabels: this.metadata.getSelectorLabels(args.name),
-                    },
-                    template: podSpec.createPodTemplateSpec(),
-                },
-            },
-            { parent: this.scope, dependsOn: this.storage },
-        );
-    }
-
-    private createJob(args: ContainerSpec) {
-        assert(args.name, 'name is required for job');
-        assert(this.serviceAccount, 'serviceAccount is required');
-        const podSpec = new Containers(this.appName, {
-            spec: args,
-            metadata: this.metadata.get({
-                component: args.name,
-                annotations: { 'checksum/config': this.storage.configFilesHash },
-            }),
-            storage: this.storage,
-            serviceAccount: this.serviceAccount,
-            affinity: this.nodes.getAffinity(),
-            config: this.config,
-        });
-        return new kubernetes.batch.v1.Job(
-            `${this.appName}-${args.name}-job`,
-            {
-                metadata: this.metadata.get({ component: args.name }),
-                spec: {
-                    template: podSpec.createPodTemplateSpec(),
-                },
-            },
-            { parent: this.scope, dependsOn: this.storage },
         );
     }
 
