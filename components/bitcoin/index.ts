@@ -4,6 +4,7 @@ import { BitcoinCore } from './bitcoin-core';
 import { BitcoinKnots } from './bitcoin-knots';
 import { Electrs } from './electrs';
 import { RpcUser } from './utils/rpc-user';
+import assert from 'assert';
 
 interface BitcoinModuleArgs {
     domainName: string;
@@ -52,18 +53,19 @@ export class BitcoinModule extends pulumi.ComponentResource {
             );
         }
 
+        const bitcoinRpcUrl =
+            this.bitcoinKnots?.rpcClusterUrl ?? this.bitcoinCore?.rpcClusterUrl;
+        const bitcoinP2pUrl =
+            this.bitcoinKnots?.p2pClusterUrl ?? this.bitcoinCore?.p2pClusterUrl;
         if (rootConfig.isEnabled('electrs')) {
+            assert(bitcoinRpcUrl && bitcoinP2pUrl, 'Bitcoin node must be enabled');
             this.electrs = new Electrs(
                 'electrs',
                 {
                     domainName: args.domainName,
                     rpcUser: rpcUsers.electrs,
-                    bitcoinRpcUrl:
-                        this.bitcoinKnots?.rpcClusterUrl ??
-                        this.bitcoinCore?.rpcClusterUrl,
-                    bitcoinP2pUrl:
-                        this.bitcoinKnots?.p2pClusterUrl ??
-                        this.bitcoinCore?.p2pClusterUrl,
+                    bitcoinRpcUrl,
+                    bitcoinP2pUrl,
                 },
                 { parent: this },
             );

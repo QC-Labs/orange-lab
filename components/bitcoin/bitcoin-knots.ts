@@ -48,8 +48,10 @@ export class BitcoinKnots extends pulumi.ComponentResource {
 
         this.createDeployment();
 
-        this.rpcClusterUrl = `${name}.${this.app.namespace}:${RPC_PORT.toString()}`;
-        this.rpcUrl = `${hostname}.${args.domainName}:${RPC_PORT.toString()}`;
+        this.rpcClusterUrl = `http://${name}.${
+            this.app.namespace
+        }:${RPC_PORT.toString()}`;
+        this.rpcUrl = `http://${hostname}.${args.domainName}:${RPC_PORT.toString()}`;
         this.p2pClusterUrl = `${name}.${this.app.namespace}:${P2P_PORT.toString()}`;
         this.p2pUrl = `${hostname}.${args.domainName}:${P2P_PORT.toString()}`;
     }

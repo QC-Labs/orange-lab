@@ -6,8 +6,8 @@ import { RpcUser } from './utils/rpc-user';
 export interface ElectrsArgs {
     domainName: string;
     rpcUser: RpcUser;
-    bitcoinRpcUrl?: string;
-    bitcoinP2pUrl?: string;
+    bitcoinRpcUrl: string;
+    bitcoinP2pUrl: string;
 }
 
 export class Electrs extends pulumi.ComponentResource {
@@ -23,6 +23,7 @@ export class Electrs extends pulumi.ComponentResource {
         this.config = new pulumi.Config(name);
         const hostname = this.config.require('hostname');
         const debug = this.config.getBoolean('debug');
+        const rpcAddr = new URL(this.args.bitcoinRpcUrl);
 
         this.app = new Application(this, name, {
             domainName: args.domainName,
@@ -35,8 +36,8 @@ export class Electrs extends pulumi.ComponentResource {
                         auth = "${this.args.rpcUser.username}:${
                         this.args.rpcUser.password
                     }"
-                        daemon_rpc_addr = "${this.args.bitcoinRpcUrl ?? ''}"
-                        daemon_p2p_addr = "${this.args.bitcoinP2pUrl ?? ''}"
+                        daemon_rpc_addr = "${rpcAddr.host}"
+                        daemon_p2p_addr = "${this.args.bitcoinP2pUrl}"
                         db_dir = "/data"
                         electrum_rpc_addr = "0.0.0.0:50001"
                         log_filters = ${debug ? '"DEBUG"' : '"INFO"'}
