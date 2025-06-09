@@ -5,11 +5,22 @@ type NodeSelectorTerm = kubernetes.types.input.core.v1.NodeSelectorTerm;
 
 export interface NodesArgs {
     config: pulumi.Config;
-    gpu?: 'nvidia' | 'amd';
+    gpu?: boolean;
 }
 
 export class Nodes {
-    constructor(private readonly args: NodesArgs) {}
+    /**
+     * Optional GPU type, if specified, will set node affinity for the specified GPU type.
+     * If `gpu` is true, it will default to 'nvidia' unless 'amd-gpu' config is set to true.
+     */
+    public readonly gpu?: 'nvidia' | 'amd';
+
+    constructor(private readonly args: NodesArgs) {
+        if (args.gpu) {
+            const useAmdGpu = args.config.getBoolean('amd-gpu') ?? false;
+            this.gpu = useAmdGpu ? 'amd' : 'nvidia';
+        }
+    }
 
     getAffinity(): kubernetes.types.input.core.v1.Affinity | undefined {
         const requiredTerms = this.getRequiredNodeSelectorTerms();
@@ -61,10 +72,10 @@ export class Nodes {
             terms.push(this.getNodeSelectorTerm(requiredNodeLabel));
         }
 
-        if (this.args.gpu === 'amd') {
+        if (this.gpu === 'amd') {
             terms.push(this.getNodeSelectorTerm('orangelab/gpu-amd=true'));
         }
-        if (this.args.gpu === 'nvidia') {
+        if (this.gpu === 'nvidia') {
             terms.push(this.getNodeSelectorTerm('orangelab/gpu-nvidia=true'));
         }
         return terms;

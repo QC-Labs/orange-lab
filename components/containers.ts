@@ -2,24 +2,24 @@ import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Storage } from './storage';
 import { ContainerSpec, VolumeMount, InitContainerSpec } from './types';
+import { Nodes } from './nodes';
 
 export class Containers {
     metadata: kubernetes.types.input.meta.v1.ObjectMeta;
     serviceAccount: kubernetes.core.v1.ServiceAccount;
     spec: ContainerSpec;
-    affinity?: kubernetes.types.input.core.v1.Affinity;
     storage?: Storage;
+    nodes: Nodes;
     config: pulumi.Config;
 
     constructor(
         private appName: string,
-        private args: {
+        args: {
             spec: ContainerSpec;
             metadata: kubernetes.types.input.meta.v1.ObjectMeta;
             serviceAccount: kubernetes.core.v1.ServiceAccount;
             storage?: Storage;
-            affinity?: kubernetes.types.input.core.v1.Affinity;
-            gpu?: 'nvidia' | 'amd';
+            nodes: Nodes;
             config: pulumi.Config;
         },
     ) {
@@ -27,7 +27,7 @@ export class Containers {
         this.metadata = args.metadata;
         this.serviceAccount = args.serviceAccount;
         this.storage = args.storage;
-        this.affinity = args.affinity;
+        this.nodes = args.nodes;
         this.config = args.config;
     }
 
@@ -35,7 +35,7 @@ export class Containers {
         return {
             metadata: this.metadata,
             spec: {
-                affinity: this.affinity,
+                affinity: this.nodes.getAffinity(),
                 securityContext: this.createPodSecurityContext(),
                 hostNetwork: this.spec.hostNetwork,
                 containers: [
@@ -60,7 +60,7 @@ export class Containers {
                 initContainers: this.createInitContainers(this.spec.initContainers),
                 restartPolicy: this.spec.restartPolicy,
                 serviceAccountName: this.serviceAccount.metadata.name,
-                runtimeClassName: this.args.gpu === 'nvidia' ? 'nvidia' : undefined,
+                runtimeClassName: this.nodes.gpu === 'nvidia' ? 'nvidia' : undefined,
                 volumes: this.createVolumes(),
             },
         };
@@ -84,10 +84,10 @@ export class Containers {
     private createSecurityContext():
         | kubernetes.types.input.core.v1.SecurityContext
         | undefined {
-        if (this.args.gpu === 'amd') {
+        if (this.nodes.gpu === 'amd') {
             return { seccompProfile: { type: 'Unconfined' } };
         }
-        return this.args.gpu || this.storage?.hasLocal()
+        return this.nodes.gpu || this.storage?.hasLocal()
             ? { privileged: true }
             : undefined;
     }
@@ -105,7 +105,7 @@ export class Containers {
     }
 
     private createVolumes() {
-        if (this.args.gpu === 'amd') {
+        if (this.nodes.gpu === 'amd') {
             this.storage?.addLocalVolume({
                 name: 'dev-kfd',
                 hostPath: '/dev/kfd',
@@ -127,7 +127,7 @@ export class Containers {
             ...volumeMount,
             ...{ name: volumeMount.name ?? this.appName },
         }));
-        if (this.args.gpu === 'amd') {
+        if (this.nodes.gpu === 'amd') {
             mounts.push({ name: 'dev-kfd', mountPath: '/dev/kfd' });
             mounts.push({ name: 'dev-dri', mountPath: '/dev/dri' });
         }
@@ -145,7 +145,7 @@ export class Containers {
     }
 
     private createResourceLimits() {
-        switch (this.args.gpu) {
+        switch (this.nodes.gpu) {
             case 'nvidia':
                 return {
                     ...this.spec.resources,
@@ -182,9 +182,9 @@ export class Containers {
         const env = {
             ...this.spec.env,
             HSA_OVERRIDE_GFX_VERSION:
-                this.args.gpu === 'amd' && gfxVersion ? gfxVersion : undefined,
+                this.nodes.gpu === 'amd' && gfxVersion ? gfxVersion : undefined,
             HCC_AMDGPU_TARGETS:
-                this.args.gpu === 'amd' && amdTargets ? amdTargets : undefined,
+                this.nodes.gpu === 'amd' && amdTargets ? amdTargets : undefined,
         };
         return Object.entries(env)
             .filter(([_, value]) => value)

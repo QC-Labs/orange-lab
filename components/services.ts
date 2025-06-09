@@ -20,7 +20,6 @@ export class Services {
         private readonly storage: Storage,
         private readonly nodes: Nodes,
         private readonly config: pulumi.Config,
-        private readonly gpu?: 'nvidia' | 'amd',
     ) {}
 
     private getServiceAccount() {
@@ -45,8 +44,7 @@ export class Services {
             }),
             storage: this.storage,
             serviceAccount,
-            affinity: this.nodes.getAffinity(),
-            gpu: this.gpu,
+            nodes: this.nodes,
             config: this.config,
         });
         return new kubernetes.apps.v1.Deployment(
@@ -81,6 +79,7 @@ export class Services {
             }),
             serviceAccount,
             config: this.config,
+            nodes: this.nodes,
         });
         return new kubernetes.apps.v1.DaemonSet(
             `${this.appName}-${args.name}-daemonset`,
@@ -108,8 +107,8 @@ export class Services {
             }),
             storage: this.storage,
             serviceAccount,
-            affinity: this.nodes.getAffinity(),
             config: this.config,
+            nodes: this.nodes,
         });
         return new kubernetes.batch.v1.Job(
             `${this.appName}-${args.name}-job`,

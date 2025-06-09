@@ -28,7 +28,6 @@ export class Application {
     readonly namespace: string;
 
     private readonly config: pulumi.Config;
-    private gpu?: 'nvidia' | 'amd';
     private readonly services: Services;
 
     constructor(
@@ -43,11 +42,6 @@ export class Application {
     ) {
         this.config = new pulumi.Config(appName);
         this.storageOnly = this.config.getBoolean('storageOnly') ?? false;
-        if (args?.gpu) {
-            const useAmdGpu = this.config.getBoolean('amd-gpu') ?? false;
-            this.gpu = useAmdGpu ? 'amd' : 'nvidia';
-        }
-
         if (args?.existingNamespace) {
             this.namespace = args.existingNamespace;
         } else {
@@ -60,7 +54,7 @@ export class Application {
         });
         this.nodes = new Nodes({
             config: this.config,
-            gpu: this.gpu,
+            gpu: args?.gpu,
         });
         this.storage = new Storage(appName, {
             scope: this.scope,
@@ -82,7 +76,6 @@ export class Application {
             this.storage,
             this.nodes,
             this.config,
-            this.gpu,
         );
     }
 
