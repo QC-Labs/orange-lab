@@ -23,6 +23,18 @@ In case of connectivity issues, try disabling the firewall:
 systemctl disable firewalld.service --now
 ```
 
+## (Recommended) Disable swap
+
+It's recommended to disable swap memory when running Kubernetes as this helps with scheduling and reporting correct amount of resources available.
+
+```sh
+sudo swapoff -a
+sudo systemctl mask dev-zram0.swap
+
+# confirm swap is disabled
+free -h
+```
+
 ## (Optional) Disable suspend
 
 ### Server
