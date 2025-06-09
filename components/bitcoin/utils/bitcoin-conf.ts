@@ -9,8 +9,8 @@ function createRpc(rpcUsers: Record<string, RpcUser>): pulumi.Output<string> {
     return pulumi.all(authLines).apply(lines => lines.join('\n'));
 }
 
-function create({ prune }: { prune: number }): pulumi.Output<string> {
-    return pulumi.interpolate`
+function create({ prune }: { prune: number }): string {
+    return `
 ${prune > 0 ? `prune=${prune.toString()}` : 'txindex=1'}
 blocksonly=0
 debug=all

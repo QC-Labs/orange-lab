@@ -88,6 +88,16 @@ export class Application {
         return this;
     }
 
+    /**
+     * Adds a config volume that contains multiple configuration files mounted in the same folder.
+     * @param configVolume The config volume definition (name and files)
+     */
+    addConfigVolume(configVolume: ConfigVolume) {
+        if (this.storageOnly) return this;
+        this.storage.addConfigVolume(configVolume);
+        return this;
+    }
+
     addDeployment(spec: ContainerSpec) {
         if (this.storageOnly) return this;
         this.serviceAccount = this.serviceAccount ?? this.createServiceAccount();
@@ -140,17 +150,6 @@ export class Application {
         return this;
     }
 
-    /**
-     * Adds a config volume that contains multiple configuration files mounted in the same folder.
-     * @param configVolume The config volume definition (name and files)
-     */
-    addConfigVolume(configVolume: ConfigVolume) {
-        if (this.storageOnly) return this;
-        this.metadata.addConfigHash(configVolume);
-        this.storage.addConfigVolume(configVolume);
-        return this;
-    }
-
     private createNamespace(name: string) {
         return new kubernetes.core.v1.Namespace(
             `${this.appName}-ns`,
@@ -171,7 +170,9 @@ export class Application {
         assert(this.serviceAccount, 'serviceAccount is required');
         const podSpec = new Containers(this.appName, {
             spec: args,
-            metadata: this.metadata.get({ includeAnnotations: true }),
+            metadata: this.metadata.get({
+                annotations: { 'checksum/config': this.storage.configFilesHash },
+            }),
             storage: this.storage,
             serviceAccount: this.serviceAccount,
             affinity: this.nodes.getAffinity(),
@@ -206,7 +207,7 @@ export class Application {
             spec: args,
             metadata: this.metadata.get({
                 component: args.name,
-                includeAnnotations: true,
+                annotations: { 'checksum/config': this.storage.configFilesHash },
             }),
             serviceAccount: this.serviceAccount,
             config: this.config,
@@ -233,7 +234,7 @@ export class Application {
             spec: args,
             metadata: this.metadata.get({
                 component: args.name,
-                includeAnnotations: true,
+                annotations: { 'checksum/config': this.storage.configFilesHash },
             }),
             storage: this.storage,
             serviceAccount: this.serviceAccount,

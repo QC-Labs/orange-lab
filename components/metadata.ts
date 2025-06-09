@@ -1,11 +1,9 @@
 import * as pulumi from '@pulumi/pulumi';
-import * as crypto from 'crypto';
-import { ConfigVolume } from './types';
 
 export class Metadata {
     private config: pulumi.Config;
     private namespace: string;
-    private annotations: Record<string, string> = {};
+    private annotations: Record<string, pulumi.Output<string>> = {};
 
     constructor(
         private appName: string,
@@ -15,41 +13,33 @@ export class Metadata {
         this.namespace = args.namespace;
     }
 
-    get(params?: { includeAnnotations?: boolean; component?: string }): {
+    get(params?: {
+        component?: string;
+        annotations?: Record<string, pulumi.Output<string> | undefined>;
+    }): {
         name: string;
         namespace: string;
         labels: Record<string, string>;
-        annotations?: Record<string, string>;
+        annotations?: Record<string, pulumi.Output<string>>;
     } {
-        const meta: {
-            name: string;
-            namespace: string;
-            labels: Record<string, string>;
-            annotations?: Record<string, string>;
-        } = {
+        return {
             name: params?.component
                 ? `${this.appName}-${params.component}`
                 : this.appName,
             namespace: this.namespace,
             labels: this.createLabels(params?.component),
+            annotations: this.removeUndefinedValues(params?.annotations),
         };
-        if (params?.includeAnnotations) {
-            meta.annotations = this.annotations;
-        }
-        return meta;
     }
-    /**
-     * Adds a checksum/config annotation based on the given config volume's files.
-     * This ensures deployments are restarted when config file contents change.
-     */
-    addConfigHash(configVolume: ConfigVolume) {
-        // Sort keys for deterministic hash
-        const sortedFiles = Object.keys(configVolume.files)
-            .sort()
-            .map(k => ({ k, v: configVolume.files[k] }));
-        const str = JSON.stringify(sortedFiles);
-        const hash = crypto.createHash('sha256').update(str).digest('hex');
-        this.annotations['checksum/config'] = hash;
+
+    private removeUndefinedValues<T>(
+        obj: Record<string, T | undefined> | undefined,
+    ): Record<string, T> | undefined {
+        if (!obj) return undefined;
+        const filteredEntries = Object.entries(obj).filter(
+            ([, value]) => value !== undefined,
+        ) as [string, T][];
+        return Object.fromEntries(filteredEntries);
     }
 
     getSelectorLabels(component?: string) {

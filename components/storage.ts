@@ -1,12 +1,13 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import { ConfigMap } from '@pulumi/kubernetes/core/v1';
 import * as pulumi from '@pulumi/pulumi';
+import * as crypto from 'crypto';
 import assert from 'node:assert';
 import { LonghornVolume } from './longhorn-volume';
 import { Metadata } from './metadata';
+import { Nodes } from './nodes';
 import { rootConfig } from './root-config';
 import { ConfigVolume, LocalVolume, PersistentVolume, StorageType } from './types';
-import { Nodes } from './nodes';
 
 export class Storage extends pulumi.ComponentResource {
     private readonly longhornVolumes = new Map<string, LonghornVolume>();
@@ -15,6 +16,7 @@ export class Storage extends pulumi.ComponentResource {
     private readonly namespace: string;
     private readonly metadata: Metadata;
     private readonly nodes: Nodes;
+    public configFilesHash?: pulumi.Output<string>;
 
     constructor(
         private readonly appName: string,
@@ -102,6 +104,8 @@ export class Storage extends pulumi.ComponentResource {
      * @param configVolume The config volume definition (name and files)
      */
     addConfigVolume(configVolume: ConfigVolume) {
+        if (this.configFilesHash) throw new Error('Only one ConfigVolume supported');
+        this.configFilesHash = this.getConfigHash(configVolume);
         const volumeName = configVolume.name ?? 'config';
         new ConfigMap(
             `${this.appName}-${volumeName}-cm`,
@@ -118,6 +122,21 @@ export class Storage extends pulumi.ComponentResource {
         this.volumes.set(volumeName, {
             name: volumeName,
             configMap: { name: volumeName },
+        });
+    }
+
+    /**
+     * Adds a checksum/config annotation based on the given config volume's files.
+     * This ensures deployments are restarted when config file contents change.
+     */
+    private getConfigHash(configVolume: ConfigVolume) {
+        // Sort keys for deterministic hash
+        const sortedFiles = Object.keys(configVolume.files)
+            .sort()
+            .map(k => ({ k, v: configVolume.files[k] }));
+        return pulumi.jsonStringify(sortedFiles).apply(str => {
+            const hash = crypto.createHash('sha256').update(str).digest('hex');
+            return hash;
         });
     }
 
