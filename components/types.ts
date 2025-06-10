@@ -36,6 +36,20 @@ export interface InitContainerSpec {
 }
 
 /**
+ * Represents the resource limits and requests for a container.
+ */
+export interface ContainerResources {
+    limits?: {
+        cpu?: string;
+        memory?: string;
+    };
+    requests?: {
+        cpu?: string;
+        memory?: string;
+    };
+}
+
+/**
  * Represents the specification for a container in a Kubernetes deployment.
  */
 export interface ContainerSpec {
@@ -51,10 +65,7 @@ export interface ContainerSpec {
     initContainers?: InitContainerSpec[];
     volumeMounts?: VolumeMount[];
     healthChecks?: boolean;
-    resources?: {
-        limits?: { cpu?: string; memory?: string };
-        requests?: { cpu?: string; memory?: string };
-    };
+    resources?: ContainerResources;
     runAsUser?: number;
     restartPolicy?: string;
 }

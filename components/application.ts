@@ -101,9 +101,6 @@ export class Application {
 
     addDeployment(spec: ContainerSpec) {
         if (this.storageOnly) return this;
-        if (spec.envSecret) {
-            this.createEnvSecret(spec.envSecret);
-        }
         this.services.createDeployment(spec);
         this.network.createEndpoints(spec);
         this.serviceUrl = this.network.serviceUrl;
@@ -150,25 +147,6 @@ export class Application {
         return new kubernetes.core.v1.Namespace(
             `${this.appName}-ns`,
             { metadata: { name } },
-            { parent: this.scope },
-        );
-    }
-
-    private createEnvSecret(
-        secretData: Record<string, string | pulumi.Output<string> | undefined>,
-    ): kubernetes.core.v1.Secret {
-        return new kubernetes.core.v1.Secret(
-            `${this.appName}-secret`,
-            {
-                metadata: this.metadata.get(),
-                immutable: true,
-                // filter out undefined values
-                stringData: Object.fromEntries(
-                    Object.entries(secretData)
-                        .filter(([_, v]) => v !== undefined)
-                        .map(([k, v]) => [k, pulumi.output(v).apply(String)]),
-                ),
-            },
             { parent: this.scope },
         );
     }

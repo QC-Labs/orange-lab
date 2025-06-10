@@ -3,8 +3,8 @@ import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
 import { Containers } from './containers';
 import { Metadata } from './metadata';
-import { Storage } from './storage';
 import { Nodes } from './nodes';
+import { Storage } from './storage';
 import { ContainerSpec } from './types';
 
 /**
@@ -35,13 +35,11 @@ export class Services {
         );
     }
 
-    createDeployment(args: ContainerSpec) {
+    createDeployment(spec: ContainerSpec) {
         const serviceAccount = this.getServiceAccount();
         const podSpec = new Containers(this.appName, {
-            spec: args,
-            metadata: this.metadata.get({
-                annotations: { 'checksum/config': this.storage.configFilesHash },
-            }),
+            scope: this.scope,
+            metadata: this.metadata,
             storage: this.storage,
             serviceAccount,
             nodes: this.nodes,
@@ -54,7 +52,7 @@ export class Services {
                 spec: {
                     replicas: 1,
                     selector: { matchLabels: this.metadata.getSelectorLabels() },
-                    template: podSpec.createPodTemplateSpec(),
+                    template: podSpec.createPodTemplateSpec(spec),
                     strategy: this.storage.hasVolumes()
                         ? { type: 'Recreate', rollingUpdate: undefined }
                         : { type: 'RollingUpdate' },
@@ -68,54 +66,49 @@ export class Services {
         );
     }
 
-    createDaemonSet(args: ContainerSpec) {
-        assert(args.name, 'name is required for daemonset');
+    createDaemonSet(spec: ContainerSpec) {
+        assert(spec.name, 'name is required for daemonset');
         const serviceAccount = this.getServiceAccount();
         const podSpec = new Containers(this.appName, {
-            spec: args,
-            metadata: this.metadata.get({
-                component: args.name,
-                annotations: { 'checksum/config': this.storage.configFilesHash },
-            }),
+            scope: this.scope,
+            metadata: this.metadata,
             serviceAccount,
             config: this.config,
             nodes: this.nodes,
+            storage: this.storage,
         });
         return new kubernetes.apps.v1.DaemonSet(
-            `${this.appName}-${args.name}-daemonset`,
+            `${this.appName}-${spec.name}-daemonset`,
             {
-                metadata: this.metadata.get({ component: args.name }),
+                metadata: this.metadata.get({ component: spec.name }),
                 spec: {
                     selector: {
-                        matchLabels: this.metadata.getSelectorLabels(args.name),
+                        matchLabels: this.metadata.getSelectorLabels(spec.name),
                     },
-                    template: podSpec.createPodTemplateSpec(),
+                    template: podSpec.createPodTemplateSpec(spec),
                 },
             },
             { parent: this.scope, dependsOn: this.storage },
         );
     }
 
-    createJob(args: ContainerSpec) {
-        assert(args.name, 'name is required for job');
+    createJob(spec: ContainerSpec) {
+        assert(spec.name, 'name is required for job');
         const serviceAccount = this.getServiceAccount();
         const podSpec = new Containers(this.appName, {
-            spec: args,
-            metadata: this.metadata.get({
-                component: args.name,
-                annotations: { 'checksum/config': this.storage.configFilesHash },
-            }),
+            scope: this.scope,
+            metadata: this.metadata,
             storage: this.storage,
             serviceAccount,
             config: this.config,
             nodes: this.nodes,
         });
         return new kubernetes.batch.v1.Job(
-            `${this.appName}-${args.name}-job`,
+            `${this.appName}-${spec.name}-job`,
             {
-                metadata: this.metadata.get({ component: args.name }),
+                metadata: this.metadata.get({ component: spec.name }),
                 spec: {
-                    template: podSpec.createPodTemplateSpec(),
+                    template: podSpec.createPodTemplateSpec(spec),
                 },
             },
             { parent: this.scope, dependsOn: this.storage },
