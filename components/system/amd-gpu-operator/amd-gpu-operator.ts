@@ -44,6 +44,7 @@ export class AmdGPUOperator extends pulumi.ComponentResource {
                 values: {
                     kmm: { enabled: true },
                     installdefaultNFDRule: false,
+                    crds: { defaultCR: { install: false } },
                     nodeSelector: { 'orangelab/gpu-amd': 'true' },
                     'node-feature-discovery': { enabled: false },
                 },
