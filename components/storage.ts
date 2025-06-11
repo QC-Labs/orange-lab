@@ -78,14 +78,14 @@ export class Storage extends pulumi.ComponentResource {
     }
 
     getClaimName(storageName?: string): string {
-        const volumeName = storageName ? `${this.appName}-${storageName}` : this.appName;
+        const volumeName = storageName ?? this.appName;
         const storage = this.longhornVolumes.get(volumeName);
         assert(storage, `Storage ${volumeName} not found`);
         return storage.volumeClaimName;
     }
 
     getStorageClass(storageName?: string): pulumi.Output<string> {
-        const volumeName = storageName ? `${this.appName}-${storageName}` : this.appName;
+        const volumeName = storageName ?? this.appName;
         const storage = this.longhornVolumes.get(volumeName);
         assert(storage, `Storage ${volumeName} not found`);
         return storage.storageClassName;
@@ -147,7 +147,7 @@ export class Storage extends pulumi.ComponentResource {
      * @returns True if storage was provisioned dynamically
      */
     isDynamic(storageName?: string): boolean {
-        const volumeName = storageName ? `${this.appName}-${storageName}` : this.appName;
+        const volumeName = storageName ?? this.appName;
         const storage = this.longhornVolumes.get(volumeName);
         assert(storage, `Storage ${volumeName} not found`);
         return storage.isDynamic;
