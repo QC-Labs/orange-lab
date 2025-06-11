@@ -1,3 +1,4 @@
+import { Mempool } from './mempool';
 import * as pulumi from '@pulumi/pulumi';
 import { rootConfig } from '../root-config';
 import { BitcoinCore } from './bitcoin-core';
@@ -14,6 +15,8 @@ export class BitcoinModule extends pulumi.ComponentResource {
     bitcoinKnots?: BitcoinKnots;
     bitcoinCore?: BitcoinCore;
     electrs?: Electrs;
+    mempool?: Mempool;
+
     /**
      * Map of username to password
      */
@@ -58,7 +61,10 @@ export class BitcoinModule extends pulumi.ComponentResource {
         const bitcoinP2pUrl =
             this.bitcoinKnots?.p2pClusterUrl ?? this.bitcoinCore?.p2pClusterUrl;
         if (rootConfig.isEnabled('electrs')) {
-            assert(bitcoinRpcUrl && bitcoinP2pUrl, 'Bitcoin node must be enabled');
+            assert(
+                bitcoinRpcUrl && bitcoinP2pUrl,
+                'Bitcoin node must be enabled for Electrs',
+            );
             this.electrs = new Electrs(
                 'electrs',
                 {
@@ -66,6 +72,21 @@ export class BitcoinModule extends pulumi.ComponentResource {
                     rpcUser: rpcUsers.electrs,
                     bitcoinRpcUrl,
                     bitcoinP2pUrl,
+                },
+                { parent: this },
+            );
+        }
+
+        if (rootConfig.isEnabled('mempool')) {
+            assert(this.electrs?.rpcClusterUrl, 'Electrs must be enabled for Mempool');
+            assert(bitcoinRpcUrl, 'Bitcoin RPC must be enabled for Mempool');
+            this.mempool = new Mempool(
+                'mempool',
+                {
+                    domainName: args.domainName,
+                    electrsUrl: this.electrs.rpcClusterUrl,
+                    rpcUser: rpcUsers.mempool,
+                    bitcoinRpcUrl,
                 },
                 { parent: this },
             );

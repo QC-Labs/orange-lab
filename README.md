@@ -61,6 +61,8 @@ Private infrastructure for cloud natives.
 -   `bitcoin-core` - Bitcoin Core full node
 -   `bitcoin-knots` - Bitcoin Knots full node
 -   `electrs` - Electrs (Electrum) server implementation
+-   `mempool` - Blockchain explorer
+
 
 # Platforms and limitations
 

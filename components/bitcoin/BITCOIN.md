@@ -109,3 +109,29 @@ pulumi up
 ```
 
 Once indexing finishes, use `electrs:50001` to connect your wallets. More info at [Electrs wallet guide](../../docs/electrs-wallet.md)
+
+## Mempool
+
+|                 |                                                |
+| --------------- | ---------------------------------------------- |
+| Homepage        | https://mempool.space/                         |
+| Source code     | https://github.com/mempool/mempool/tree/master |
+| Docker backend  | https://hub.docker.com/r/mempool/backend       |
+| Docker frontend | https://hub.docker.com/r/mempool/frontend      |
+
+Mempool provides a visualization of the Bitcoin blockchain and acts as a block explorer. This allows you to inspect transactions and your addresses privately.
+
+```sh
+# Set the required configuration
+pulumi config set mempool:enabled true
+
+# Optional configuration
+pulumi config set mempool:version v3.2.1 # lock version
+pulumi config set mempool:hostname explorer # override hostname
+
+pulumi up
+```
+
+This will deploy Mempool frontend and backend connected to your Bitcoin node and Electrs server.
+
+You can access the frontend at https://mempool/

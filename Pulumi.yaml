@@ -163,7 +163,7 @@ config:
     ### Bitcoin ###
 
     # Default RPC users that will be created (comma-separated)
-    bitcoin:rpcUsers: admin,electrs
+    bitcoin:rpcUsers: admin,electrs,mempool
 
     bitcoin-core:enabled: false
     bitcoin-core:hostname: bitcoin
@@ -186,3 +186,7 @@ config:
     electrs:hostname: electrs
     electrs:version: 'v0.10.9'
     # electrs:requiredNodeLabel: kubernetes.io/hostname=<hostname>
+
+    mempool:enabled: false
+    mempool:hostname: mempool
+    mempool:version: 'v3.2.1'
