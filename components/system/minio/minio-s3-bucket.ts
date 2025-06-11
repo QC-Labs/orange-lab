@@ -21,7 +21,7 @@ export class MinioS3Bucket extends pulumi.ComponentResource {
             ? new minio.S3Bucket(
                   `${name}-s3bucket`,
                   { bucket: args.bucketName },
-                  { parent: this, provider: opts?.provider },
+                  { parent: this, provider: opts?.provider, retainOnDelete: true },
               )
             : minio.S3Bucket.get(
                   args.bucketName,
