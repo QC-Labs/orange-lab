@@ -65,16 +65,8 @@ export class BitcoinCore extends pulumi.ComponentResource {
             },
             image: `btcpayserver/bitcoin:${this.config.require('version')}`,
             ports: [
-                {
-                    name: 'rpc',
-                    port: RPC_PORT,
-                    tcp: true,
-                },
-                {
-                    name: 'p2p',
-                    port: P2P_PORT,
-                    tcp: true,
-                },
+                { name: 'rpc', port: RPC_PORT, tcp: true },
+                { name: 'p2p', port: P2P_PORT, tcp: true },
             ],
             commandArgs: ['bitcoind', extraArgs],
             env: {

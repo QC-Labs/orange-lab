@@ -45,13 +45,14 @@ export class Services {
             nodes: this.nodes,
             config: this.config,
         });
+        const metadata = this.metadata.get({ component: spec.name });
         return new kubernetes.apps.v1.Deployment(
-            `${this.appName}-deployment`,
+            `${metadata.name}-deployment`,
             {
-                metadata: this.metadata.get(),
+                metadata,
                 spec: {
                     replicas: 1,
-                    selector: { matchLabels: this.metadata.getSelectorLabels() },
+                    selector: { matchLabels: this.metadata.getSelectorLabels(spec.name) },
                     template: podSpec.createPodTemplateSpec(spec),
                     strategy: this.storage.hasVolumes()
                         ? { type: 'Recreate', rollingUpdate: undefined }

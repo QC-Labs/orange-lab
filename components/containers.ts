@@ -58,7 +58,10 @@ export class Containers {
                             : spec.commandArgs,
                         command: spec.command,
                         env: this.createEnv(spec.env),
-                        envFrom: this.createEnvSecret(spec.envSecret),
+                        envFrom: this.createEnvSecret({
+                            containerName: spec.name,
+                            secretData: spec.envSecret,
+                        }),
                         image: spec.image,
                         livenessProbe: this.createProbe({
                             healthChecks: spec.healthChecks,
@@ -218,18 +221,20 @@ export class Containers {
             .map(([key, value]) => ({ name: key, value }));
     }
 
-    private createEnvSecret(
-        secretData?: Record<string, string | pulumi.Output<string> | undefined>,
-    ) {
-        if (!secretData) return;
+    private createEnvSecret(args: {
+        containerName?: string;
+        secretData?: Record<string, string | pulumi.Output<string> | undefined>;
+    }) {
+        if (!args.secretData) return;
+        const metadata = this.metadata.get({ component: args.containerName });
         const secret = new kubernetes.core.v1.Secret(
-            `${this.appName}-secret`,
+            `${metadata.name}-secret`,
             {
-                metadata: this.metadata.get(),
+                metadata,
                 immutable: true,
                 // filter out undefined values
                 stringData: Object.fromEntries(
-                    Object.entries(secretData)
+                    Object.entries(args.secretData)
                         .filter(([_, v]) => v !== undefined)
                         .map(([k, v]) => [k, pulumi.output(v).apply(String)]),
                 ),

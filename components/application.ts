@@ -12,7 +12,6 @@ import { ConfigVolume, ContainerSpec, LocalVolume, PersistentVolume } from './ty
  * Application class provides DSL (Domain Specific Language) to simplify creation of Kubernetes manifests.
  *
  * Limitations:
- * - only one Deployment supported
  * - max one DaemonSet
  * - no endpoints for DaemonSet
  * - persistent storage for DaemonSets not supported

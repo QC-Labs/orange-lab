@@ -32,7 +32,7 @@ export class Network {
         const hostname = this.config.get('hostname');
         if (!hostname) return;
         assert(this.domainName, 'domainName is required');
-        const metadata = this.metadata.get();
+        const metadata = this.metadata.get({ component: spec.name });
         assert(metadata.namespace, 'namespace is required');
 
         const ports: ServicePort[] = [
@@ -42,53 +42,64 @@ export class Network {
         if (ports.length === 0) return;
 
         const httpPorts = ports.filter(p => !p.tcp);
-        const tcpPorts = ports.filter(p => p.tcp);
         if (httpPorts.length) {
-            const service = this.createService(httpPorts);
-            this.createIngress(service, httpPorts);
+            const service = this.createService({
+                component: spec.name,
+                ports: httpPorts,
+            });
+            this.createIngress({ service, ports: httpPorts, component: spec.name });
         }
+        const tcpPorts = ports.filter(p => p.tcp);
         if (tcpPorts.length) {
-            this.createLoadBalancer(hostname, tcpPorts);
+            this.createLoadBalancer({ hostname, ports: tcpPorts, component: spec.name });
         }
         const port = ports[0].port.toString();
         this.serviceUrl = `http://${hostname}.${metadata.namespace}:${port}`;
         this.endpointUrl = `https://${hostname}.${this.domainName}`;
     }
 
-    private createService(ports: ServicePort[]): kubernetes.core.v1.Service {
-        const servicePorts = ports.map(p => ({
+    private createService(args: {
+        component?: string;
+        ports: ServicePort[];
+    }): kubernetes.core.v1.Service {
+        const servicePorts = args.ports.map(p => ({
             name: p.name,
             protocol: 'TCP',
             port: p.port,
             targetPort: p.port,
         }));
-
+        const metadata = this.metadata.get({ component: args.component });
         return new kubernetes.core.v1.Service(
-            `${this.appName}-svc`,
+            `${metadata.name}-svc`,
             {
-                metadata: this.metadata.get(),
+                metadata,
                 spec: {
                     type: 'ClusterIP',
                     ports: servicePorts,
-                    selector: this.metadata.getSelectorLabels(),
+                    selector: this.metadata.getSelectorLabels(args.component),
                 },
             },
             { parent: this.scope },
         );
     }
 
-    private createLoadBalancer(hostname: string, ports: ServicePort[]) {
+    private createLoadBalancer(args: {
+        hostname: string;
+        ports: ServicePort[];
+        component?: string;
+    }) {
+        const metadata = this.metadata.get({ component: args.component });
         new kubernetes.core.v1.Service(
-            `${this.appName}-lb`,
+            `${metadata.name}-lb`,
             {
                 metadata: {
-                    ...this.metadata.get(),
-                    annotations: { 'tailscale.com/hostname': hostname },
+                    ...metadata,
+                    annotations: { 'tailscale.com/hostname': args.hostname },
                 },
                 spec: {
                     type: 'LoadBalancer',
                     loadBalancerClass: 'tailscale',
-                    ports: ports.map(p => ({
+                    ports: args.ports.map(p => ({
                         name: p.name,
                         protocol: 'TCP',
                         port: p.port,
@@ -101,28 +112,28 @@ export class Network {
         );
     }
 
-    private createIngress(
-        service: kubernetes.core.v1.Service,
-        ports: ServicePort[],
-    ): kubernetes.networking.v1.Ingress[] {
+    private createIngress(args: {
+        service: kubernetes.core.v1.Service;
+        ports: ServicePort[];
+        component?: string;
+    }): kubernetes.networking.v1.Ingress[] {
         assert(this.domainName, 'domainName is required for ingress');
-
-        return ports.map((p, i) => {
-            assert(p.hostname, `hostname is required for port ${p.name}`);
-            const componentName = i === 0 ? this.appName : `${this.appName}-${p.name}`;
-            const metadata = this.metadata.get({
-                component: i === 0 ? undefined : p.name,
-            });
+        return args.ports.map(port => {
+            assert(port.hostname, `hostname is required for port ${port.name}`);
+            const componentName = args.component
+                ? `${args.component}-${port.name}`
+                : port.name;
+            const metadata = this.metadata.get({ component: componentName });
             return new kubernetes.networking.v1.Ingress(
-                `${componentName}-ingress`,
+                `${metadata.name}-ingress`,
                 {
                     metadata,
                     spec: {
                         ingressClassName: 'tailscale',
-                        tls: [{ hosts: [p.hostname] }],
+                        tls: [{ hosts: [port.hostname] }],
                         rules: [
                             {
-                                host: p.hostname,
+                                host: port.hostname,
                                 http: {
                                     paths: [
                                         {
@@ -130,8 +141,8 @@ export class Network {
                                             pathType: 'Prefix',
                                             backend: {
                                                 service: {
-                                                    name: service.metadata.name,
-                                                    port: { number: p.port },
+                                                    name: args.service.metadata.name,
+                                                    port: { number: port.port },
                                                 },
                                             },
                                         },
