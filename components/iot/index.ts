@@ -9,7 +9,13 @@ interface IoTModuleArgs {
 }
 
 export class IoTModule extends pulumi.ComponentResource {
-    homeAssistant: HomeAssistant | undefined;
+    private readonly homeAssistant: HomeAssistant | undefined;
+
+    getExports() {
+        return {
+            homeAssistantUrl: this.homeAssistant?.endpointUrl,
+        };
+    }
 
     constructor(
         name: string,

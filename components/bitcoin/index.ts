@@ -12,15 +12,33 @@ interface BitcoinModuleArgs {
 }
 
 export class BitcoinModule extends pulumi.ComponentResource {
-    bitcoinKnots?: BitcoinKnots;
-    bitcoinCore?: BitcoinCore;
-    electrs?: Electrs;
-    mempool?: Mempool;
+    private readonly bitcoinKnots?: BitcoinKnots;
+    private readonly bitcoinCore?: BitcoinCore;
+    private readonly electrs?: Electrs;
+    private readonly mempool?: Mempool;
 
     /**
      * Map of username to password
      */
     bitcoinUsers: Record<string, pulumi.Output<string>> = {};
+
+    getExports() {
+        return {
+            bitcoinUsers: Object.fromEntries(
+                Object.entries(this.bitcoinUsers).map(([user, password]) => [
+                    user,
+                    pulumi.secret(password),
+                ]),
+            ),
+            bitcoinCoreUrl: this.bitcoinCore?.rpcUrl,
+            bitcoinCoreClusterUrl: this.bitcoinCore?.rpcClusterUrl,
+            bitcoinKnotsUrl: this.bitcoinKnots?.rpcUrl,
+            bitcoinKnotsClusterUrl: this.bitcoinKnots?.rpcClusterUrl,
+            electrsUrl: this.electrs?.rpcUrl,
+            electrsClusterUrl: this.electrs?.rpcClusterUrl,
+            mempoolUrl: this.mempool?.frontendUrl,
+        };
+    }
 
     constructor(
         name: string,

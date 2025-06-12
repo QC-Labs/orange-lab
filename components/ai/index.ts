@@ -12,12 +12,24 @@ interface AIModuleArgs {
 }
 
 export class AIModule extends pulumi.ComponentResource {
-    ollama?: Ollama;
-    kubeAI?: KubeAi;
-    openWebUI?: OpenWebUI;
-    automatic1111?: Automatic1111;
-    sdnext?: SDNext;
-    invokeAi?: InvokeAi;
+    private readonly ollama?: Ollama;
+    private readonly kubeAI?: KubeAi;
+    private readonly openWebUI?: OpenWebUI;
+    private readonly automatic1111?: Automatic1111;
+    private readonly sdnext?: SDNext;
+    private readonly invokeAi?: InvokeAi;
+
+    getExports() {
+        return {
+            ollamaUrl: this.ollama?.endpointUrl,
+            openWebUIUrl: this.openWebUI?.endpointUrl,
+            kubeAIClusterUrl: this.kubeAI?.serviceUrl,
+            automatic1111Url: this.automatic1111?.endpointUrl,
+            automatic1111ClusterUrl: this.automatic1111?.serviceUrl,
+            sdnextUrl: this.sdnext?.endpointUrl,
+            sdnextClusterUrl: this.sdnext?.serviceUrl,
+        };
+    }
 
     constructor(
         name: string,

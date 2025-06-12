@@ -11,6 +11,15 @@ export class MonitoringModule extends pulumi.ComponentResource {
     prometheus: Prometheus | undefined;
     beszel: Beszel | undefined;
 
+    getExports() {
+        return {
+            alertmanagerUrl: this.prometheus?.alertmanagerEndpointUrl,
+            beszelUrl: this.beszel?.endpointUrl,
+            grafanaUrl: this.prometheus?.grafanaEndpointUrl,
+            prometheusUrl: this.prometheus?.prometheusEndpointUrl,
+        };
+    }
+
     constructor(
         name: string,
         args: IoTModuleArgs,

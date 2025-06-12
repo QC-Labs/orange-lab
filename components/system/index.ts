@@ -20,6 +20,20 @@ export class SystemModule extends pulumi.ComponentResource {
     longhorn?: Longhorn;
     minio?: Minio;
 
+    getExports() {
+        return {
+            longhornUrl: this.longhorn?.endpointUrl,
+            minioUrl: this.minio?.endpointUrl,
+            minioS3ApiClusterUrl: this.minio?.s3ApiClusterUrl,
+            minioS3ApiUrl: this.minio?.s3ApiUrl,
+            minioS3WebUrl: this.minio?.s3WebUrl,
+            minioUsers: this.minio?.users,
+            tailscaleAgentKey: this.tailscaleAgentKey,
+            tailscaleServerKey: this.tailscaleServerKey,
+            tailscaleDomain: this.domainName,
+        };
+    }
+
     constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
         super('orangelab:system', name, args, opts);
 
