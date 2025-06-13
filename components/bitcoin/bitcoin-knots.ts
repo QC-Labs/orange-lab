@@ -35,8 +35,6 @@ export class BitcoinKnots extends pulumi.ComponentResource {
                 },
             });
 
-        if (this.app.storageOnly) return;
-
         this.createDeployment();
     }
 
