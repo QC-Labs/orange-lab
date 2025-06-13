@@ -7,8 +7,7 @@ export interface Automatic1111Args {
 }
 
 export class Automatic1111 extends pulumi.ComponentResource {
-    public readonly endpointUrl: string | undefined;
-    public readonly serviceUrl: string | undefined;
+    app: Application;
 
     constructor(
         private name: string,
@@ -20,7 +19,7 @@ export class Automatic1111 extends pulumi.ComponentResource {
         const config = new pulumi.Config(name);
         const cliArgs = config.require('cliArgs');
 
-        const app = new Application(this, name, {
+        this.app = new Application(this, name, {
             domainName: args.domainName,
             gpu: true,
         })
@@ -51,8 +50,5 @@ export class Automatic1111 extends pulumi.ComponentResource {
                     requests: { cpu: '100m', memory: '2Gi' },
                 },
             });
-
-        this.endpointUrl = app.endpointUrl;
-        this.serviceUrl = app.serviceUrl;
     }
 }

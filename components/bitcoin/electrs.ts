@@ -6,24 +6,22 @@ import { RpcUser } from './utils/rpc-user';
 export interface ElectrsArgs {
     domainName: string;
     rpcUser: RpcUser;
-    bitcoinRpcUrl: string;
-    bitcoinP2pUrl: string;
+    bitcoinRpcUrl: pulumi.Input<string>;
+    bitcoinP2pUrl: pulumi.Input<string>;
 }
 
 export class Electrs extends pulumi.ComponentResource {
-    public readonly rpcUrl?: string;
-    public readonly rpcClusterUrl?: string;
-
-    private readonly app: Application;
+    public readonly app: Application;
     private readonly config: pulumi.Config;
 
     constructor(name: string, private args: ElectrsArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:bitcoin:Electrs', name, args, opts);
 
         this.config = new pulumi.Config(name);
-        const hostname = this.config.require('hostname');
         const debug = this.config.getBoolean('debug');
-        const rpcAddr = new URL(this.args.bitcoinRpcUrl);
+        const rpcHost = pulumi
+            .output(this.args.bitcoinRpcUrl)
+            .apply(url => new URL(`http://${url}`).host);
 
         this.app = new Application(this, name, {
             domainName: args.domainName,
@@ -36,7 +34,7 @@ export class Electrs extends pulumi.ComponentResource {
                         auth = "${this.args.rpcUser.username}:${
                         this.args.rpcUser.password
                     }"
-                        daemon_rpc_addr = "${rpcAddr.host}"
+                        daemon_rpc_addr = "${rpcHost}"
                         daemon_p2p_addr = "${this.args.bitcoinP2pUrl}"
                         db_dir = "/data"
                         electrum_rpc_addr = "0.0.0.0:50001"
@@ -48,9 +46,6 @@ export class Electrs extends pulumi.ComponentResource {
         if (this.app.storageOnly) return;
 
         this.createDeployment();
-
-        this.rpcUrl = `${hostname}.${args.domainName}`;
-        this.rpcClusterUrl = `${hostname}.${this.app.namespace}:50001`;
     }
 
     private createDeployment() {

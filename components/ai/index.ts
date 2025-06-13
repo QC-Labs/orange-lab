@@ -21,13 +21,21 @@ export class AIModule extends pulumi.ComponentResource {
 
     getExports() {
         return {
-            ollamaUrl: this.ollama?.endpointUrl,
-            openWebUIUrl: this.openWebUI?.endpointUrl,
-            kubeAIClusterUrl: this.kubeAI?.serviceUrl,
-            automatic1111Url: this.automatic1111?.endpointUrl,
-            automatic1111ClusterUrl: this.automatic1111?.serviceUrl,
-            sdnextUrl: this.sdnext?.endpointUrl,
-            sdnextClusterUrl: this.sdnext?.serviceUrl,
+            endpoints: {
+                ...this.automatic1111?.app.network.endpoints,
+                ...this.invokeAi?.app.network.endpoints,
+                kubeai: this.kubeAI?.serviceUrl,
+                ollama: this.ollama?.endpointUrl,
+                'open-webui': this.openWebUI?.endpointUrl,
+                ...this.sdnext?.app.network.endpoints,
+            },
+            clusterEndpoints: {
+                ...this.automatic1111?.app.network.clusterEndpoints,
+                ...this.invokeAi?.app.network.clusterEndpoints,
+                kubeai: this.kubeAI?.serviceUrl,
+                ollama: this.ollama?.serviceUrl,
+                ...this.sdnext?.app.network.clusterEndpoints,
+            },
         };
     }
 
@@ -81,7 +89,8 @@ export class AIModule extends pulumi.ComponentResource {
                     ollamaUrl: this.ollama?.serviceUrl,
                     openAiUrl: this.kubeAI?.serviceUrl,
                     automatic1111Url:
-                        this.sdnext?.serviceUrl ?? this.automatic1111?.serviceUrl,
+                        this.sdnext?.app.network.clusterEndpoints.sdnext ??
+                        this.automatic1111?.app.network.clusterEndpoints.automatic1111,
                 },
                 {
                     parent: this,

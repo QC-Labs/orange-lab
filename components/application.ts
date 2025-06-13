@@ -17,8 +17,6 @@ import { ConfigVolume, ContainerSpec, LocalVolume, PersistentVolume } from './ty
  * - persistent storage for DaemonSets not supported
  */
 export class Application {
-    endpointUrl?: string;
-    serviceUrl?: string;
     storageOnly = false;
     readonly metadata: Metadata;
     readonly nodes: Nodes;
@@ -102,8 +100,6 @@ export class Application {
         if (this.storageOnly) return this;
         this.services.createDeployment(spec);
         this.network.createEndpoints(spec);
-        this.serviceUrl = this.network.serviceUrl;
-        this.endpointUrl = this.network.endpointUrl;
         return this;
     }
 

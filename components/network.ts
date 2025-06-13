@@ -5,8 +5,8 @@ import { Metadata } from './metadata';
 import { ContainerSpec, ServicePort } from './types';
 
 export class Network {
-    serviceUrl?: string;
-    endpointUrl?: string;
+    readonly endpoints: Record<string, pulumi.Output<string> | string> = {};
+    readonly clusterEndpoints: Record<string, pulumi.Output<string> | string> = {};
 
     private readonly config: pulumi.Config;
     private readonly metadata: Metadata;
@@ -42,32 +42,73 @@ export class Network {
         if (ports.length === 0) return;
 
         const httpPorts = ports.filter(p => !p.tcp);
-        if (httpPorts.length) {
-            const service = this.createService({
-                component: spec.name,
-                ports: httpPorts,
-            });
-            this.createIngress({ service, ports: httpPorts, component: spec.name });
-        }
+        this.createHttpEndpoints(httpPorts, spec);
+
         const tcpPorts = ports.filter(p => p.tcp);
-        if (tcpPorts.length) {
-            this.createLoadBalancer({ hostname, ports: tcpPorts, component: spec.name });
-        }
-        const port = ports[0].port.toString();
-        this.serviceUrl = `http://${hostname}.${metadata.namespace}:${port}`;
-        this.endpointUrl = `https://${hostname}.${this.domainName}`;
+        this.createTcpEndpoints(tcpPorts, spec.name);
+    }
+
+    private createTcpEndpoints(tcpPorts: ServicePort[], component?: string) {
+        if (tcpPorts.length === 0) return;
+        const hostname = this.config.require('hostname');
+        const service = this.createLoadBalancer({
+            hostname,
+            ports: tcpPorts,
+            component,
+        });
+        tcpPorts.forEach(port => {
+            this.exportEndpoint({ component, port });
+            this.exportClusterEndpoint({ component, port, service });
+        });
+    }
+
+    private createHttpEndpoints(httpPorts: ServicePort[], spec: ContainerSpec) {
+        if (httpPorts.length === 0) return;
+        const service = this.createService({
+            component: spec.name,
+            ports: httpPorts,
+        });
+        httpPorts.forEach(port => {
+            this.createIngress({ service, port, component: spec.name });
+            this.exportEndpoint({ component: spec.name, port });
+            this.exportClusterEndpoint({ component: spec.name, port, service });
+        });
+    }
+
+    private exportEndpoint(args: { component?: string; port: ServicePort }) {
+        const key = this.getFullPortName({ component: args.component, port: args.port });
+        const hostname = args.port.hostname ?? this.config.get('hostname');
+        const url = args.port.tcp
+            ? pulumi.interpolate`${hostname}:${args.port.port}`
+            : pulumi.interpolate`https://${hostname}.${this.domainName}`;
+        this.endpoints[key] = url;
+    }
+
+    private exportClusterEndpoint(args: {
+        component?: string;
+        port: ServicePort;
+        service: kubernetes.core.v1.Service;
+    }) {
+        const key = this.getFullPortName({ component: args.component, port: args.port });
+        const url = pulumi.interpolate`${args.service.metadata.name}.${args.service.metadata.namespace}:${args.port.port}`;
+        this.clusterEndpoints[key] = args.port.tcp ? url : pulumi.concat('http://', url);
+    }
+
+    private getFullPortName(args: { component?: string; port: ServicePort }): string {
+        const key = [
+            this.appName,
+            args.component,
+            args.port.name === 'http' ? undefined : args.port.name,
+        ]
+            .filter(Boolean)
+            .join('-');
+        return key;
     }
 
     private createService(args: {
         component?: string;
         ports: ServicePort[];
     }): kubernetes.core.v1.Service {
-        const servicePorts = args.ports.map(p => ({
-            name: p.name,
-            protocol: 'TCP',
-            port: p.port,
-            targetPort: p.port,
-        }));
         const metadata = this.metadata.get({ component: args.component });
         return new kubernetes.core.v1.Service(
             `${metadata.name}-svc`,
@@ -75,7 +116,12 @@ export class Network {
                 metadata,
                 spec: {
                     type: 'ClusterIP',
-                    ports: servicePorts,
+                    ports: args.ports.map(p => ({
+                        name: p.name,
+                        protocol: 'TCP',
+                        port: p.port,
+                        targetPort: p.port,
+                    })),
                     selector: this.metadata.getSelectorLabels(args.component),
                 },
             },
@@ -87,9 +133,9 @@ export class Network {
         hostname: string;
         ports: ServicePort[];
         component?: string;
-    }) {
+    }): kubernetes.core.v1.Service {
         const metadata = this.metadata.get({ component: args.component });
-        new kubernetes.core.v1.Service(
+        return new kubernetes.core.v1.Service(
             `${metadata.name}-lb`,
             {
                 metadata: {
@@ -114,46 +160,44 @@ export class Network {
 
     private createIngress(args: {
         service: kubernetes.core.v1.Service;
-        ports: ServicePort[];
+        port: ServicePort;
         component?: string;
-    }): kubernetes.networking.v1.Ingress[] {
+    }): kubernetes.networking.v1.Ingress {
         assert(this.domainName, 'domainName is required for ingress');
-        return args.ports.map(port => {
-            assert(port.hostname, `hostname is required for port ${port.name}`);
-            const componentName = args.component
-                ? `${args.component}-${port.name}`
-                : port.name;
-            const metadata = this.metadata.get({ component: componentName });
-            return new kubernetes.networking.v1.Ingress(
-                `${metadata.name}-ingress`,
-                {
-                    metadata,
-                    spec: {
-                        ingressClassName: 'tailscale',
-                        tls: [{ hosts: [port.hostname] }],
-                        rules: [
-                            {
-                                host: port.hostname,
-                                http: {
-                                    paths: [
-                                        {
-                                            path: '/',
-                                            pathType: 'Prefix',
-                                            backend: {
-                                                service: {
-                                                    name: args.service.metadata.name,
-                                                    port: { number: port.port },
-                                                },
+        assert(args.port.hostname, `hostname is required for port ${args.port.name}`);
+        const componentName = args.component
+            ? `${args.component}-${args.port.name}`
+            : args.port.name;
+        const metadata = this.metadata.get({ component: componentName });
+        return new kubernetes.networking.v1.Ingress(
+            `${metadata.name}-ingress`,
+            {
+                metadata,
+                spec: {
+                    ingressClassName: 'tailscale',
+                    tls: [{ hosts: [args.port.hostname] }],
+                    rules: [
+                        {
+                            host: args.port.hostname,
+                            http: {
+                                paths: [
+                                    {
+                                        path: '/',
+                                        pathType: 'Prefix',
+                                        backend: {
+                                            service: {
+                                                name: args.service.metadata.name,
+                                                port: { number: args.port.port },
                                             },
                                         },
-                                    ],
-                                },
+                                    },
+                                ],
                             },
-                        ],
-                    },
+                        },
+                    ],
                 },
-                { parent: this.scope },
-            );
-        });
+            },
+            { parent: this.scope },
+        );
     }
 }

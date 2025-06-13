@@ -22,11 +22,13 @@ export class SystemModule extends pulumi.ComponentResource {
 
     getExports() {
         return {
-            longhornUrl: this.longhorn?.endpointUrl,
-            minioUrl: this.minio?.endpointUrl,
-            minioS3ApiClusterUrl: this.minio?.s3ApiClusterUrl,
-            minioS3ApiUrl: this.minio?.s3ApiUrl,
-            minioS3WebUrl: this.minio?.s3WebUrl,
+            endpoints: {
+                ...this.minio?.app.network.endpoints,
+                longhorn: this.longhorn?.endpointUrl,
+            },
+            clusterEndpoints: {
+                ...this.minio?.app.network.clusterEndpoints,
+            },
             minioUsers: this.minio?.users,
             tailscaleAgentKey: this.tailscaleAgentKey,
             tailscaleServerKey: this.tailscaleServerKey,
@@ -104,7 +106,7 @@ export class SystemModule extends pulumi.ComponentResource {
                 {
                     domainName: this.domainName,
                     enableMonitoring,
-                    s3EndpointUrl: this.minio?.s3ApiClusterUrl,
+                    s3EndpointUrl: this.minio?.app.network.clusterEndpoints['minio-api'],
                     minioProvider: this.minio?.minioProvider,
                 },
                 { parent: this, dependsOn: [this.minio].filter(v => v !== undefined) },

@@ -7,8 +7,7 @@ export interface SDNextArgs {
 }
 
 export class SDNext extends pulumi.ComponentResource {
-    public readonly endpointUrl: string | undefined;
-    public readonly serviceUrl: string | undefined;
+    app: Application;
 
     constructor(name: string, args: SDNextArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:ai:SDNext', name, args, opts);
@@ -17,7 +16,7 @@ export class SDNext extends pulumi.ComponentResource {
         const cliArgs = config.require('cliArgs');
         const amdGpu = config.get('amd-gpu');
 
-        const app = new Application(this, name, {
+        this.app = new Application(this, name, {
             domainName: args.domainName,
             gpu: true,
         })
@@ -42,8 +41,5 @@ export class SDNext extends pulumi.ComponentResource {
                 volumeMounts: [{ mountPath: '/webui/data' }],
                 resources: { requests: { cpu: '50m', memory: '2.5Gi' } },
             });
-
-        this.endpointUrl = app.endpointUrl;
-        this.serviceUrl = app.serviceUrl;
     }
 }

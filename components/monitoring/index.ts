@@ -13,10 +13,12 @@ export class MonitoringModule extends pulumi.ComponentResource {
 
     getExports() {
         return {
-            alertmanagerUrl: this.prometheus?.alertmanagerEndpointUrl,
-            beszelUrl: this.beszel?.endpointUrl,
-            grafanaUrl: this.prometheus?.grafanaEndpointUrl,
-            prometheusUrl: this.prometheus?.prometheusEndpointUrl,
+            endpoints: {
+                alertmanager: this.prometheus?.alertmanagerEndpointUrl,
+                ...this.beszel?.app.network.endpoints,
+                grafana: this.prometheus?.grafanaEndpointUrl,
+                prometheus: this.prometheus?.prometheusEndpointUrl,
+            },
         };
     }
 

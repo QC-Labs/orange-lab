@@ -6,8 +6,7 @@ export interface BeszelArgs {
 }
 
 export class Beszel extends pulumi.ComponentResource {
-    public readonly endpointUrl: string | undefined;
-    public readonly serviceUrl: string | undefined;
+    public readonly app: Application;
 
     constructor(name: string, args: BeszelArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:monitoring:Beszel', name, args, opts);
@@ -15,7 +14,7 @@ export class Beszel extends pulumi.ComponentResource {
         const config = new pulumi.Config(name);
         const hubKey = config.get('hubKey');
 
-        const app = new Application(this, name, { domainName: args.domainName })
+        this.app = new Application(this, name, { domainName: args.domainName })
             .addStorage()
             .addDeployment({
                 image: 'henrygd/beszel:latest',
@@ -32,7 +31,7 @@ export class Beszel extends pulumi.ComponentResource {
             });
 
         if (hubKey) {
-            app.addDeamonSet({
+            this.app.addDeamonSet({
                 name: 'agent',
                 image: `henrygd/beszel-agent`,
                 hostNetwork: true,
@@ -46,7 +45,5 @@ export class Beszel extends pulumi.ComponentResource {
                 },
             });
         }
-
-        this.endpointUrl = app.endpointUrl;
     }
 }

@@ -4,41 +4,35 @@ import { RpcUser } from './utils/rpc-user';
 
 export interface MempoolArgs {
     domainName: string;
-    electrsUrl: string;
+    electrsUrl: pulumi.Input<string>;
     rpcUser: RpcUser;
-    bitcoinRpcUrl: string;
+    bitcoinRpcUrl: pulumi.Input<string>;
 }
 
 export class Mempool extends pulumi.ComponentResource {
-    public readonly frontendUrl?: string;
-
-    private readonly app: Application;
+    public readonly app: Application;
     private readonly config: pulumi.Config;
-    private readonly electrsHost: string;
-    private readonly electrsPort: string;
 
     constructor(name: string, private args: MempoolArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:bitcoin:Mempool', name, args, opts);
 
-        const [host, port] = args.electrsUrl.split(':');
-        this.electrsHost = host;
-        this.electrsPort = port;
-
         this.config = new pulumi.Config(name);
-        const hostname = this.config.require('hostname');
-
         this.app = new Application(this, name, {
             domainName: args.domainName,
         });
-
         this.createDeployment();
-        this.frontendUrl = `${hostname}.${args.domainName}`;
     }
 
     private createDeployment() {
         const version = this.config.require('version');
         const hostname = this.config.require('hostname');
-        const rpcUrl = new URL(this.args.bitcoinRpcUrl);
+        const rpcUrl = pulumi
+            .output(this.args.bitcoinRpcUrl)
+            .apply(url => new URL(`http://${url}`));
+        const electrsUrl = pulumi.output(this.args.electrsUrl).apply(url => {
+            const [host, port] = url.split(':');
+            return { host, port };
+        });
 
         this.app
             .addDeployment({
@@ -47,8 +41,8 @@ export class Mempool extends pulumi.ComponentResource {
                 ports: [{ name: 'http', port: 8999, hostname: `${hostname}-backend` }],
                 env: {
                     MEMPOOL_BACKEND: 'electrum',
-                    ELECTRUM_HOST: this.electrsHost,
-                    ELECTRUM_PORT: this.electrsPort,
+                    ELECTRUM_HOST: electrsUrl.host,
+                    ELECTRUM_PORT: electrsUrl.port,
                     ELECTRUM_TLS_ENABLED: 'false',
                     DATABASE_ENABLED: 'false',
                     CORE_RPC_HOST: rpcUrl.hostname,

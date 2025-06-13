@@ -4,21 +4,13 @@ import { StorageType } from '../types';
 import { BitcoinConf } from './utils/bitcoin-conf';
 import { RpcUser } from './utils/rpc-user';
 
-const RPC_PORT = 8332;
-const P2P_PORT = 8333;
-
 export interface BitcoinKnotsArgs {
     domainName: string;
     rpcUsers: Record<string, RpcUser>;
 }
 
 export class BitcoinKnots extends pulumi.ComponentResource {
-    public readonly rpcUrl?: string;
-    public readonly rpcClusterUrl?: string;
-    public readonly p2pClusterUrl?: string;
-    public readonly p2pUrl?: string;
-
-    private readonly app: Application;
+    public readonly app: Application;
     private readonly config: pulumi.Config;
 
     constructor(
@@ -29,7 +21,6 @@ export class BitcoinKnots extends pulumi.ComponentResource {
         super('orangelab:bitcoin:BitcoinKnots', name, args, opts);
 
         this.config = new pulumi.Config(name);
-        const hostname = this.config.require('hostname');
         const prune = this.config.requireNumber('prune');
 
         this.app = new Application(this, name, {
@@ -47,27 +38,21 @@ export class BitcoinKnots extends pulumi.ComponentResource {
         if (this.app.storageOnly) return;
 
         this.createDeployment();
-
-        this.rpcClusterUrl = `http://${name}.${
-            this.app.namespace
-        }:${RPC_PORT.toString()}`;
-        this.rpcUrl = `http://${hostname}.${args.domainName}:${RPC_PORT.toString()}`;
-        this.p2pClusterUrl = `${name}.${this.app.namespace}:${P2P_PORT.toString()}`;
-        this.p2pUrl = `${hostname}.${args.domainName}:${P2P_PORT.toString()}`;
     }
 
     private createDeployment() {
         const extraArgs = this.config.get('extraArgs') ?? '';
+        const version = this.config.require('version');
 
         this.app.addDeployment({
             resources: {
                 requests: { cpu: '100m', memory: '2Gi' },
                 limits: { cpu: '2000m', memory: '8Gi' },
             },
-            image: `btcpayserver/bitcoinknots:${this.config.require('version')}`,
+            image: `btcpayserver/bitcoinknots:${version}`,
             ports: [
-                { name: 'rpc', port: RPC_PORT, tcp: true },
-                { name: 'p2p', port: P2P_PORT, tcp: true },
+                { name: 'rpc', port: 8332, tcp: true },
+                { name: 'p2p', port: 8333, tcp: true },
             ],
             commandArgs: ['bitcoind', extraArgs],
             env: {

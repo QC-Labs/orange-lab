@@ -7,7 +7,7 @@ export interface OpenWebUIArgs {
     domainName: string;
     ollamaUrl?: string;
     openAiUrl?: string;
-    automatic1111Url?: string;
+    automatic1111Url?: pulumi.Input<string>;
 }
 
 export class OpenWebUI extends pulumi.ComponentResource {

@@ -13,7 +13,9 @@ export class IoTModule extends pulumi.ComponentResource {
 
     getExports() {
         return {
-            homeAssistantUrl: this.homeAssistant?.endpointUrl,
+            endpoints: {
+                homeAssistant: this.homeAssistant?.endpointUrl,
+            },
         };
     }
 

@@ -8,12 +8,9 @@ export interface MinioArgs {
 }
 
 export class Minio extends pulumi.ComponentResource {
-    public readonly endpointUrl?: string;
-    public readonly s3ApiUrl?: pulumi.Output<string>;
-    public readonly s3ApiClusterUrl?: pulumi.Output<string>;
-    public readonly s3WebUrl?: pulumi.Output<string>;
     public readonly minioProvider: minio.Provider;
     public readonly users: Record<string, pulumi.Output<string>> = {};
+    app: Application;
 
     constructor(private name: string, args: MinioArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:system:Minio', name, args, opts);
@@ -27,7 +24,7 @@ export class Minio extends pulumi.ComponentResource {
             [rootUser]: pulumi.output(this.createPassword()),
         };
 
-        const app = new Application(this, name, { domainName: args.domainName })
+        this.app = new Application(this, name, { domainName: args.domainName })
             .addLocalStorage({ name: 'data', hostPath: dataPath })
             .addDeployment({
                 image: 'quay.io/minio/minio',
@@ -44,11 +41,6 @@ export class Minio extends pulumi.ComponentResource {
                 commandArgs: ['server', '/data', '--console-address', ':9001'],
                 volumeMounts: [{ name: 'data', mountPath: '/data' }],
             });
-
-        this.endpointUrl = app.endpointUrl;
-        this.s3ApiClusterUrl = pulumi.interpolate`http://${name}.minio:9000`;
-        this.s3ApiUrl = pulumi.interpolate`https://${hostnameApi}.${args.domainName}`;
-        this.s3WebUrl = pulumi.interpolate`https://${hostname}.${args.domainName}`;
 
         this.minioProvider = new minio.Provider(
             `${name}-provider`,

@@ -10,7 +10,7 @@ import { MinioS3User } from '../minio/minio-s3-user';
 export interface LonghornArgs {
     domainName: string;
     enableMonitoring: boolean;
-    s3EndpointUrl?: pulumi.Output<string>;
+    s3EndpointUrl?: pulumi.Input<string>;
     minioProvider?: pulumi.ProviderResource;
 }
 

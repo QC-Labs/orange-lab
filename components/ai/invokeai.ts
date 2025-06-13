@@ -7,8 +7,7 @@ export interface InvokeAiArgs {
 }
 
 export class InvokeAi extends pulumi.ComponentResource {
-    public readonly endpointUrl: string | undefined;
-    public readonly serviceUrl: string | undefined;
+    app: Application;
 
     constructor(name: string, args: InvokeAiArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:ai:InvokeAi', name, args, opts);
@@ -17,7 +16,7 @@ export class InvokeAi extends pulumi.ComponentResource {
         const huggingfaceToken = config.getSecret('huggingfaceToken');
         const imageTag = config.get('amd-gpu') ? 'main-rocm' : 'latest';
 
-        const app = new Application(this, name, {
+        this.app = new Application(this, name, {
             domainName: args.domainName,
             gpu: true,
         })
@@ -39,8 +38,5 @@ export class InvokeAi extends pulumi.ComponentResource {
                 volumeMounts: [{ mountPath: '/invokeai' }],
                 resources: { requests: { cpu: '50m', memory: '1.5Gi' } },
             });
-
-        this.endpointUrl = app.endpointUrl;
-        this.serviceUrl = app.serviceUrl;
     }
 }
