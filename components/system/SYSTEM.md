@@ -373,6 +373,20 @@ kubectl delete crds deviceconfigs.amd.com \
     preflightvalidations.kmm.sigs.x-k8s.io
 ```
 
+# MariaDB Operator
+
+|             |                                                                                                           |
+| ----------- | --------------------------------------------------------------------------------------------------------- |
+| Homepage    | https://mariadb-operator.github.io/mariadb-operator/                                                      |
+| Helm values | https://github.com/mariadb-operator/mariadb-operator/blob/main/deploy/charts/mariadb-operator/values.yaml |
+| Dockerfile  | https://github.com/MariaDB/mariadb-docker/blob/master/main/Dockerfile                                     |
+
+The MariaDB Operator manages MariaDB/MySQL databases on Kubernetes using CRDs. It provisions and manages clusters, users, and databases declaratively.
+
+```sh
+pulumi config set mariadb-operator:enabled true
+```
+
 ## Debug (experimental)
 
 Utility containers for troubleshooting the cluster.

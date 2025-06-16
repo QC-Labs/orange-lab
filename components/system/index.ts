@@ -9,6 +9,7 @@ import { NodeFeatureDiscovery } from './nfd';
 import { NvidiaGPUOperator } from './nvidia-gpu-operator';
 import { Tailscale } from './tailscale/tailscale';
 import { TailscaleOperator } from './tailscale/tailscale-operator';
+import { MariaDBOperator } from './mariadb-operator/mariadb-operator';
 
 export class SystemModule extends pulumi.ComponentResource {
     tailscaleServerKey: pulumi.Output<string> | undefined;
@@ -110,6 +111,14 @@ export class SystemModule extends pulumi.ComponentResource {
                     minioProvider: this.minio?.minioProvider,
                 },
                 { parent: this, dependsOn: [this.minio].filter(v => v !== undefined) },
+            );
+        }
+
+        if (rootConfig.isEnabled('mariadb-operator')) {
+            new MariaDBOperator(
+                'mariadb-operator',
+                { enableMonitoring },
+                { parent: this, dependsOn: certManager },
             );
         }
 

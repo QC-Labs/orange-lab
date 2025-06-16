@@ -67,6 +67,8 @@ config:
 
     amd-gpu-operator:enabled: false
 
+    mariadb-operator:enabled: false
+
     debug:enabled: false
     # debug:namespace: bitcoin
     # debug:fromVolume: bitcoin
