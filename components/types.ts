@@ -139,3 +139,13 @@ export interface ConfigVolume {
      */
     files: Record<string, pulumi.Input<string>>;
 }
+
+/**
+ * Represents the configuration needed to connect to a database instance.
+ */
+export interface DatabaseConfig {
+    hostname: string;
+    database: string;
+    username: string;
+    password: pulumi.Output<string>;
+}

@@ -91,6 +91,13 @@ export class Storage extends pulumi.ComponentResource {
         return storage.storageClassName;
     }
 
+    getStorageSize(storageName?: string): pulumi.Output<string> {
+        const volumeName = storageName ?? this.appName;
+        const storage = this.longhornVolumes.get(volumeName);
+        assert(storage, `Storage ${volumeName} not found`);
+        return storage.size;
+    }
+
     hasLocal(): boolean {
         return this.createVolumes().some(volume => volume.hostPath !== undefined);
     }

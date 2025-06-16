@@ -1,6 +1,7 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import { LimitRange } from '@pulumi/kubernetes/core/v1';
 import * as pulumi from '@pulumi/pulumi';
+import { Databases } from './databases';
 import { Metadata } from './metadata';
 import { Network } from './network';
 import { Nodes } from './nodes';
@@ -23,6 +24,7 @@ export class Application {
     readonly storage: Storage;
     readonly network: Network;
     readonly namespace: string;
+    readonly databases: Databases;
 
     private readonly config: pulumi.Config;
     private readonly services: Services;
@@ -66,14 +68,33 @@ export class Application {
             metadata: this.metadata,
             domainName: args?.domainName,
         });
-        this.services = new Services(
-            this.scope,
+        this.databases = new Databases(
             this.appName,
-            this.metadata,
-            this.storage,
-            this.nodes,
-            this.config,
+            {
+                config: this.config,
+                metadata: this.metadata,
+                storage: this.storage,
+                storageOnly: this.storageOnly,
+            },
+            { parent: this.scope },
         );
+        this.services = new Services(this.appName, {
+            scope: this.scope,
+            metadata: this.metadata,
+            storage: this.storage,
+            nodes: this.nodes,
+            config: this.config,
+            databases: this.databases,
+        });
+    }
+
+    /**
+     * Adds a MariaDB database using the MariaDB Operator CRD.
+     * Creates a database, user and storage.
+     */
+    addMariaDB() {
+        this.databases.addMariaDB();
+        return this;
     }
 
     addStorage(volume?: PersistentVolume) {

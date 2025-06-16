@@ -6,6 +6,7 @@ import { Metadata } from './metadata';
 import { Nodes } from './nodes';
 import { Storage } from './storage';
 import { ContainerSpec } from './types';
+import { Databases } from './databases';
 
 /**
  * Services class handles creation of Deployments, DaemonSets, Jobs, and ServiceAccounts for an application.
@@ -13,14 +14,33 @@ import { ContainerSpec } from './types';
 export class Services {
     private serviceAccount?: kubernetes.core.v1.ServiceAccount;
 
+    private readonly appName: string;
+    private readonly scope: pulumi.ComponentResource;
+    private readonly metadata: Metadata;
+    private readonly storage: Storage;
+    private readonly nodes: Nodes;
+    private readonly config: pulumi.Config;
+    private readonly databases: Databases;
+
     constructor(
-        private readonly scope: pulumi.ComponentResource,
-        private readonly appName: string,
-        private readonly metadata: Metadata,
-        private readonly storage: Storage,
-        private readonly nodes: Nodes,
-        private readonly config: pulumi.Config,
-    ) {}
+        appName: string,
+        params: {
+            scope: pulumi.ComponentResource;
+            metadata: Metadata;
+            storage: Storage;
+            nodes: Nodes;
+            config: pulumi.Config;
+            databases: Databases;
+        },
+    ) {
+        this.appName = appName;
+        this.scope = params.scope;
+        this.metadata = params.metadata;
+        this.storage = params.storage;
+        this.nodes = params.nodes;
+        this.config = params.config;
+        this.databases = params.databases;
+    }
 
     private getServiceAccount() {
         this.serviceAccount ??= this.createServiceAccount();
@@ -54,15 +74,13 @@ export class Services {
                     replicas: 1,
                     selector: { matchLabels: this.metadata.getSelectorLabels(spec.name) },
                     template: podSpec.createPodTemplateSpec(spec),
-                    strategy: this.storage.hasVolumes()
-                        ? { type: 'Recreate', rollingUpdate: undefined }
-                        : { type: 'RollingUpdate' },
+                    strategy: { type: 'Recreate', rollingUpdate: undefined },
                 },
             },
             {
                 parent: this.scope,
                 deleteBeforeReplace: true,
-                dependsOn: this.storage,
+                dependsOn: [this.storage, ...this.databases.getDependencies()],
             },
         );
     }
@@ -89,7 +107,10 @@ export class Services {
                     template: podSpec.createPodTemplateSpec(spec),
                 },
             },
-            { parent: this.scope, dependsOn: this.storage },
+            {
+                parent: this.scope,
+                dependsOn: [this.storage, ...this.databases.getDependencies()],
+            },
         );
     }
 
@@ -112,7 +133,10 @@ export class Services {
                     template: podSpec.createPodTemplateSpec(spec),
                 },
             },
-            { parent: this.scope, dependsOn: this.storage },
+            {
+                parent: this.scope,
+                dependsOn: [this.storage, ...this.databases.getDependencies()],
+            },
         );
     }
 }

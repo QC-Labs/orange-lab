@@ -50,6 +50,7 @@ export class LonghornVolume extends pulumi.ComponentResource {
     volumeClaimName: string;
     storageClassName: pulumi.Output<string>;
     isDynamic: boolean;
+    size: pulumi.Output<string>;
 
     constructor(
         private name: string,
@@ -80,6 +81,7 @@ export class LonghornVolume extends pulumi.ComponentResource {
         } else {
             this.storageClassName = this.createVolume(args);
         }
+        this.size = pulumi.output(args.size);
     }
 
     private createVolume(args: LonghornVolumeArgs) {
