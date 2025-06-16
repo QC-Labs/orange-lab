@@ -15,7 +15,6 @@ export class Services {
     private serviceAccount?: kubernetes.core.v1.ServiceAccount;
 
     private readonly appName: string;
-    private readonly scope: pulumi.ComponentResource;
     private readonly metadata: Metadata;
     private readonly storage: Storage;
     private readonly nodes: Nodes;
@@ -25,16 +24,15 @@ export class Services {
     constructor(
         appName: string,
         params: {
-            scope: pulumi.ComponentResource;
             metadata: Metadata;
             storage: Storage;
             nodes: Nodes;
             config: pulumi.Config;
             databases: Databases;
         },
+        private opts?: pulumi.ComponentResourceOptions,
     ) {
         this.appName = appName;
-        this.scope = params.scope;
         this.metadata = params.metadata;
         this.storage = params.storage;
         this.nodes = params.nodes;
@@ -51,20 +49,23 @@ export class Services {
         return new kubernetes.core.v1.ServiceAccount(
             `${this.appName}-sa`,
             { metadata: this.metadata.get() },
-            { parent: this.scope },
+            this.opts,
         );
     }
 
     createDeployment(spec: ContainerSpec) {
         const serviceAccount = this.getServiceAccount();
-        const podSpec = new Containers(this.appName, {
-            scope: this.scope,
-            metadata: this.metadata,
-            storage: this.storage,
-            serviceAccount,
-            nodes: this.nodes,
-            config: this.config,
-        });
+        const podSpec = new Containers(
+            this.appName,
+            {
+                metadata: this.metadata,
+                storage: this.storage,
+                serviceAccount,
+                nodes: this.nodes,
+                config: this.config,
+            },
+            this.opts,
+        );
         const metadata = this.metadata.get({ component: spec.name });
         return new kubernetes.apps.v1.Deployment(
             `${metadata.name}-deployment`,
@@ -78,7 +79,7 @@ export class Services {
                 },
             },
             {
-                parent: this.scope,
+                ...this.opts,
                 deleteBeforeReplace: true,
                 dependsOn: [this.storage, ...this.databases.getDependencies()],
             },
@@ -89,7 +90,6 @@ export class Services {
         assert(spec.name, 'name is required for daemonset');
         const serviceAccount = this.getServiceAccount();
         const podSpec = new Containers(this.appName, {
-            scope: this.scope,
             metadata: this.metadata,
             serviceAccount,
             config: this.config,
@@ -108,7 +108,7 @@ export class Services {
                 },
             },
             {
-                parent: this.scope,
+                ...this.opts,
                 dependsOn: [this.storage, ...this.databases.getDependencies()],
             },
         );
@@ -117,14 +117,17 @@ export class Services {
     createJob(spec: ContainerSpec) {
         assert(spec.name, 'name is required for job');
         const serviceAccount = this.getServiceAccount();
-        const podSpec = new Containers(this.appName, {
-            scope: this.scope,
-            metadata: this.metadata,
-            storage: this.storage,
-            serviceAccount,
-            config: this.config,
-            nodes: this.nodes,
-        });
+        const podSpec = new Containers(
+            this.appName,
+            {
+                metadata: this.metadata,
+                storage: this.storage,
+                serviceAccount,
+                config: this.config,
+                nodes: this.nodes,
+            },
+            this.opts,
+        );
         return new kubernetes.batch.v1.Job(
             `${this.appName}-${spec.name}-job`,
             {
@@ -134,7 +137,7 @@ export class Services {
                 },
             },
             {
-                parent: this.scope,
+                ...this.opts,
                 dependsOn: [this.storage, ...this.databases.getDependencies()],
             },
         );

@@ -55,19 +55,25 @@ export class Application {
             config: this.config,
             gpu: args?.gpu,
         });
-        this.storage = new Storage(appName, {
-            scope: this.scope,
-            config: this.config,
-            namespace: this.namespace,
-            metadata: this.metadata,
-            nodes: this.nodes,
-        });
-        this.network = new Network(appName, {
-            scope: this.scope,
-            config: this.config,
-            metadata: this.metadata,
-            domainName: args?.domainName,
-        });
+        this.storage = new Storage(
+            appName,
+            {
+                config: this.config,
+                namespace: this.namespace,
+                metadata: this.metadata,
+                nodes: this.nodes,
+            },
+            { parent: this.scope },
+        );
+        this.network = new Network(
+            appName,
+            {
+                config: this.config,
+                metadata: this.metadata,
+                domainName: args?.domainName,
+            },
+            { parent: this.scope },
+        );
         this.databases = new Databases(
             this.appName,
             {
@@ -78,14 +84,17 @@ export class Application {
             },
             { parent: this.scope },
         );
-        this.services = new Services(this.appName, {
-            scope: this.scope,
-            metadata: this.metadata,
-            storage: this.storage,
-            nodes: this.nodes,
-            config: this.config,
-            databases: this.databases,
-        });
+        this.services = new Services(
+            this.appName,
+            {
+                metadata: this.metadata,
+                storage: this.storage,
+                nodes: this.nodes,
+                config: this.config,
+                databases: this.databases,
+            },
+            { parent: this.scope },
+        );
     }
 
     /**

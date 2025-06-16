@@ -17,20 +17,18 @@ export class Containers {
     storage: Storage;
     nodes: Nodes;
     config: pulumi.Config;
-    scope: pulumi.ComponentResource;
 
     constructor(
         private appName: string,
         args: {
-            scope: pulumi.ComponentResource;
             metadata: Metadata;
             serviceAccount: kubernetes.core.v1.ServiceAccount;
             storage: Storage;
             nodes: Nodes;
             config: pulumi.Config;
         },
+        private opts?: pulumi.ComponentResourceOptions,
     ) {
-        this.scope = args.scope;
         this.metadata = args.metadata;
         this.serviceAccount = args.serviceAccount;
         this.storage = args.storage;
@@ -239,7 +237,7 @@ export class Containers {
                         .map(([k, v]) => [k, pulumi.output(v).apply(String)]),
                 ),
             },
-            { parent: this.scope },
+            this.opts,
         );
         return [{ secretRef: { name: secret.metadata.name } }];
     }

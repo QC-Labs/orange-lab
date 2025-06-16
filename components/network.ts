@@ -10,21 +10,19 @@ export class Network {
 
     private readonly config: pulumi.Config;
     private readonly metadata: Metadata;
-    private readonly scope: pulumi.ComponentResource;
     private readonly domainName?: string;
 
     constructor(
         private readonly appName: string,
         args: {
-            readonly scope: pulumi.ComponentResource;
             readonly config: pulumi.Config;
             readonly metadata: Metadata;
             readonly domainName?: string;
         },
+        private opts?: pulumi.ComponentResourceOptions,
     ) {
         this.config = args.config;
         this.metadata = args.metadata;
-        this.scope = args.scope;
         this.domainName = args.domainName;
     }
 
@@ -125,7 +123,7 @@ export class Network {
                     selector: this.metadata.getSelectorLabels(args.component),
                 },
             },
-            { parent: this.scope },
+            this.opts,
         );
     }
 
@@ -154,7 +152,7 @@ export class Network {
                     selector: this.metadata.getSelectorLabels(),
                 },
             },
-            { parent: this.scope },
+            this.opts,
         );
     }
 
@@ -197,7 +195,7 @@ export class Network {
                     ],
                 },
             },
-            { parent: this.scope },
+            this.opts,
         );
     }
 }

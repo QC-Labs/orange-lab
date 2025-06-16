@@ -21,14 +21,14 @@ export class Storage extends pulumi.ComponentResource {
     constructor(
         private readonly appName: string,
         args: {
-            readonly scope: pulumi.ComponentResource;
             readonly config: pulumi.Config;
             readonly namespace: string;
             readonly metadata: Metadata;
             readonly nodes: Nodes;
         },
+        opts?: pulumi.ComponentResourceOptions,
     ) {
-        super('orangelab:Storage', `${appName}-storage`, args, { parent: args.scope });
+        super('orangelab:Storage', `${appName}-storage`, args, opts);
         this.config = args.config;
         this.namespace = args.namespace;
         this.metadata = args.metadata;
