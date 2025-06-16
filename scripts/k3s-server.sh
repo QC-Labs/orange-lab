@@ -12,7 +12,7 @@ echo export NODE_IP='$(tailscale ip -4)'
 echo export CLUSTER_CIDR=$CLUSTER_CIDR
 echo export SERVICE_CIDR=$SERVICE_CIDR
 echo export TS_AUTH_KEY=$TS_AUTH_KEY
-
+echo
 echo "curl -sfL https://get.k3s.io |  sh -s - \
 --bind-address=\$NODE_IP \
 --selinux \
@@ -21,9 +21,8 @@ echo "curl -sfL https://get.k3s.io |  sh -s - \
 --cluster-cidr=\$CLUSTER_CIDR \
 --service-cidr=\$SERVICE_CIDR \
 --disable=servicelb \
---disable=traefik \
 --kube-apiserver-arg=enable-admission-plugins=DefaultTolerationSeconds \
 --kube-apiserver-arg=default-not-ready-toleration-seconds=10 \
---kube-apiserver-arg=default-unreachable-toleration-seconds=10 \
---write-kubeconfig ~/.kube/config \
---write-kubeconfig-mode=644"
+--kube-apiserver-arg=default-unreachable-toleration-seconds=10"
+echo
+echo systemctl enable k3s.service --now

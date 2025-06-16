@@ -6,7 +6,7 @@ This document covers K3s installation and configuration. For general node prepar
 
 Server has to be installed before any other nodes can be added.
 
-Kubernetes server should be installed on a machine that's online 24/7 but it's not required - running everything on a single laptop is fine too, however the availability of services will be limited.
+Kubernetes server should be installed on a machine that's online 24/7 but it's not required - running everything on a single laptop will work, however the availability of services will be limited.
 
 Installing server will also run an agent node on the same machine.
 
@@ -15,33 +15,25 @@ Installing server will also run an agent node on the same machine.
 `k3s-server.sh` executed on _management node_ generates script to install K3S on _server node_:
 
 ```sh
-# localhost
-./scripts/k3s-server.sh | sh
+# Run where Pulumi is installed
+./scripts/k3s-server.sh
 
-# SSH remote node
-./scripts/k3s-server.sh # run on management node, copy the generated script
-ssh root@<server-node> # paste generated script to install K3S
+# Copy the generated script
+
+# Login to server node and paste generated script:
+ssh root@<server-node>
 ```
 
-Make sure the service is running and enabled on startup:
+Check is the service is running:
 
 ```sh
-systemctl enable k3s.service --now
+systemctl status k3s.service
 ```
 
-## Missing k3s token
+The server should also create two files:
 
-If this file is empty or missing, K3s cannot start.
-
-### Generate a New Token with k3s CLI
-If the token file is empty or invalid, generate a new one using the built-in k3s token command:
-
-```bash
-sudo k3s token generate
-```
-
-The expected token file is usually at:
-```/var/lib/rancher/k3s/server/token```
+-   `/var/lib/rancher/k3s/server/token` - server token, needed by agents to connect
+-   `/etc/rancher/k3s/k3s.yaml` - kubeconfig file, copy to your `~/.kube/config`
 
 ## Save server configuration
 
@@ -71,7 +63,7 @@ pulumi config set k3s:agentToken $K3S_TOKEN --secret
 
 ```sh
 # copy kubeconfig from server to your management node
-scp <user>@<k8s-server>:.kube/config ~/.kube/config
+scp <user>@<k8s-server>:/etc/rancher/k3s/k3s.yaml ~/.kube/config
 ```
 
 # Installation - K3S agents
@@ -83,18 +75,19 @@ Install K3S agent nodes on any additional physical hardware. Server already runs
 `k3s-agent.sh` executed on _management node_ generates script to install K3S on _agent node_:
 
 ```sh
-# localhost
-./scripts/k3s-agent.sh | sh
+# Run where Pulumi is installed
+./scripts/k3s-agent.sh
 
-# SSH remote node
-./scripts/k3s-agent.sh # run on management node, copy the generated script
-ssh root@<agent-node> # paste generated script to install K3s
+# Copy the generated script
+
+# Login to agent node and paste generated script:
+ssh root@<agent-node>
 ```
 
-Make sure the service is running and enabled on startup:
+Check is the service is running:
 
 ```sh
-systemctl enable k3s-agent.service --now
+systemctl status k3s-agent.service
 ```
 
 ## Node labels
