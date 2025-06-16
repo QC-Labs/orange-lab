@@ -21,6 +21,7 @@ echo "curl -sfL https://get.k3s.io |  sh -s - \
 --cluster-cidr=\$CLUSTER_CIDR \
 --service-cidr=\$SERVICE_CIDR \
 --disable=servicelb \
+--disable=traefik \
 --kube-apiserver-arg=enable-admission-plugins=DefaultTolerationSeconds \
 --kube-apiserver-arg=default-not-ready-toleration-seconds=10 \
 --kube-apiserver-arg=default-unreachable-toleration-seconds=10"
