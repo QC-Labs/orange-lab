@@ -8,6 +8,9 @@ It's easiest to use _Headlamp_ or _k9s_ to connect to cluster. Below are some us
 
 # Watch cluster events
 kubectl events -A -w
+
+# See all application resources
+kubectl get all -n <namespace>
 ```
 
 Pods can be stopped and will be recreated automatically.
