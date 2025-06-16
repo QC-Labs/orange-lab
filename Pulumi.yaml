@@ -192,3 +192,4 @@ config:
     mempool:enabled: false
     mempool:hostname: mempool
     mempool:version: 'v3.2.1'
+    mempool:db/storageSize: 1Gi

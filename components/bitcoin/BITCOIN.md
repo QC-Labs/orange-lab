@@ -122,6 +122,10 @@ Once indexing finishes, use `electrs:50001` to connect your wallets. More info a
 Mempool provides a visualization of the Bitcoin blockchain and acts as a block explorer. This allows you to inspect transactions and your addresses privately.
 
 ```sh
+# Make sure MariaDB-operator is installed
+pulumi config set mariadb-operator:enabled true
+pulumi up
+
 # Set the required configuration
 pulumi config set mempool:enabled true
 

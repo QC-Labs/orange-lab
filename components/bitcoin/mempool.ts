@@ -19,7 +19,8 @@ export class Mempool extends pulumi.ComponentResource {
         this.config = new pulumi.Config(name);
         this.app = new Application(this, name, {
             domainName: args.domainName,
-        });
+        }).addMariaDB();
+        if (this.app.storageOnly) return;
         this.createDeployment();
     }
 
@@ -34,23 +35,28 @@ export class Mempool extends pulumi.ComponentResource {
             return { host, port };
         });
 
+        const dbConfig = this.app.databases.getMariaDbConfig();
         this.app
             .addDeployment({
                 name: 'backend',
                 image: `mempool/backend:${version}`,
                 ports: [{ name: 'http', port: 8999, hostname: `${hostname}-backend` }],
                 env: {
-                    MEMPOOL_BACKEND: 'electrum',
+                    CORE_RPC_HOST: rpcUrl.hostname,
+                    CORE_RPC_PORT: rpcUrl.port,
+                    DATABASE_DATABASE: dbConfig.database,
+                    DATABASE_ENABLED: 'true',
+                    DATABASE_HOST: dbConfig.hostname,
                     ELECTRUM_HOST: electrsUrl.host,
                     ELECTRUM_PORT: electrsUrl.port,
                     ELECTRUM_TLS_ENABLED: 'false',
-                    DATABASE_ENABLED: 'false',
-                    CORE_RPC_HOST: rpcUrl.hostname,
-                    CORE_RPC_PORT: rpcUrl.port,
+                    MEMPOOL_BACKEND: 'electrum',
                 },
                 envSecret: {
                     CORE_RPC_USERNAME: this.args.rpcUser.username,
                     CORE_RPC_PASSWORD: this.args.rpcUser.password,
+                    DATABASE_PASSWORD: dbConfig.password,
+                    DATABASE_USERNAME: dbConfig.username,
                 },
                 resources: {
                     requests: { cpu: '100m', memory: '512Mi' },
