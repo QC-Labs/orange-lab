@@ -18,6 +18,7 @@ export class MariaDbCluster extends pulumi.ComponentResource {
     private readonly secret: kubernetes.core.v1.Secret;
 
     private dbPassword: pulumi.Output<string>;
+    private rootPassword: pulumi.Output<string>;
     private dbUser: string;
     private clusterName: string;
 
@@ -30,6 +31,7 @@ export class MariaDbCluster extends pulumi.ComponentResource {
         this.clusterName = `${appName}-${this.args.name}`;
         this.dbUser = appName;
         this.dbPassword = this.createPassword(this.dbUser);
+        this.rootPassword = this.createPassword('root');
 
         this.secret = this.createSecret();
         if (args.storageOnly) return;
@@ -48,6 +50,7 @@ export class MariaDbCluster extends pulumi.ComponentResource {
                 stringData: {
                     username: this.dbUser,
                     password: this.dbPassword,
+                    rootPassword: this.rootPassword,
                 },
             },
             { parent: this },
