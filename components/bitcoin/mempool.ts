@@ -1,5 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
+import { rootConfig } from '../root-config';
 import { RpcUser } from './utils/rpc-user';
 
 export interface MempoolArgs {
@@ -15,6 +16,8 @@ export class Mempool extends pulumi.ComponentResource {
 
     constructor(name: string, private args: MempoolArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:bitcoin:Mempool', name, args, opts);
+
+        rootConfig.require(name, 'mariadb-operator');
 
         this.config = new pulumi.Config(name);
         this.app = new Application(this, name, {

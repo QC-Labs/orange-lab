@@ -1,6 +1,7 @@
 import * as pulumi from '@pulumi/pulumi';
 import { MariaDbCluster } from './mariadb';
 import { Metadata } from './metadata';
+import { rootConfig } from './root-config';
 import { Storage } from './storage';
 import { DatabaseConfig } from './types';
 
@@ -30,6 +31,7 @@ export class Databases {
     }
 
     addMariaDB(name = 'db'): void {
+        rootConfig.require(this.appName, 'mariadb-operator');
         if (this.databases[name]) {
             throw new Error(`MariaDB ${this.appName}-${name} already exists.`);
         }

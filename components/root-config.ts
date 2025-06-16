@@ -3,6 +3,20 @@ import * as pulumi from '@pulumi/pulumi';
 
 class RootConfig {
     constructor() {
+        this.processDeprecated();
+        this.processDependencies();
+    }
+
+    public longhorn = {
+        replicaCount: parseInt(this.requireAppConfig('longhorn', 'replicaCount')),
+    };
+    public storageClass = {
+        Default: this.requireAppConfig('orangelab', 'storageClass'),
+        GPU: this.requireAppConfig('orangelab', 'storageClass-gpu'),
+        Large: this.requireAppConfig('orangelab', 'storageClass-large'),
+    };
+
+    private processDeprecated() {
         if (this.getAppConfig('longhorn', 'backupAccessKeyId')) {
             console.warn('longhorn:backupAccessKeyId is deprecated.');
         }
@@ -16,14 +30,14 @@ class RootConfig {
         }
     }
 
-    public longhorn = {
-        replicaCount: parseInt(this.requireAppConfig('longhorn', 'replicaCount')),
-    };
-    public storageClass = {
-        Default: this.requireAppConfig('orangelab', 'storageClass'),
-        GPU: this.requireAppConfig('orangelab', 'storageClass-gpu'),
-        Large: this.requireAppConfig('orangelab', 'storageClass-large'),
-    };
+    private processDependencies() {
+        if (
+            this.getAppConfig('mempool', 'enabled') &&
+            !this.getAppConfig('mariadb-operator', 'enabled')
+        ) {
+            throw new Error(`mempool requires mariadb-operator to be installed`);
+        }
+    }
 
     public isEnabled(name: string): boolean {
         const config = new pulumi.Config(name);
@@ -46,6 +60,13 @@ class RootConfig {
         const prometheusEnabled = config.requireBoolean('enabled');
         const componentsEnabled = config.requireBoolean('enableComponentMonitoring');
         return prometheusEnabled && componentsEnabled;
+    }
+
+    public require(appName: string, dependencyName: string) {
+        const config = new pulumi.Config(dependencyName);
+        if (config.require('enabled') !== 'true') {
+            throw new Error(`${appName}: missing dependency ${dependencyName}`);
+        }
     }
 
     private getAppConfig(appName: string, key: string): string | undefined {
