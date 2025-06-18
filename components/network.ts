@@ -3,6 +3,7 @@ import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
 import { Metadata } from './metadata';
 import { ContainerSpec, ServicePort } from './types';
+import { rootConfig } from './root-config';
 
 export class Network {
     readonly endpoints: Record<string, pulumi.Output<string> | string> = {};
@@ -67,7 +68,16 @@ export class Network {
             ports: httpPorts,
         });
         httpPorts.forEach(port => {
-            this.createIngress({ service, port, component: spec.name });
+            this.createTailscaleIngress({ service, port, component: spec.name });
+            if (rootConfig.customDomain) {
+                this.createTraefikIngress({
+                    service,
+                    port,
+                    component: spec.name,
+                    customDomain: rootConfig.customDomain,
+                });
+            }
+
             this.exportEndpoint({ component: spec.name, port });
             this.exportClusterEndpoint({ component: spec.name, port, service });
         });
@@ -156,7 +166,7 @@ export class Network {
         );
     }
 
-    private createIngress(args: {
+    private createTailscaleIngress(args: {
         service: kubernetes.core.v1.Service;
         port: ServicePort;
         component?: string;
@@ -177,6 +187,59 @@ export class Network {
                     rules: [
                         {
                             host: args.port.hostname,
+                            http: {
+                                paths: [
+                                    {
+                                        path: '/',
+                                        pathType: 'Prefix',
+                                        backend: {
+                                            service: {
+                                                name: args.service.metadata.name,
+                                                port: { number: args.port.port },
+                                            },
+                                        },
+                                    },
+                                ],
+                            },
+                        },
+                    ],
+                },
+            },
+            this.opts,
+        );
+    }
+    private createTraefikIngress(args: {
+        service: kubernetes.core.v1.Service;
+        port: ServicePort;
+        component?: string;
+        customDomain: string;
+    }): kubernetes.networking.v1.Ingress {
+        assert(this.domainName, 'domainName is required for ingress');
+        assert(args.port.hostname, `hostname is required for port ${args.port.name}`);
+        const componentName = args.component
+            ? `${args.component}-${args.port.name}`
+            : args.port.name;
+        const metadata = this.metadata.get({ component: componentName });
+        return new kubernetes.networking.v1.Ingress(
+            `${metadata.name}-traefik-ingress`,
+            {
+                metadata: {
+                    ...metadata,
+                    name: `${metadata.name}-traefik-ingress`,
+                },
+                spec: {
+                    ingressClassName: 'traefik',
+                    tls: [
+                        {
+                            hosts: [
+                                args.port.hostname,
+                                `${args.port.hostname}.${args.customDomain}`,
+                            ],
+                        },
+                    ],
+                    rules: [
+                        {
+                            host: `${args.port.hostname}.${args.customDomain}`,
                             http: {
                                 paths: [
                                     {

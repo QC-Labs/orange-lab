@@ -15,6 +15,7 @@ class RootConfig {
         GPU: this.requireAppConfig('orangelab', 'storageClass-gpu'),
         Large: this.requireAppConfig('orangelab', 'storageClass-large'),
     };
+    public customDomain = this.requireAppConfig('orangelab', 'customDomain');
 
     private processDeprecated() {
         if (this.getAppConfig('longhorn', 'backupAccessKeyId')) {

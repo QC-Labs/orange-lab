@@ -29,6 +29,9 @@ config:
     # Use 1 replica only
     orangelab:storageClass-large: longhorn-large
 
+    # Note: add A record for "*" pointing to one of your Tailscale IPs
+    # orangelab:customDomain: 'example.com'
+
     tailscale-operator:enabled: false
     # Hostname for Tailscale operator proxy for Kubernetes API
     tailscale-operator:hostname: k8s

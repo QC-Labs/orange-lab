@@ -38,6 +38,22 @@ pulumi config set amd-gpu-operator:enabled true
 pulumi up
 ```
 
+## Custom domains
+
+By default Tailscale domain (`*.ts.net`) is used for all services.
+
+In addition you can setup your custom domain. This is still work in progress and some limitations:
+
+-   doesn't work for Helm charts yet
+-   HTTPS not yet implemented (however traffic is encrypted with WireGuard even for HTTP)
+-   Tailscale authentication does not work on custom domains
+
+To set it up, you need to:
+
+-   add A record to your DNS pointing `*` (or each subdomain separately) to one of your Tailscale node IPs
+-   set `orangelab:customDomain` to the name fo your domain
+-   make sure ServiceLB/Traefik included in K3s is running, use `./scripts/k3s-*.sh` to refresh nodes if it's not
+
 ## Tailscale-operator
 
 |                |                                                                                            |
