@@ -389,7 +389,7 @@ kubectl delete crds deviceconfigs.amd.com \
     preflightvalidations.kmm.sigs.x-k8s.io
 ```
 
-# MariaDB Operator
+## MariaDB Operator
 
 |             |                                                                                                           |
 | ----------- | --------------------------------------------------------------------------------------------------------- |
@@ -401,6 +401,25 @@ The MariaDB Operator manages MariaDB/MySQL databases on Kubernetes using CRDs. I
 
 ```sh
 pulumi config set mariadb-operator:enabled true
+```
+
+### Resetting root password
+
+```sh
+pulumi config set <app>/db:maintanance=true
+pulumi up
+
+# log into the MariaDB container
+kubectl exec -it <app>>-db-0 -n <app>> -- mariadb -u root
+
+# Reset password, make sure it matches the `rootPassword` value in `<app>-db-secret`
+FLUSH PRIVILEGES;
+ALTER USER 'root'@'%' IDENTIFIED BY '<password>';
+
+# Disable maintanance mode
+pulumi config set <app>/db:maintanance=false
+pulumi up
+
 ```
 
 ## Debug (experimental)
