@@ -132,20 +132,21 @@ Configure it with `mods --settings` and update the configuration file:
 
 ```yaml
 ollama:
-  base-url: https://ollama.<tsnet>.ts.net/api
-  default-model: qwen3
-  models: # https://ollama.com/library
-    "qwen3:8b":
-      aliases: ["qwen3"]
-      max-input-chars: 650000
-    "gemma3:12b-it-qat":
-      aliases: ["gemma3"]
-      max-input-chars: 650000
+    base-url: https://ollama.<tsnet>.ts.net/api
+    default-model: qwen3
+    models: # https://ollama.com/library
+        'qwen3:8b':
+            aliases: ['qwen3']
+            max-input-chars: 650000
+        'gemma3:12b-it-qat':
+            aliases: ['gemma3']
+            max-input-chars: 650000
 ```
 
 After configuration, you can use `mods` from any terminal to access your Ollama models.
 
 Example usage:
+
 ```sh
 # General prompt (specify model with -m)
 mods -m gemma3 "explain kubernetes operators"
@@ -318,4 +319,27 @@ Similar to Ollama, you can configure Continue to use KubeAi/vLLM. Depending on t
     "maxPromptTokens": 1024,
     "contextLength": 1024
 },
+```
+
+## N8n
+
+|                       |                                                      |
+| --------------------- | ---------------------------------------------------- |
+| Homepage              | https://n8n.io/                                      |
+| Documentation         | https://docs.n8n.io/                                 |
+| Source code           | https://github.com/n8n-io/n8n                        |
+| Environment variables | https://docs.n8n.io/reference/environment-variables/ |
+| Endpoints             | `https://n8n.<tsnet>.ts.net/`                        |
+
+N8n is a visual workflow automation platform that allows you to connect different apps and services to automate tasks.
+
+```sh
+# Enable n8n
+pulumi config set n8n:enabled true
+
+# Optional: use existing Longhorn volume (either created or restored)
+pulumi config set n8n:fromVolume <volume_name>
+
+# Update cluster
+pulumi up
 ```

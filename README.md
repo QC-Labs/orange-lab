@@ -55,6 +55,7 @@ Private infrastructure for cloud natives.
 -   `ollama` - local large language models
 -   `open-webui` - Open WebUI frontend
 -   `sdnext` - SD.Next Stable Diffusion WebUI
+-   `n8n` - AI workflow automation
 
 [Bitcoin module](./components/bitcoin/BITCOIN.md):
 
@@ -62,7 +63,6 @@ Private infrastructure for cloud natives.
 -   `bitcoin-knots` - Bitcoin Knots full node
 -   `electrs` - Electrs (Electrum) server implementation
 -   `mempool` - Blockchain explorer
-
 
 # Platforms and limitations
 

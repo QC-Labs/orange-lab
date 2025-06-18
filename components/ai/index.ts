@@ -6,6 +6,7 @@ import { Ollama } from './ollama';
 import { OpenWebUI } from './open-webui';
 import { SDNext } from './sdnext';
 import { InvokeAi } from './invokeai';
+import { N8n } from './n8n';
 
 interface AIModuleArgs {
     domainName: string;
@@ -18,6 +19,7 @@ export class AIModule extends pulumi.ComponentResource {
     private readonly automatic1111?: Automatic1111;
     private readonly sdnext?: SDNext;
     private readonly invokeAi?: InvokeAi;
+    private readonly n8n?: N8n;
 
     getExports() {
         return {
@@ -28,6 +30,7 @@ export class AIModule extends pulumi.ComponentResource {
                 ollama: this.ollama?.endpointUrl,
                 'open-webui': this.openWebUI?.endpointUrl,
                 ...this.sdnext?.app.network.endpoints,
+                ...this.n8n?.app.network.endpoints,
             },
             clusterEndpoints: {
                 ...this.automatic1111?.app.network.clusterEndpoints,
@@ -35,6 +38,7 @@ export class AIModule extends pulumi.ComponentResource {
                 kubeai: this.kubeAI?.serviceUrl,
                 ollama: this.ollama?.serviceUrl,
                 ...this.sdnext?.app.network.clusterEndpoints,
+                ...this.n8n?.app.network.clusterEndpoints,
             },
         };
     }
@@ -107,6 +111,10 @@ export class AIModule extends pulumi.ComponentResource {
                 { domainName: args.domainName },
                 { parent: this },
             );
+        }
+
+        if (rootConfig.isEnabled('n8n')) {
+            this.n8n = new N8n('n8n', { domainName: args.domainName }, { parent: this });
         }
     }
 }
