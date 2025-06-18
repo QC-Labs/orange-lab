@@ -54,6 +54,14 @@ To set it up, you need to:
 -   set `orangelab:customDomain` to the name fo your domain
 -   make sure ServiceLB/Traefik included in K3s is running, use `./scripts/k3s-*.sh` to refresh nodes if it's not
 
+ServiceLB creates an endpoint on port 80/443 on each node in the cluster.
+
+This could create issues if the ports are already used. If you want to limit on which nodes the load balancer is created, label the nodes. Adding the first label switches ServiceLB to white-list only mode.
+
+```sh
+kubectl label node <node> svccontroller.k3s.cattle.io/enablelb=true
+```
+
 ## Tailscale-operator
 
 |                |                                                                                            |
