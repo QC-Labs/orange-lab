@@ -42,7 +42,7 @@ pulumi up
 
 By default Tailscale domain (`*.ts.net`) is used for all services.
 
-In addition you can setup your custom domain. This is still work in progress and some limitations:
+In addition you can setup your custom domain. This is still work in progress and has some limitations:
 
 -   doesn't work for Helm charts yet
 -   HTTPS not yet implemented (however traffic is encrypted with WireGuard even for HTTP)
@@ -427,7 +427,42 @@ ALTER USER 'root'@'%' IDENTIFIED BY '<password>';
 # Disable maintanance mode
 pulumi config set <app>/db:maintanance=false
 pulumi up
+```
 
+## CloudNativePG Operator
+
+### Links
+
+|                |                                                                                      |
+| -------------- | ------------------------------------------------------------------------------------ |
+| Homepage       | https://cloudnative-pg.io/                                                           |
+| Helm chart     | https://github.com/cloudnative-pg/charts                                             |
+| Helm values    | https://github.com/cloudnative-pg/charts/blob/main/charts/cloudnative-pg/values.yaml |
+| Cluster values | https://github.com/cloudnative-pg/charts/blob/main/charts/cluster/values.yaml        |
+
+This component installs the CloudNativePG PostgreSQL operator using its official Helm chart. It manages the installation of CRDs and the operator itself, and supports optional monitoring integration.
+
+```sh
+pulumi config set cloudnative-pg:enabled true
+```
+
+### Uninstall
+
+```sh
+pulumi config set cloudnative-pg:enabled false
+pulumi up
+
+# Remove all CRDs (required before reinstalling)
+kubectl delete crd \
+  backups.postgresql.cnpg.io \
+  clusterimagecatalogs.postgresql.cnpg.io \
+  clusters.postgresql.cnpg.io \
+  databases.postgresql.cnpg.io \
+  imagecatalogs.postgresql.cnpg.io \
+  poolers.postgresql.cnpg.io \
+  publications.postgresql.cnpg.io \
+  scheduledbackups.postgresql.cnpg.io \
+  subscriptions.postgresql.cnpg.io
 ```
 
 ## Debug (experimental)

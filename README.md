@@ -32,7 +32,9 @@ Private infrastructure for cloud natives.
 
 -   `amd-gpu-operator` - AMD GPU support
 -   `cert-manager` - certificate management
+-   `cloudnative-pg` - PostgreSQL operator
 -   `longhorn` - replicated storage
+-   `mariadb-operator` - MariaDB operator
 -   `minio` - S3-compatible storage (used as Longhorn backup target)
 -   `nfd` - Node Feature Discovery (GPU autodetection)
 -   `nvidia-gpu-operator` - NVidia GPU support
@@ -52,10 +54,10 @@ Private infrastructure for cloud natives.
 -   `automatic1111` - Automatic1111 Stable Diffusion WebUI
 -   `kubeai` - Ollama and vLLM models over OpenAI-compatible API
 -   `invokeai` - generative AI plaform, community edition
+-   `n8n` - AI workflow automation
 -   `ollama` - local large language models
 -   `open-webui` - Open WebUI frontend
 -   `sdnext` - SD.Next Stable Diffusion WebUI
--   `n8n` - AI workflow automation
 
 [Bitcoin module](./components/bitcoin/BITCOIN.md):
 

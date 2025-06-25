@@ -72,6 +72,9 @@ config:
 
     mariadb-operator:enabled: false
 
+    cloudnative-pg:enabled: false
+    # cloudnative-pg:version: 0.24.0
+
     debug:enabled: false
     # debug:namespace: bitcoin
     # debug:fromVolume: bitcoin
