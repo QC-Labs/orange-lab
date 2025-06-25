@@ -122,6 +122,18 @@ export interface PersistentVolume {
      * More info at https://longhorn.io/docs/1.8.1/snapshots-and-backups/backup-and-restore/restore-statefulset/
      */
     overrideFullname?: string;
+    /**
+     * Labels to apply to the PVC
+     */
+    labels?: Record<string, string>;
+    /**
+     * Annotations to apply to the PVC
+     */
+    annotations?: Record<string, string>;
+    /**
+     * If true, only create the PV, do not create the PVC.
+     * Used by database components that manage PVCs themselves.
+     */
 }
 
 /**

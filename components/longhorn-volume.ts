@@ -35,9 +35,13 @@ interface LonghornVolumeArgs {
      */
     fromBackup?: string;
     /**
-     * Labels to apply to the volume
+     * Labels to apply to the PVC
      */
     labels?: Record<string, string>;
+    /**
+     * Annotations to apply to the PVC
+     */
+    annotations?: Record<string, string>;
     /**
      * Volume node affinity
      */
@@ -216,6 +220,7 @@ export class LonghornVolume extends pulumi.ComponentResource {
                     name,
                     namespace: this.args.namespace,
                     labels,
+                    annotations: this.args.annotations,
                 },
                 spec: {
                     accessModes: ['ReadWriteOnce'],

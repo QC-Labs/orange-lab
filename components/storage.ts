@@ -51,17 +51,19 @@ export class Storage extends pulumi.ComponentResource {
         const volumeName = volume?.name ?? this.appName;
         const id = volume?.name ? `${this.appName}-${volume.name}` : this.appName;
         const prefix = volume?.name ? `${volume.name}/` : '';
+        const labels = volume?.name
+            ? this.metadata.get({ component: volume.name }).labels
+            : this.metadata.get().labels;
         const storage = new LonghornVolume(
             `${id}-storage`,
             {
                 affinity: this.nodes.getVolumeAffinity(),
+                annotations: volume?.annotations,
                 cloneFromClaim: volume?.cloneFromClaim,
                 enableBackup: rootConfig.isBackupEnabled(this.appName, volume?.name),
                 fromBackup: this.config.get(`${prefix}fromBackup`),
                 fromVolume: volume?.fromVolume ?? this.config.get(`${prefix}fromVolume`),
-                labels: volume?.name
-                    ? this.metadata.get({ component: volume.name }).labels
-                    : this.metadata.get().labels,
+                labels: { ...labels, ...volume?.labels },
                 name: volume?.overrideFullname ?? volumeName,
                 namespace: this.namespace,
                 size: volume?.size ?? this.config.require(`${prefix}storageSize`),
