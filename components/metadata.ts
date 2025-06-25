@@ -43,10 +43,10 @@ export class Metadata {
     }
 
     getSelectorLabels(component?: string) {
-        const selectorLabels = { 'app.kubernetes.io/name': this.appName };
-        return component
-            ? { ...selectorLabels, 'app.kubernetes.io/component': component }
-            : selectorLabels;
+        return {
+            'app.kubernetes.io/name': this.appName,
+            'app.kubernetes.io/component': component ?? 'default',
+        };
     }
 
     getAppLabels(componentName?: string) {
