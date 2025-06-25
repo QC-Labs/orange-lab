@@ -106,6 +106,7 @@ export class Longhorn extends pulumi.ComponentResource {
                         fastReplicaRebuildEnabled: true,
                         nodeDownPodDeletionPolicy:
                             'delete-both-statefulset-and-deployment-pod',
+                        nodeDrainPolicy: 'always-allow',
                         offlineRelicaRebuilding: true,
                         orphanResourceAutoDeletion: 'replica-data;instance',
                         recurringJobMaxRetention: 10,
