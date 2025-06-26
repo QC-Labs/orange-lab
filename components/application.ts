@@ -106,6 +106,15 @@ export class Application {
         return this;
     }
 
+    /**
+     * Adds a PostgreSQL database using the CloudNativePG Operator CRD.
+     * Creates a database, user and storage.
+     */
+    addPostgres() {
+        this.databases.addPostgres();
+        return this;
+    }
+
     addStorage(volume?: PersistentVolume) {
         this.storage.addPersistentVolume(volume);
         return this;

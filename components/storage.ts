@@ -48,14 +48,13 @@ export class Storage extends pulumi.ComponentResource {
     }
 
     addPersistentVolume(volume?: PersistentVolume) {
-        const volumeName = volume?.name ?? this.appName;
-        const id = volume?.name ? `${this.appName}-${volume.name}` : this.appName;
+        const volumeName = this.getVolumeName(volume?.name);
         const prefix = volume?.name ? `${volume.name}/` : '';
         const labels = volume?.name
             ? this.metadata.get({ component: volume.name }).labels
             : this.metadata.get().labels;
         const storage = new LonghornVolume(
-            `${id}-storage`,
+            `${volumeName}-storage`,
             {
                 affinity: this.nodes.getVolumeAffinity(),
                 annotations: volume?.annotations,
@@ -80,21 +79,21 @@ export class Storage extends pulumi.ComponentResource {
     }
 
     getClaimName(storageName?: string): string {
-        const volumeName = storageName ?? this.appName;
+        const volumeName = this.getVolumeName(storageName);
         const storage = this.longhornVolumes.get(volumeName);
         assert(storage, `Storage ${volumeName} not found`);
         return storage.volumeClaimName;
     }
 
     getStorageClass(storageName?: string): pulumi.Output<string> {
-        const volumeName = storageName ?? this.appName;
+        const volumeName = this.getVolumeName(storageName);
         const storage = this.longhornVolumes.get(volumeName);
         assert(storage, `Storage ${volumeName} not found`);
         return storage.storageClassName;
     }
 
     getStorageSize(storageName?: string): pulumi.Output<string> {
-        const volumeName = storageName ?? this.appName;
+        const volumeName = this.getVolumeName(storageName);
         const storage = this.longhornVolumes.get(volumeName);
         assert(storage, `Storage ${volumeName} not found`);
         return storage.size;
@@ -106,6 +105,10 @@ export class Storage extends pulumi.ComponentResource {
 
     hasVolumes(): boolean {
         return this.volumes.size > 0;
+    }
+
+    private getVolumeName(storageName?: string): string {
+        return storageName ? `${this.appName}-${storageName}` : this.appName;
     }
 
     /**
@@ -156,7 +159,7 @@ export class Storage extends pulumi.ComponentResource {
      * @returns True if storage was provisioned dynamically
      */
     isDynamic(storageName?: string): boolean {
-        const volumeName = storageName ?? this.appName;
+        const volumeName = this.getVolumeName(storageName);
         const storage = this.longhornVolumes.get(volumeName);
         assert(storage, `Storage ${volumeName} not found`);
         return storage.isDynamic;

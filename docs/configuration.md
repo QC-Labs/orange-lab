@@ -41,6 +41,8 @@ To keep storage around (for example downloaded Ollama models) but remove all oth
 # Remove application resources but keep related storage
 pulumi config set <app>:enabled true
 pulumi config set <app>:storageOnly true
+# Optional: enable database in storageOnly mode if used by application
+pulumi config set <app>:db/enabled true
 pulumi up
 ```
 

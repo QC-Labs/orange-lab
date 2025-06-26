@@ -130,10 +130,6 @@ export interface PersistentVolume {
      * Annotations to apply to the PVC
      */
     annotations?: Record<string, string>;
-    /**
-     * If true, only create the PV, do not create the PVC.
-     * Used by database components that manage PVCs themselves.
-     */
 }
 
 /**
