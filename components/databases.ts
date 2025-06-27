@@ -4,7 +4,7 @@ import { Metadata } from './metadata';
 import { PostgresCluster } from './postgres';
 import { rootConfig } from './root-config';
 import { Storage } from './storage';
-import { DatabaseConfig } from './types';
+import { DatabaseConfig, StorageType } from './types';
 
 export class Databases {
     private readonly databases: Record<
@@ -40,6 +40,7 @@ export class Databases {
         this.storage.addPersistentVolume({
             name,
             overrideFullname: `storage-${this.appName}-${name}-0`,
+            type: StorageType.Database,
         });
         const db = new MariaDbCluster(
             this.appName,
@@ -66,6 +67,7 @@ export class Databases {
             this.storage.addPersistentVolume({
                 name,
                 overrideFullname: `${this.appName}-${name}-1`,
+                type: StorageType.Database,
                 labels: {
                     'cnpg.io/cluster': `${this.appName}-${name}`,
                     'cnpg.io/instanceName': `${this.appName}-${name}-1`,
@@ -82,7 +84,7 @@ export class Databases {
         const storageSize = this.config.require(`${name}/storageSize`);
         const storageClassName = existingVolume
             ? this.storage.getStorageClass(name)
-            : rootConfig.storageClass.Default;
+            : rootConfig.storageClass.Database;
         const enabledDefault = this.config.getBoolean(`storageOnly`) ? false : true;
         const db = new PostgresCluster(
             this.appName,

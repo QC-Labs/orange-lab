@@ -14,6 +14,7 @@ class RootConfig {
         Default: this.requireAppConfig('orangelab', 'storageClass'),
         GPU: this.requireAppConfig('orangelab', 'storageClass-gpu'),
         Large: this.requireAppConfig('orangelab', 'storageClass-large'),
+        Database: this.requireAppConfig('orangelab', 'storageClass-database'),
     };
     public customDomain = this.requireAppConfig('orangelab', 'customDomain');
 

@@ -28,6 +28,8 @@ config:
     orangelab:storageClass-gpu: longhorn-gpu
     # Use 1 replica only
     orangelab:storageClass-large: longhorn-large
+    # Database storage with strict-local data locality and 1 replica
+    orangelab:storageClass-database: longhorn-database
 
     # Note: add A record for "*" pointing to one of your Tailscale IPs
     # orangelab:customDomain: 'example.com'

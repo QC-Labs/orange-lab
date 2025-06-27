@@ -111,6 +111,8 @@ export class LonghornVolume extends pulumi.ComponentResource {
                 return rootConfig.storageClass.GPU;
             case StorageType.Large:
                 return rootConfig.storageClass.Large;
+            case StorageType.Database:
+                return rootConfig.storageClass.Database;
             default:
                 return rootConfig.storageClass.Default;
         }
@@ -131,7 +133,8 @@ export class LonghornVolume extends pulumi.ComponentResource {
     }
 
     private createBackupStorageClass(): pulumi.Output<string> {
-        const isLocalOnly = this.args.type === StorageType.GPU;
+        const isLocalOnly =
+            this.args.type === StorageType.GPU || this.args.type === StorageType.Database;
         const isDefault = this.args.type === StorageType.Default;
         const storageClass = new kubernetes.storage.v1.StorageClass(
             `${this.name}-sc`,

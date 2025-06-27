@@ -4,6 +4,7 @@ export enum StorageType {
     Default,
     GPU,
     Large,
+    Database,
 }
 
 export interface ServicePort {

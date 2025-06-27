@@ -80,6 +80,9 @@ Lock a Helm chart to a specific version:
 ```sh
 # latest used by default
 pulumi config set longhorn:version 1.8.1
+# some Helm charts allow to specify appVersion as well
+# f.e. Open-WebUI to upgrade before new chart is published
+pulumi config set open-webui:appVersion 0.6.1
 ```
 
 ### Node Placement
@@ -161,6 +164,8 @@ Default storage classes:
 
 -   Regular applications: `longhorn`
 -   GPU workloads: `longhorn-gpu`
+-   Large volumes: `longhorn-large`
+-   Database volumes: `longhorn-database`
 
 For single node or non-Linux systems, you can use `local-path` storage class instead:
 

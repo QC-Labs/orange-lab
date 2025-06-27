@@ -18,6 +18,8 @@ export class Longhorn extends pulumi.ComponentResource {
     public static defaultStorageClass = 'longhorn';
     public static gpuStorageClass = 'longhorn-gpu';
     public static largeStorageClass = 'longhorn-large';
+    public static databaseStorageClass = 'longhorn-database';
+
     public readonly endpointUrl: string | undefined;
 
     private readonly app: Application;
@@ -187,6 +189,25 @@ export class Longhorn extends pulumi.ComponentResource {
                 parameters: {
                     numberOfReplicas: '1',
                     dataLocality: 'best-effort',
+                    staleReplicaTimeout: (48 * 60).toString(),
+                },
+            },
+            { dependsOn: this.chart, parent: this },
+        );
+        new kubernetes.storage.v1.StorageClass(
+            `${this.name}-database-storage`,
+            {
+                metadata: {
+                    name: Longhorn.databaseStorageClass,
+                    namespace: this.app.namespace,
+                },
+                allowVolumeExpansion: true,
+                provisioner: 'driver.longhorn.io',
+                volumeBindingMode: 'WaitForFirstConsumer',
+                reclaimPolicy: 'Delete',
+                parameters: {
+                    numberOfReplicas: '1',
+                    dataLocality: 'strict-local',
                     staleReplicaTimeout: (48 * 60).toString(),
                 },
             },
