@@ -78,7 +78,7 @@ export class PostgresCluster extends pulumi.ComponentResource {
                         },
                     },
                     monitoring: rootConfig.enableMonitoring()
-                        ? { enabled: true }
+                        ? { enablePodMonitor: true }
                         : undefined,
                     storage: {
                         size: this.args.storageSize,
