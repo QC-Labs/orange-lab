@@ -446,6 +446,38 @@ This component installs the CloudNativePG PostgreSQL operator using its official
 pulumi config set cloudnative-pg:enabled true
 ```
 
+When setting `<app>:storageOnly` to `true`, databases are shut down and only storage is retained. To keep PostgreSQL running, use:
+
+```sh
+pulumi config set <app>:db/enabled true
+```
+
+### Manual Backup and Restore
+
+For manual database operations, use the provided scripts in the `scripts/` directory:
+
+**Database Dump:**
+
+```sh
+# Create a database dump
+./scripts/pg-dump.sh <app-name> [namespace]
+
+# Example: dump n8n database
+./scripts/pg-dump.sh n8n
+# Creates: n8n.dump
+```
+
+**Database Restore:**
+
+```sh
+# Restore from a dump file
+./scripts/pg-restore.sh <app-name> [namespace]
+
+# Example: restore n8n database
+./scripts/pg-restore.sh n8n
+# Requires: n8n.dump file to exist
+```
+
 ### Uninstall
 
 ```sh
