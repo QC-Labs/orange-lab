@@ -1,5 +1,5 @@
+import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
-import * as grafana from '@pulumiverse/grafana';
 
 interface GrafanaJson {
     title: string;
@@ -11,36 +11,33 @@ interface GrafanaDashboardArgs {
 }
 
 export class GrafanaDashboard {
-    static folder?: grafana.oss.Folder = undefined;
-
     constructor(
-        private appName: string,
+        private name: string,
         private scope: pulumi.ComponentResource,
-        private args: GrafanaDashboardArgs,
+        args: GrafanaDashboardArgs,
     ) {
-        GrafanaDashboard.folder = GrafanaDashboard.folder ?? this.createFolder();
-        this.createDashboard(args.configJson);
+        this.createGrafanaDashboard(args.configJson);
     }
 
-    private createFolder() {
-        return new grafana.oss.Folder('grafana-folder', {
-            title: 'OrangeLab',
-            uid: 'orangelab',
-        });
-    }
-
-    private createDashboard(configJson: GrafanaJson) {
-        if (this.args.title) {
-            configJson.title = this.args.title;
-        }
-        new grafana.oss.Dashboard(
-            `${this.appName}-dashboard`,
+    private createGrafanaDashboard(configJson: GrafanaJson): void {
+        new kubernetes.core.v1.ConfigMap(
+            `${this.name}-dashboard`,
             {
-                folder: GrafanaDashboard.folder?.uid,
-                configJson: JSON.stringify(configJson).replace(
-                    /\${DS_PROMETHEUS}/g,
-                    'Prometheus',
-                ),
+                metadata: {
+                    name: `${this.name}-dashboard`,
+                    labels: {
+                        grafana_dashboard: '1',
+                    },
+                    annotations: {
+                        'k8s-sidecar-target-folder': 'OrangeLab',
+                    },
+                },
+                data: {
+                    [`${this.name}-dashboard.json`]: JSON.stringify(configJson).replace(
+                        /\${DS_PROMETHEUS}/g,
+                        'Prometheus',
+                    ),
+                },
             },
             { parent: this.scope },
         );

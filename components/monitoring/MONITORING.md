@@ -93,20 +93,24 @@ pulumi up
 
 Once Prometheus is installed, additional metrics and Grafana dashboards can be enabled for applications that support it.
 
-The Grafana provider requires `url` and `auth` to be set in order to connect to the provisioned Grafana instance.
-
 ```sh
 # Enable additional metrics and dashboards
 # IMPORTANT: only enable once Prometheus has been installed.
 pulumi config set prometheus:enableComponentMonitoring true
-
-# Use your Tailnet domain name
-pulumi config set grafana:url https://grafana.<tsnet>.ts.net/
-
-# Basic auth user:password to Grafana frontend
-pulumi config set grafana:auth admin:admin --secret
-
 pulumi up
+```
+
+To remove dashboards created by @pulumiverse/grafana (not used anymore):
+
+```sh
+STACK=lab
+
+pulumi state delete "urn:pulumi:$STACK::orangelab::orangelab:system\$orangelab:system:AmdGPUOperator\$grafana:oss/dashboard:Dashboard::amd-gpu-operator-node-dashboard"
+pulumi state delete "urn:pulumi:$STACK::orangelab::orangelab:system\$orangelab:system:TailscaleOperator\$grafana:oss/dashboard:Dashboard::tailscale-operator-dashboard"
+pulumi state delete "urn:pulumi:$STACK::orangelab::orangelab:system\$orangelab:system:AmdGPUOperator\$grafana:oss/dashboard:Dashboard::amd-gpu-operator-job-dashboard"
+pulumi state delete "urn:pulumi:$STACK::orangelab::orangelab:system\$orangelab:system:AmdGPUOperator\$grafana:oss/dashboard:Dashboard::amd-gpu-operator-overview-dashboard"
+pulumi state delete "urn:pulumi:$STACK::orangelab::orangelab:system\$orangelab:system:AmdGPUOperator\$grafana:oss/dashboard:Dashboard::amd-gpu-operator-gpu-dashboard"
+pulumi state delete "urn:pulumi:$STACK::orangelab::orangelab:system\$orangelab:system:Longhorn\$grafana:oss/dashboard:Dashboard::longhorn-dashboard"
 ```
 
 ### Uninstall
@@ -114,12 +118,10 @@ pulumi up
 ```sh
 # Remove application monitoring before uninstalling Prometheus
 pulumi config set prometheus:enableComponentMonitoring false
-
 pulumi up
 
 # Remove Prometheus
 pulumi config set prometheus:enabled false
-
 pulumi up
 ```
 

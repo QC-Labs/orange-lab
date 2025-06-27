@@ -29,6 +29,12 @@ class RootConfig {
                 'longhorn:backupTarget is deprecated. Use longhorn:backupBucket instead.',
             );
         }
+        if (this.getAppConfig('grafana', 'url')) {
+            console.warn('grafana:url is not used anymore');
+        }
+        if (this.getAppConfig('grafana', 'auth')) {
+            console.warn('grafana:auth is not used anymore');
+        }
     }
 
     private processDependencies() {

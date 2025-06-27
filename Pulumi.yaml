@@ -97,9 +97,6 @@ config:
     # Only enable once Prometheus has been installed
     # This has to be disabled first before Prometheus can be removed
     prometheus:enableComponentMonitoring: false
-    # Required for Grafana Dashboards when enableComponentMonitoring is set
-    # grafana:url: https://grafana.<tsnet>.ts.net/
-    # grafana:auth: admin:admin
 
     beszel:enabled: false
     # beszel:hubKey: BESZEL_KEY
