@@ -170,7 +170,10 @@ config:
 
     n8n:enabled: false
     n8n:hostname: n8n
-    n8n:storageSize: 5Gi
+    # n8n:N8N_ENCRYPTION_KEY: ''
+    n8n:storageSize: 1Gi
+    n8n:db/storageSize: 1Gi
+    n8n:db/instances: 1
 
     ### Bitcoin ###
 

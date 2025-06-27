@@ -337,9 +337,22 @@ N8n is a visual workflow automation platform that allows you to connect differen
 # Enable n8n
 pulumi config set n8n:enabled true
 
-# Optional: use existing Longhorn volume (either created or restored)
-pulumi config set n8n:fromVolume <volume_name>
+# Optional: use restored Longhorn volume for app (n8n) and database (n8n-db)
+pulumi config set n8n:fromVolume n8n
+pulumi config set n8n:db/fromVolume n8n-db
+
+# Optional: add PostgreSQL replicas, 1 is default (just primary)
+pulumi config set n8n:db/instances 3
 
 # Update cluster
+pulumi up
+```
+
+After n8n is initialized, save the encryption key to the config. This is needed to restore database from backup:
+
+```sh
+export ENCRYPTION_KEY=$(pulumi stack output --show-secrets --json | jq '.ai.n8n.encryptionKey' -r)
+pulumi config set n8n:N8N_ENCRYPTION_KEY $ENCRYPTION_KEY --secret
+
 pulumi up
 ```

@@ -45,6 +45,11 @@ class RootConfig {
         return config.getBoolean('enabled') ?? false;
     }
 
+    public isDebugEnabled(name: string): boolean {
+        const config = new pulumi.Config(name);
+        return config.getBoolean('debug') ?? false;
+    }
+
     public isBackupEnabled(appName: string, volumeName?: string): boolean {
         const config = new pulumi.Config(appName);
         const volumePrefix = volumeName ? `${volumeName}/` : '';

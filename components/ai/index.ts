@@ -40,6 +40,12 @@ export class AIModule extends pulumi.ComponentResource {
                 ...this.sdnext?.app.network.clusterEndpoints,
                 ...this.n8n?.app.network.clusterEndpoints,
             },
+            n8n: this.n8n
+                ? {
+                      encryptionKey: this.n8n.encryptionKey,
+                      db: this.n8n.postgresConfig,
+                  }
+                : undefined,
         };
     }
 
@@ -114,7 +120,11 @@ export class AIModule extends pulumi.ComponentResource {
         }
 
         if (rootConfig.isEnabled('n8n')) {
-            this.n8n = new N8n('n8n', { domainName: args.domainName }, { parent: this });
+            this.n8n = new N8n(
+                'n8n',
+                { domainName: args.domainName, ollamaUrl: this.ollama?.serviceUrl },
+                { parent: this },
+            );
         }
     }
 }
