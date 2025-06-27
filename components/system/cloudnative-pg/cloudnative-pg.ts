@@ -2,6 +2,8 @@ import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../../application';
 import { rootConfig } from '../../root-config';
+import grafanaDashboardJson from './grafana-dashboard.json';
+import { GrafanaDashboard } from '../../grafana-dashboard';
 
 export class CloudNativePG extends pulumi.ComponentResource {
     private readonly config: pulumi.Config;
@@ -18,6 +20,12 @@ export class CloudNativePG extends pulumi.ComponentResource {
         this.version = this.config.get('version');
 
         this.createChart();
+        if (rootConfig.enableMonitoring()) {
+            new GrafanaDashboard(this.name, this, {
+                configJson: grafanaDashboardJson,
+                title: 'CloudNativePG',
+            });
+        }
     }
 
     private createChart(): kubernetes.helm.v3.Release {
