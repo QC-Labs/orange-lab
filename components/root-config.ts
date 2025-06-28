@@ -16,7 +16,8 @@ class RootConfig {
         Large: 'longhorn-large',
         Database: 'longhorn-database',
     };
-    public customDomain = this.requireAppConfig('orangelab', 'customDomain');
+    public customDomain = this.getAppConfig('orangelab', 'customDomain');
+    public tailnetDomain = this.requireAppConfig('tailscale', 'tailnet');
 
     public isEnabled(name: string): boolean {
         const config = new pulumi.Config(name);

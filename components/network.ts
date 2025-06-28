@@ -30,7 +30,6 @@ export class Network {
     createEndpoints(spec: ContainerSpec) {
         const hostname = this.config.get('hostname');
         if (!hostname) return;
-        assert(this.domainName, 'domainName is required');
         const metadata = this.metadata.get({ component: spec.name });
         assert(metadata.namespace, 'namespace is required');
 
@@ -74,7 +73,7 @@ export class Network {
                     service,
                     port,
                     component: spec.name,
-                    customDomain: rootConfig.customDomain,
+                    domainName: rootConfig.customDomain,
                 });
             }
 
@@ -84,11 +83,17 @@ export class Network {
     }
 
     private exportEndpoint(args: { component?: string; port: ServicePort }) {
-        const key = this.getFullPortName({ component: args.component, port: args.port });
+        const domainName = rootConfig.customDomain ?? rootConfig.tailnetDomain;
+        assert(
+            domainName,
+            'tailscale:tailnetDomain or orangelab:customDomain is required',
+        );
+        const protocol = rootConfig.customDomain ? 'http' : 'https';
         const hostname = args.port.hostname ?? this.config.get('hostname');
         const url = args.port.tcp
             ? pulumi.interpolate`${hostname}:${args.port.port}`
-            : pulumi.interpolate`https://${hostname}.${this.domainName}`;
+            : pulumi.interpolate`${protocol}://${hostname}.${domainName}`;
+        const key = this.getFullPortName({ component: args.component, port: args.port });
         this.endpoints[key] = url;
     }
 
@@ -171,7 +176,6 @@ export class Network {
         port: ServicePort;
         component?: string;
     }): kubernetes.networking.v1.Ingress {
-        assert(this.domainName, 'domainName is required for ingress');
         assert(args.port.hostname, `hostname is required for port ${args.port.name}`);
         const componentName = args.component
             ? `${args.component}-${args.port.name}`
@@ -212,9 +216,8 @@ export class Network {
         service: kubernetes.core.v1.Service;
         port: ServicePort;
         component?: string;
-        customDomain: string;
+        domainName: string;
     }): kubernetes.networking.v1.Ingress {
-        assert(this.domainName, 'domainName is required for ingress');
         assert(args.port.hostname, `hostname is required for port ${args.port.name}`);
         const componentName = args.component
             ? `${args.component}-${args.port.name}`
@@ -233,13 +236,13 @@ export class Network {
                         {
                             hosts: [
                                 args.port.hostname,
-                                `${args.port.hostname}.${args.customDomain}`,
+                                `${args.port.hostname}.${args.domainName}`,
                             ],
                         },
                     ],
                     rules: [
                         {
-                            host: `${args.port.hostname}.${args.customDomain}`,
+                            host: `${args.port.hostname}.${args.domainName}`,
                             http: {
                                 paths: [
                                     {
