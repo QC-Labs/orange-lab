@@ -16,7 +16,6 @@ export interface PostgresClusterArgs {
 }
 
 export class PostgresCluster extends pulumi.ComponentResource {
-    private readonly cluster?: kubernetes.apiextensions.CustomResource;
     private readonly secret: kubernetes.core.v1.Secret;
 
     private dbPassword: pulumi.Output<string>;
@@ -36,7 +35,7 @@ export class PostgresCluster extends pulumi.ComponentResource {
         this.secret = this.createSecret();
         if (!args.enabled) return;
 
-        this.cluster = this.createCluster();
+        this.createCluster();
     }
 
     private createSecret() {

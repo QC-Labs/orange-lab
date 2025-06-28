@@ -81,18 +81,16 @@ export class Databases {
                 },
             });
         }
-        const storageSize = this.config.require(`${name}/storageSize`);
-        const storageClassName = existingVolume
-            ? this.storage.getStorageClass(name)
-            : rootConfig.storageClass.Database;
         const enabledDefault = this.config.getBoolean(`storageOnly`) ? false : true;
         const db = new PostgresCluster(
             this.appName,
             {
                 name,
                 metadata: this.metadata,
-                storageSize,
-                storageClassName,
+                storageSize: this.config.require(`${name}/storageSize`),
+                storageClassName: existingVolume
+                    ? this.storage.getStorageClass(name)
+                    : rootConfig.storageClass.Database,
                 enabled: this.config.getBoolean(`${name}/enabled`) ?? enabledDefault,
                 fromPVC: existingVolume ? this.storage.getClaimName(name) : undefined,
                 instances: this.config.getNumber(`${name}/instances`),

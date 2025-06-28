@@ -100,23 +100,12 @@ export class LonghornVolume extends pulumi.ComponentResource {
             storageClassName:
                 this.args.storageClass ??
                 storageClassName ??
-                LonghornVolume.getStorageClass(args.type),
+                rootConfig.getStorageClass(args.type),
         });
         return pvc.spec.storageClassName;
     }
 
-    public static getStorageClass(storageType?: StorageType): string {
-        switch (storageType) {
-            case StorageType.GPU:
-                return rootConfig.storageClass.GPU;
-            case StorageType.Large:
-                return rootConfig.storageClass.Large;
-            case StorageType.Database:
-                return rootConfig.storageClass.Database;
-            default:
-                return rootConfig.storageClass.Default;
-        }
-    }
+
 
     private attachVolume(args: LonghornVolumeArgs) {
         assert(args.fromVolume && !args.storageClass);

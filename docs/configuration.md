@@ -167,17 +167,10 @@ Default storage classes:
 -   Large volumes: `longhorn-large`
 -   Database volumes: `longhorn-database`
 
-For single node or non-Linux systems, you can use `local-path` storage class instead:
+For single node or non-Linux systems, you can use override application to use `local-path` storage class instead:
 
 ```sh
 pulumi config set longhorn:enabled false
-# Use local-path by default for all applications
-pulumi config set orangelab:storageClass local-path
-pulumi config set orangelab:storageClass-gpu local-path
-```
 
-Force specific storage class for a single application only:
-
-```sh
 pulumi config set ollama:storageClass local-path
 ```

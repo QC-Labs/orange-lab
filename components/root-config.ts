@@ -1,51 +1,22 @@
 /* eslint-disable no-console */
 import * as pulumi from '@pulumi/pulumi';
+import { StorageType } from './types';
 
 class RootConfig {
     constructor() {
         this.processDeprecated();
-        this.processDependencies();
     }
 
     public longhorn = {
         replicaCount: parseInt(this.requireAppConfig('longhorn', 'replicaCount')),
     };
     public storageClass = {
-        Default: this.requireAppConfig('orangelab', 'storageClass'),
-        GPU: this.requireAppConfig('orangelab', 'storageClass-gpu'),
-        Large: this.requireAppConfig('orangelab', 'storageClass-large'),
-        Database: this.requireAppConfig('orangelab', 'storageClass-database'),
+        Default: 'longhorn',
+        GPU: 'longhorn-gpu',
+        Large: 'longhorn-large',
+        Database: 'longhorn-database',
     };
     public customDomain = this.requireAppConfig('orangelab', 'customDomain');
-
-    private processDeprecated() {
-        if (this.getAppConfig('longhorn', 'backupAccessKeyId')) {
-            console.warn('longhorn:backupAccessKeyId is deprecated.');
-        }
-        if (this.getAppConfig('longhorn', 'backupAccessKeySecret')) {
-            console.warn('longhorn:backupAccessKeySecret is deprecated.');
-        }
-        if (this.getAppConfig('longhorn', 'backupTarget')) {
-            console.warn(
-                'longhorn:backupTarget is deprecated. Use longhorn:backupBucket instead.',
-            );
-        }
-        if (this.getAppConfig('grafana', 'url')) {
-            console.warn('grafana:url is not used anymore');
-        }
-        if (this.getAppConfig('grafana', 'auth')) {
-            console.warn('grafana:auth is not used anymore');
-        }
-    }
-
-    private processDependencies() {
-        if (
-            this.getAppConfig('mempool', 'enabled') &&
-            !this.getAppConfig('mariadb-operator', 'enabled')
-        ) {
-            throw new Error(`mempool requires mariadb-operator to be installed`);
-        }
-    }
 
     public isEnabled(name: string): boolean {
         const config = new pulumi.Config(name);
@@ -68,9 +39,23 @@ class RootConfig {
         );
     }
 
+    public getStorageClass(storageType?: StorageType): string {
+        switch (storageType) {
+            case StorageType.GPU:
+                return this.storageClass.GPU;
+            case StorageType.Large:
+                return this.storageClass.Large;
+            case StorageType.Database:
+                return this.storageClass.Database;
+            default:
+                return this.storageClass.Default;
+        }
+    }
+
     public enableMonitoring() {
         const config = new pulumi.Config('prometheus');
         const prometheusEnabled = config.requireBoolean('enabled');
+
         const componentsEnabled = config.requireBoolean('enableComponentMonitoring');
         return prometheusEnabled && componentsEnabled;
     }
@@ -90,6 +75,46 @@ class RootConfig {
     private requireAppConfig(appName: string, key: string): string {
         const config = new pulumi.Config(appName);
         return config.require(key);
+    }
+
+    private processDeprecated() {
+        if (this.getAppConfig('longhorn', 'backupAccessKeyId')) {
+            console.warn('longhorn:backupAccessKeyId is deprecated.');
+        }
+        if (this.getAppConfig('longhorn', 'backupAccessKeySecret')) {
+            console.warn('longhorn:backupAccessKeySecret is deprecated.');
+        }
+        if (this.getAppConfig('longhorn', 'backupTarget')) {
+            console.warn(
+                'longhorn:backupTarget is deprecated. Use longhorn:backupBucket instead.',
+            );
+        }
+        if (this.getAppConfig('grafana', 'url')) {
+            console.warn('grafana:url is not used anymore');
+        }
+        if (this.getAppConfig('grafana', 'auth')) {
+            console.warn('grafana:auth is not used anymore');
+        }
+        if (this.getAppConfig('orangelab', 'storageClass')) {
+            console.warn(
+                'orangelab:storageClass is deprecated. Use per-app <app>:storageClass if needed.',
+            );
+        }
+        if (this.getAppConfig('orangelab', 'storageClass-gpu')) {
+            console.warn(
+                'orangelab:storageClass-gpu is deprecated. Use per-app <app>:storageClass if needed.',
+            );
+        }
+        if (this.getAppConfig('orangelab', 'storageClass-large')) {
+            console.warn(
+                'orangelab:storageClass-large is deprecated. Use per-app <app>:storageClass if needed.',
+            );
+        }
+        if (this.getAppConfig('orangelab', 'storageClass-database')) {
+            console.warn(
+                'orangelab:storageClass-database is deprecated. Use per-app <app>:storageClass if needed.',
+            );
+        }
     }
 }
 

@@ -7,7 +7,7 @@ import { LonghornVolume } from './longhorn-volume';
 import { Metadata } from './metadata';
 import { Nodes } from './nodes';
 import { rootConfig } from './root-config';
-import { ConfigVolume, LocalVolume, PersistentVolume, StorageType } from './types';
+import { ConfigVolume, LocalVolume, PersistentVolume } from './types';
 
 export class Storage extends pulumi.ComponentResource {
     private readonly longhornVolumes = new Map<string, LonghornVolume>();
@@ -67,7 +67,7 @@ export class Storage extends pulumi.ComponentResource {
                 namespace: this.namespace,
                 size: volume?.size ?? this.config.require(`${prefix}storageSize`),
                 storageClass: this.config.get(`${prefix}storageClass`),
-                type: volume?.type ?? StorageType.Default,
+                type: volume?.type,
             },
             { parent: this },
         );

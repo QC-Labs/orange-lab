@@ -21,16 +21,6 @@ config:
     k3s:clusterCidr: 10.42.0.0/16
     k3s:serviceCidr: 10.43.0.0/16
 
-    # Storage class to use, set to 'local-path' when not using Longhorn
-    # Use Longhorn replicated storage
-    orangelab:storageClass: longhorn
-    # Always run GPU workloads on same node as storage
-    orangelab:storageClass-gpu: longhorn-gpu
-    # Use 1 replica only
-    orangelab:storageClass-large: longhorn-large
-    # Database storage with strict-local data locality and 1 replica
-    orangelab:storageClass-database: longhorn-database
-
     # Note: add A record for "*" pointing to one of your Tailscale IPs
     # orangelab:customDomain: 'example.com'
 
