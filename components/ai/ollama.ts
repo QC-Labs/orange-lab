@@ -20,10 +20,7 @@ export class Ollama extends pulumi.ComponentResource {
         this.config = new pulumi.Config(name);
         const hostname = this.config.require('hostname');
 
-        this.app = new Application(this, name, {
-            domainName: args.domainName,
-            gpu: true,
-        })
+        this.app = new Application(this, name, { gpu: true })
             .addDefaultLimits({ request: { cpu: '5m', memory: '3Gi' } })
             .addStorage({ type: StorageType.GPU });
 

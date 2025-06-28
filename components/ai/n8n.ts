@@ -5,7 +5,6 @@ import { rootConfig } from '../root-config';
 import { DatabaseConfig } from '../types';
 
 export interface N8nArgs {
-    domainName: string;
     ollamaUrl?: string;
 }
 
@@ -24,11 +23,7 @@ export class N8n extends pulumi.ComponentResource {
             config.get('N8N_ENCRYPTION_KEY') ?? this.createEncryptionKey(),
         );
 
-        this.app = new Application(this, name, {
-            domainName: args.domainName,
-        })
-            .addStorage()
-            .addPostgres();
+        this.app = new Application(this, name).addStorage().addPostgres();
         this.postgresConfig = this.app.databases.getPostgresConfig();
         this.app.addDeployment({
             image: 'docker.n8n.io/n8nio/n8n',

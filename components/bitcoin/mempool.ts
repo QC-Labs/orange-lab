@@ -4,7 +4,6 @@ import { rootConfig } from '../root-config';
 import { RpcUser } from './utils/rpc-user';
 
 export interface MempoolArgs {
-    domainName: string;
     electrsUrl: pulumi.Input<string>;
     rpcUser: RpcUser;
     bitcoinRpcUrl: pulumi.Input<string>;
@@ -20,9 +19,7 @@ export class Mempool extends pulumi.ComponentResource {
         rootConfig.require(name, 'mariadb-operator');
 
         this.config = new pulumi.Config(name);
-        this.app = new Application(this, name, {
-            domainName: args.domainName,
-        }).addMariaDB();
+        this.app = new Application(this, name).addMariaDB();
         if (this.app.storageOnly) return;
         this.createDeployment();
     }

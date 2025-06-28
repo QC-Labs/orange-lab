@@ -11,20 +11,17 @@ export class Network {
 
     private readonly config: pulumi.Config;
     private readonly metadata: Metadata;
-    private readonly domainName?: string;
 
     constructor(
         private readonly appName: string,
         args: {
             readonly config: pulumi.Config;
             readonly metadata: Metadata;
-            readonly domainName?: string;
         },
         private opts?: pulumi.ComponentResourceOptions,
     ) {
         this.config = args.config;
         this.metadata = args.metadata;
-        this.domainName = args.domainName;
     }
 
     createEndpoints(spec: ContainerSpec) {

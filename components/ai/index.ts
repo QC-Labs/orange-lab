@@ -68,19 +68,11 @@ export class AIModule extends pulumi.ComponentResource {
         }
 
         if (rootConfig.isEnabled('automatic1111')) {
-            this.automatic1111 = new Automatic1111(
-                'automatic1111',
-                { domainName: args.domainName },
-                { parent: this },
-            );
+            this.automatic1111 = new Automatic1111('automatic1111', { parent: this });
         }
 
         if (rootConfig.isEnabled('sdnext')) {
-            this.sdnext = new SDNext(
-                'sdnext',
-                { domainName: args.domainName },
-                { parent: this },
-            );
+            this.sdnext = new SDNext('sdnext', { parent: this });
         }
 
         if (rootConfig.isEnabled('kubeai')) {
@@ -112,17 +104,13 @@ export class AIModule extends pulumi.ComponentResource {
         }
 
         if (rootConfig.isEnabled('invokeai')) {
-            this.invokeAi = new InvokeAi(
-                'invokeai',
-                { domainName: args.domainName },
-                { parent: this },
-            );
+            this.invokeAi = new InvokeAi('invokeai', { parent: this });
         }
 
         if (rootConfig.isEnabled('n8n')) {
             this.n8n = new N8n(
                 'n8n',
-                { domainName: args.domainName, ollamaUrl: this.ollama?.serviceUrl },
+                { ollamaUrl: this.ollama?.serviceUrl },
                 { parent: this },
             );
         }

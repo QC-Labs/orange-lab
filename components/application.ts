@@ -33,7 +33,6 @@ export class Application {
         private readonly scope: pulumi.ComponentResource,
         private readonly appName: string,
         args?: {
-            domainName?: string;
             namespace?: string;
             existingNamespace?: string;
             gpu?: boolean;
@@ -70,7 +69,6 @@ export class Application {
             {
                 config: this.config,
                 metadata: this.metadata,
-                domainName: args?.domainName,
             },
             { parent: this.scope },
         );

@@ -24,7 +24,7 @@ export class Minio extends pulumi.ComponentResource {
             [rootUser]: pulumi.output(this.createPassword()),
         };
 
-        this.app = new Application(this, name, { domainName: args.domainName })
+        this.app = new Application(this, name)
             .addLocalStorage({ name: 'data', hostPath: dataPath })
             .addDeployment({
                 image: 'quay.io/minio/minio',

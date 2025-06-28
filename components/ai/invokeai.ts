@@ -2,24 +2,17 @@ import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
 import { StorageType } from '../types';
 
-export interface InvokeAiArgs {
-    domainName: string;
-}
-
 export class InvokeAi extends pulumi.ComponentResource {
     app: Application;
 
-    constructor(name: string, args: InvokeAiArgs, opts?: pulumi.ResourceOptions) {
-        super('orangelab:ai:InvokeAi', name, args, opts);
+    constructor(name: string, opts?: pulumi.ResourceOptions) {
+        super('orangelab:ai:InvokeAi', name, {}, opts);
 
         const config = new pulumi.Config(name);
         const huggingfaceToken = config.getSecret('huggingfaceToken');
         const imageTag = config.get('amd-gpu') ? 'main-rocm' : 'latest';
 
-        this.app = new Application(this, name, {
-            domainName: args.domainName,
-            gpu: true,
-        })
+        this.app = new Application(this, name, { gpu: true })
             .addStorage({ type: StorageType.GPU })
             .addDeployment({
                 image: `ghcr.io/invoke-ai/invokeai:${imageTag}`,

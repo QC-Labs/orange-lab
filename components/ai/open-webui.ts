@@ -25,10 +25,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
 
         this.endpointUrl = `https://${hostname}.${args.domainName}`;
 
-        const app = new Application(this, name, {
-            domainName: args.domainName,
-            gpu: true,
-        })
+        const app = new Application(this, name, { gpu: true })
             .addDefaultLimits({ request: { cpu: '5m', memory: '1.2Gi' } })
             .addStorage({ type: StorageType.GPU });
 

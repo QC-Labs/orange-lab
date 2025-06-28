@@ -4,7 +4,6 @@ import { StorageType } from '../types';
 import { RpcUser } from './utils/rpc-user';
 
 export interface ElectrsArgs {
-    domainName: string;
     rpcUser: RpcUser;
     bitcoinRpcUrl: pulumi.Input<string>;
     bitcoinP2pUrl: pulumi.Input<string>;
@@ -23,9 +22,7 @@ export class Electrs extends pulumi.ComponentResource {
             .output(this.args.bitcoinRpcUrl)
             .apply(url => new URL(`http://${url}`).host);
 
-        this.app = new Application(this, name, {
-            domainName: args.domainName,
-        })
+        this.app = new Application(this, name)
             .addStorage({ type: StorageType.Large })
             .addConfigVolume({
                 name: 'config',

@@ -32,9 +32,5 @@ const aiModule = new AIModule(
 );
 export const ai = aiModule.getExports();
 
-const bitcoinModule = new BitcoinModule(
-    'bitcoin',
-    { domainName: systemModule.domainName },
-    { dependsOn: systemModule },
-);
+const bitcoinModule = new BitcoinModule('bitcoin', { dependsOn: systemModule });
 export const bitcoin = bitcoinModule.getExports();

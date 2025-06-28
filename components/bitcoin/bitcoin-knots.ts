@@ -5,7 +5,6 @@ import { BitcoinConf } from './utils/bitcoin-conf';
 import { RpcUser } from './utils/rpc-user';
 
 export interface BitcoinKnotsArgs {
-    domainName: string;
     rpcUsers: Record<string, RpcUser>;
 }
 
@@ -23,9 +22,7 @@ export class BitcoinKnots extends pulumi.ComponentResource {
         this.config = new pulumi.Config(name);
         const prune = this.config.requireNumber('prune');
 
-        this.app = new Application(this, name, {
-            domainName: args.domainName,
-        })
+        this.app = new Application(this, name)
             .addStorage({ type: StorageType.Large })
             .addConfigVolume({
                 name: 'config',

@@ -27,9 +27,7 @@ export class Prometheus extends pulumi.ComponentResource {
         const alertManagerHostname = this.config.require('alertmanager/hostname');
         const grafanaHostname = this.config.require('grafana/hostname');
 
-        this.app = new Application(this, name, { domainName: args.domainName });
-
-        this.app
+        this.app = new Application(this, name)
             .addStorage({
                 overrideFullname: `prometheus-${name}-db-prometheus-${name}-0`,
             })

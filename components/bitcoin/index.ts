@@ -1,16 +1,12 @@
 /* eslint-disable sort-keys */
-import { Mempool } from './mempool';
 import * as pulumi from '@pulumi/pulumi';
+import assert from 'assert';
 import { rootConfig } from '../root-config';
 import { BitcoinCore } from './bitcoin-core';
 import { BitcoinKnots } from './bitcoin-knots';
 import { Electrs } from './electrs';
+import { Mempool } from './mempool';
 import { RpcUser } from './utils/rpc-user';
-import assert from 'assert';
-
-interface BitcoinModuleArgs {
-    domainName: string;
-}
 
 export class BitcoinModule extends pulumi.ComponentResource {
     private readonly bitcoinKnots?: BitcoinKnots;
@@ -46,12 +42,8 @@ export class BitcoinModule extends pulumi.ComponentResource {
         };
     }
 
-    constructor(
-        name: string,
-        args: BitcoinModuleArgs,
-        opts?: pulumi.ComponentResourceOptions,
-    ) {
-        super('orangelab:bitcoin', name, args, opts);
+    constructor(name: string, opts?: pulumi.ComponentResourceOptions) {
+        super('orangelab:bitcoin', name, {}, opts);
 
         const config = new pulumi.Config('bitcoin');
         const usernames = config
@@ -67,7 +59,7 @@ export class BitcoinModule extends pulumi.ComponentResource {
         if (rootConfig.isEnabled('bitcoin-knots')) {
             this.bitcoinKnots = new BitcoinKnots(
                 'bitcoin-knots',
-                { domainName: args.domainName, rpcUsers },
+                { rpcUsers },
                 { parent: this },
             );
         }
@@ -75,7 +67,7 @@ export class BitcoinModule extends pulumi.ComponentResource {
         if (rootConfig.isEnabled('bitcoin-core')) {
             this.bitcoinCore = new BitcoinCore(
                 'bitcoin-core',
-                { domainName: args.domainName, rpcUsers },
+                { rpcUsers },
                 { parent: this },
             );
         }
@@ -94,7 +86,6 @@ export class BitcoinModule extends pulumi.ComponentResource {
             this.electrs = new Electrs(
                 'electrs',
                 {
-                    domainName: args.domainName,
                     rpcUser: rpcUsers.electrs,
                     bitcoinRpcUrl,
                     bitcoinP2pUrl,
@@ -110,7 +101,6 @@ export class BitcoinModule extends pulumi.ComponentResource {
             this.mempool = new Mempool(
                 'mempool',
                 {
-                    domainName: args.domainName,
                     electrsUrl,
                     rpcUser: rpcUsers.mempool,
                     bitcoinRpcUrl,

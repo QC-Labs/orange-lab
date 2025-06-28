@@ -17,9 +17,9 @@ export class HomeAssistant extends pulumi.ComponentResource {
         const version = config.get('version');
         const hostname = config.require('hostname');
 
-        const app = new Application(this, name, {
-            domainName: args.domainName,
-        }).addStorage({ overrideFullname: 'home-assistant-home-assistant-0' });
+        const app = new Application(this, name).addStorage({
+            overrideFullname: 'home-assistant-home-assistant-0',
+        });
 
         if (app.storageOnly) return;
 
