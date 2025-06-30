@@ -3,10 +3,6 @@ import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
 import { Nodes } from '../nodes';
 
-export interface PrometheusArgs {
-    domainName: string;
-}
-
 export class Prometheus extends pulumi.ComponentResource {
     public readonly alertmanagerEndpointUrl: string | undefined;
     public readonly prometheusEndpointUrl: string | undefined;
@@ -16,8 +12,8 @@ export class Prometheus extends pulumi.ComponentResource {
     private readonly nodes: Nodes;
     private readonly app: Application;
 
-    constructor(name: string, args: PrometheusArgs, opts?: pulumi.ResourceOptions) {
-        super('orangelab:monitoring:Prometheus', name, args, opts);
+    constructor(name: string, opts?: pulumi.ResourceOptions) {
+        super('orangelab:monitoring:Prometheus', name, {}, opts);
 
         this.config = new pulumi.Config('prometheus');
         this.nodes = new Nodes({ config: this.config });

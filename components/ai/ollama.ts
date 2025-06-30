@@ -2,10 +2,7 @@ import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
 import { StorageType } from '../types';
-
-export interface OllamaArgs {
-    domainName: string;
-}
+import { IngressInfo } from '../network';
 
 export class Ollama extends pulumi.ComponentResource {
     public readonly endpointUrl?: string;
@@ -14,8 +11,8 @@ export class Ollama extends pulumi.ComponentResource {
     private readonly app: Application;
     private readonly config: pulumi.Config;
 
-    constructor(private name: string, args: OllamaArgs, opts?: pulumi.ResourceOptions) {
-        super('orangelab:ai:Ollama', name, args, opts);
+    constructor(private name: string, opts?: pulumi.ResourceOptions) {
+        super('orangelab:ai:Ollama', name, {}, opts);
 
         this.config = new pulumi.Config(name);
         const hostname = this.config.require('hostname');

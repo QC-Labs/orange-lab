@@ -4,10 +4,10 @@ import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../../application';
 import { GrafanaDashboard } from '../../grafana-dashboard';
 import dashboardJson from './tailscale-dashboard.json';
+import { rootConfig } from '../../root-config';
 
 interface TailscaleOperatorArgs {
     namespace?: string;
-    enableMonitoring?: boolean;
 }
 
 export class TailscaleOperator extends pulumi.ComponentResource {
@@ -37,7 +37,7 @@ export class TailscaleOperator extends pulumi.ComponentResource {
         this.createUserRoleBinding(userRole, 'orangelab:users');
 
         let proxyClass;
-        if (args.enableMonitoring) {
+        if (rootConfig.enableMonitoring()) {
             proxyClass = new kubernetes.apiextensions.CustomResource(
                 'proxyClass',
                 {
@@ -75,7 +75,7 @@ export class TailscaleOperator extends pulumi.ComponentResource {
                         hostname,
                         logging: 'debug', // info, debug, dev
                     },
-                    proxyConfig: args.enableMonitoring
+                    proxyConfig: rootConfig.enableMonitoring()
                         ? { defaultProxyClass: proxyClass?.metadata.name }
                         : undefined,
                 },

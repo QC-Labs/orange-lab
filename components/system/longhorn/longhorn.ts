@@ -2,14 +2,13 @@ import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../../application';
 import { GrafanaDashboard } from '../../grafana-dashboard';
+import { IngressInfo } from '../../network';
 import { rootConfig } from '../../root-config';
-import dashboardJson from './longhorn-dashboard.json';
 import { MinioS3Bucket } from '../minio/minio-s3-bucket';
 import { MinioS3User } from '../minio/minio-s3-user';
+import dashboardJson from './longhorn-dashboard.json';
 
 export interface LonghornArgs {
-    domainName: string;
-    enableMonitoring: boolean;
     s3EndpointUrl?: pulumi.Input<string>;
     minioProvider?: pulumi.ProviderResource;
 }
@@ -63,7 +62,7 @@ export class Longhorn extends pulumi.ComponentResource {
         if (backupEnabled) {
             this.createBackupJob();
         }
-        if (args.enableMonitoring) {
+        if (rootConfig.enableMonitoring()) {
             new GrafanaDashboard(name, this, { configJson: dashboardJson });
         }
 
@@ -145,7 +144,7 @@ export class Longhorn extends pulumi.ComponentResource {
                         ingressClassName: ingresInfo.className,
                         tls: ingresInfo.tls,
                     },
-                    metrics: this.args.enableMonitoring
+                    metrics: rootConfig.enableMonitoring()
                         ? { serviceMonitor: { enabled: true } }
                         : undefined,
                 },

@@ -1,10 +1,7 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../../application';
-
-interface MariaDBOperatorArgs {
-    enableMonitoring?: boolean;
-}
+import { rootConfig } from '../../root-config';
 
 export class MariaDBOperator extends pulumi.ComponentResource {
     private readonly config: pulumi.Config;
@@ -12,12 +9,8 @@ export class MariaDBOperator extends pulumi.ComponentResource {
     private readonly crdsChart: kubernetes.helm.v3.Release;
     private readonly version?: string;
 
-    constructor(
-        private readonly name: string,
-        private readonly args: MariaDBOperatorArgs = {},
-        opts?: pulumi.ResourceOptions,
-    ) {
-        super('orangelab:system:MariaDBOperator', name, args, opts);
+    constructor(private readonly name: string, opts?: pulumi.ResourceOptions) {
+        super('orangelab:system:MariaDBOperator', name, {}, opts);
 
         this.config = new pulumi.Config(name);
         this.app = new Application(this, name);
@@ -44,6 +37,7 @@ export class MariaDBOperator extends pulumi.ComponentResource {
 
     private createChart(): kubernetes.helm.v3.Release {
         const debug = this.config.getBoolean('debug');
+        const monitoring = rootConfig.enableMonitoring();
         return new kubernetes.helm.v3.Release(
             this.name,
             {
@@ -58,9 +52,9 @@ export class MariaDBOperator extends pulumi.ComponentResource {
                     crds: { enabled: false },
                     logLevel: debug ? 'DEBUG' : 'INFO',
                     metrics: {
-                        enabled: this.args.enableMonitoring,
+                        enabled: monitoring,
                         serviceMonitor: {
-                            enabled: this.args.enableMonitoring,
+                            enabled: monitoring,
                         },
                     },
                     webhook: {

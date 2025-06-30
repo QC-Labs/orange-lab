@@ -2,12 +2,8 @@ import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
 import { GrafanaDashboard } from '../grafana-dashboard';
+import { rootConfig } from '../root-config';
 import dashboardJson from './kubeai-dashboard-vllm.json';
-
-export interface KubeAiArgs {
-    domainName: string;
-    enableMonitoring: boolean;
-}
 
 export class KubeAi extends pulumi.ComponentResource {
     public readonly endpointUrl: string | undefined;
@@ -16,8 +12,8 @@ export class KubeAi extends pulumi.ComponentResource {
     private readonly app: Application;
     private readonly config: pulumi.Config;
 
-    constructor(private name: string, args: KubeAiArgs, opts?: pulumi.ResourceOptions) {
-        super('orangelab:ai:KubeAi', name, args, opts);
+    constructor(private name: string, opts?: pulumi.ResourceOptions) {
+        super('orangelab:ai:KubeAi', name, {}, opts);
 
         this.config = new pulumi.Config(name);
         const version = this.config.get('version');
@@ -49,7 +45,7 @@ export class KubeAi extends pulumi.ComponentResource {
                         ],
                         tls: [{ hosts: [ingresInfo.hostname] }],
                     },
-                    metrics: args.enableMonitoring
+                    metrics: rootConfig.enableMonitoring()
                         ? {
                               prometheusOperator: {
                                   vLLMPodMonitor: {
@@ -104,7 +100,7 @@ export class KubeAi extends pulumi.ComponentResource {
             { parent: this, dependsOn: [kubeAi] },
         );
 
-        if (args.enableMonitoring) {
+        if (rootConfig.enableMonitoring()) {
             new GrafanaDashboard(name, this, { configJson: dashboardJson });
         }
 

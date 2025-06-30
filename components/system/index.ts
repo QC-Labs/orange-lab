@@ -45,12 +45,11 @@ export class SystemModule extends pulumi.ComponentResource {
         this.tailscaleServerKey = tailscale.serverKey;
         this.tailscaleAgentKey = tailscale.agentKey;
         this.domainName = tailscale.tailnet;
-        const enableMonitoring = rootConfig.enableMonitoring();
 
         if (rootConfig.isEnabled('tailscale-operator')) {
             new TailscaleOperator(
                 'tailscale-operator',
-                { namespace: 'tailscale', enableMonitoring },
+                { namespace: 'tailscale' },
                 { parent: this },
             );
         }
@@ -61,7 +60,7 @@ export class SystemModule extends pulumi.ComponentResource {
             rootConfig.isEnabled('nvidia-gpu-operator') ||
             rootConfig.isEnabled('amd-gpu-operator')
         ) {
-            nfd = new NodeFeatureDiscovery('nfd', { enableMonitoring }, { parent: this });
+            nfd = new NodeFeatureDiscovery('nfd', { parent: this });
         }
 
         let certManager: CertManager | undefined;
@@ -81,33 +80,20 @@ export class SystemModule extends pulumi.ComponentResource {
         }
 
         if (rootConfig.isEnabled('amd-gpu-operator')) {
-            new AmdGPUOperator(
-                'amd-gpu-operator',
-                { enableMonitoring },
-                {
-                    parent: this,
-                    dependsOn: [
-                        ...(certManager ? [certManager] : []),
-                        ...(nfd ? [nfd] : []),
-                    ],
-                },
-            );
+            new AmdGPUOperator('amd-gpu-operator', {
+                parent: this,
+                dependsOn: [...(certManager ? [certManager] : []), ...(nfd ? [nfd] : [])],
+            });
         }
 
         if (rootConfig.isEnabled('minio')) {
-            this.minio = new Minio(
-                'minio',
-                { domainName: this.domainName },
-                { parent: this },
-            );
+            this.minio = new Minio('minio', { parent: this });
         }
 
         if (rootConfig.isEnabled('longhorn')) {
             this.longhorn = new Longhorn(
                 'longhorn',
                 {
-                    domainName: this.domainName,
-                    enableMonitoring,
                     s3EndpointUrl: this.minio?.app.network.clusterEndpoints['minio-api'],
                     minioProvider: this.minio?.minioProvider,
                 },
@@ -116,11 +102,10 @@ export class SystemModule extends pulumi.ComponentResource {
         }
 
         if (rootConfig.isEnabled('mariadb-operator')) {
-            new MariaDBOperator(
-                'mariadb-operator',
-                { enableMonitoring },
-                { parent: this, dependsOn: certManager },
-            );
+            new MariaDBOperator('mariadb-operator', {
+                parent: this,
+                dependsOn: certManager,
+            });
         }
 
         if (rootConfig.isEnabled('debug')) {

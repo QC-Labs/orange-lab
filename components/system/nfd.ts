@@ -1,21 +1,14 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
-
-interface NodeFeatureDiscoveryArgs {
-    enableMonitoring?: boolean;
-}
+import { rootConfig } from '../root-config';
 
 export class NodeFeatureDiscovery extends pulumi.ComponentResource {
     private readonly config: pulumi.Config;
     private readonly app: Application;
 
-    constructor(
-        private readonly name: string,
-        private readonly args: NodeFeatureDiscoveryArgs = {},
-        opts?: pulumi.ResourceOptions,
-    ) {
-        super('orangelab:system:NFD', name, args, opts);
+    constructor(private readonly name: string, opts?: pulumi.ResourceOptions) {
+        super('orangelab:system:NFD', name, {}, opts);
 
         this.config = new pulumi.Config(name);
         this.app = new Application(this, name);
@@ -39,7 +32,7 @@ export class NodeFeatureDiscovery extends pulumi.ComponentResource {
                 version: this.config.get('version'),
                 namespace: this.app.namespace,
                 values: {
-                    prometheus: { enable: this.args.enableMonitoring },
+                    prometheus: { enable: rootConfig.enableMonitoring() },
                     worker: {
                         // set as priviledged to allow access to /etc/kubernetes/node-feature-discovery/features.d/
                         securityContext: {

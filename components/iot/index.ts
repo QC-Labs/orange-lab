@@ -3,7 +3,6 @@ import { rootConfig } from '../root-config';
 import { HomeAssistant } from './home-assistant';
 
 interface IoTModuleArgs {
-    domainName: string;
     clusterCidr: string;
     serviceCidr: string;
 }
@@ -30,7 +29,6 @@ export class IoTModule extends pulumi.ComponentResource {
             this.homeAssistant = new HomeAssistant(
                 'home-assistant',
                 {
-                    domainName: args.domainName,
                     trustedProxies: [args.clusterCidr, args.serviceCidr, '127.0.0.0/8'],
                 },
                 { parent: this },

@@ -1,16 +1,12 @@
 import * as pulumi from '@pulumi/pulumi';
 import { rootConfig } from '../root-config';
 import { Automatic1111 } from './automatic1111';
+import { InvokeAi } from './invokeai';
 import { KubeAi } from './kubeai';
+import { N8n } from './n8n';
 import { Ollama } from './ollama';
 import { OpenWebUI } from './open-webui';
 import { SDNext } from './sdnext';
-import { InvokeAi } from './invokeai';
-import { N8n } from './n8n';
-
-interface AIModuleArgs {
-    domainName: string;
-}
 
 export class AIModule extends pulumi.ComponentResource {
     private readonly ollama?: Ollama;
@@ -49,22 +45,11 @@ export class AIModule extends pulumi.ComponentResource {
         };
     }
 
-    constructor(
-        name: string,
-        args: AIModuleArgs,
-        opts?: pulumi.ComponentResourceOptions,
-    ) {
-        super('orangelab:ai', name, args, opts);
-        const enableMonitoring = rootConfig.enableMonitoring();
+    constructor(name: string, opts?: pulumi.ComponentResourceOptions) {
+        super('orangelab:ai', name, {}, opts);
 
         if (rootConfig.isEnabled('ollama')) {
-            this.ollama = new Ollama(
-                'ollama',
-                {
-                    domainName: args.domainName,
-                },
-                { parent: this },
-            );
+            this.ollama = new Ollama('ollama', { parent: this });
         }
 
         if (rootConfig.isEnabled('automatic1111')) {
@@ -76,18 +61,13 @@ export class AIModule extends pulumi.ComponentResource {
         }
 
         if (rootConfig.isEnabled('kubeai')) {
-            this.kubeAI = new KubeAi(
-                'kubeai',
-                { domainName: args.domainName, enableMonitoring },
-                { parent: this },
-            );
+            this.kubeAI = new KubeAi('kubeai', { parent: this });
         }
 
         if (rootConfig.isEnabled('open-webui')) {
             this.openWebUI = new OpenWebUI(
                 'open-webui',
                 {
-                    domainName: args.domainName,
                     ollamaUrl: this.ollama?.serviceUrl,
                     openAiUrl: this.kubeAI?.serviceUrl,
                     automatic1111Url:

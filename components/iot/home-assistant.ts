@@ -3,7 +3,6 @@ import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
 
 export interface HomeAssistantArgs {
-    domainName: string;
     trustedProxies?: string[];
 }
 

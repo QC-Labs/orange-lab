@@ -8,20 +8,12 @@ import dashboardJobJson from './amd-dashboard_job.json';
 import dashboardNodeJson from './amd-dashboard_node.json';
 import dashboardOverviewJson from './amd-dashboard_overview.json';
 
-interface AmdGPUOperatorArgs {
-    enableMonitoring?: boolean;
-}
-
 export class AmdGPUOperator extends pulumi.ComponentResource {
     private readonly config: pulumi.Config;
     private readonly app: Application;
 
-    constructor(
-        private readonly name: string,
-        private readonly args: AmdGPUOperatorArgs = {},
-        opts?: pulumi.ResourceOptions,
-    ) {
-        super('orangelab:system:AmdGPUOperator', name, args, opts);
+    constructor(private readonly name: string, opts?: pulumi.ResourceOptions) {
+        super('orangelab:system:AmdGPUOperator', name, {}, opts);
 
         rootConfig.require(name, 'cert-manager');
 
@@ -31,7 +23,7 @@ export class AmdGPUOperator extends pulumi.ComponentResource {
         const chart = this.createChart();
         this.createDeviceConfig(chart);
 
-        if (args.enableMonitoring) {
+        if (rootConfig.enableMonitoring()) {
             this.createDashboards();
         }
     }
@@ -66,7 +58,7 @@ export class AmdGPUOperator extends pulumi.ComponentResource {
                 spec: {
                     driver: { enable: false },
                     devicePlugin: { enableNodeLabeller: true },
-                    metricsExporter: { enable: this.args.enableMonitoring },
+                    metricsExporter: { enable: rootConfig.enableMonitoring() },
                     selector: { 'orangelab/gpu-amd': 'true' },
                     testRunner: { enable: false },
                 },

@@ -2,18 +2,15 @@ import * as minio from '@pulumi/minio';
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
 import { Application } from '../../application';
-
-export interface MinioArgs {
-    domainName: string;
-}
+import { rootConfig } from '../../root-config';
 
 export class Minio extends pulumi.ComponentResource {
     public readonly minioProvider: minio.Provider;
     public readonly users: Record<string, pulumi.Output<string>> = {};
     app: Application;
 
-    constructor(private name: string, args: MinioArgs, opts?: pulumi.ResourceOptions) {
-        super('orangelab:system:Minio', name, args, opts);
+    constructor(private name: string, opts?: pulumi.ResourceOptions) {
+        super('orangelab:system:Minio', name, {}, opts);
 
         const config = new pulumi.Config('minio');
         const hostname = config.require('hostname');
