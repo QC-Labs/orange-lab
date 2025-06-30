@@ -77,7 +77,7 @@ config:
     ### Monitoring ###
 
     prometheus:enabled: false
-    prometheus:requiredNodeLabel: orangelab/prometheus=true
+    # prometheus:requiredNodeLabel: orangelab/prometheus=true
     prometheus:grafana/password: admin
     prometheus:hostname: prometheus
     prometheus:alertmanager/hostname: alertmanager

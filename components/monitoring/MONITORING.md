@@ -74,10 +74,12 @@ Prometheus provides much more detailed monitoring of the cluster. Many tools (li
 
 Enabling it will increase traffic between nodes. Expect over 1GB of data saved to storage per day, even with just a few nodes.
 
-Any components (including node-exporter DaemonSet) will only be deployed to nodes with label `orangelab/prometheus=true`:
+Components will be deployed to all nodes by default. You can restrict that with `requiredNodeLabel` to deploy only to selected nodes:
 
 ```sh
-# You need at least one node with orangelab/prometheus label
+# (optional) only deploy to labeled nodes
+pulumi config set prometheus:requiredNodeLabel orangelab/prometheus=true
+# (optional) You need at least one node with orangelab/prometheus label
 kubectl label nodes <node-name> orangelab/prometheus=true
 
 # Enable Prometheus
