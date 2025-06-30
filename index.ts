@@ -8,8 +8,7 @@ import { DataModule } from './components/data';
 const systemModule = new SystemModule('system');
 export const system = systemModule.getExports();
 
-const dataModule = new DataModule('data', { dependsOn: systemModule });
-export const data = dataModule;
+new DataModule('data', { dependsOn: systemModule });
 
 const monitoringModule = new MonitoringModule('monitoring', { dependsOn: systemModule });
 export const monitoring = monitoringModule.getExports();
