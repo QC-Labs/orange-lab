@@ -140,6 +140,7 @@ config:
     # open-webui:appVersion: 0.5.9
     open-webui:hostname: webui
     open-webui:storageSize: 5Gi
+    open-webui:DEFAULT_USER_ROLE: admin
 
     kubeai:enabled: false
     kubeai:hostname: kubeai

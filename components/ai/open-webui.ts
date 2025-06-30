@@ -4,7 +4,6 @@ import { Application } from '../application';
 import { StorageType } from '../types';
 
 export interface OpenWebUIArgs {
-    domainName: string;
     ollamaUrl?: string;
     openAiUrl?: string;
     automatic1111Url?: pulumi.Input<string>;
@@ -22,6 +21,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
         const appVersion = config.get('appVersion');
         const amdGpu = config.get('amd-gpu');
         const DEFAULT_MODELS = config.get('DEFAULT_MODELS') ?? '';
+        const DEFAULT_USER_ROLE = config.require('DEFAULT_USER_ROLE');
 
         const app = new Application(this, name, { gpu: true })
             .addDefaultLimits({ request: { cpu: '5m', memory: '1.2Gi' } })
@@ -45,7 +45,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
                         { name: 'AUTOMATIC1111_BASE_URL', value: args.automatic1111Url },
                         { name: 'BYPASS_MODEL_ACCESS_CONTROL', value: 'True' },
                         { name: 'DEFAULT_MODELS', value: DEFAULT_MODELS },
-                        { name: 'DEFAULT_USER_ROLE', value: 'user' },
+                        { name: 'DEFAULT_USER_ROLE', value: DEFAULT_USER_ROLE },
                         { name: 'ENABLE_ADMIN_CHAT_ACCESS', value: 'False' },
                         { name: 'ENABLE_EVALUATION_ARENA_MODELS', value: 'False' },
                         {
