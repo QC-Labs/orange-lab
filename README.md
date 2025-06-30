@@ -32,13 +32,16 @@ Private infrastructure for cloud natives.
 
 -   `amd-gpu-operator` - AMD GPU support
 -   `cert-manager` - certificate management
--   `cloudnative-pg` - PostgreSQL operator
 -   `longhorn` - replicated storage
--   `mariadb-operator` - MariaDB operator
 -   `minio` - S3-compatible storage (used as Longhorn backup target)
 -   `nfd` - Node Feature Discovery (GPU autodetection)
 -   `nvidia-gpu-operator` - NVidia GPU support
 -   `tailscale-operator` - ingress support with Tailscale authentication
+
+[Data module](./components/data/DATA.md):
+
+-   `cloudnative-pg` - PostgreSQL operator
+-   `mariadb-operator` - MariaDB operator
 
 [Monitoring module](./components/monitoring/MONITORING.md):
 
@@ -84,6 +87,7 @@ Both NVIDIA and AMD GPUs are supported. See [AMD GPU support](/docs/amd-gpu.md) 
 -   [Installation - Node Configuration](./docs/install-nodes.md) - Configure nodes (firewall, suspend settings)
 -   [Installation - K3s Cluster](./docs/install-k3s.md) - Install Kubernetes cluster and label nodes
 -   [components/system/SYSTEM.md](./components/system/SYSTEM.md) - Deploy system components
+-   [components/data/DATA.md](./components/data/DATA.md) - Deploy data components (databases)
 
 After system components have been deployed, you can add any of the optional [#Applications](#applications). Details in each module documentation.
 

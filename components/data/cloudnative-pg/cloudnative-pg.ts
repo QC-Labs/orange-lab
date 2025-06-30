@@ -11,7 +11,7 @@ export class CloudNativePG extends pulumi.ComponentResource {
     private readonly version?: string;
 
     constructor(private readonly name: string, opts?: pulumi.ResourceOptions) {
-        super('orangelab:system:CloudNativePG', name, {}, opts);
+        super('orangelab:data:CloudNativePG', name, {}, opts);
 
         this.config = new pulumi.Config(name);
         this.app = new Application(this, name, {

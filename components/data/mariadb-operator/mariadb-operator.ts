@@ -10,7 +10,7 @@ export class MariaDBOperator extends pulumi.ComponentResource {
     private readonly version?: string;
 
     constructor(private readonly name: string, opts?: pulumi.ResourceOptions) {
-        super('orangelab:system:MariaDBOperator', name, {}, opts);
+        super('orangelab:data:MariaDBOperator', name, {}, opts);
 
         this.config = new pulumi.Config(name);
         this.app = new Application(this, name);

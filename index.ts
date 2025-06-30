@@ -3,9 +3,13 @@ import { BitcoinModule } from './components/bitcoin';
 import { IoTModule } from './components/iot';
 import { MonitoringModule } from './components/monitoring';
 import { SystemModule } from './components/system';
+import { DataModule } from './components/data';
 
 const systemModule = new SystemModule('system');
 export const system = systemModule.getExports();
+
+const dataModule = new DataModule('data', { dependsOn: systemModule });
+export const data = dataModule;
 
 const monitoringModule = new MonitoringModule('monitoring', { dependsOn: systemModule });
 export const monitoring = monitoringModule.getExports();

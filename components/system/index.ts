@@ -9,8 +9,6 @@ import { NodeFeatureDiscovery } from './nfd';
 import { NvidiaGPUOperator } from './nvidia-gpu-operator';
 import { Tailscale } from './tailscale/tailscale';
 import { TailscaleOperator } from './tailscale/tailscale-operator';
-import { MariaDBOperator } from './mariadb-operator/mariadb-operator';
-import { CloudNativePG } from './cloudnative-pg/cloudnative-pg';
 
 export class SystemModule extends pulumi.ComponentResource {
     tailscaleServerKey: pulumi.Output<string> | undefined;
@@ -101,19 +99,8 @@ export class SystemModule extends pulumi.ComponentResource {
             );
         }
 
-        if (rootConfig.isEnabled('mariadb-operator')) {
-            new MariaDBOperator('mariadb-operator', {
-                parent: this,
-                dependsOn: certManager,
-            });
-        }
-
         if (rootConfig.isEnabled('debug')) {
             new Debug('debug', {}, { parent: this });
-        }
-
-        if (rootConfig.isEnabled('cloudnative-pg')) {
-            new CloudNativePG('cloudnative-pg', { parent: this });
         }
 
         const configK3s = new pulumi.Config('k3s');
