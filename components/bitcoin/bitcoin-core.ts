@@ -22,13 +22,14 @@ export class BitcoinCore extends pulumi.ComponentResource {
 
         this.config = new pulumi.Config(name);
         this.prune = this.config.requireNumber('prune');
+        const debug = this.config.getBoolean('debug');
 
         this.app = new Application(this, name)
             .addStorage({ type: StorageType.Large })
             .addConfigVolume({
                 name: 'config',
                 files: {
-                    'bitcoin.conf': BitcoinConf.create({ prune: this.prune }),
+                    'bitcoin.conf': BitcoinConf.create({ prune: this.prune, debug }),
                     'rpc.conf': BitcoinConf.createRpc(this.args.rpcUsers),
                 },
             });

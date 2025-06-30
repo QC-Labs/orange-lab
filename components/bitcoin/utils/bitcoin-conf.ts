@@ -9,11 +9,13 @@ function createRpc(rpcUsers: Record<string, RpcUser>): pulumi.Output<string> {
     return pulumi.all(authLines).apply(lines => lines.join('\n'));
 }
 
-function create({ prune }: { prune: number }): string {
+function create({ prune, debug }: { prune: number; debug?: boolean }): string {
     return `
 ${prune > 0 ? `prune=${prune.toString()}` : 'txindex=1'}
 blocksonly=0
-debug=all
+${
+    debug
+        ? `debug=all
 debugexclude=addrman
 debugexclude=bench
 debugexclude=estimatefee
@@ -22,7 +24,9 @@ debugexclude=libevent
 debugexclude=mempool
 debugexclude=net
 debugexclude=txpackages
-debugexclude=validation
+debugexclude=validation`
+        : ''
+}
 disablewallet=1
 listen=1
 listenonion=0

@@ -21,13 +21,14 @@ export class BitcoinKnots extends pulumi.ComponentResource {
 
         this.config = new pulumi.Config(name);
         const prune = this.config.requireNumber('prune');
+        const debug = this.config.getBoolean('debug');
 
         this.app = new Application(this, name)
             .addStorage({ type: StorageType.Large })
             .addConfigVolume({
                 name: 'config',
                 files: {
-                    'bitcoin.conf': BitcoinConf.create({ prune }),
+                    'bitcoin.conf': BitcoinConf.create({ prune, debug }),
                     'rpc.conf': BitcoinConf.createRpc(this.args.rpcUsers),
                 },
             });
