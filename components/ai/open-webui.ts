@@ -20,6 +20,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
         const hostname = config.require('hostname');
         const appVersion = config.get('appVersion');
         const amdGpu = config.get('amd-gpu');
+        const debug = config.get('debug');
         const DEFAULT_MODELS = config.get('DEFAULT_MODELS') ?? '';
         const DEFAULT_USER_ROLE = config.require('DEFAULT_USER_ROLE');
 
@@ -106,6 +107,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
                         host: ingresInfo.hostname,
                         tls: ingresInfo.tls,
                     },
+                    logging: { level: debug ? 'debug' : 'info' },
                     ollama: { enabled: false },
                     ollamaUrls: [args.ollamaUrl],
                     openaiBaseApiUrl: args.openAiUrl,
