@@ -11,6 +11,7 @@ export class SDNext extends pulumi.ComponentResource {
         const config = new pulumi.Config(name);
         const cliArgs = config.require('cliArgs');
         const amdGpu = config.get('amd-gpu');
+        const debug = config.getBoolean('debug') ?? false;
 
         this.app = new Application(this, name, { gpu: true })
             .addStorage({ type: StorageType.GPU })
@@ -28,7 +29,7 @@ export class SDNext extends pulumi.ComponentResource {
                     cliArgs,
                 ],
                 env: {
-                    SD_DEBUG: 'true',
+                    SD_DEBUG: debug ? 'true' : 'false',
                     SD_USEROCM: amdGpu ? 'True' : undefined,
                 },
                 volumeMounts: [{ mountPath: '/webui/data' }],

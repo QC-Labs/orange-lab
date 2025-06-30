@@ -9,6 +9,7 @@ export class InvokeAi extends pulumi.ComponentResource {
         super('orangelab:ai:InvokeAi', name, {}, opts);
 
         const config = new pulumi.Config(name);
+        const debug = config.getBoolean('debug') ?? false;
         const huggingfaceToken = config.getSecret('huggingfaceToken');
         const imageTag = config.get('amd-gpu') ? 'main-rocm' : 'latest';
 
@@ -22,7 +23,7 @@ export class InvokeAi extends pulumi.ComponentResource {
                     INVOKEAI_HOST: '0.0.0.0',
                     INVOKEAI_PORT: '9090',
                     INVOKEAI_ENABLE_PARTIAL_LOADING: 'true',
-                    INVOKEAI_LOG_LEVEL: 'info',
+                    INVOKEAI_LOG_LEVEL: debug ? 'debug' : 'info',
                     INVOKEAI_REMOTE_API_TOKENS: huggingfaceToken
                         ? `[{"url_regex":"huggingface.co", "token": "${huggingfaceToken.get()}"}]`
                         : undefined,
