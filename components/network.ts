@@ -2,8 +2,15 @@ import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
 import { Metadata } from './metadata';
-import { ContainerSpec, ServicePort } from './types';
 import { rootConfig } from './root-config';
+import { ContainerSpec, ServicePort } from './types';
+
+export interface IngressInfo {
+    className: string;
+    hostname: string;
+    url: string;
+    tls: boolean;
+}
 
 export class Network {
     readonly endpoints: Record<string, pulumi.Output<string> | string> = {};
@@ -166,6 +173,24 @@ export class Network {
             },
             this.opts,
         );
+    }
+
+    public getIngressInfo(
+        hostname: string = this.config.require('hostname'),
+    ): IngressInfo {
+        return rootConfig.customDomain
+            ? {
+                  className: 'traefik',
+                  hostname: `${hostname}.${rootConfig.customDomain}`,
+                  url: `http://${hostname}.${rootConfig.customDomain}`,
+                  tls: false,
+              }
+            : {
+                  className: 'tailscale',
+                  hostname,
+                  url: `https://${hostname}.${rootConfig.tailnetDomain}`,
+                  tls: true,
+              };
     }
 
     private createTailscaleIngress(args: {

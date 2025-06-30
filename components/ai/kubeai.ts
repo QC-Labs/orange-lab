@@ -26,7 +26,7 @@ export class KubeAi extends pulumi.ComponentResource {
         const models = this.config.get('models')?.split(',') ?? [];
 
         this.app = new Application(this, name, { gpu: true });
-
+        const ingresInfo = this.app.network.getIngressInfo();
         const kubeAi = new kubernetes.helm.v3.Release(
             name,
             {
@@ -38,16 +38,16 @@ export class KubeAi extends pulumi.ComponentResource {
                     affinity: this.app.nodes.getAffinity(),
                     ingress: {
                         enabled: true,
-                        className: 'tailscale',
+                        className: ingresInfo.className,
                         rules: [
                             {
-                                host: hostname,
+                                host: ingresInfo.hostname,
                                 paths: [
                                     { path: '/', pathType: 'ImplementationSpecific' },
                                 ],
                             },
                         ],
-                        tls: [{ hosts: [hostname] }],
+                        tls: [{ hosts: [ingresInfo.hostname] }],
                     },
                     metrics: args.enableMonitoring
                         ? {
@@ -108,7 +108,7 @@ export class KubeAi extends pulumi.ComponentResource {
             new GrafanaDashboard(name, this, { configJson: dashboardJson });
         }
 
-        this.endpointUrl = `https://${hostname}.${args.domainName}`;
+        this.endpointUrl = ingresInfo.url;
         this.serviceUrl = `http://${hostname}.kubeai/openai/v1`;
     }
 

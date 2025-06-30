@@ -26,13 +26,14 @@ export class Ollama extends pulumi.ComponentResource {
 
         if (this.app.storageOnly) return;
 
-        this.createHelmRelease(hostname);
+        const ingresInfo = this.app.network.getIngressInfo();
+        this.createHelmRelease(ingresInfo);
 
-        this.endpointUrl = `https://${hostname}.${args.domainName}`;
+        this.endpointUrl = ingresInfo.url;
         this.serviceUrl = `http://${hostname}.ollama:11434`;
     }
 
-    private createHelmRelease(hostname: string) {
+    private createHelmRelease(ingresInfo: IngressInfo) {
         const amdGpu = this.config.requireBoolean('amd-gpu');
         const gfxVersion = this.config.get('HSA_OVERRIDE_GFX_VERSION');
         const amdTargets = this.config.get('HCC_AMDGPU_TARGETS');
@@ -73,14 +74,14 @@ export class Ollama extends pulumi.ComponentResource {
                     fullnameOverride: 'ollama',
                     ingress: {
                         enabled: true,
-                        className: 'tailscale',
+                        className: ingresInfo.className,
                         hosts: [
                             {
-                                host: hostname,
+                                host: ingresInfo.hostname,
                                 paths: [{ path: '/', pathType: 'Prefix' }],
                             },
                         ],
-                        tls: [{ hosts: [hostname] }],
+                        tls: [{ hosts: [ingresInfo.hostname] }],
                     },
                     ollama: {
                         gpu: {

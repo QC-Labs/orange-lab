@@ -23,14 +23,15 @@ export class OpenWebUI extends pulumi.ComponentResource {
         const amdGpu = config.get('amd-gpu');
         const DEFAULT_MODELS = config.get('DEFAULT_MODELS') ?? '';
 
-        this.endpointUrl = `https://${hostname}.${args.domainName}`;
-
         const app = new Application(this, name, { gpu: true })
             .addDefaultLimits({ request: { cpu: '5m', memory: '1.2Gi' } })
             .addStorage({ type: StorageType.GPU });
 
         if (app.storageOnly) return;
 
+        const ingresInfo = app.network.getIngressInfo(hostname);
+        const isTailscale = ingresInfo.className === 'tailscale';
+        this.endpointUrl = ingresInfo.url;
         new kubernetes.helm.v3.Release(
             name,
             {
@@ -51,7 +52,10 @@ export class OpenWebUI extends pulumi.ComponentResource {
                             name: 'ENABLE_IMAGE_GENERATION',
                             value: args.automatic1111Url ? 'True' : 'False',
                         },
-                        { name: 'ENABLE_LOGIN_FORM', value: 'False' },
+                        {
+                            name: 'ENABLE_LOGIN_FORM',
+                            value: isTailscale ? 'False' : 'True',
+                        },
                         { name: 'ENABLE_PERSISTENT_CONFIG', value: 'False' },
                         { name: 'ENABLE_SEARCH_QUERY_GENERATION', value: 'True' },
                         { name: 'ENABLE_SIGNUP', value: 'True' },
@@ -80,23 +84,27 @@ export class OpenWebUI extends pulumi.ComponentResource {
                             value: 'True',
                         },
                         { name: 'WEB_SEARCH_ENGINE', value: 'duckduckgo' },
-                        { name: 'WEBUI_AUTH', value: 'False' },
-                        {
-                            name: 'WEBUI_AUTH_TRUSTED_EMAIL_HEADER',
-                            value: 'Tailscale-User-Login',
-                        },
-                        {
-                            name: 'WEBUI_AUTH_TRUSTED_NAME_HEADER',
-                            value: 'Tailscale-User-Name',
-                        },
-                        { name: 'WEBUI_URL', value: this.endpointUrl },
+                        { name: 'WEBUI_AUTH', value: isTailscale ? 'False' : 'True' },
+                        ...(isTailscale
+                            ? [
+                                  {
+                                      name: 'WEBUI_AUTH_TRUSTED_EMAIL_HEADER',
+                                      value: 'Tailscale-User-Login',
+                                  },
+                                  {
+                                      name: 'WEBUI_AUTH_TRUSTED_NAME_HEADER',
+                                      value: 'Tailscale-User-Name',
+                                  },
+                              ]
+                            : []),
+                        { name: 'WEBUI_URL', value: ingresInfo.url },
                     ],
                     image: { tag: appVersion },
                     ingress: {
                         enabled: true,
-                        class: 'tailscale',
-                        host: hostname,
-                        tls: true,
+                        class: ingresInfo.className,
+                        host: ingresInfo.hostname,
+                        tls: ingresInfo.tls,
                     },
                     ollama: { enabled: false },
                     ollamaUrls: [args.ollamaUrl],

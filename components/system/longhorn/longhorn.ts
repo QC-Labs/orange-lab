@@ -35,8 +35,6 @@ export class Longhorn extends pulumi.ComponentResource {
 
         this.config = new pulumi.Config('longhorn');
 
-        const hostname = this.config.require('hostname');
-
         this.app = new Application(this, name, { namespace: `${name}-system` });
         const backupEnabled =
             this.config.getBoolean('backupEnabled') &&
@@ -48,10 +46,11 @@ export class Longhorn extends pulumi.ComponentResource {
             backupSecret = this.createBackupSecret(s3User);
             this.createBackupBucket(s3User);
         }
+        const ingresInfo = this.app.network.getIngressInfo();
         this.chart = this.createHelmRelease({
             backupSecretName: backupSecret?.metadata.name,
             backupTarget: `s3://${this.config.require('backupBucket')}@lab/`,
-            hostname,
+            ingresInfo,
         });
         this.createStorageClasses();
 
@@ -68,17 +67,17 @@ export class Longhorn extends pulumi.ComponentResource {
             new GrafanaDashboard(name, this, { configJson: dashboardJson });
         }
 
-        this.endpointUrl = `https://${hostname}.${args.domainName}`;
+        this.endpointUrl = ingresInfo.url;
     }
 
     private createHelmRelease({
         backupSecretName,
         backupTarget,
-        hostname,
+        ingresInfo,
     }: {
         backupSecretName?: pulumi.Output<string>;
         backupTarget?: string;
-        hostname: string;
+        ingresInfo: IngressInfo;
     }) {
         return new kubernetes.helm.v3.Release(
             this.name,
@@ -142,9 +141,9 @@ export class Longhorn extends pulumi.ComponentResource {
                     },
                     ingress: {
                         enabled: true,
-                        host: hostname,
-                        ingressClassName: 'tailscale',
-                        tls: true,
+                        host: ingresInfo.hostname,
+                        ingressClassName: ingresInfo.className,
+                        tls: ingresInfo.tls,
                     },
                     metrics: this.args.enableMonitoring
                         ? { serviceMonitor: { enabled: true } }

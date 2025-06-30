@@ -15,14 +15,13 @@ export class HomeAssistant extends pulumi.ComponentResource {
 
         const config = new pulumi.Config('home-assistant');
         const version = config.get('version');
-        const hostname = config.require('hostname');
 
         const app = new Application(this, name).addStorage({
             overrideFullname: 'home-assistant-home-assistant-0',
         });
 
         if (app.storageOnly) return;
-
+        const ingressInfo = app.network.getIngressInfo();
         new kubernetes.helm.v3.Release(
             name,
             {
@@ -38,14 +37,14 @@ export class HomeAssistant extends pulumi.ComponentResource {
                     fullnameOverride: name,
                     ingress: {
                         enabled: true,
-                        className: 'tailscale',
+                        className: ingressInfo.className,
                         hosts: [
                             {
-                                host: hostname,
+                                host: ingressInfo.hostname,
                                 paths: [{ path: '/', pathType: 'Prefix' }],
                             },
                         ],
-                        tls: [{ hosts: [hostname] }],
+                        tls: [{ hosts: [ingressInfo.hostname] }],
                     },
                     configuration: {
                         enabled: true,
@@ -61,6 +60,6 @@ export class HomeAssistant extends pulumi.ComponentResource {
             { parent: this, dependsOn: app.storage },
         );
 
-        this.endpointUrl = `https://${hostname}.${args.domainName}`;
+        this.endpointUrl = ingressInfo.url;
     }
 }

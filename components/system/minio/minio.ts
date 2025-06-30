@@ -24,28 +24,29 @@ export class Minio extends pulumi.ComponentResource {
             [rootUser]: pulumi.output(this.createPassword()),
         };
 
-        this.app = new Application(this, name)
-            .addLocalStorage({ name: 'data', hostPath: dataPath })
-            .addDeployment({
-                image: 'quay.io/minio/minio',
-                ports: [
-                    { name: 'console', port: 9001, hostname },
-                    { name: 'api', port: 9000, hostname: hostnameApi },
-                ],
-                env: {
-                    MINIO_CONSOLE_TLS_ENABLE: 'off',
-                    MINIO_ROOT_USER: rootUser,
-                    MINIO_ROOT_PASSWORD: this.users[rootUser],
-                    MINIO_BROWSER_REDIRECT_URL: `https://${hostname}.${args.domainName}/`,
-                },
-                commandArgs: ['server', '/data', '--console-address', ':9001'],
-                volumeMounts: [{ name: 'data', mountPath: '/data' }],
-            });
-
+        this.app = new Application(this, name).addLocalStorage({
+            name: 'data',
+            hostPath: dataPath,
+        });
+        this.app.addDeployment({
+            image: 'quay.io/minio/minio',
+            ports: [
+                { name: 'console', port: 9001, hostname },
+                { name: 'api', port: 9000, hostname: hostnameApi },
+            ],
+            env: {
+                MINIO_CONSOLE_TLS_ENABLE: 'off',
+                MINIO_ROOT_USER: rootUser,
+                MINIO_ROOT_PASSWORD: this.users[rootUser],
+                MINIO_BROWSER_REDIRECT_URL: this.app.network.getIngressInfo().url,
+            },
+            commandArgs: ['server', '/data', '--console-address', ':9001'],
+            volumeMounts: [{ name: 'data', mountPath: '/data' }],
+        });
         this.minioProvider = new minio.Provider(
             `${name}-provider`,
             {
-                minioServer: `${hostnameApi}.${args.domainName}:443`,
+                minioServer: `${hostnameApi}.${rootConfig.tailnetDomain}:443`,
                 minioUser: rootUser,
                 minioPassword: this.users[rootUser],
                 minioSsl: true,

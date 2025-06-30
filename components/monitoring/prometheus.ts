@@ -38,7 +38,9 @@ export class Prometheus extends pulumi.ComponentResource {
             });
 
         if (this.app.storageOnly) return;
-
+        const grafanaIngres = this.app.network.getIngressInfo(grafanaHostname);
+        const prometheusIngres = this.app.network.getIngressInfo(prometheusHostname);
+        const alertManagerIngres = this.app.network.getIngressInfo(alertManagerHostname);
         new kubernetes.helm.v3.Release(
             name,
             {
@@ -60,9 +62,9 @@ export class Prometheus extends pulumi.ComponentResource {
                         },
                         ingress: {
                             enabled: true,
-                            hostname: alertManagerHostname,
-                            ingressClassName: 'tailscale',
-                            tls: [{ hosts: [alertManagerHostname] }],
+                            hosts: [alertManagerIngres.hostname],
+                            ingressClassName: alertManagerIngres.className,
+                            tls: [{ hosts: [alertManagerIngres.hostname] }],
                         },
                         replicas: 1,
                     },
@@ -76,9 +78,9 @@ export class Prometheus extends pulumi.ComponentResource {
                         affinity: this.nodes.getAffinity(),
                         ingress: {
                             enabled: true,
-                            hostname: grafanaHostname,
-                            ingressClassName: 'tailscale',
-                            tls: [{ hosts: [grafanaHostname] }],
+                            hosts: [grafanaIngres.hostname],
+                            ingressClassName: grafanaIngres.className,
+                            tls: [{ hosts: [grafanaIngres.hostname] }],
                         },
                         persistence: {
                             enabled: true,
@@ -101,9 +103,9 @@ export class Prometheus extends pulumi.ComponentResource {
                         enabled: true,
                         ingress: {
                             enabled: true,
-                            hostname: prometheusHostname,
-                            ingressClassName: 'tailscale',
-                            tls: [{ hosts: [prometheusHostname] }],
+                            hosts: [prometheusIngres.hostname],
+                            ingressClassName: prometheusIngres.className,
+                            tls: [{ hosts: [prometheusIngres.hostname] }],
                         },
                         prometheusSpec: {
                             affinity: this.nodes.getAffinity(),
@@ -127,9 +129,9 @@ export class Prometheus extends pulumi.ComponentResource {
             { parent: this, dependsOn: this.app.storage },
         );
 
-        this.alertmanagerEndpointUrl = `https://${alertManagerHostname}.${args.domainName}`;
-        this.grafanaEndpointUrl = `https://${grafanaHostname}.${args.domainName}`;
-        this.prometheusEndpointUrl = `https://${prometheusHostname}.${args.domainName}`;
+        this.alertmanagerEndpointUrl = alertManagerIngres.url;
+        this.grafanaEndpointUrl = grafanaIngres.url;
+        this.prometheusEndpointUrl = prometheusIngres.url;
     }
 
     // https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/platform/storage.md
