@@ -1,5 +1,6 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
+import * as random from '@pulumi/random';
 import { Application } from '../application';
 import { StorageType } from '../types';
 
@@ -12,7 +13,11 @@ export interface OpenWebUIArgs {
 export class OpenWebUI extends pulumi.ComponentResource {
     public readonly endpointUrl: string | undefined;
 
-    constructor(name: string, args: OpenWebUIArgs, opts?: pulumi.ResourceOptions) {
+    constructor(
+        private name: string,
+        args: OpenWebUIArgs,
+        opts?: pulumi.ResourceOptions,
+    ) {
         super('orangelab:ai:OpenWebUI', name, args, opts);
 
         const config = new pulumi.Config(name);
@@ -42,6 +47,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
                 repositoryOpts: { repo: 'https://helm.openwebui.com/' },
                 values: {
                     affinity: app.nodes.getAffinity(),
+                    containerSecurityContext: amdGpu ? undefined : { privileged: true },
                     extraEnvVars: [
                         { name: 'AUTOMATIC1111_BASE_URL', value: args.automatic1111Url },
                         { name: 'BYPASS_MODEL_ACCESS_CONTROL', value: 'True' },
@@ -98,6 +104,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
                                   },
                               ]
                             : []),
+                        { name: 'WEBUI_SECRET_KEY', value: this.createSecretKey() },
                         { name: 'WEBUI_URL', value: ingresInfo.url },
                     ],
                     image: { tag: appVersion },
@@ -116,9 +123,18 @@ export class OpenWebUI extends pulumi.ComponentResource {
                         existingClaim: app.storage.getClaimName(),
                     },
                     pipelines: { enabled: false },
+                    runtimeClassName: amdGpu ? undefined : 'nvidia',
                 },
             },
             { parent: this, dependsOn: app.storage },
         );
+    }
+
+    private createSecretKey() {
+        return new random.RandomPassword(
+            `${this.name}-secret-key`,
+            { length: 32, special: false },
+            { parent: this },
+        ).result;
     }
 }

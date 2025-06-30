@@ -136,8 +136,7 @@ config:
     sdnext:preferredNodeLabel: orangelab/sdnext
 
     open-webui:enabled: false
-    # Override webui version if Helm chart does not use latest yet
-    # open-webui:appVersion: 0.5.9
+    open-webui:appVersion: cuda
     open-webui:hostname: webui
     open-webui:storageSize: 5Gi
     open-webui:DEFAULT_USER_ROLE: admin
