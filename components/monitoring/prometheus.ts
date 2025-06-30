@@ -83,6 +83,7 @@ export class Prometheus extends pulumi.ComponentResource {
                             existingClaim: this.app.storage.getClaimName('grafana'),
                         },
                     },
+                    'kube-state-metrics': { affinity: this.nodes.getAffinity() },
                     kubeApiServer: { enabled: true },
                     kubeControllerManager: {
                         enabled: true,
