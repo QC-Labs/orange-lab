@@ -10,6 +10,7 @@ export interface IngressInfo {
     hostname: string;
     url: string;
     tls: boolean;
+    domain: string;
 }
 
 export class Network {
@@ -71,16 +72,13 @@ export class Network {
             ports: httpPorts,
         });
         httpPorts.forEach(port => {
-            this.createTailscaleIngress({ service, port, component: spec.name });
-            if (rootConfig.customDomain) {
-                this.createTraefikIngress({
-                    service,
-                    port,
-                    component: spec.name,
-                    domainName: rootConfig.customDomain,
-                });
-            }
-
+            const ingressInfo = this.getIngressInfo(port.hostname, port.ingressClassName);
+            this.createIngress({
+                serviceName: service.metadata.name,
+                port,
+                component: spec.name,
+                ingressInfo,
+            });
             this.exportEndpoint({ component: spec.name, port });
             this.exportClusterEndpoint({ component: spec.name, port, service });
         });
@@ -177,28 +175,33 @@ export class Network {
 
     public getIngressInfo(
         hostname: string = this.config.require('hostname'),
+        className?: 'tailscale' | 'traefik',
     ): IngressInfo {
-        return rootConfig.customDomain
-            ? {
-                  className: 'traefik',
-                  hostname: `${hostname}.${rootConfig.customDomain}`,
-                  url: `http://${hostname}.${rootConfig.customDomain}`,
-                  tls: false,
-              }
-            : {
-                  className: 'tailscale',
-                  hostname,
-                  url: `https://${hostname}.${rootConfig.tailnetDomain}`,
-                  tls: true,
-              };
+        if (className === 'tailscale' || !rootConfig.customDomain) {
+            return {
+                className: 'tailscale',
+                hostname,
+                url: `https://${hostname}.${rootConfig.tailnetDomain}`,
+                tls: true,
+                domain: rootConfig.tailnetDomain,
+            };
+        } else {
+            return {
+                className: 'traefik',
+                hostname: `${hostname}.${rootConfig.customDomain}`,
+                url: `http://${hostname}.${rootConfig.customDomain}`,
+                tls: false,
+                domain: rootConfig.customDomain,
+            };
+        }
     }
 
-    private createTailscaleIngress(args: {
-        service: kubernetes.core.v1.Service;
+    private createIngress(args: {
+        serviceName: pulumi.Input<string>;
         port: ServicePort;
         component?: string;
+        ingressInfo: IngressInfo;
     }): kubernetes.networking.v1.Ingress {
-        assert(args.port.hostname, `hostname is required for port ${args.port.name}`);
         const componentName = args.component
             ? `${args.component}-${args.port.name}`
             : args.port.name;
@@ -208,11 +211,11 @@ export class Network {
             {
                 metadata,
                 spec: {
-                    ingressClassName: 'tailscale',
-                    tls: [{ hosts: [args.port.hostname] }],
+                    ingressClassName: args.ingressInfo.className,
+                    tls: [{ hosts: [args.ingressInfo.hostname] }],
                     rules: [
                         {
-                            host: args.port.hostname,
+                            host: args.ingressInfo.hostname,
                             http: {
                                 paths: [
                                     {
@@ -220,7 +223,7 @@ export class Network {
                                         pathType: 'Prefix',
                                         backend: {
                                             service: {
-                                                name: args.service.metadata.name,
+                                                name: args.serviceName,
                                                 port: { number: args.port.port },
                                             },
                                         },
@@ -231,59 +234,13 @@ export class Network {
                     ],
                 },
             },
-            this.opts,
-        );
-    }
-    private createTraefikIngress(args: {
-        service: kubernetes.core.v1.Service;
-        port: ServicePort;
-        component?: string;
-        domainName: string;
-    }): kubernetes.networking.v1.Ingress {
-        assert(args.port.hostname, `hostname is required for port ${args.port.name}`);
-        const componentName = args.component
-            ? `${args.component}-${args.port.name}`
-            : args.port.name;
-        const metadata = this.metadata.get({ component: componentName });
-        return new kubernetes.networking.v1.Ingress(
-            `${metadata.name}-traefik-ingress`,
             {
-                metadata: {
-                    ...metadata,
-                    name: `${metadata.name}-traefik-ingress`,
-                },
-                spec: {
-                    ingressClassName: 'traefik',
-                    tls: [
-                        {
-                            hosts: [
-                                args.port.hostname,
-                                `${args.port.hostname}.${args.domainName}`,
-                            ],
-                        },
-                    ],
-                    rules: [
-                        {
-                            host: `${args.port.hostname}.${args.domainName}`,
-                            http: {
-                                paths: [
-                                    {
-                                        path: '/',
-                                        pathType: 'Prefix',
-                                        backend: {
-                                            service: {
-                                                name: args.service.metadata.name,
-                                                port: { number: args.port.port },
-                                            },
-                                        },
-                                    },
-                                ],
-                            },
-                        },
-                    ],
-                },
+                ...this.opts,
+                aliases: [
+                    { name: `${metadata.name}-ingress` },
+                    { name: `${metadata.name}-traefik-ingress` },
+                ],
             },
-            this.opts,
         );
     }
 }

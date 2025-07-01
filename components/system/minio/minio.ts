@@ -29,7 +29,13 @@ export class Minio extends pulumi.ComponentResource {
             image: 'quay.io/minio/minio',
             ports: [
                 { name: 'console', port: 9001, hostname },
-                { name: 'api', port: 9000, hostname: hostnameApi },
+                {
+                    name: 'api',
+                    port: 9000,
+                    hostname: hostnameApi,
+                    // Use Tailscale ingress so Pulumi provider doesn't break
+                    ingressClassName: 'tailscale',
+                },
             ],
             env: {
                 MINIO_CONSOLE_TLS_ENABLE: 'off',
