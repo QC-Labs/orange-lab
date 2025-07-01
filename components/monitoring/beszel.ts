@@ -25,7 +25,7 @@ export class Beszel extends pulumi.ComponentResource {
         });
 
         if (hubKey) {
-            this.app.addDeamonSet({
+            this.app.addDaemonSet({
                 name: 'agent',
                 image: `henrygd/beszel-agent`,
                 hostNetwork: true,

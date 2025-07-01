@@ -14,7 +14,7 @@ import {
 export class Containers {
     metadata: Metadata;
     serviceAccount: kubernetes.core.v1.ServiceAccount;
-    storage: Storage;
+    storage?: Storage;
     nodes: Nodes;
     config: pulumi.Config;
 
@@ -23,7 +23,7 @@ export class Containers {
         args: {
             metadata: Metadata;
             serviceAccount: kubernetes.core.v1.ServiceAccount;
-            storage: Storage;
+            storage?: Storage;
             nodes: Nodes;
             config: pulumi.Config;
         },
@@ -41,7 +41,9 @@ export class Containers {
     ): kubernetes.types.input.core.v1.PodTemplateSpec {
         const metadata = this.metadata.get({
             component: spec.name,
-            annotations: { 'checksum/config': this.storage.configFilesHash },
+            annotations: this.storage?.configFilesHash
+                ? { 'checksum/config': this.storage.configFilesHash }
+                : undefined,
         });
         return {
             metadata,
@@ -115,7 +117,7 @@ export class Containers {
         if (this.nodes.gpu === 'amd') {
             return { seccompProfile: { type: 'Unconfined' } };
         }
-        return this.nodes.gpu || this.storage.hasLocal()
+        return this.nodes.gpu || this.storage?.hasLocal()
             ? { privileged: true }
             : undefined;
     }
@@ -136,18 +138,18 @@ export class Containers {
         volumeMounts?: VolumeMount[],
     ): kubernetes.types.input.core.v1.Volume[] | undefined {
         if (this.nodes.gpu === 'amd') {
-            this.storage.addLocalVolume({
+            this.storage?.addLocalVolume({
                 name: 'dev-kfd',
                 hostPath: '/dev/kfd',
                 type: 'CharDevice',
             });
-            this.storage.addLocalVolume({
+            this.storage?.addLocalVolume({
                 name: 'dev-dri',
                 hostPath: '/dev/dri',
                 type: 'Directory',
             });
         }
-        return volumeMounts?.length ? this.storage.createVolumes() : undefined;
+        return volumeMounts?.length ? this.storage?.createVolumes() ?? [] : undefined;
     }
 
     private createVolumeMounts(

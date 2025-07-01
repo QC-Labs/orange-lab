@@ -21,13 +21,13 @@ export class Application {
     storageOnly = false;
     readonly metadata: Metadata;
     readonly nodes: Nodes;
-    readonly storage: Storage;
     readonly network: Network;
     readonly namespace: string;
-    readonly databases: Databases;
+    databases?: Databases;
+    storage?: Storage;
 
     private readonly config: pulumi.Config;
-    private readonly services: Services;
+    private services?: Services;
 
     constructor(
         private readonly scope: pulumi.ComponentResource,
@@ -54,16 +54,6 @@ export class Application {
             config: this.config,
             gpu: args?.gpu,
         });
-        this.storage = new Storage(
-            appName,
-            {
-                config: this.config,
-                namespace: this.namespace,
-                metadata: this.metadata,
-                nodes: this.nodes,
-            },
-            { parent: this.scope },
-        );
         this.network = new Network(
             appName,
             {
@@ -72,27 +62,60 @@ export class Application {
             },
             { parent: this.scope },
         );
-        this.databases = new Databases(
-            this.appName,
-            {
-                config: this.config,
-                metadata: this.metadata,
-                storage: this.storage,
-                storageOnly: this.storageOnly,
-            },
-            { parent: this.scope },
-        );
-        this.services = new Services(
-            this.appName,
-            {
-                metadata: this.metadata,
-                storage: this.storage,
-                nodes: this.nodes,
-                config: this.config,
-                databases: this.databases,
-            },
-            { parent: this.scope },
-        );
+    }
+
+    private getStorage() {
+        this.storage =
+            this.storage ??
+            new Storage(
+                this.appName,
+                {
+                    config: this.config,
+                    namespace: this.namespace,
+                    metadata: this.metadata,
+                    nodes: this.nodes,
+                },
+                { parent: this.scope },
+            );
+        return this.storage;
+    }
+
+    private getDatabases() {
+        this.databases =
+            this.databases ??
+            new Databases(
+                this.appName,
+                {
+                    config: this.config,
+                    metadata: this.metadata,
+                    storage: this.getStorage(),
+                    storageOnly: this.storageOnly,
+                },
+                { parent: this.scope },
+            );
+        return this.databases;
+    }
+
+    private getServices() {
+        this.services =
+            this.services ??
+            new Services(
+                this.appName,
+                {
+                    metadata: this.metadata,
+                    storage: this.storage,
+                    nodes: this.nodes,
+                    config: this.config,
+                },
+                {
+                    parent: this.scope,
+                    dependsOn: [
+                        this.storage,
+                        ...(this.databases?.getDependencies() ?? []),
+                    ].filter(Boolean) as pulumi.Input<pulumi.Input<pulumi.Resource>[]>,
+                },
+            );
+        return this.services;
     }
 
     /**
@@ -100,7 +123,7 @@ export class Application {
      * Creates a database, user and storage.
      */
     addMariaDB() {
-        this.databases.addMariaDB();
+        this.getDatabases().addMariaDB();
         return this;
     }
 
@@ -109,17 +132,17 @@ export class Application {
      * Creates a database, user and storage.
      */
     addPostgres() {
-        this.databases.addPostgres();
+        this.getDatabases().addPostgres();
         return this;
     }
 
     addStorage(volume?: PersistentVolume) {
-        this.storage.addPersistentVolume(volume);
+        this.getStorage().addPersistentVolume(volume);
         return this;
     }
 
     addLocalStorage(volume: LocalVolume) {
-        this.storage.addLocalVolume(volume);
+        this.getStorage().addLocalVolume(volume);
         return this;
     }
 
@@ -129,26 +152,26 @@ export class Application {
      */
     addConfigVolume(configVolume: ConfigVolume) {
         if (this.storageOnly) return this;
-        this.storage.addConfigVolume(configVolume);
+        this.getStorage().addConfigVolume(configVolume);
         return this;
     }
 
     addDeployment(spec: ContainerSpec) {
         if (this.storageOnly) return this;
-        this.services.createDeployment(spec);
+        this.getServices().createDeployment(spec);
         this.network.createEndpoints(spec);
         return this;
     }
 
-    addDeamonSet(spec: ContainerSpec) {
+    addDaemonSet(spec: ContainerSpec) {
         if (this.storageOnly) return this;
-        this.services.createDaemonSet(spec);
+        this.getServices().createDaemonSet(spec);
         return this;
     }
 
     addJob(spec: ContainerSpec) {
         if (this.storageOnly) return this;
-        this.services.createJob(spec);
+        this.getServices().createJob(spec);
         return this;
     }
 

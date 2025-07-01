@@ -6,7 +6,6 @@ import { Metadata } from './metadata';
 import { Nodes } from './nodes';
 import { Storage } from './storage';
 import { ContainerSpec } from './types';
-import { Databases } from './databases';
 
 /**
  * Services class handles creation of Deployments, DaemonSets, Jobs, and ServiceAccounts for an application.
@@ -16,19 +15,17 @@ export class Services {
 
     private readonly appName: string;
     private readonly metadata: Metadata;
-    private readonly storage: Storage;
+    private readonly storage?: Storage;
     private readonly nodes: Nodes;
     private readonly config: pulumi.Config;
-    private readonly databases: Databases;
 
     constructor(
         appName: string,
         params: {
             metadata: Metadata;
-            storage: Storage;
+            storage?: Storage;
             nodes: Nodes;
             config: pulumi.Config;
-            databases: Databases;
         },
         private opts?: pulumi.ComponentResourceOptions,
     ) {
@@ -37,7 +34,6 @@ export class Services {
         this.storage = params.storage;
         this.nodes = params.nodes;
         this.config = params.config;
-        this.databases = params.databases;
     }
 
     private getServiceAccount() {
@@ -81,7 +77,6 @@ export class Services {
             {
                 ...this.opts,
                 deleteBeforeReplace: true,
-                dependsOn: [this.storage, ...this.databases.getDependencies()],
             },
         );
     }
@@ -107,10 +102,7 @@ export class Services {
                     template: podSpec.createPodTemplateSpec(spec),
                 },
             },
-            {
-                ...this.opts,
-                dependsOn: [this.storage, ...this.databases.getDependencies()],
-            },
+            this.opts,
         );
     }
 
@@ -136,10 +128,7 @@ export class Services {
                     template: podSpec.createPodTemplateSpec(spec),
                 },
             },
-            {
-                ...this.opts,
-                dependsOn: [this.storage, ...this.databases.getDependencies()],
-            },
+            this.opts,
         );
     }
 }
