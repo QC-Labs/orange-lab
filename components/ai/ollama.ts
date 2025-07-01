@@ -93,7 +93,7 @@ export class Ollama extends pulumi.ComponentResource {
                     },
                     persistentVolume: {
                         enabled: true,
-                        existingClaim: this.app.storage.getClaimName(),
+                        existingClaim: this.app.storage?.getClaimName(),
                     },
                     replicaCount: 1,
                     runtimeClassName: amdGpu ? undefined : 'nvidia',
