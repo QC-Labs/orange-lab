@@ -2,6 +2,25 @@
 import * as pulumi from '@pulumi/pulumi';
 import { StorageType } from './types';
 
+export const moduleDependencies: Record<string, string[]> = {
+    ai: ['automatic1111', 'invokeai', 'kubeai', 'n8n', 'ollama', 'open-webui', 'sdnext'],
+    bitcoin: ['bitcoin-core', 'bitcoin-knots', 'electrs', 'mempool'],
+    data: ['cloudnative-pg', 'mariadb-operator'],
+    iot: ['home-assistant'],
+    monitoring: ['beszel', 'prometheus'],
+    system: [
+        'amd-gpu-operator',
+        'cert-manager',
+        'debug',
+        'longhorn',
+        'minio',
+        'nfd',
+        'nvidia-gpu-operator',
+        'tailscale',
+        'tailscale-operator',
+    ],
+};
+
 class RootConfig {
     constructor() {
         this.processDeprecated();
@@ -116,6 +135,14 @@ class RootConfig {
                 'orangelab:storageClass-database is deprecated. Use per-app <app>:storageClass if needed.',
             );
         }
+    }
+
+    /**
+     * Returns true if any component in the given module is enabled.
+     */
+    public isModuleEnabled(module: string): boolean {
+        const deps = moduleDependencies[module];
+        return deps.some(dep => this.isEnabled(dep));
     }
 }
 

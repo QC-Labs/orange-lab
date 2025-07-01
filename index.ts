@@ -1,30 +1,45 @@
 import { AIModule } from './components/ai';
 import { BitcoinModule } from './components/bitcoin';
+import { DataModule } from './components/data';
 import { IoTModule } from './components/iot';
 import { MonitoringModule } from './components/monitoring';
+import { rootConfig } from './components/root-config';
 import { SystemModule } from './components/system';
-import { DataModule } from './components/data';
 
 const systemModule = new SystemModule('system');
 export const system = systemModule.getExports();
 
-new DataModule('data', { dependsOn: systemModule });
+if (rootConfig.isModuleEnabled('data')) {
+    new DataModule('data', { dependsOn: systemModule });
+}
 
-const monitoringModule = new MonitoringModule('monitoring', { dependsOn: systemModule });
-export const monitoring = monitoringModule.getExports();
+let monitoringModule: MonitoringModule | undefined;
+if (rootConfig.isModuleEnabled('monitoring')) {
+    monitoringModule = new MonitoringModule('monitoring', { dependsOn: systemModule });
+}
+export const monitoring = monitoringModule?.getExports();
 
-const iotModule = new IoTModule(
-    'iot',
-    {
-        clusterCidr: systemModule.clusterCidr,
-        serviceCidr: systemModule.serviceCidr,
-    },
-    { dependsOn: systemModule },
-);
-export const iot = iotModule.getExports();
+let iotModule: IoTModule | undefined;
+if (rootConfig.isModuleEnabled('iot')) {
+    iotModule = new IoTModule(
+        'iot',
+        {
+            clusterCidr: systemModule.clusterCidr,
+            serviceCidr: systemModule.serviceCidr,
+        },
+        { dependsOn: systemModule },
+    );
+}
+export const iot = iotModule?.getExports();
 
-const aiModule = new AIModule('ai', { dependsOn: systemModule });
-export const ai = aiModule.getExports();
+let aiModule: AIModule | undefined;
+if (rootConfig.isModuleEnabled('ai')) {
+    aiModule = new AIModule('ai', { dependsOn: systemModule });
+}
+export const ai = aiModule?.getExports();
 
-const bitcoinModule = new BitcoinModule('bitcoin', { dependsOn: systemModule });
-export const bitcoin = bitcoinModule.getExports();
+let bitcoinModule: BitcoinModule | undefined;
+if (rootConfig.isModuleEnabled('bitcoin')) {
+    bitcoinModule = new BitcoinModule('bitcoin', { dependsOn: systemModule });
+}
+export const bitcoin = bitcoinModule?.getExports();
