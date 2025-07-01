@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { AIModule } from './components/ai';
 import { BitcoinModule } from './components/bitcoin';
 import { DataModule } from './components/data';
@@ -13,15 +14,15 @@ if (rootConfig.isModuleEnabled('data')) {
     new DataModule('data', { dependsOn: systemModule });
 }
 
-let monitoringModule: MonitoringModule | undefined;
 if (rootConfig.isModuleEnabled('monitoring')) {
-    monitoringModule = new MonitoringModule('monitoring', { dependsOn: systemModule });
+    const monitoringModule = new MonitoringModule('monitoring', {
+        dependsOn: systemModule,
+    });
+    exports.monitoring = monitoringModule.getExports();
 }
-export const monitoring = monitoringModule?.getExports();
 
-let iotModule: IoTModule | undefined;
 if (rootConfig.isModuleEnabled('iot')) {
-    iotModule = new IoTModule(
+    const iotModule = new IoTModule(
         'iot',
         {
             clusterCidr: systemModule.clusterCidr,
@@ -29,17 +30,15 @@ if (rootConfig.isModuleEnabled('iot')) {
         },
         { dependsOn: systemModule },
     );
+    exports.iot = iotModule.getExports();
 }
-export const iot = iotModule?.getExports();
 
-let aiModule: AIModule | undefined;
 if (rootConfig.isModuleEnabled('ai')) {
-    aiModule = new AIModule('ai', { dependsOn: systemModule });
+    const aiModule = new AIModule('ai', { dependsOn: systemModule });
+    exports.ai = aiModule.getExports();
 }
-export const ai = aiModule?.getExports();
 
-let bitcoinModule: BitcoinModule | undefined;
 if (rootConfig.isModuleEnabled('bitcoin')) {
-    bitcoinModule = new BitcoinModule('bitcoin', { dependsOn: systemModule });
+    const bitcoinModule = new BitcoinModule('bitcoin', { dependsOn: systemModule });
+    exports.bitcoin = bitcoinModule.getExports();
 }
-export const bitcoin = bitcoinModule?.getExports();
