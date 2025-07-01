@@ -1,6 +1,7 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
+import { rootConfig } from '../root-config';
 
 export class CertManager extends pulumi.ComponentResource {
     constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
@@ -19,7 +20,15 @@ export class CertManager extends pulumi.ComponentResource {
                 values: {
                     crds: {
                         enabled: true,
+                        keep: true,
                     },
+                    prometheus: rootConfig.enableMonitoring()
+                        ? {
+                              servicemonitor: {
+                                  enabled: true,
+                              },
+                          }
+                        : undefined,
                 },
             },
             { parent: this },
