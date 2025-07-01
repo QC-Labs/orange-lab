@@ -58,6 +58,7 @@ export class PostgresCluster extends pulumi.ComponentResource {
 
     private createCluster(): kubernetes.apiextensions.CustomResource {
         const metadata = this.args.metadata.get({ component: this.args.name });
+        const instances = this.args.instances ?? 1;
         const cluster = new kubernetes.apiextensions.CustomResource(
             this.clusterName,
             {
@@ -65,7 +66,8 @@ export class PostgresCluster extends pulumi.ComponentResource {
                 kind: 'Cluster',
                 metadata,
                 spec: {
-                    instances: this.args.instances ?? 1,
+                    enablePDB: instances > 1,
+                    instances,
                     inheritedMetadata: {
                         labels: this.args.metadata.getAppLabels(this.args.name),
                     },
