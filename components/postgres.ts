@@ -2,12 +2,14 @@ import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
 import { Metadata } from './metadata';
-import { DatabaseConfig } from './types';
+import { Nodes } from './nodes';
 import { rootConfig } from './root-config';
+import { DatabaseConfig } from './types';
 
 export interface PostgresClusterArgs {
     name: string;
     metadata: Metadata;
+    nodes: Nodes;
     storageSize: pulumi.Input<string>;
     storageClassName?: pulumi.Input<string>;
     enabled?: boolean;
@@ -66,6 +68,11 @@ export class PostgresCluster extends pulumi.ComponentResource {
                 kind: 'Cluster',
                 metadata,
                 spec: {
+                    affinity: {
+                        topologyKey: 'kubernetes.io/hostname',
+                        nodeAffinity: this.args.nodes.getAffinity(this.args.name)
+                            ?.nodeAffinity,
+                    },
                     enablePDB: instances > 1,
                     instances,
                     inheritedMetadata: {

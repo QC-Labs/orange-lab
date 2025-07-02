@@ -22,9 +22,10 @@ export class Nodes {
         }
     }
 
-    getAffinity(): kubernetes.types.input.core.v1.Affinity | undefined {
-        const requiredTerms = this.getRequiredNodeSelectorTerms();
-        const preferredLabel = this.args.config.get('preferredNodeLabel');
+    getAffinity(component?: string): kubernetes.types.input.core.v1.Affinity | undefined {
+        const prefix = component ? `${component}/` : '';
+        const requiredTerms = this.getRequiredNodeSelectorTerms(prefix);
+        const preferredLabel = this.args.config.get(`${prefix}preferredNodeLabel`);
 
         if (requiredTerms.length === 0 && !preferredLabel) return;
 
@@ -64,9 +65,11 @@ export class Nodes {
             : undefined;
     }
 
-    private getRequiredNodeSelectorTerms(): NodeSelectorTerm[] {
+    private getRequiredNodeSelectorTerms(prefix?: string): NodeSelectorTerm[] {
         const terms: NodeSelectorTerm[] = [];
-        const requiredNodeLabel = this.args.config.get('requiredNodeLabel');
+        const requiredNodeLabel = this.args.config.get(
+            `${prefix ?? ''}requiredNodeLabel`,
+        );
 
         if (requiredNodeLabel) {
             terms.push(this.getNodeSelectorTerm(requiredNodeLabel));

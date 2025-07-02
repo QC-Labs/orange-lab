@@ -88,6 +88,7 @@ export class Application {
                 {
                     config: this.config,
                     metadata: this.metadata,
+                    nodes: this.nodes,
                     storage: this.getStorage(),
                     storageOnly: this.storageOnly,
                 },

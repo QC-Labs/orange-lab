@@ -1,6 +1,7 @@
 import * as pulumi from '@pulumi/pulumi';
 import { MariaDbCluster } from './mariadb';
 import { Metadata } from './metadata';
+import { Nodes } from './nodes';
 import { PostgresCluster } from './postgres';
 import { rootConfig } from './root-config';
 import { Storage } from './storage';
@@ -15,12 +16,14 @@ export class Databases {
     private readonly storageOnly: boolean;
     private readonly metadata: Metadata;
     private readonly config: pulumi.Config;
+    private readonly nodes: Nodes;
 
     constructor(
         private appName: string,
         args: {
             config: pulumi.Config;
             metadata: Metadata;
+            nodes: Nodes;
             storage: Storage;
             storageOnly?: boolean;
         },
@@ -29,6 +32,7 @@ export class Databases {
         this.storage = args.storage;
         this.storageOnly = args.storageOnly ?? false;
         this.metadata = args.metadata;
+        this.nodes = args.nodes;
         this.config = args.config;
     }
 
@@ -87,6 +91,7 @@ export class Databases {
             {
                 name,
                 metadata: this.metadata,
+                nodes: this.nodes,
                 storageSize: this.config.require(`${name}/storageSize`),
                 storageClassName: existingVolume
                     ? this.storage.getStorageClass(name)
