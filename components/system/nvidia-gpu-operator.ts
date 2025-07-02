@@ -1,9 +1,12 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
+import { rootConfig } from '../root-config';
 
 export class NvidiaGPUOperator extends pulumi.ComponentResource {
     constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
         super('orangelab:system:NvidiaGPUOperator', name, args, opts);
+
+        rootConfig.require(name, 'nfd');
 
         const config = new pulumi.Config(name);
         const version = config.get('version');
