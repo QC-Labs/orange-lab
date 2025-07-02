@@ -51,7 +51,7 @@ export class HomeAssistant extends pulumi.ComponentResource {
                     },
                     persistence: {
                         enabled: true,
-                        storageClass: app.storage.getStorageClass(),
+                        storageClass: app.storage?.getStorageClass(),
                     },
                     replicaCount: 1,
                 },

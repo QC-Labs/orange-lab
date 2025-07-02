@@ -64,10 +64,14 @@ Private infrastructure for cloud natives.
 
 [Bitcoin module](./components/bitcoin/BITCOIN.md):
 
--   `bitcoin-core` - Bitcoin Core full node
--   `bitcoin-knots` - Bitcoin Knots full node
+-   `bitcoin-core` - Bitcoin Core node
+-   `bitcoin-knots` - Bitcoin Knots node
 -   `electrs` - Electrs (Electrum) server implementation
 -   `mempool` - Blockchain explorer
+
+[Office module](./components/office/OFFICE.md):
+
+-   `nextcloud` - File sharing and collaboration suite
 
 # Platforms and limitations
 

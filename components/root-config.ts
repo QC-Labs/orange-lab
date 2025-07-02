@@ -8,6 +8,7 @@ export const moduleDependencies: Record<string, string[]> = {
     data: ['cloudnative-pg', 'mariadb-operator'],
     iot: ['home-assistant'],
     monitoring: ['beszel', 'prometheus'],
+    office: ['nextcloud'],
     system: [
         'amd-gpu-operator',
         'cert-manager',

@@ -6,6 +6,7 @@ import { IoTModule } from './components/iot';
 import { MonitoringModule } from './components/monitoring';
 import { rootConfig } from './components/root-config';
 import { SystemModule } from './components/system';
+import { OfficeModule } from './components/office';
 
 const systemModule = new SystemModule('system');
 export const system = systemModule.getExports();
@@ -41,4 +42,9 @@ if (rootConfig.isModuleEnabled('ai')) {
 if (rootConfig.isModuleEnabled('bitcoin')) {
     const bitcoinModule = new BitcoinModule('bitcoin', { dependsOn: systemModule });
     exports.bitcoin = bitcoinModule.getExports();
+}
+
+if (rootConfig.isModuleEnabled('office')) {
+    const officeModule = new OfficeModule('office', { dependsOn: systemModule });
+    exports.office = officeModule.getExports();
 }
