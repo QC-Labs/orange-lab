@@ -4,11 +4,13 @@ import * as random from '@pulumi/random';
 import { Application } from '../application';
 import { IngressInfo } from '../network';
 import { rootConfig } from '../root-config';
+import { DatabaseConfig } from '../types';
 
 export class Nextcloud extends pulumi.ComponentResource {
     public readonly serviceUrl?: string;
     public readonly app: Application;
     public readonly users: Record<string, pulumi.Output<string>> = {};
+    public readonly postgresConfig?: DatabaseConfig;
 
     private readonly config: pulumi.Config;
 
@@ -20,6 +22,7 @@ export class Nextcloud extends pulumi.ComponentResource {
         this.app = new Application(this, appName).addStorage().addPostgres();
         if (this.app.storageOnly) return;
 
+        this.postgresConfig = this.app.databases?.getPostgresConfig();
         const adminPassword =
             this.config.getSecret('adminPassword') ?? this.createPassword('admin');
         const adminSecret = this.createAdminSecret(adminPassword);
@@ -33,7 +36,6 @@ export class Nextcloud extends pulumi.ComponentResource {
         ingressInfo: IngressInfo;
         adminSecret: k8s.core.v1.Secret;
     }) {
-        const dbInfo = this.app.databases?.getPostgresConfig();
         return new k8s.helm.v3.Release(
             this.appName,
             {
@@ -46,10 +48,10 @@ export class Nextcloud extends pulumi.ComponentResource {
                     externalDatabase: {
                         enabled: true,
                         type: 'postgresql',
-                        host: dbInfo?.hostname,
-                        user: dbInfo?.username,
-                        password: dbInfo?.password,
-                        database: dbInfo?.database,
+                        host: this.postgresConfig?.hostname,
+                        user: this.postgresConfig?.username,
+                        password: this.postgresConfig?.password,
+                        database: this.postgresConfig?.database,
                     },
                     ingress: {
                         enabled: true,

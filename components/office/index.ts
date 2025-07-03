@@ -10,7 +10,10 @@ export class OfficeModule extends pulumi.ComponentResource {
             endpoints: {
                 nextcloud: this.nextcloud?.serviceUrl,
             },
-            nextcloudUsers: this.nextcloud?.users,
+            nextcloud: {
+                users: this.nextcloud?.users,
+                db: this.nextcloud?.postgresConfig,
+            },
         };
     }
 
