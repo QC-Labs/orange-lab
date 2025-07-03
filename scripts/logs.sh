@@ -17,4 +17,4 @@ if [[ "$appName" == "open-webui" ]]; then
     label=app.kubernetes.io/component
 fi
 
-kubectl logs -f -l $label=$appName -n $namespace --all-containers=true
+kubectl logs -f -l $label=$appName -n $namespace --all-containers=true --ignore-errors=true
