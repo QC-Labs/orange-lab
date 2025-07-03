@@ -158,4 +158,5 @@ export interface DatabaseConfig {
     database: string;
     username: string;
     password: pulumi.Output<string>;
+    port: number;
 }

@@ -22,7 +22,7 @@ export class Nextcloud extends pulumi.ComponentResource {
         this.app = new Application(this, appName).addStorage().addPostgres();
         if (this.app.storageOnly) return;
 
-        this.postgresConfig = this.app.databases?.getPostgresConfig();
+        this.postgresConfig = this.app.databases?.getConfig();
         const adminPassword =
             this.config.getSecret('adminPassword') ?? this.createPassword('admin');
         const adminSecret = this.createAdminSecret(adminPassword);

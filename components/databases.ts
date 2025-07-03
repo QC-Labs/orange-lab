@@ -106,24 +106,12 @@ export class Databases {
     }
 
     /**
-     * Returns the config for the MariaDB instance for this app.
+     * Returns the config for MariaDB or PostgreSQL instance for this app.
      * Includes: hostname, database, username, password
      */
-    getMariaDbConfig(name = 'db'): DatabaseConfig {
+    getConfig(name = 'db'): DatabaseConfig {
         const db = this.databases[name];
-        if (!db || !(db instanceof MariaDbCluster))
-            throw new Error(`MariaDB ${this.appName}-${name} not found.`);
-        return db.getConfig();
-    }
-
-    /**
-     * Returns the config for the PostgreSQL instance for this app.
-     * Includes: hostname, database, username, password
-     */
-    getPostgresConfig(name = 'db'): DatabaseConfig {
-        const db = this.databases[name];
-        if (!db || !(db instanceof PostgresCluster))
-            throw new Error(`Postgres ${this.appName}-${name} not found.`);
+        if (!db) throw new Error(`Database ${this.appName}-${name} not found.`);
         return db.getConfig();
     }
 

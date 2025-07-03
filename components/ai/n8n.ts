@@ -11,7 +11,7 @@ export interface N8nArgs {
 export class N8n extends pulumi.ComponentResource {
     app: Application;
     encryptionKey: pulumi.Output<string>;
-    postgresConfig: DatabaseConfig;
+    postgresConfig?: DatabaseConfig;
 
     constructor(private name: string, args: N8nArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:ai:N8n', name, args, opts);
@@ -24,7 +24,7 @@ export class N8n extends pulumi.ComponentResource {
         );
 
         this.app = new Application(this, name).addStorage().addPostgres();
-        this.postgresConfig = this.app.databases.getPostgresConfig();
+        this.postgresConfig = this.app.databases?.getConfig();
         this.app.addDeployment({
             image: 'docker.n8n.io/n8nio/n8n',
             port: 5678,
@@ -51,10 +51,10 @@ export class N8n extends pulumi.ComponentResource {
                 N8N_SECURE_COOKIE: 'false',
             },
             envSecret: {
-                DB_POSTGRESDB_DATABASE: this.postgresConfig.database,
-                DB_POSTGRESDB_HOST: this.postgresConfig.hostname,
-                DB_POSTGRESDB_PASSWORD: this.postgresConfig.password,
-                DB_POSTGRESDB_USER: this.postgresConfig.username,
+                DB_POSTGRESDB_DATABASE: this.postgresConfig?.database,
+                DB_POSTGRESDB_HOST: this.postgresConfig?.hostname,
+                DB_POSTGRESDB_PASSWORD: this.postgresConfig?.password,
+                DB_POSTGRESDB_USER: this.postgresConfig?.username,
             },
         });
     }

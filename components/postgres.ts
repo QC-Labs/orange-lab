@@ -124,6 +124,7 @@ export class PostgresCluster extends pulumi.ComponentResource {
             database: this.appName,
             username: this.dbUser,
             password: this.dbPassword,
+            port: 5432,
         };
     }
 

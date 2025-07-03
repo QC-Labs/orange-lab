@@ -117,6 +117,7 @@ export class MariaDbCluster extends pulumi.ComponentResource {
             database: this.appName,
             username: this.appName,
             password: this.dbPassword,
+            port: 3306,
         };
     }
 
