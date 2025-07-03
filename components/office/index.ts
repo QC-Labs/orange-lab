@@ -12,7 +12,7 @@ export class OfficeModule extends pulumi.ComponentResource {
             },
             nextcloud: {
                 users: this.nextcloud?.users,
-                db: this.nextcloud?.postgresConfig,
+                db: this.nextcloud?.dbConfig,
             },
         };
     }

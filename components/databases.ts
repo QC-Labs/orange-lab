@@ -5,7 +5,7 @@ import { Nodes } from './nodes';
 import { PostgresCluster } from './postgres';
 import { rootConfig } from './root-config';
 import { Storage } from './storage';
-import { DatabaseConfig, StorageType } from './types';
+import { DatabaseConfig, InitContainerSpec, StorageType } from './types';
 
 export class Databases {
     private readonly databases: Record<
@@ -115,9 +115,23 @@ export class Databases {
         return db.getConfig();
     }
 
-    getDependencies(): pulumi.Resource[] {
-        return Object.values(this.databases).filter(
-            db => db !== undefined,
-        ) as pulumi.Resource[];
+    /**
+     * Returns an initContainer spec to wait for database until it accepts connections.
+     */
+    getWaitContainer(dbConfig?: DatabaseConfig): InitContainerSpec {
+        if (!dbConfig) {
+            throw new Error('Database config is required for wait container.');
+        }
+        const hostPort = `${dbConfig.hostname} ${dbConfig.port.toString()}`;
+        return {
+            name: 'wait-for-db',
+            image: 'busybox:latest',
+            command: [
+                'sh',
+                '-c',
+                `until nc -z -v -w30 ${hostPort}; do echo "Waiting for database...${hostPort}" && sleep 5; done`,
+            ],
+            volumeMounts: [],
+        };
     }
 }

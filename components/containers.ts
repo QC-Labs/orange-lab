@@ -103,8 +103,9 @@ export class Containers {
         | undefined {
         return params.initContainers?.map(initContainer => ({
             name: initContainer.name,
-            image: initContainer.image ?? 'alpine:latest',
+            image: initContainer.image ?? 'busybox:latest',
             command: initContainer.command,
+            imagePullPolicy: 'IfNotPresent',
             volumeMounts: this.createVolumeMounts(
                 initContainer.volumeMounts ?? params.volumeMounts,
             ),

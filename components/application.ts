@@ -108,13 +108,7 @@ export class Application {
                     nodes: this.nodes,
                     config: this.config,
                 },
-                {
-                    parent: this.scope,
-                    dependsOn: [
-                        this.storage,
-                        ...(this.databases?.getDependencies() ?? []),
-                    ].filter(Boolean) as pulumi.Input<pulumi.Input<pulumi.Resource>[]>,
-                },
+                { parent: this.scope },
             );
         return this.services;
     }

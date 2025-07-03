@@ -10,7 +10,7 @@ export class Nextcloud extends pulumi.ComponentResource {
     public readonly serviceUrl?: string;
     public readonly app: Application;
     public readonly users: Record<string, pulumi.Output<string>> = {};
-    public readonly postgresConfig?: DatabaseConfig;
+    public readonly dbConfig?: DatabaseConfig;
 
     private readonly config: pulumi.Config;
 
@@ -22,20 +22,24 @@ export class Nextcloud extends pulumi.ComponentResource {
         this.app = new Application(this, appName).addStorage().addPostgres();
         if (this.app.storageOnly) return;
 
-        this.postgresConfig = this.app.databases?.getConfig();
+        this.dbConfig = this.app.databases?.getConfig();
+        if (!this.dbConfig) throw new Error('Database not found');
         const adminPassword =
             this.config.getSecret('adminPassword') ?? this.createPassword('admin');
         const adminSecret = this.createAdminSecret(adminPassword);
         const ingressInfo = this.app.network.getIngressInfo();
         this.users = { admin: adminPassword };
-        this.createHelmChart({ ingressInfo, adminSecret });
+        this.createHelmChart({ ingressInfo, adminSecret, dbConfig: this.dbConfig });
         this.serviceUrl = ingressInfo.url;
     }
 
     private createHelmChart(args: {
         ingressInfo: IngressInfo;
         adminSecret: k8s.core.v1.Secret;
+        dbConfig: DatabaseConfig;
     }) {
+        const waitForDb = this.app.databases?.getWaitContainer(args.dbConfig);
+        const debug = this.config.getBoolean('debug') ?? false;
         return new k8s.helm.v3.Release(
             this.appName,
             {
@@ -48,10 +52,10 @@ export class Nextcloud extends pulumi.ComponentResource {
                     externalDatabase: {
                         enabled: true,
                         type: 'postgresql',
-                        host: this.postgresConfig?.hostname,
-                        user: this.postgresConfig?.username,
-                        password: this.postgresConfig?.password,
-                        database: this.postgresConfig?.database,
+                        host: args.dbConfig.hostname,
+                        user: args.dbConfig.username,
+                        password: args.dbConfig.password,
+                        database: args.dbConfig.database,
                     },
                     ingress: {
                         enabled: true,
@@ -67,6 +71,15 @@ export class Nextcloud extends pulumi.ComponentResource {
                     internalDatabase: { enabled: false },
                     metrics: { enabled: true },
                     nextcloud: {
+                        configs: debug
+                            ? {
+                                  'logging.config.php': `<?php
+                              $CONFIG = array (
+                                'log_type' => 'errorlog',
+                              );`,
+                              }
+                            : undefined,
+                        extraInitContainers: [waitForDb],
                         host: args.ingressInfo.hostname,
                         existingSecret: {
                             enabled: true,
@@ -84,15 +97,10 @@ export class Nextcloud extends pulumi.ComponentResource {
                         existingClaim: this.app.storage?.getClaimName(),
                     },
                     replicaCount: 1,
+                    startupProbe: { enabled: false },
                 },
             },
-            {
-                parent: this,
-                dependsOn: [
-                    this.app.storage,
-                    ...(this.app.databases?.getDependencies() ?? []),
-                ].filter(Boolean) as pulumi.Input<pulumi.Input<pulumi.Resource>[]>,
-            },
+            { parent: this },
         );
     }
 

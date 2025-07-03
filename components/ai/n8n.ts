@@ -25,6 +25,7 @@ export class N8n extends pulumi.ComponentResource {
 
         this.app = new Application(this, name).addStorage().addPostgres();
         this.postgresConfig = this.app.databases?.getConfig();
+        const initContainer = this.app.databases?.getWaitContainer(this.postgresConfig);
         this.app.addDeployment({
             image: 'docker.n8n.io/n8nio/n8n',
             port: 5678,
@@ -56,6 +57,7 @@ export class N8n extends pulumi.ComponentResource {
                 DB_POSTGRESDB_PASSWORD: this.postgresConfig?.password,
                 DB_POSTGRESDB_USER: this.postgresConfig?.username,
             },
+            initContainers: initContainer ? [initContainer] : undefined,
         });
     }
 
