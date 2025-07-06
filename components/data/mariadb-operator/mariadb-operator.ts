@@ -31,7 +31,10 @@ export class MariaDBOperator extends pulumi.ComponentResource {
                 version: this.version,
                 namespace: this.app.namespace,
             },
-            { parent: this, dependsOn: [this.app.storage] },
+            {
+                parent: this,
+                dependsOn: [this.app.storage].filter(Boolean) as pulumi.Resource[],
+            },
         );
     }
 

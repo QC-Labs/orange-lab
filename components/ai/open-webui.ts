@@ -120,7 +120,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
                     openaiBaseApiUrl: args.openAiUrl,
                     persistence: {
                         enabled: true,
-                        existingClaim: app.storage.getClaimName(),
+                        existingClaim: app.storage?.getClaimName(),
                     },
                     pipelines: { enabled: false },
                     runtimeClassName: amdGpu ? undefined : 'nvidia',
