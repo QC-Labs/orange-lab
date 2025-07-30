@@ -27,7 +27,7 @@ Open project in VSCode. It will install the required dependencies and recommende
 Install dependencies on the management node:
 
 ```sh
-brew install node pulumi kubectl k9s
+brew install node pulumi kubectl k9s kubectl-cnpg
 flatpak install io.kinvolk.Headlamp
 sudo tailscale up --operator=$USER --accept-routes
 ```

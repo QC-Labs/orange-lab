@@ -56,6 +56,9 @@ This component installs the CloudNativePG PostgreSQL operator using its official
 ### Installation
 
 ```sh
+# Optional: install CNPG kubectl plugin
+brew install kubectl-cnpg
+
 pulumi config set cloudnative-pg:enabled true
 ```
 
