@@ -24,4 +24,5 @@ echo "curl -sfL https://get.k3s.io |  sh -s - \
 --kube-apiserver-arg=default-not-ready-toleration-seconds=10 \
 --kube-apiserver-arg=default-unreachable-toleration-seconds=10"
 echo
+echo systemctl restart k3s.service
 echo systemctl enable k3s.service --now

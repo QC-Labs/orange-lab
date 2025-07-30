@@ -20,4 +20,5 @@ echo "curl -sfL https://get.k3s.io |  sh -s - \
 --selinux \
 --vpn-auth \"name=tailscale,joinKey=\$TS_AUTH_KEY\""
 echo
+echo systemctl restart k3s-agent.service
 echo systemctl enable k3s-agent.service --now
