@@ -11,6 +11,7 @@ export interface MariaDbClusterArgs {
     storageClassName?: pulumi.Input<string>;
     storageOnly?: boolean;
     maintananceMode?: boolean;
+    enabled?: boolean;
 }
 
 export class MariaDbCluster extends pulumi.ComponentResource {
@@ -34,7 +35,7 @@ export class MariaDbCluster extends pulumi.ComponentResource {
         this.rootPassword = this.createPassword('root');
 
         this.secret = this.createSecret();
-        if (args.storageOnly) return;
+        if (!args.enabled) return;
         this.mariadb = this.createCluster();
     }
 

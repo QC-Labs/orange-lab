@@ -46,6 +46,7 @@ export class Databases {
             overrideFullname: `storage-${this.appName}-${name}-0`,
             type: StorageType.Database,
         });
+        const enabledDefault = this.config.getBoolean(`storageOnly`) ? false : true;
         const db = new MariaDbCluster(
             this.appName,
             {
@@ -55,6 +56,7 @@ export class Databases {
                 storageClassName: this.storage.getStorageClass(name),
                 storageOnly: this.storageOnly,
                 maintananceMode: this.config.getBoolean(`${name}/maintenance`),
+                enabled: this.config.getBoolean(`${name}/enabled`) ?? enabledDefault,
             },
             this.opts,
         );
