@@ -1,6 +1,7 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
 import { rootConfig } from '../root-config';
+import { DatabaseConfig } from '../types';
 import { RpcUser } from './utils/rpc-user';
 
 export interface MempoolArgs {
@@ -11,6 +12,7 @@ export interface MempoolArgs {
 
 export class Mempool extends pulumi.ComponentResource {
     public readonly app: Application;
+    public dbConfig?: DatabaseConfig;
     private readonly config: pulumi.Config;
 
     constructor(name: string, private args: MempoolArgs, opts?: pulumi.ResourceOptions) {
@@ -20,6 +22,7 @@ export class Mempool extends pulumi.ComponentResource {
 
         this.config = new pulumi.Config(name);
         this.app = new Application(this, name).addMariaDB();
+        this.dbConfig = this.app.databases?.getConfig();
         if (this.app.storageOnly) return;
         this.createDeployment();
     }
@@ -35,7 +38,6 @@ export class Mempool extends pulumi.ComponentResource {
             return { host, port };
         });
 
-        const dbConfig = this.app.databases?.getConfig();
         this.app
             .addDeployment({
                 name: 'backend',
@@ -44,9 +46,9 @@ export class Mempool extends pulumi.ComponentResource {
                 env: {
                     CORE_RPC_HOST: rpcUrl.hostname,
                     CORE_RPC_PORT: rpcUrl.port,
-                    DATABASE_DATABASE: dbConfig?.database,
+                    DATABASE_DATABASE: this.dbConfig?.database,
                     DATABASE_ENABLED: 'true',
-                    DATABASE_HOST: dbConfig?.hostname,
+                    DATABASE_HOST: this.dbConfig?.hostname,
                     ELECTRUM_HOST: electrsUrl.host,
                     ELECTRUM_PORT: electrsUrl.port,
                     ELECTRUM_TLS_ENABLED: 'false',
@@ -55,8 +57,8 @@ export class Mempool extends pulumi.ComponentResource {
                 envSecret: {
                     CORE_RPC_USERNAME: this.args.rpcUser.username,
                     CORE_RPC_PASSWORD: this.args.rpcUser.password,
-                    DATABASE_PASSWORD: dbConfig?.password,
-                    DATABASE_USERNAME: dbConfig?.username,
+                    DATABASE_PASSWORD: this.dbConfig?.password,
+                    DATABASE_USERNAME: this.dbConfig?.username,
                 },
                 resources: {
                     requests: { cpu: '100m', memory: '512Mi' },

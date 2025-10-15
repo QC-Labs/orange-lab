@@ -39,6 +39,7 @@ export class BitcoinModule extends pulumi.ComponentResource {
                 ...this.electrs?.app.network.clusterEndpoints,
                 ...this.mempool?.app.network.clusterEndpoints,
             },
+            mempool: this.mempool ? { db: this.mempool.dbConfig } : undefined,
         };
     }
 
