@@ -10,8 +10,9 @@ export interface MariaDbClusterArgs {
     storageSize: pulumi.Input<string>;
     storageClassName?: pulumi.Input<string>;
     storageOnly?: boolean;
-    maintananceMode?: boolean;
+    disableAuth?: boolean;
     enabled?: boolean;
+    rootPassword?: pulumi.Input<string>;
 }
 
 export class MariaDbCluster extends pulumi.ComponentResource {
@@ -32,7 +33,9 @@ export class MariaDbCluster extends pulumi.ComponentResource {
         this.clusterName = `${appName}-${this.args.name}`;
         this.dbUser = appName;
         this.dbPassword = this.createPassword(this.dbUser);
-        this.rootPassword = this.createPassword('root');
+        this.rootPassword = this.args.rootPassword
+            ? pulumi.output(this.args.rootPassword)
+            : this.createPassword('root');
 
         this.secret = this.createSecret();
         if (!args.enabled) return;
@@ -64,8 +67,8 @@ export class MariaDbCluster extends pulumi.ComponentResource {
         [mariadb]
         skip-name-resolve
         temp-pool
-        ${this.args.maintananceMode ? 'skip-grant-tables' : ''}
-        ${this.args.maintananceMode ? 'skip-networking' : ''}
+        ${this.args.disableAuth ? 'skip-grant-tables' : ''}
+        ${this.args.disableAuth ? 'skip-networking' : ''}
         `;
         return new kubernetes.apiextensions.CustomResource(
             this.clusterName,

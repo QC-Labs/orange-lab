@@ -136,6 +136,11 @@ class RootConfig {
                 'orangelab:storageClass-database is deprecated. Use per-app <app>:storageClass if needed.',
             );
         }
+        if (this.getAppConfig('mempool', 'db/maintenance')) {
+            console.warn(
+                'mempool:db/maintenance is deprecated. Use mempool:db/disableAuth instead.',
+            );
+        }
     }
 
     /**
