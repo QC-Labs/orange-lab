@@ -31,7 +31,7 @@ config:
     # tailscale-operator:oauthClientSecret: OAUTH_CLIENT_SECRET
 
     longhorn:enabled: false
-    longhorn:version: 1.9.1
+    longhorn:version: 1.10.0
     longhorn:hostname: longhorn
     # Initial value for default storage. Adjust each volume in Longhorn UI
     longhorn:replicaCount: 2
@@ -44,7 +44,7 @@ config:
     longhorn:backupBucketCreate: false # create new or import existing bucket
     longhorn:backupCron: '15 0 * * *' # daily at 0:15
     # Full backup every 7 days, use 0 for incremental only
-    longhorn:backupFullInterval: '7'
+    longhorn:backupFullInterval: '14'
     longhorn:backupAllVolumes: false
 
     minio:enabled: false
