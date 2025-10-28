@@ -13,6 +13,7 @@ export interface MariaDbClusterArgs {
     disableAuth?: boolean;
     enabled?: boolean;
     rootPassword?: pulumi.Input<string>;
+    password?: pulumi.Input<string>;
 }
 
 export class MariaDbCluster extends pulumi.ComponentResource {
@@ -32,10 +33,12 @@ export class MariaDbCluster extends pulumi.ComponentResource {
         super('orangelab:MariaDbCluster', appName, args, opts);
         this.clusterName = `${appName}-${this.args.name}`;
         this.dbUser = appName;
-        this.dbPassword = this.createPassword(this.dbUser);
-        this.rootPassword = this.args.rootPassword
-            ? pulumi.output(this.args.rootPassword)
-            : this.createPassword('root');
+        this.dbPassword = pulumi.output(
+            args.password ?? this.createPassword(this.dbUser),
+        );
+        this.rootPassword = pulumi.output(
+            this.args.rootPassword ?? this.createPassword('root'),
+        );
 
         this.secret = this.createSecret();
         if (!args.enabled) return;

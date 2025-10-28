@@ -56,7 +56,8 @@ export class Databases {
                 storageClassName: this.storage.getStorageClass(name),
                 storageOnly: this.storageOnly,
                 disableAuth: this.config.getBoolean(`${name}/disableAuth`),
-                rootPassword: this.config.get(`${name}/rootPassword`),
+                password: this.config.getSecret(`${name}/password`),
+                rootPassword: this.config.getSecret(`${name}/rootPassword`),
                 enabled: this.config.getBoolean(`${name}/enabled`) ?? enabledDefault,
             },
             this.opts,
@@ -99,6 +100,7 @@ export class Databases {
                 storageClassName: existingVolume
                     ? this.storage.getStorageClass(name)
                     : rootConfig.storageClass.Database,
+                password: this.config.getSecret(`${name}/password`),
                 enabled: this.config.getBoolean(`${name}/enabled`) ?? enabledDefault,
                 fromPVC: existingVolume ? this.storage.getClaimName(name) : undefined,
                 instances: this.config.getNumber(`${name}/instances`),

@@ -15,6 +15,7 @@ export interface PostgresClusterArgs {
     enabled?: boolean;
     fromPVC?: string;
     instances?: number;
+    password?: pulumi.Input<string>;
 }
 
 export class PostgresCluster extends pulumi.ComponentResource {
@@ -32,7 +33,9 @@ export class PostgresCluster extends pulumi.ComponentResource {
         super('orangelab:PostgresCluster', appName, args, opts);
         this.clusterName = `${appName}-${this.args.name}`;
         this.dbUser = appName;
-        this.dbPassword = this.createPassword(this.dbUser);
+        this.dbPassword = pulumi.output(
+            this.args.password ?? this.createPassword(this.dbUser),
+        );
 
         this.secret = this.createSecret();
         if (!args.enabled) return;
