@@ -71,14 +71,20 @@ export class Nextcloud extends pulumi.ComponentResource {
                     internalDatabase: { enabled: false },
                     metrics: { enabled: true },
                     nextcloud: {
-                        configs: debug
-                            ? {
-                                  'logging.config.php': `<?php
-                              $CONFIG = array (
-                                'log_type' => 'errorlog',
-                              );`,
-                              }
-                            : undefined,
+                        configs: {
+                            'disable-skeleton.config.php': `<?php
+$CONFIG = array (
+    'skeletondirectory' => '',
+);`,
+                            ...(debug
+                                ? {
+                                      'logging.config.php': `<?php
+$CONFIG = array (
+    'log_type' => 'errorlog',
+);`,
+                                  }
+                                : {}),
+                        },
                         extraInitContainers: [waitForDb],
                         host: args.ingressInfo.hostname,
                         existingSecret: {
