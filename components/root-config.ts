@@ -34,7 +34,7 @@ class RootConfig {
         Default: 'longhorn',
         GPU: 'longhorn-gpu',
         Large: 'longhorn-large',
-        Database: 'longhorn-database',
+        Database: 'longhorn',
     };
     public customDomain = this.getAppConfig('orangelab', 'customDomain');
     public tailnetDomain = this.requireAppConfig('tailscale', 'tailnet');
