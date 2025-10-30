@@ -19,7 +19,7 @@ export class Nextcloud extends pulumi.ComponentResource {
 
         this.config = new pulumi.Config(appName);
 
-        this.app = new Application(this, appName).addStorage().addPostgres();
+        this.app = new Application(this, appName).addStorage().addMariaDB();
         if (this.app.storageOnly) return;
 
         this.dbConfig = this.app.databases?.getConfig();
@@ -51,7 +51,7 @@ export class Nextcloud extends pulumi.ComponentResource {
                     affinity: this.app.nodes.getAffinity(),
                     externalDatabase: {
                         enabled: true,
-                        type: 'postgresql',
+                        type: 'mysql',
                         host: args.dbConfig.hostname,
                         user: args.dbConfig.username,
                         password: args.dbConfig.password,
@@ -69,6 +69,7 @@ export class Nextcloud extends pulumi.ComponentResource {
                         tls: [{ hosts: [args.ingressInfo.hostname] }],
                     },
                     internalDatabase: { enabled: false },
+                    livenessProbe: { enabled: true },
                     metrics: { enabled: true },
                     nextcloud: {
                         configs: {
@@ -96,14 +97,16 @@ $CONFIG = array (
                         trustedDomains: [
                             rootConfig.tailnetDomain,
                             rootConfig.customDomain,
+                            args.ingressInfo.hostname,
                         ],
                     },
                     persistence: {
                         enabled: true,
                         existingClaim: this.app.storage?.getClaimName(),
                     },
+                    readinessProbe: { enabled: true },
                     replicaCount: 1,
-                    startupProbe: { enabled: false },
+                    startupProbe: { enabled: true },
                 },
             },
             { parent: this },
