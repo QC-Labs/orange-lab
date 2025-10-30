@@ -17,7 +17,6 @@ export class N8n extends pulumi.ComponentResource {
         super('orangelab:ai:N8n', name, args, opts);
 
         const config = new pulumi.Config(name);
-        const hostname = config.require('hostname');
         const debug = rootConfig.isDebugEnabled(name);
         this.encryptionKey = pulumi.output(
             config.get('N8N_ENCRYPTION_KEY') ?? this.createEncryptionKey(),
@@ -43,7 +42,7 @@ export class N8n extends pulumi.ComponentResource {
                 N8N_DIAGNOSTICS_ENABLED: 'false',
                 N8N_ENCRYPTION_KEY: this.encryptionKey,
                 N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: 'true',
-                N8N_HOST: hostname,
+                N8N_HOST: this.app.network.getIngressInfo().hostname,
                 N8N_LOG_LEVEL: debug ? 'debug' : undefined,
                 N8N_METRICS: rootConfig.enableMonitoring() ? 'true' : 'false',
                 N8N_PORT: '5678',
