@@ -6,6 +6,13 @@ Components related to office productivity and collaboration.
 
 ```sh
 pulumi config set nextcloud:enabled true
+
+# When restoring from backup
+pulumi config set nextcloud:fromVolume: nextcloud
+pulumi config set nextcloud:db/fromVolume: nextcloud-db
+pulumi config set --secret nextcloud:db/password <nextcloud-password>
+pulumi config set --secret nextcloud:db/rootPassword <root-password>
+
 pulumi up
 ```
 
@@ -39,12 +46,19 @@ pulumi config set nextcloud:adminPassword abcd1234 --secret
 pulumi up
 ```
 
+Log in as `admin` and create a new user at:
+
+`https://nextcloud.<domain>/settings/admin`
+
 ### Storage
 
 Nextcloud uses a persistent volume for file storage. You can expand the volume as needed. To keep data but disable the app:
 
 ```sh
 pulumi config set nextcloud:storageOnly true
+
+# Keep the database engine running (use this for DB maintanance)
+pulumi config set nextcloud:db/enabled true
 pulumi up
 ```
 
@@ -53,7 +67,7 @@ pulumi up
 After deployment, access Nextcloud at:
 
 ```sh
-https://nextcloud.<tsnet>.ts.net/
+https://nextcloud.<domain>/
 ```
 
 Login with the admin user. The password can be retrieved with:
@@ -61,6 +75,70 @@ Login with the admin user. The password can be retrieved with:
 ```sh
 pulumi stack output --show-secrets --json | jq '.office.nextcloudUsers.admin' -r
 ```
+
+### Database
+
+Nextcloud uses a MariaDB database to store its data, which is managed by the MariaDB Operator.
+
+When restoring from a backup, the auto-generated passwords will not match the ones stored in the database and `config/config.php`. To prevent this mismatch, you should set the passwords explicitly after the initial install. This ensures that the application can connect to the database with the correct credentials after the restore.
+
+```sh
+# Set password for the nextcloud user
+pulumi config set nextcloud:db/password YourNextcloudDbPassword --secret
+# Set password for the mariadb root user
+pulumi config set nextcloud:db/rootPassword YourMariaDbRootPassword --secret
+pulumi up
+```
+
+To get the current passwords, you can use the following commands:
+
+```sh
+# Get the nextcloud user password from Pulumi stack output
+pulumi stack output --show-secrets --json | jq '.office.nextcloud.db.password' -r
+
+# Get the root user password from the Kubernetes secret
+kubectl get secret nextcloud-db-secret -n nextcloud -o jsonpath='{.data.rootPassword}' | base64 --decode
+```
+
+### Upgrade
+
+After updating Nextcloud it could enter _maintanace mode_.
+
+In that case run the upgrade inside the container:
+
+```sh
+# enter the container
+./scripts/exec.sh nextcloud
+
+./occ upgrade
+
+# Optional
+./occ maintenance:mode --off
+```
+
+### Resetting admin password
+
+If you lose the admin password, you can reset it. This is also helpful after restoring from backup and new password has been generated.
+
+1.  Get a shell inside the Nextcloud container using the `exec.sh` script.
+
+    ```sh
+    ./scripts/exec.sh nextcloud
+    ```
+
+2.  Once inside the container's shell, run the `occ` command to reset the password for the `admin` user. Replace `YourNewPassword` with a strong password.
+
+    ```sh
+    ./occ user:resetpassword admin YourNewPassword
+    ```
+
+3.  Exit the container shell.
+
+4.  (Recommended) Update the password in Pulumi config so it matches the one stored by Nextcloud. This helps restoring backups so the password is not auto-generated again.
+
+    ```sh
+    pulumi config set nextcloud:adminPassword YourNewPassword --secret
+    ```
 
 ---
 
