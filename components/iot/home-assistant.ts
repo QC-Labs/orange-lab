@@ -31,9 +31,22 @@ export class HomeAssistant extends pulumi.ComponentResource {
                     repo: 'http://pajikos.github.io/home-assistant-helm-chart/',
                 },
                 values: {
+                    additionalMounts: [
+                        { mountPath: '/run/dbus', name: 'dbus', readOnly: true },
+                    ],
+                    additionalVolumes: [
+                        {
+                            name: 'dbus',
+                            hostPath: { path: '/run/dbus', type: 'Directory' },
+                        },
+                    ],
                     affinity: app.nodes.getAffinity(),
-                    hostNetwork: true,
+                    configuration: {
+                        enabled: true,
+                        trusted_proxies: args.trustedProxies ?? [],
+                    },
                     fullnameOverride: name,
+                    hostNetwork: true,
                     ingress: {
                         enabled: true,
                         className: ingressInfo.className,
@@ -45,15 +58,22 @@ export class HomeAssistant extends pulumi.ComponentResource {
                         ],
                         tls: [{ hosts: [ingressInfo.hostname] }],
                     },
-                    configuration: {
-                        enabled: true,
-                        trusted_proxies: args.trustedProxies ?? [],
-                    },
                     persistence: {
                         enabled: true,
                         storageClass: app.storage?.getStorageClass(),
                     },
                     replicaCount: 1,
+                    securityContext: {
+                        capabilities: {
+                            add: ['NET_ADMIN', 'NET_RAW'],
+                        },
+                        seccompProfile: {
+                            type: 'RuntimeDefault',
+                        },
+                        seLinuxOptions: {
+                            type: 'spc_t',
+                        },
+                    },
                 },
             },
             { parent: this, dependsOn: app.storage },
