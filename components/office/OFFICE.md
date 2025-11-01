@@ -140,6 +140,22 @@ If you lose the admin password, you can reset it. This is also helpful after res
     pulumi config set nextcloud:adminPassword YourNewPassword --secret
     ```
 
+### Pika Backup
+
+Pika Backup is a simple backup utility that can use Nextcloud as a remote backup destination via WebDAV. This allows you to store your local backups in your private cloud.
+
+To configure Pika Backup with Nextcloud as a remote location:
+
+1.  Install Pika Backup on your client machine.
+2.  Select "Remote Location" as the backup destination.
+3.  Use the following URL format:
+    ```
+    dav://<user>@nextcloud.<domain>/remote.php/webdav/
+    ```
+4.  Enter your Nextcloud username and password when prompted.
+
+This will allow Pika Backup to access your Nextcloud storage for automated backups.
+
 ---
 
 For more advanced configuration, see the [Nextcloud Helm chart documentation](https://github.com/nextcloud/helm) and [Nextcloud admin docs](https://docs.nextcloud.com/server/latest/).
