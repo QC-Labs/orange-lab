@@ -1,4 +1,4 @@
-/* eslint-disable sort-keys */
+ 
 import * as pulumi from '@pulumi/pulumi';
 import assert from 'assert';
 import { rootConfig } from '../root-config';

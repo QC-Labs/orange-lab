@@ -1,9 +1,10 @@
 import globals from 'globals';
 import eslint from '@eslint/js';
+import { defineConfig } from 'eslint/config';
 import tseslint from 'typescript-eslint';
 import pulumiPlugin from '@pulumi/eslint-plugin';
 
-export default tseslint.config(
+export default defineConfig(
     {
         ignores: ['node_modules/**', 'bin/**'],
     },
@@ -23,10 +24,10 @@ export default tseslint.config(
             },
         },
     },
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     eslint.configs.recommended,
-    ...tseslint.configs.strictTypeChecked,
-    ...tseslint.configs.stylisticTypeChecked,
+    tseslint.configs.recommendedTypeChecked,
+    tseslint.configs.strictTypeChecked,
+    tseslint.configs.stylisticTypeChecked,
     {
         plugins: { pulumi: pulumiPlugin },
         rules: {
