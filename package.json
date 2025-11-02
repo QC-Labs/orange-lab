@@ -8,7 +8,7 @@
         "node": ">= 22.0.0"
     },
     "scripts": {
-        "deploy": "pulumi up --refresh",
+        "deploy": "pulumi up",
         "preview": "pulumi preview --diff",
         "lint": "node_modules/.bin/eslint .",
         "test": "npm run lint"
