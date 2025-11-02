@@ -4,9 +4,9 @@ import { BitcoinModule } from './components/bitcoin';
 import { DataModule } from './components/data';
 import { IoTModule } from './components/iot';
 import { MonitoringModule } from './components/monitoring';
+import { OfficeModule } from './components/office';
 import { rootConfig } from './components/root-config';
 import { SystemModule } from './components/system';
-import { OfficeModule } from './components/office';
 
 const systemModule = new SystemModule('system');
 export const system = systemModule.getExports();

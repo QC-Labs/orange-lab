@@ -100,7 +100,5 @@ export class SystemModule extends pulumi.ComponentResource {
         if (rootConfig.isEnabled('debug')) {
             new Debug('debug', {}, { parent: this });
         }
-
-
     }
 }
