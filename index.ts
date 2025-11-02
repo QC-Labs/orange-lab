@@ -23,14 +23,9 @@ if (rootConfig.isModuleEnabled('monitoring')) {
 }
 
 if (rootConfig.isModuleEnabled('iot')) {
-    const iotModule = new IoTModule(
-        'iot',
-        {
-            clusterCidr: systemModule.clusterCidr,
-            serviceCidr: systemModule.serviceCidr,
-        },
-        { dependsOn: systemModule },
-    );
+    const iotModule = new IoTModule('iot', {
+        dependsOn: systemModule,
+    });
     exports.iot = iotModule.getExports();
 }
 

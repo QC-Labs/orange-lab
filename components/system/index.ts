@@ -14,8 +14,6 @@ export class SystemModule extends pulumi.ComponentResource {
     tailscaleServerKey: pulumi.Output<string> | undefined;
     tailscaleAgentKey: pulumi.Output<string> | undefined;
     domainName: string;
-    clusterCidr: string;
-    serviceCidr: string;
 
     longhorn?: Longhorn;
     minio?: Minio;
@@ -103,8 +101,6 @@ export class SystemModule extends pulumi.ComponentResource {
             new Debug('debug', {}, { parent: this });
         }
 
-        const configK3s = new pulumi.Config('k3s');
-        this.clusterCidr = configK3s.require('clusterCidr');
-        this.serviceCidr = configK3s.require('serviceCidr');
+
     }
 }

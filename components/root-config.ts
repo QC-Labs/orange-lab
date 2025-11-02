@@ -38,6 +38,8 @@ class RootConfig {
     };
     public customDomain = this.getAppConfig('orangelab', 'customDomain');
     public tailnetDomain = this.requireAppConfig('tailscale', 'tailnet');
+    public clusterCidr = this.requireAppConfig('k3s', 'clusterCidr');
+    public serviceCidr = this.requireAppConfig('k3s', 'serviceCidr');
 
     public isEnabled(name: string): boolean {
         const config = new pulumi.Config(name);
