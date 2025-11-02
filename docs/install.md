@@ -2,14 +2,6 @@
 
 Management node is where you run Pulumi, most likely your laptop.
 
-> This software is still experimental, so breaking changes might be introduced.
->
-> In case of problems with some application updates, try disabling and enabling it again.
->
-> Note this will also remove the associated storage.
->
-> All breaking changes will be described in release notes as well as commit messages
-
 ```sh
 git clone https://github.com/QC-Labs/orange-lab
 ```
@@ -27,8 +19,13 @@ Open project in VSCode. It will install the required dependencies and recommende
 Install dependencies on the management node:
 
 ```sh
-brew install node pulumi kubectl k9s kubectl-cnpg
+# Install required packages
+brew install node pulumi kubectl
+# (Recommended) Install development packages
+brew install kubectl-cnpg k9s opencode
 flatpak install io.kinvolk.Headlamp
+flatpak install io.beekeeperstudio.Studio
+
 sudo tailscale up --operator=$USER --accept-routes
 ```
 
