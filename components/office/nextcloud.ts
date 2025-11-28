@@ -104,6 +104,10 @@ $CONFIG = array (
                         enabled: true,
                         existingClaim: this.app.storage?.getClaimName(),
                     },
+                    phpClientHttpsFix: {
+                        enabled: args.ingressInfo.tls,
+                        protocol: args.ingressInfo.tls ? 'https' : 'http',
+                    },
                     readinessProbe: { enabled: true },
                     replicaCount: 1,
                     startupProbe: { enabled: true },
