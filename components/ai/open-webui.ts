@@ -29,7 +29,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
         const DEFAULT_MODELS = config.get('DEFAULT_MODELS') ?? '';
         const DEFAULT_USER_ROLE = config.require('DEFAULT_USER_ROLE');
 
-        const app = new Application(this, name, { gpu: true })
+        const app = new Application(this, name)
             .addDefaultLimits({ request: { cpu: '5m', memory: '1.2Gi' } })
             .addStorage({ type: StorageType.GPU });
 
