@@ -14,7 +14,10 @@ export class Nextcloud extends pulumi.ComponentResource {
 
     private readonly config: pulumi.Config;
 
-    constructor(private appName: string, opts?: pulumi.ComponentResourceOptions) {
+    constructor(
+        private appName: string,
+        opts?: pulumi.ComponentResourceOptions,
+    ) {
         super('orangelab:office:Nextcloud', appName, {}, opts);
 
         this.config = new pulumi.Config(appName);
@@ -66,7 +69,13 @@ export class Nextcloud extends pulumi.ComponentResource {
                                 paths: [{ path: '/', pathType: 'Prefix' }],
                             },
                         ],
-                        tls: [{ hosts: [args.ingressInfo.hostname] }],
+                        tls: [
+                            {
+                                hosts: [args.ingressInfo.hostname],
+                                secretName: args.ingressInfo.tlsSecretName,
+                            },
+                        ],
+                        annotations: args.ingressInfo.annotations,
                     },
                     internalDatabase: { enabled: false },
                     livenessProbe: { enabled: true },

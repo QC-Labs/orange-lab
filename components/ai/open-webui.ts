@@ -113,6 +113,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
                         class: ingresInfo.className,
                         host: ingresInfo.hostname,
                         tls: ingresInfo.tls,
+                        annotations: ingresInfo.annotations,
                     },
                     logging: { level: debug ? 'debug' : 'info' },
                     ollama: { enabled: false },

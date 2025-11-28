@@ -38,6 +38,9 @@ class RootConfig {
     };
     public customDomain = this.getAppConfig('orangelab', 'customDomain');
     public tailnetDomain = this.requireAppConfig('tailscale', 'tailnet');
+    public certManager = {
+        clusterIssuer: this.requireAppConfig('cert-manager', 'clusterIssuer'),
+    };
     public clusterCidr = this.requireAppConfig('k3s', 'clusterCidr');
     public serviceCidr = this.requireAppConfig('k3s', 'serviceCidr');
 

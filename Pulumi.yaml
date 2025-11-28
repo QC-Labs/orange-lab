@@ -43,7 +43,7 @@ config:
     longhorn:backupBucket: backup-longhorn
     longhorn:backupBucketCreate: false # create new or import existing bucket
     longhorn:backupCron: '15 0 * * *' # daily at 0:15
-    # Full backup every 7 days, use 0 for incremental only
+    # Full backup every x days, use 0 for incremental only
     longhorn:backupFullInterval: '14'
     longhorn:backupAllVolumes: false
 
@@ -54,6 +54,7 @@ config:
     minio:rootUser: minioadmin
 
     cert-manager:enabled: false
+    cert-manager:clusterIssuer: letsencrypt-issuer
 
     nfd:enabled: false
     nfd:gpu-autodetect: true

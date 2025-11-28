@@ -138,6 +138,7 @@ export class Longhorn extends pulumi.ComponentResource {
                         host: ingresInfo.hostname,
                         ingressClassName: ingresInfo.className,
                         tls: ingresInfo.tls,
+                        annotations: ingresInfo.annotations,
                     },
                     metrics: rootConfig.enableMonitoring()
                         ? { serviceMonitor: { enabled: true } }

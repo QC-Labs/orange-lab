@@ -14,6 +14,8 @@ To run GPU workloads, either **NVidia or AMD operator** has to be installed.
 
 **NFD** is used for automatic detection of nodes with GPU hardware.
 
+**Cert-manager** is used to create SSL certificates when using custom domain and Traefik.
+
 Recommended setup/tldr:
 
 ```sh
@@ -42,21 +44,20 @@ pulumi up
 
 By default Tailscale domain (`*.ts.net`) is used for all services.
 
-In addition you can setup your custom domain. This is still work in progress and has some limitations:
+You can also setup your custom domain.
 
--   doesn't work for Helm charts yet
--   HTTPS not yet implemented (however traffic is encrypted with WireGuard even for HTTP)
--   Tailscale authentication does not work on custom domains
+Note that Tailscale authentication does not work on custom domains.
 
-To set it up, you need to:
+You need to:
 
--   add A record to your DNS pointing `*` (or each subdomain separately) to one of your Tailscale node IPs
--   set `orangelab:customDomain` to the name fo your domain
--   make sure ServiceLB/Traefik included in K3s is running, use `./scripts/k3s-*.sh` to refresh nodes if it's not
+- make sure ServiceLB/Traefik included in K3s is running, use `./scripts/k3s-server.sh` to update server node if needed
+- set `orangelab:customDomain` to the name fo your domain
+- add A record to your DNS pointing `*` (or each subdomain separately) to one of your Tailscale node IPs
+- configure `cert-manager` to use `ClusterIssuer` to provision Let's Encrypt SSL certificates
 
 ServiceLB creates an endpoint on port 80/443 on each node in the cluster.
 
-This could create issues if the ports are already used. If you want to limit on which nodes the load balancer is created, label the nodes. Adding the first label switches ServiceLB to white-list only mode.
+This could create issues if the ports are already used outside of OrangeLab. If you want to limit on which nodes the load balancer is created, label the nodes. Adding the first label switches ServiceLB to white-list only mode.
 
 ```sh
 kubectl label node <node> svccontroller.k3s.cattle.io/enablelb=true
@@ -237,10 +238,11 @@ mc admin info lab
 
 ## Cert-manager
 
-|            |                            |
-| ---------- | -------------------------- |
-| Homepage   | https://cert-manager.io/   |
-| Helm chart | https://charts.jetstack.io |
+|                         |                                                        |
+| ----------------------- | ------------------------------------------------------ |
+| Homepage                | https://cert-manager.io/                               |
+| Helm chart              | https://charts.jetstack.io                             |
+| Supported DNS providers | https://cert-manager.io/docs/configuration/acme/dns01/ |
 
 Cert-manager is a Kubernetes certificate management controller that automates the management and issuance of TLS certificates.
 
@@ -250,6 +252,64 @@ It is installed automatically when AMD GPU operator is enabled.
 pulumi config set cert-manager:enabled true
 pulumi up
 ```
+
+### Custom domains
+
+Cert-manager can be used to manage SSL certificates for your custom domain using Let's Encrypt.
+
+You will need to create a `ClusterIssuer` depending on your DNS provider.
+
+Currently only DNS challenges are supported, as HTTP require a public endpoint and at this point only private ones on Tailnet can be created.
+
+You can find supported providers at https://cert-manager.io/docs/configuration/acme/dns01/
+
+#### CloudFlare
+
+For example, to use CloudFlare you need to create an API token (https://dash.cloudflare.com/profile/api-tokens) then create a `ClusterIssuer` using this token and DNS solver.
+
+```sh
+apiVersion: v1
+kind: Secret
+metadata:
+    name: cloudflare-api-secret
+    namespace: cert-manager
+type: Opaque
+stringData:
+    api-token: <cloudflare_api_token>
+
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+    name: letsencrypt-issuer # referenced in Pulumi.yaml, you can override it with cert-manager:clusterIssuer
+    namespace: cert-manager
+spec:
+    acme:
+        server: https://acme-staging-v02.api.letsencrypt.org/directory
+        # server: https://acme-v02.api.letsencrypt.org/directory
+        email: <valid_email>
+        privateKeySecretRef:
+            name: letsencrypt-account-key
+        solvers:
+            - dns01:
+                  cloudflare:
+                      apiTokenSecretRef:
+                          name: cloudflare-api-secret
+                          key: api-token
+              selector:
+                  dnsZones:
+                      - <your_custom_domain_name>
+```
+
+Save this as `cloudflare.yml` replacing `cloudflare_api_token`, `valid_email` and `your_custom_domain_name`.
+
+Use `kubectl apply -f cloudflare.yml` to create the issuer.
+
+It's recommended to start with `acme-staging-v02` server to make sure everything works as expected, then switch to production `acme-v02` server to generate valid certificates. This helps to avoid getting throttled when configuration is incorrect.
+
+More information at https://cert-manager.io/docs/configuration/acme/dns01/cloudflare/
+
+Note the examples use `Issuer` which is namespace scoped but we'll use `ClusterIssuer` to create certificates in all related namespaces.
 
 ### Uninstall
 
@@ -294,13 +354,13 @@ Nodes with GPUs will have the following labels added:
 
 For NVIDIA GPUs:
 
--   `orangelab/gpu: "true"`
--   `orangelab/gpu-nvidia: "true"`
+- `orangelab/gpu: "true"`
+- `orangelab/gpu-nvidia: "true"`
 
 For AMD GPUs:
 
--   `orangelab/gpu: "true"`
--   `orangelab/gpu-amd: "true"`
+- `orangelab/gpu: "true"`
+- `orangelab/gpu-amd: "true"`
 
 These labels can be used for node selection in applications.
 
@@ -405,7 +465,7 @@ Available settings described in source code - [debug.ts](./debug.ts).
 
 Generally keep it disabled but there are few cases when it's useful:
 
--   access a detached Longhorn volume (f.e. cloned or restored from backup)
--   access a snapshot of currently attached volume (when active pod doesn't have shell available)
--   copy volume contents to local folder
--   use export job to create archive with volume contents to USB drive
+- access a detached Longhorn volume (f.e. cloned or restored from backup)
+- access a snapshot of currently attached volume (when active pod doesn't have shell available)
+- copy volume contents to local folder
+- use export job to create archive with volume contents to USB drive

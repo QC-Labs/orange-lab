@@ -11,7 +11,10 @@ export class Ollama extends pulumi.ComponentResource {
     private readonly app: Application;
     private readonly config: pulumi.Config;
 
-    constructor(private name: string, opts?: pulumi.ResourceOptions) {
+    constructor(
+        private name: string,
+        opts?: pulumi.ResourceOptions,
+    ) {
         super('orangelab:ai:Ollama', name, {}, opts);
 
         this.config = new pulumi.Config(name);
@@ -79,7 +82,13 @@ export class Ollama extends pulumi.ComponentResource {
                                 paths: [{ path: '/', pathType: 'Prefix' }],
                             },
                         ],
-                        tls: [{ hosts: [ingresInfo.hostname] }],
+                        tls: [
+                            {
+                                hosts: [ingresInfo.hostname],
+                                secretName: ingresInfo.tlsSecretName,
+                            },
+                        ],
+                        annotations: ingresInfo.annotations,
                     },
                     ollama: {
                         gpu: {

@@ -10,7 +10,9 @@ export interface IngressInfo {
     hostname: string;
     url: string;
     tls: boolean;
+    tlsSecretName?: string;
     domain: string;
+    annotations?: Record<string, pulumi.Output<string>>;
 }
 
 export class Network {
@@ -90,11 +92,10 @@ export class Network {
             domainName,
             'tailscale:tailnetDomain or orangelab:customDomain is required',
         );
-        const protocol = rootConfig.customDomain ? 'http' : 'https';
         const hostname = args.port.hostname ?? this.config.get('hostname');
         const url = args.port.tcp
             ? pulumi.interpolate`${hostname}:${args.port.port}`
-            : pulumi.interpolate`${protocol}://${hostname}.${domainName}`;
+            : pulumi.interpolate`https://${hostname}.${domainName}`;
         const key = this.getFullPortName({ component: args.component, port: args.port });
         this.endpoints[key] = url;
     }
@@ -189,9 +190,15 @@ export class Network {
             return {
                 className: 'traefik',
                 hostname: `${hostname}.${rootConfig.customDomain}`,
-                url: `http://${hostname}.${rootConfig.customDomain}`,
-                tls: false,
+                url: `https://${hostname}.${rootConfig.customDomain}`,
+                tls: true,
+                tlsSecretName: `${hostname}-tls-secret`,
                 domain: rootConfig.customDomain,
+                annotations: {
+                    'cert-manager.io/cluster-issuer': pulumi.output(
+                        rootConfig.certManager.clusterIssuer,
+                    ),
+                },
             };
         }
     }
@@ -202,17 +209,24 @@ export class Network {
         component?: string;
         ingressInfo: IngressInfo;
     }): kubernetes.networking.v1.Ingress {
-        const componentName = args.component
-            ? `${args.component}-${args.port.name}`
-            : args.port.name;
-        const metadata = this.metadata.get({ component: componentName });
+        const metadata = this.metadata.get({
+            component: args.component
+                ? `${args.component}-${args.port.name}`
+                : args.port.name,
+            annotations: args.ingressInfo.annotations,
+        });
         return new kubernetes.networking.v1.Ingress(
             `${metadata.name}-ingress`,
             {
                 metadata,
                 spec: {
                     ingressClassName: args.ingressInfo.className,
-                    tls: [{ hosts: [args.ingressInfo.hostname] }],
+                    tls: [
+                        {
+                            hosts: [args.ingressInfo.hostname],
+                            secretName: args.ingressInfo.tlsSecretName,
+                        },
+                    ],
                     rules: [
                         {
                             host: args.ingressInfo.hostname,

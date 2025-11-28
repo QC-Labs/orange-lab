@@ -56,7 +56,13 @@ export class HomeAssistant extends pulumi.ComponentResource {
                                 paths: [{ path: '/', pathType: 'Prefix' }],
                             },
                         ],
-                        tls: [{ hosts: [ingressInfo.hostname] }],
+                        tls: [
+                            {
+                                hosts: [ingressInfo.hostname],
+                                secretName: ingressInfo.tlsSecretName,
+                            },
+                        ],
+                        annotations: ingressInfo.annotations,
                     },
                     persistence: {
                         enabled: true,
