@@ -11,7 +11,7 @@ pulumi config set open-webui:enabled true
 pulumi up
 ```
 
-> Note: GPU memory is limited so you might encounter out-of-memory errors when loading new models. Only enable components you need. You can check processes using GPU with `nvidia-smi`. Check Ollama section on how to stop models to free up memory.
+> Note: GPU memory is limited so you might encounter out-of-memory errors when loading new models. Only enable components you need. You can check processes using GPU with `nvidia-smi` or `nvtop`. Check Ollama section on how to stop models to free up memory.
 
 ## Ollama
 
@@ -35,8 +35,12 @@ pulumi config set amd-gpu-operator:enabled true
 # Increase volume size if needed for bigger models (50 by default, can be expanded later)
 pulumi config set ollama:storageSize "100Gi"
 
+# Override appVersion when new Ollama released but Helm chart not yet updated.
+# Recommended when using AMD to allow GPU sharing (required to determine image tag)
+pulumi config set ollama:appVersion 0.13.1
+
 # Preload models at startup (comma-separated list)
-pulumi config set ollama:models "qwen2.5-coder:1.5b,llama3.2"
+pulumi config set ollama:models "qwen2.5-coder:1.5b,gpt-oss:20b"
 
 # Configure model keep-alive (-1 = keep loaded indefinitely)
 pulumi config set ollama:OLLAMA_KEEP_ALIVE "1h"
@@ -50,112 +54,47 @@ pulumi up
 ```
 
 Models will be stored on local Longhorn volume with no replication across nodes.
-You can disable the app but keep model storage with:
-
-```sh
-pulumi config set ollama:storageOnly true
-pulumi up
-```
 
 ### Ollama CLI
 
-Set CLI to use our `ollama` endpoint instead of the default `localhost:11434`. We'll also add 'ai' alias. Save this as `~/.bashrc.d/ollama`:
+Default endpoint used by ollama is `localhost:11434`.
+
+Override it by creating `~/.bashrc.d/ollama`:
 
 ```sh
-export OLLAMA_HOST=https://ollama.<tsnet>.ts.net/
-alias ai="ollama run llama3.2"
+export OLLAMA_HOST=<endpoint>
 ```
 
-Add models with:
+Get the new endpoint with:
 
 ```sh
-# Recommended for general chat, check available model sizes at https://ollama.com/search
+pulumi stack output --json | jq -r '.ai.endpoints.ollama'
+```
+
+You can also setup your tools to use OpenAPI-compatible endpoint by adding `/v1/` to the URL.
+
+### Models
+
+Check available models and sizes at https://ollama.com/search
+
+Add local models with:
+
+```sh
+# Chat
 ollama pull deepseek-r1
-ollama pull phi4
-ollama pull llama3.2
+ollama pull gpt-oss
+ollama pull qwen3
 
-# Vision to text
-ollama pull llama3.2-vision
-ollama pull llava
+# Vision models
+ollama pull qwen3-vl
+ollama pull ministral-3
 
-# Coding chat
-ollama pull deepseek-coder-v2
-ollama pull qwen2.5-coder:7b
+# Coding
+ollama pull gpt-oss:20b
+ollama pull qwen3-coder
 
 # Code completion, use smaller models for faster responses
 ollama pull qwen2.5-coder:1.5b
-```
-
-By default models are stopped after 5 minutes of inactivity. Models specified in the `ollama:models` configuration will be automatically loaded at startup and stay loaded.
-
-You can see loaded models and stop them with:
-
-```sh
-ollama ps
-ollama stop <id>
-```
-
-### Visual Studio Code
-
-You can use https://www.continue.dev/ extension to connect to Ollama for code completion and chat.
-
-`config.json` for the extension has to be updated to modify `apiBase` and point to our Ollama instance instead of the default `localhost`.
-
-Available settings at https://docs.continue.dev/customize/deep-dives/autocomplete
-
-Example config fragment:
-
-```json
-  "models": [
-    {
-      "model": "AUTODETECT",
-      "title": "Autodetect",
-      "apiBase": "https://ollama.<tsnet>.ts.net/",
-      "provider": "ollama"
-    }
-  ],
-  "tabAutocompleteModel": {
-    "title": "Qwen2.5-Coder 1.5B",
-    "provider": "ollama",
-    "model": "qwen2.5-coder:1.5b",
-    "apiBase": "https://ollama.<tsnet>.ts.net/",
-    "disableInFiles": ["*.txt"]
-  },
-
-```
-
-### Mods CLI
-
-[Mods](https://github.com/charmbracelet/mods) is a command-line AI assistant that can be configured to use our Ollama instance.
-
-Configure it with `mods --settings` and update the configuration file:
-
-```yaml
-ollama:
-    base-url: https://ollama.<tsnet>.ts.net/api
-    default-model: qwen3
-    models: # https://ollama.com/library
-        'qwen3:8b':
-            aliases: ['qwen3']
-            max-input-chars: 650000
-        'gemma3:12b-it-qat':
-            aliases: ['gemma3']
-            max-input-chars: 650000
-```
-
-After configuration, you can use `mods` from any terminal to access your Ollama models.
-
-Example usage:
-
-```sh
-# General prompt (specify model with -m)
-mods -m gemma3 "explain kubernetes operators"
-
-# Pipe command output to mods for analysis
-rpm-ostree status -v | mods "is my system up to date?"
-
-# Process files
-mods -f config.yaml "explain this configuration"
 ```
 
 ## Automatic1111 Stable Diffusion WebUI
@@ -291,35 +230,6 @@ pulumi set kubeai:enableMonitoring true
 ```
 
 Note that Prometheus has to be installed first before changing that switch.
-
-### Visual Studio Code
-
-Similar to Ollama, you can configure Continue to use KubeAi/vLLM. Depending on the model, max tokens or context length will have to be adjusted.
-
-```json
-"models": [
-    {
-        "model": "qwen2.5-coder-1.5b-rtx4070-8gb",
-        "title": "vLLM qwen2.5-coder",
-        "provider": "openai",
-        "apiBase": "https://kubeai.<tsnet>.ts.net/openai/v1",
-        "apiKey": "NOT USED"
-    },
-],
-"tabAutocompleteModel": {
-    "title": "Qwen2.5-Coder 1.5B",
-    "provider": "openai",
-    "model": "qwen2.5-coder-1.5b-rtx4070-8gb",
-    "apiBase": "https://kubeai.<tsnet>.ts.net/openai/v1",
-    "disableInFiles": ["*.txt", "*.md"]
-},
-"tabAutocompleteOptions": {
-    "disabled": "false",
-    "debounceDelay": 1000,
-    "maxPromptTokens": 1024,
-    "contextLength": 1024
-},
-```
 
 ## N8n
 
