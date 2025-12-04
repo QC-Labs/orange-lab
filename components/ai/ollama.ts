@@ -42,12 +42,12 @@ export class Ollama extends pulumi.ComponentResource {
             { name: 'OLLAMA_DEBUG', value: debug ? 'true' : 'false' },
             {
                 name: 'OLLAMA_KEEP_ALIVE',
-                value: this.config.get('OLLAMA_KEEP_ALIVE') ?? '5m',
+                value: this.config.require('OLLAMA_KEEP_ALIVE'),
             },
             { name: 'OLLAMA_LOAD_TIMEOUT', value: '5m' },
             {
                 name: 'OLLAMA_CONTEXT_LENGTH',
-                value: this.config.get('OLLAMA_CONTEXT_LENGTH') ?? '2048',
+                value: this.config.require('OLLAMA_CONTEXT_LENGTH'),
             },
         ];
         if (amdGpu && gfxVersion) {
