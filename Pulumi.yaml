@@ -120,8 +120,9 @@ config:
     # Override GPU version for AMD ROCm compatibility
     # ollama:HSA_OVERRIDE_GFX_VERSION: "11.0.2"
     # ollama:HCC_AMDGPU_TARGETS: "gfx1103"
-    # LLM parameter tuning (-1 = keep models loaded indefinitely)
-    ollama:OLLAMA_KEEP_ALIVE: '30m'
+    # "-1" = keep models loaded indefinitely, "30m" unload after 30 minutes of inactivity
+    ollama:OLLAMA_KEEP_ALIVE: '-1'
+    # LLM parameter tuning
     ollama:OLLAMA_CONTEXT_LENGTH: '32768'
 
     automatic1111:enabled: false

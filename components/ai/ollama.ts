@@ -62,6 +62,8 @@ export class Ollama extends pulumi.ComponentResource {
                 value: amdTargets,
             });
         }
+        let imageTag = this.config.get('appVersion');
+        if (amdGpu && imageTag) imageTag = imageTag.concat('-rocm');
         new kubernetes.helm.v3.Release(
             this.name,
             {
@@ -73,6 +75,7 @@ export class Ollama extends pulumi.ComponentResource {
                     affinity: this.app.nodes.getAffinity(),
                     extraEnv,
                     fullnameOverride: 'ollama',
+                    image: { tag: imageTag },
                     ingress: {
                         enabled: true,
                         className: ingresInfo.className,
@@ -92,7 +95,9 @@ export class Ollama extends pulumi.ComponentResource {
                     },
                     ollama: {
                         gpu: {
-                            enabled: true,
+                            // AMD does not support time slicing so ignore resource requests and use device volumes instead
+                            // appVersion has to be set to determine imageTag (Helm chart limitation)
+                            enabled: !imageTag?.includes('-rocm'),
                             type: amdGpu ? 'amd' : 'nvidia',
                             number: 1,
                         },
@@ -100,6 +105,24 @@ export class Ollama extends pulumi.ComponentResource {
                             run: this.config.get('models')?.split(',') ?? [],
                         },
                     },
+                    ...(amdGpu
+                        ? {
+                              volumes: [
+                                  {
+                                      name: 'kfd',
+                                      hostPath: { path: '/dev/kfd' },
+                                  },
+                                  {
+                                      name: 'dri',
+                                      hostPath: { path: '/dev/dri' },
+                                  },
+                              ],
+                              volumeMounts: [
+                                  { name: 'kfd', mountPath: '/dev/kfd' },
+                                  { name: 'dri', mountPath: '/dev/dri' },
+                              ],
+                          }
+                        : {}),
                     persistentVolume: {
                         enabled: true,
                         existingClaim: this.app.storage?.getClaimName(),
