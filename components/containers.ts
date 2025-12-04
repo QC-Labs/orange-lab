@@ -150,7 +150,7 @@ export class Containers {
                 type: 'Directory',
             });
         }
-        return volumeMounts?.length ? this.storage?.createVolumes() ?? [] : undefined;
+        return volumeMounts?.length ? (this.storage?.createVolumes() ?? []) : undefined;
     }
 
     private createVolumeMounts(
@@ -186,11 +186,8 @@ export class Containers {
                     ...resources,
                     limits: { ...resources?.limits, 'nvidia.com/gpu': '1' },
                 };
-            case 'amd':
-                return {
-                    ...resources,
-                    limits: { ...resources?.limits, 'amd.com/gpu': '1' },
-                };
+            // AMD does not support time slicing
+            // Volumes used for direct device access instead of resource limits
             default:
                 return resources;
         }

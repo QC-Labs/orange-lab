@@ -1,8 +1,6 @@
 # AMD GPU Guide
 
 > **Note**: AMD GPU drivers are not as stable as NVIDIA depending on the model. Expect segmentation faults and other issues.
->
-> **Important Limitation**: AMD GPUs **do not support GPU sharing** like NVIDIA. Only one application can use the GPU at a time on a node. Multiple models within the same application (e.g., Ollama) will work, but you cannot run Ollama and and other GPU app on the same AMD GPU simultaneously.
 
 ## Installation
 
@@ -52,12 +50,12 @@ More information at https://github.com/ollama/ollama/blob/main/docs/gpu.md#overr
 
 ## Monitoring
 
-AMD GPU dashboards are automatically installed when monitoring is enabled:
+AMD GPU dashboards for Prometheus are automatically installed when monitoring is enabled:
 
--   AMD - Overview
--   AMD - GPU
--   AMD - Job
--   AMD - Compute Node
+- AMD - Overview
+- AMD - GPU
+- AMD - Job
+- AMD - Compute Node
 
 ```sh
 pulumi config set amd-gpu-operator:enableMonitoring true
