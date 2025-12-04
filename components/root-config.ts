@@ -29,6 +29,7 @@ class RootConfig {
 
     public longhorn = {
         replicaCount: parseInt(this.requireAppConfig('longhorn', 'replicaCount')),
+        replicaAutoBalance: this.requireAppConfig('longhorn', 'replicaAutoBalance'),
     };
     public storageClass = {
         Default: 'longhorn',

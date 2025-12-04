@@ -45,6 +45,8 @@ config:
     longhorn:backupCron: '15 0 * * *' # daily at 0:15
     # Full backup every x days, use 0 for incremental only
     longhorn:backupFullInterval: '14'
+    # Set to "least-effort" or "best-effort" to move replicas when nodes become unavailable
+    longhorn:replicaAutoBalance: disabled
     longhorn:backupAllVolumes: false
 
     minio:enabled: false

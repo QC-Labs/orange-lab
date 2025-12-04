@@ -105,7 +105,7 @@ export class Longhorn extends pulumi.ComponentResource {
                         offlineRelicaRebuilding: 'true',
                         orphanResourceAutoDeletion: 'replica-data;instance',
                         recurringJobMaxRetention: '20',
-                        replicaAutoBalance: 'least-effort',
+                        replicaAutoBalance: rootConfig.longhorn.replicaAutoBalance,
                         replicaDiskSoftAntiAffinity: 'true',
                         replicaReplenishmentWaitInterval: '900',
                         replicaSoftAntiAffinity: 'true',
