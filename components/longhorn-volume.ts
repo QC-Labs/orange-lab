@@ -22,18 +22,9 @@ interface LonghornVolumeArgs {
      */
     fromVolume?: string;
     /**
-     * Clone volume attached to existing claim.
-     * Used by Debug component to inspect contents of already attached volumes
-     */
-    cloneFromClaim?: string;
-    /**
      * Enable automated backups for volume by adding it to "backup" group
      */
     enableBackup?: boolean;
-    /**
-     * Location of the backup volume
-     */
-    fromBackup?: string;
     /**
      * Labels to apply to the PVC
      */
@@ -63,19 +54,8 @@ export class LonghornVolume extends pulumi.ComponentResource {
     ) {
         super('orangelab:LonghornVolume', name, args, opts);
         assert(
-            !(args.cloneFromClaim && args.fromVolume),
-            'Cannot use both cloneFromClaim and fromVolume',
-        );
-        assert(
-            !(args.fromVolume && args.fromBackup),
-            'Either use fromVolume or fromBackup',
-        );
-        assert(
-            !(
-                args.storageClass &&
-                (args.fromVolume ?? args.fromBackup ?? args.cloneFromClaim)
-            ),
-            'Cannot specify fromVolume, cloneFromClaim, fromBackup when using custom storageClass',
+            !(args.storageClass && args.fromVolume),
+            'Cannot specify fromVolume when using custom storageClass',
         );
 
         this.volumeClaimName = args.name;
@@ -90,22 +70,13 @@ export class LonghornVolume extends pulumi.ComponentResource {
 
     private createVolume(args: LonghornVolumeArgs) {
         assert(!args.fromVolume);
-        let storageClassName: pulumi.Output<string> | undefined;
-        if (args.fromBackup) {
-            storageClassName = this.createBackupStorageClass().apply(x => x);
-        }
         const pvc = this.createPVC({
             name: this.volumeClaimName,
-            cloneFromClaim: args.cloneFromClaim,
             storageClassName:
-                this.args.storageClass ??
-                storageClassName ??
-                rootConfig.getStorageClass(args.type),
+                this.args.storageClass ?? rootConfig.getStorageClass(args.type),
         });
         return pvc.spec.storageClassName;
     }
-
-
 
     private attachVolume(args: LonghornVolumeArgs) {
         assert(args.fromVolume && !args.storageClass);
@@ -119,34 +90,6 @@ export class LonghornVolume extends pulumi.ComponentResource {
             volumeName: existingVolume.metadata.name,
         });
         return pvc.spec.storageClassName;
-    }
-
-    private createBackupStorageClass(): pulumi.Output<string> {
-        const isLocalOnly =
-            this.args.type === StorageType.GPU || this.args.type === StorageType.Database;
-        const isDefault = this.args.type === StorageType.Default;
-        const storageClass = new kubernetes.storage.v1.StorageClass(
-            `${this.name}-sc`,
-            {
-                metadata: {
-                    name: `longhorn-${this.args.name}`,
-                    namespace: 'longhorn-system',
-                },
-                provisioner: 'driver.longhorn.io',
-                allowVolumeExpansion: true,
-                parameters: {
-                    numberOfReplicas: isDefault
-                        ? rootConfig.longhorn.replicaCount.toString()
-                        : '1',
-                    dataLocality: isLocalOnly ? 'strict-local' : 'best-effort',
-                    ...(this.args.fromBackup && { fromBackup: this.args.fromBackup }),
-                    staleReplicaTimeout: isDefault ? '30' : staleReplicaTimeout,
-                },
-                volumeBindingMode: isLocalOnly ? 'WaitForFirstConsumer' : 'Immediate',
-            },
-            { parent: this },
-        );
-        return storageClass.metadata.name;
     }
 
     private createLonghornPV({
@@ -187,12 +130,10 @@ export class LonghornVolume extends pulumi.ComponentResource {
 
     private createPVC({
         name,
-        cloneFromClaim,
         volumeName,
         storageClassName,
     }: {
         name: string;
-        cloneFromClaim?: string;
         volumeName?: pulumi.Output<string>;
         storageClassName: pulumi.Output<string> | string;
     }) {
@@ -217,12 +158,6 @@ export class LonghornVolume extends pulumi.ComponentResource {
                 spec: {
                     accessModes: ['ReadWriteOnce'],
                     storageClassName,
-                    dataSource: cloneFromClaim
-                        ? {
-                              kind: 'PersistentVolumeClaim',
-                              name: cloneFromClaim,
-                          }
-                        : undefined,
                     volumeName,
                     resources: { requests: { storage: this.args.size } },
                 },

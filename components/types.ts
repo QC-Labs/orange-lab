@@ -112,11 +112,6 @@ export interface PersistentVolume {
      */
     fromVolume?: string;
     /**
-     * Specifies the name of an existing PersistentVolumeClaim (PVC) from which to clone data.
-     * This directly populates the `dataSource` field of the new PVC.
-     */
-    cloneFromClaim?: string;
-    /**
      * Allows explicitly setting the full name of the resulting PersistentVolumeClaim resource.
      * This is particularly useful for integration with StatefulSets using volume claim templates,
      * where Kubernetes automatically generates PVC names like `<volumeClaimTemplate.name>-<statefulSet.name>-<ordinalIndex>`.

@@ -4,9 +4,9 @@ Longhorn provides automated snapshots and backups of persistent volumes to S3-co
 
 Longhorn jobs:
 
--   **Snapshots**: Taken hourly for all volumes (configurable with `longhorn:snapshotCron`)
--   **Incremental Backups**: Run daily at 00:15 (configurable with `longhorn:backupCron`)
--   If a volume has no changes since the last backup, no data is transferred
+- **Snapshots**: Taken hourly for all volumes (configurable with `longhorn:snapshotCron`)
+- **Incremental Backups**: Run daily at 00:15 (configurable with `longhorn:backupCron`)
+- If a volume has no changes since the last backup, no data is transferred
 
 **Note:** Snapshots are disabled by default to save storage space. You can enable them with `longhorn:snapshotEnabled` to be able to revert storage to previous state. It's recommneded however to enable daily backups instead as a snapshot is also taked during backup operation.
 
@@ -73,32 +73,13 @@ The backup setting precedence is:
 
 ## Restoring from Backup
 
-There are two ways to restore volumes from backups:
-
-### Option 1: Using the `fromBackup` parameter
-
-You can directly restore from a backup by providing the S3 URL in your application configuration:
-
-```sh
-pulumi config set <app>:fromBackup "s3://backup-longhorn@lab/?backup=backup-12345&volume=my-volume"
-```
-
-Notes:
-
--   The S3 URL must be copied exactly from the Longhorn UI's backup page
--   Navigate to Backup → select backup → Copy URL
--   Volumes are provisioned dynamically with system-generated names
-
-### Option 2: Restore via UI then use `fromVolume` (Recommended)
-
-For more control over the process and to get meaningful volume names:
+To restore a volume from a backup, follow these steps:
 
 1. Restore the volume through the Longhorn UI first
     - Name the volume after the application (e.g., "ollama")
 2. Use the `fromVolume` parameter to attach the existing volume:
 
 ```sh
-# First, restore volume through Longhorn UI and note its name
 pulumi config set <app>:fromVolume "my-restored-volume"
 pulumi up
 ```

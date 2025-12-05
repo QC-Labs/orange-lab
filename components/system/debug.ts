@@ -1,16 +1,12 @@
 import * as pulumi from '@pulumi/pulumi';
-import assert from 'node:assert';
 import { Application } from '../application';
 
 /*
 Disable debug first when switching volumes
 debug:enabled true
 
-Namespace volume was created in, defaults to clonePvc
-debug:namespace: default
-
-Name of existing attached PVC, the related volume will be cloned
-debug:cloneFromClaim: beszel
+Namespace volume was created in
+debug:namespace: app-namespace
 
 Use existing Longhorn volume instead of PVC.
 debug:fromVolume: restored-volume
@@ -30,25 +26,23 @@ export class Debug extends pulumi.ComponentResource {
     namespace: string;
     exportPath: string;
 
-    constructor(private name: string, args = {}, opts?: pulumi.ResourceOptions) {
+    constructor(
+        private name: string,
+        args = {},
+        opts?: pulumi.ResourceOptions,
+    ) {
         super('orangelab:system:Debug', name, args, opts);
 
         const config = new pulumi.Config('debug');
-        const cloneFromClaim = config.get('cloneFromClaim');
-        const fromVolume = config.get('fromVolume');
-        this.namespace = config.get('namespace') ?? cloneFromClaim ?? 'default';
+        const fromVolume = config.require('fromVolume');
+        this.namespace = config.require('namespace');
         this.exportPath = config.require('exportPath');
 
-        const volumeName = cloneFromClaim ?? fromVolume;
-        assert(volumeName, 'Either cloneFromClaim or fromVolume must be provided');
         this.app = new Application(this, name, {
             existingNamespace: this.namespace,
         })
             .addLocalStorage({ name: 'local', hostPath: this.exportPath })
-            .addStorage({
-                fromVolume,
-                cloneFromClaim,
-            });
+            .addStorage({ fromVolume });
 
         // Comment out one method
         this.createDeployment();

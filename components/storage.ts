@@ -58,9 +58,7 @@ export class Storage extends pulumi.ComponentResource {
             {
                 affinity: this.nodes.getVolumeAffinity(),
                 annotations: volume?.annotations,
-                cloneFromClaim: volume?.cloneFromClaim,
                 enableBackup: rootConfig.isBackupEnabled(this.appName, volume?.name),
-                fromBackup: this.config.get(`${prefix}fromBackup`),
                 fromVolume: volume?.fromVolume ?? this.config.get(`${prefix}fromVolume`),
                 labels: { ...labels, ...volume?.labels },
                 name: volume?.overrideFullname ?? volumeName,
