@@ -225,12 +225,10 @@ pulumi up
 brew install minio-mc
 
 # Create "lab" alias pointing to MinIO server
-bash +o history
 export ACCESS_KEY=minioadmin
 export SECRET_KEY=$(pulumi stack output system --show-secrets | jq .minioUsers.minioadmin -r)
 
 mc alias set lab https://minio-api.serengeti-dragon.ts.net $ACCESS_KEY $SECRET_KEY
-bash -o history
 
 # Test connection
 mc admin info lab
