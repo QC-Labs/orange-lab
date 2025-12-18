@@ -63,6 +63,23 @@ This could create issues if the ports are already used outside of OrangeLab. If 
 kubectl label node <node> svccontroller.k3s.cattle.io/enablelb=true
 ```
 
+**Note:** When switching from Tailscale to a custom domain, you **must** disable `longhorn:backupEnabled` first. The MinIO Pulumi provider connection will break during the transition because the API endpoint hostname changes.
+
+```sh
+# Disable backups
+# This will keep the S3 bucket contents intact
+pulumi config set longhorn:backupEnabled false
+pulumi up
+
+# Enable custom domain
+pulumi config set orangelab:customDomain example.com
+pulumi up
+
+# Re-enable backups
+pulumi config set longhorn:backupEnabled true
+pulumi up
+```
+
 ## Tailscale-operator
 
 |                |                                                                                            |

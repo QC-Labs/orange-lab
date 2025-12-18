@@ -13,14 +13,14 @@ export class MinioS3Bucket extends pulumi.ComponentResource {
 
     constructor(
         public name: string,
-        private args: MinioS3BucketArgs,
+        args: MinioS3BucketArgs,
         private opts?: pulumi.ResourceOptions,
     ) {
         super('orangelab:system:MinioS3Bucket', name, args, opts);
         this.bucket = args.createBucket
             ? new minio.S3Bucket(
                   `${name}-s3bucket`,
-                  { bucket: args.bucketName },
+                  { bucket: args.bucketName, forceDestroy: false },
                   { parent: this, provider: opts?.provider, retainOnDelete: true },
               )
             : minio.S3Bucket.get(
