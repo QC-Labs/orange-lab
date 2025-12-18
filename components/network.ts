@@ -74,7 +74,7 @@ export class Network {
             ports: httpPorts,
         });
         httpPorts.forEach(port => {
-            const ingressInfo = this.getIngressInfo(port.hostname, port.ingressClassName);
+            const ingressInfo = this.getIngressInfo(port.hostname);
             this.createIngress({
                 serviceName: service.metadata.name,
                 port,
@@ -176,9 +176,8 @@ export class Network {
 
     public getIngressInfo(
         hostname: string = this.config.require('hostname'),
-        className?: 'tailscale' | 'traefik',
     ): IngressInfo {
-        if (className === 'tailscale' || !rootConfig.customDomain) {
+        if (!rootConfig.customDomain) {
             return {
                 className: 'tailscale',
                 hostname,

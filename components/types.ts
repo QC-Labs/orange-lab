@@ -12,7 +12,6 @@ export interface ServicePort {
     port: number;
     hostname?: string;
     tcp?: boolean;
-    ingressClassName?: 'tailscale' | 'traefik';
 }
 
 export interface VolumeMount {
