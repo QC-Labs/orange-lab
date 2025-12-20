@@ -48,18 +48,10 @@ export class Nodes {
     }
 
     getVolumeAffinity(): kubernetes.types.input.core.v1.VolumeNodeAffinity | undefined {
-        const terms: NodeSelectorTerm[] = [];
-        const requiredNodeLabel = this.args.config.get('requiredNodeLabel');
-        if (requiredNodeLabel) {
-            terms.push(this.getNodeSelectorTerm(requiredNodeLabel));
-        }
-        if (this.args.gpu) {
-            terms.push(this.getNodeSelectorTerm('orangelab/gpu=true'));
-        }
-        return terms.length
+        return this.args.gpu
             ? {
                   required: {
-                      nodeSelectorTerms: terms,
+                      nodeSelectorTerms: [this.getNodeSelectorTerm('orangelab/gpu=true')],
                   },
               }
             : undefined;
