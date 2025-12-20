@@ -5,15 +5,16 @@ import { Metadata } from './metadata';
 import { DatabaseConfig } from './types';
 
 export interface MariaDbClusterArgs {
-    name: string;
-    metadata: Metadata;
-    storageSize: pulumi.Input<string>;
-    storageClassName?: pulumi.Input<string>;
-    storageOnly?: boolean;
+    affinity?: kubernetes.types.input.core.v1.Affinity;
     disableAuth?: boolean;
     enabled?: boolean;
-    rootPassword?: pulumi.Input<string>;
+    metadata: Metadata;
+    name: string;
     password?: pulumi.Input<string>;
+    rootPassword?: pulumi.Input<string>;
+    storageClassName?: pulumi.Input<string>;
+    storageOnly?: boolean;
+    storageSize: pulumi.Input<string>;
 }
 
 export class MariaDbCluster extends pulumi.ComponentResource {
@@ -80,6 +81,7 @@ export class MariaDbCluster extends pulumi.ComponentResource {
                 kind: 'MariaDB',
                 metadata,
                 spec: {
+                    affinity: this.args.affinity,
                     database: this.appName,
                     inheritMetadata: {
                         labels: this.args.metadata.getAppLabels(this.args.name),

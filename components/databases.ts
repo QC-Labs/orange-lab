@@ -50,15 +50,16 @@ export class Databases {
         const db = new MariaDbCluster(
             this.appName,
             {
-                name,
-                metadata: this.metadata,
-                storageSize: this.storage.getStorageSize(name),
-                storageClassName: this.storage.getStorageClass(name),
-                storageOnly: this.storageOnly,
+                affinity: this.nodes.getAffinity(name),
                 disableAuth: this.config.getBoolean(`${name}/disableAuth`),
+                enabled: this.config.getBoolean(`${name}/enabled`) ?? enabledDefault,
+                metadata: this.metadata,
+                name,
                 password: this.config.getSecret(`${name}/password`),
                 rootPassword: this.config.getSecret(`${name}/rootPassword`),
-                enabled: this.config.getBoolean(`${name}/enabled`) ?? enabledDefault,
+                storageClassName: this.storage.getStorageClass(name),
+                storageOnly: this.storageOnly,
+                storageSize: this.storage.getStorageSize(name),
             },
             this.opts,
         );
