@@ -24,9 +24,17 @@ pulumi config set mariadb-operator:enabled true
 
 #### Override root password
 
-When restoring from backup, the generated root password won't match the one already in database. You have to either reset it (recommended) or use specific password to avoid auto-generation.
+After the first deploy of application using MariaDB it is recommended to set the root password in Pulumi config file.
+
+This will help with restoring volumes from backups later as it makes sure the password matches the one stored in the database.
+
+If this is not done then you'll need to reset the password (see next section).
 
 ```sh
+# read rootPassword from DB secret
+kubectl get secret -n <app> <app>-db-secret -o jsonpath='{.data.rootPassword}' | base64 -d
+
+# Set db/rootPassword
 pulumi config set --secret <app>:db/rootPassword <root-password>
 ```
 
