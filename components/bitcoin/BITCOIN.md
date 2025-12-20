@@ -134,6 +134,9 @@ pulumi config set mempool:version v3.2.1 # lock version
 pulumi config set mempool:hostname explorer # override hostname
 
 pulumi up
+
+# Store root password in Pulumi config to avoid having to reset it later on backup restore
+./scripts/mariadb-password.sh <app>
 ```
 
 This will deploy Mempool frontend and backend connected to your Bitcoin node and Electrs server.

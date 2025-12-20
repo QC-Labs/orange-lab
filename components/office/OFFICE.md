@@ -83,21 +83,16 @@ Nextcloud uses a MariaDB database to store its data, which is managed by the Mar
 When restoring from a backup, the auto-generated passwords will not match the ones stored in the database and `config/config.php`. To prevent this mismatch, you should set the passwords explicitly after the initial install. This ensures that the application can connect to the database with the correct credentials after the restore.
 
 ```sh
-# Set password for the nextcloud user
-pulumi config set nextcloud:db/password YourNextcloudDbPassword --secret
-# Set password for the mariadb root user
-pulumi config set nextcloud:db/rootPassword YourMariaDbRootPassword --secret
-pulumi up
-```
-
-To get the current passwords, you can use the following commands:
-
-```sh
 # Get the nextcloud user password from Pulumi stack output
 pulumi stack output --show-secrets --json | jq '.office.nextcloud.db.password' -r
 
-# Get the root user password from the Kubernetes secret
-kubectl get secret nextcloud-db-secret -n nextcloud -o jsonpath='{.data.rootPassword}' | base64 --decode
+# Set password for the nextcloud user
+pulumi config set nextcloud:db/password YourNextcloudDbPassword --secret
+
+# Set password for the mariadb root user
+./scripts/mariadb-password.sh nextcloud
+
+pulumi up
 ```
 
 ### Upgrade

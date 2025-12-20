@@ -31,11 +31,7 @@ This will help with restoring volumes from backups later as it makes sure the pa
 If this is not done then you'll need to reset the password (see next section).
 
 ```sh
-# read rootPassword from DB secret
-kubectl get secret -n <app> <app>-db-secret -o jsonpath='{.data.rootPassword}' | base64 -d
-
-# Set db/rootPassword
-pulumi config set --secret <app>:db/rootPassword <root-password>
+./scripts/mariadb-password.sh <app>
 ```
 
 #### Resetting root password
@@ -106,7 +102,7 @@ When setting `<app>:storageOnly` to `true`, databases are shut down and only sto
 pulumi config set <app>:db/enabled true
 ```
 
-#### Manual Backup and Restore
+### Manual Backup and Restore
 
 For manual database operations, use the provided scripts in the `scripts/` directory:
 
