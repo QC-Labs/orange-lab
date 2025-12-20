@@ -13,7 +13,11 @@ export class N8n extends pulumi.ComponentResource {
     encryptionKey: pulumi.Output<string>;
     postgresConfig?: DatabaseConfig;
 
-    constructor(private name: string, args: N8nArgs, opts?: pulumi.ResourceOptions) {
+    constructor(
+        private name: string,
+        args: N8nArgs,
+        opts?: pulumi.ResourceOptions,
+    ) {
         super('orangelab:ai:N8n', name, args, opts);
 
         const config = new pulumi.Config(name);
@@ -24,7 +28,7 @@ export class N8n extends pulumi.ComponentResource {
 
         this.app = new Application(this, name).addStorage().addPostgres();
         this.postgresConfig = this.app.databases?.getConfig();
-        const initContainer = this.app.databases?.getWaitContainer(this.postgresConfig);
+        const initContainer = this.app.databases?.getWaitContainer();
         this.app.addDeployment({
             image: 'docker.n8n.io/n8nio/n8n',
             port: 5678,

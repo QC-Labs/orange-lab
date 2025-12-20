@@ -41,7 +41,7 @@ export class Nextcloud extends pulumi.ComponentResource {
         adminSecret: k8s.core.v1.Secret;
         dbConfig: DatabaseConfig;
     }) {
-        const waitForDb = this.app.databases?.getWaitContainer(args.dbConfig);
+        const waitForDb = this.app.databases?.getWaitContainer();
         const debug = this.config.getBoolean('debug') ?? false;
         return new k8s.helm.v3.Release(
             this.appName,

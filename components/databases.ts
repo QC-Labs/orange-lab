@@ -124,10 +124,7 @@ export class Databases {
     /**
      * Returns an initContainer spec to wait for database until it accepts connections.
      */
-    getWaitContainer(dbConfig?: DatabaseConfig): InitContainerSpec {
-        if (!dbConfig) {
-            throw new Error('Database config is required for wait container.');
-        }
+    getWaitContainer(dbConfig: DatabaseConfig = this.getConfig()): InitContainerSpec {
         const hostPort = `${dbConfig.hostname} ${dbConfig.port.toString()}`;
         return {
             name: 'wait-for-db',

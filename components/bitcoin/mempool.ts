@@ -15,7 +15,11 @@ export class Mempool extends pulumi.ComponentResource {
     public dbConfig?: DatabaseConfig;
     private readonly config: pulumi.Config;
 
-    constructor(name: string, private args: MempoolArgs, opts?: pulumi.ResourceOptions) {
+    constructor(
+        name: string,
+        private args: MempoolArgs,
+        opts?: pulumi.ResourceOptions,
+    ) {
         super('orangelab:bitcoin:Mempool', name, args, opts);
 
         rootConfig.require(name, 'mariadb-operator');
@@ -38,6 +42,7 @@ export class Mempool extends pulumi.ComponentResource {
             return { host, port };
         });
 
+        const waitForDb = this.app.databases?.getWaitContainer();
         this.app
             .addDeployment({
                 name: 'backend',
@@ -60,6 +65,7 @@ export class Mempool extends pulumi.ComponentResource {
                     DATABASE_PASSWORD: this.dbConfig?.password,
                     DATABASE_USERNAME: this.dbConfig?.username,
                 },
+                initContainers: waitForDb ? [waitForDb] : undefined,
                 resources: {
                     requests: { cpu: '100m', memory: '512Mi' },
                     limits: { cpu: '1000m', memory: '4Gi' },
