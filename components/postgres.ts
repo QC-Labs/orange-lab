@@ -71,11 +71,7 @@ export class PostgresCluster extends pulumi.ComponentResource {
                 kind: 'Cluster',
                 metadata,
                 spec: {
-                    affinity: {
-                        topologyKey: 'kubernetes.io/hostname',
-                        nodeAffinity: this.args.nodes.getAffinity(this.args.name)
-                            ?.nodeAffinity,
-                    },
+                    affinity: this.args.nodes.getAffinity(this.args.name),
                     enablePDB: instances > 1,
                     instances,
                     inheritedMetadata: {
