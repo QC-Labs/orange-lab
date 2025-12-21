@@ -226,7 +226,7 @@ export class Containers {
         if (!args.secretData) return;
         const metadata = this.metadata.get({ component: args.containerName });
         const secret = new kubernetes.core.v1.Secret(
-            `${metadata.name}-secret`,
+            `${metadata.name}-env`,
             {
                 metadata,
                 immutable: true,
