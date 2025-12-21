@@ -24,10 +24,15 @@ export class Nodes {
 
     getAffinity(component?: string): kubernetes.types.input.core.v1.Affinity | undefined {
         const prefix = component ? `${component}/` : '';
-        const requiredTerms = this.getRequiredNodeSelectorTerms(prefix);
-        const preferredLabel = this.args.config.get(`${prefix}preferredNodeLabel`);
+        const preferredNodeLabel =
+            this.args.config.get(`${prefix}preferredNodeLabel`) ??
+            this.args.config.get('preferredNodeLabel');
+        const requiredNodeLabel =
+            this.args.config.get(`${prefix}requiredNodeLabel`) ??
+            this.args.config.get('requiredNodeLabel');
+        const requiredTerms = this.getRequiredNodeSelectorTerms(requiredNodeLabel);
 
-        if (requiredTerms.length === 0 && !preferredLabel) return;
+        if (requiredTerms.length === 0 && !preferredNodeLabel) return;
 
         return {
             nodeAffinity: {
@@ -35,10 +40,10 @@ export class Nodes {
                     requiredTerms.length > 0
                         ? { nodeSelectorTerms: requiredTerms }
                         : undefined,
-                preferredDuringSchedulingIgnoredDuringExecution: preferredLabel
+                preferredDuringSchedulingIgnoredDuringExecution: preferredNodeLabel
                     ? [
                           {
-                              preference: this.getNodeSelectorTerm(preferredLabel),
+                              preference: this.getNodeSelectorTerm(preferredNodeLabel),
                               weight: 1,
                           },
                       ]
@@ -57,11 +62,8 @@ export class Nodes {
             : undefined;
     }
 
-    private getRequiredNodeSelectorTerms(prefix?: string): NodeSelectorTerm[] {
+    private getRequiredNodeSelectorTerms(requiredNodeLabel?: string): NodeSelectorTerm[] {
         const terms: NodeSelectorTerm[] = [];
-        const requiredNodeLabel = this.args.config.get(
-            `${prefix ?? ''}requiredNodeLabel`,
-        );
 
         if (requiredNodeLabel) {
             terms.push(this.getNodeSelectorTerm(requiredNodeLabel));
