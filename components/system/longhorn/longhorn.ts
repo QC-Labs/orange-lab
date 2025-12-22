@@ -80,6 +80,7 @@ export class Longhorn extends pulumi.ComponentResource {
                 namespace: this.app.namespace,
                 version: this.config.get('version'),
                 repositoryOpts: { repo: 'https://charts.longhorn.io' },
+                maxHistory: rootConfig.helmHistoryLimit,
                 values: {
                     defaultBackupStore: backupSecretName
                         ? {

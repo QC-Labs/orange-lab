@@ -31,6 +31,8 @@ class RootConfig {
         replicaCount: parseInt(this.requireAppConfig('longhorn', 'replicaCount')),
         replicaAutoBalance: this.requireAppConfig('longhorn', 'replicaAutoBalance'),
     };
+
+    public helmHistoryLimit = 5;
     public storageClass = {
         Default: 'longhorn',
         GPU: 'longhorn-gpu',

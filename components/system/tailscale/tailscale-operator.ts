@@ -68,6 +68,7 @@ export class TailscaleOperator extends pulumi.ComponentResource {
                 namespace: this.app.namespace,
                 version,
                 repositoryOpts: { repo: 'https://pkgs.tailscale.com/helmcharts' },
+                maxHistory: rootConfig.helmHistoryLimit,
                 values: {
                     oauth: { clientId: oauthClientId, clientSecret: oauthClientSecret },
                     apiServerProxyConfig: { mode: 'true' },
