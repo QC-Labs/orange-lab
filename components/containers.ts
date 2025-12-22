@@ -228,7 +228,10 @@ export class Containers {
         const secret = new kubernetes.core.v1.Secret(
             `${metadata.name}-env`,
             {
-                metadata,
+                metadata: {
+                    ...metadata,
+                    name: `${metadata.name}-env`,
+                },
                 immutable: true,
                 // filter out undefined values
                 stringData: Object.fromEntries(
