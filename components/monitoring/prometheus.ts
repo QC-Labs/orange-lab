@@ -1,4 +1,3 @@
-import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
 import { Nodes } from '../nodes';
@@ -17,7 +16,6 @@ export class Prometheus extends pulumi.ComponentResource {
 
         this.config = new pulumi.Config('prometheus');
         this.nodes = new Nodes({ config: this.config });
-        const version = this.config.get('version');
         const grafanaPassword = this.config.require('grafana/password');
         const prometheusHostname = this.config.require('hostname');
         const alertManagerHostname = this.config.require('alertmanager/hostname');
@@ -37,15 +35,11 @@ export class Prometheus extends pulumi.ComponentResource {
         const grafanaIngres = this.app.network.getIngressInfo(grafanaHostname);
         const prometheusIngres = this.app.network.getIngressInfo(prometheusHostname);
         const alertManagerIngres = this.app.network.getIngressInfo(alertManagerHostname);
-        new kubernetes.helm.v3.Release(
+        this.app.addHelmChart(
             name,
             {
                 chart: 'kube-prometheus-stack',
-                version,
-                namespace: this.app.namespace,
-                repositoryOpts: {
-                    repo: 'https://prometheus-community.github.io/helm-charts',
-                },
+                repo: 'https://prometheus-community.github.io/helm-charts',
                 values: {
                     alertmanager: {
                         enabled: true,
@@ -123,7 +117,7 @@ export class Prometheus extends pulumi.ComponentResource {
                     },
                 },
             },
-            { parent: this, dependsOn: this.app.storage },
+            { dependsOn: this.app.storage },
         );
 
         this.alertmanagerEndpointUrl = alertManagerIngres.url;

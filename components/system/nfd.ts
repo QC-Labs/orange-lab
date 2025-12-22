@@ -7,7 +7,10 @@ export class NodeFeatureDiscovery extends pulumi.ComponentResource {
     private readonly config: pulumi.Config;
     private readonly app: Application;
 
-    constructor(private readonly name: string, opts?: pulumi.ResourceOptions) {
+    constructor(
+        private readonly name: string,
+        opts?: pulumi.ResourceOptions,
+    ) {
         super('orangelab:system:NFD', name, {}, opts);
 
         this.config = new pulumi.Config(name);
@@ -22,28 +25,20 @@ export class NodeFeatureDiscovery extends pulumi.ComponentResource {
     }
 
     private createHelmChart(): kubernetes.helm.v3.Release {
-        return new kubernetes.helm.v3.Release(
-            this.name,
-            {
-                chart: 'node-feature-discovery',
-                repositoryOpts: {
-                    repo: 'https://kubernetes-sigs.github.io/node-feature-discovery/charts',
-                },
-                version: this.config.get('version'),
-                namespace: this.app.namespace,
-                values: {
-                    prometheus: { enable: rootConfig.enableMonitoring() },
-                    worker: {
-                        // set as priviledged to allow access to /etc/kubernetes/node-feature-discovery/features.d/
-                        securityContext: {
-                            allowPrivilegeEscalation: true,
-                            privileged: true,
-                        },
+        return this.app.addHelmChart(this.name, {
+            chart: 'node-feature-discovery',
+            repo: 'https://kubernetes-sigs.github.io/node-feature-discovery/charts',
+            values: {
+                prometheus: { enable: rootConfig.enableMonitoring() },
+                worker: {
+                    // set as priviledged to allow access to /etc/kubernetes/node-feature-discovery/features.d/
+                    securityContext: {
+                        allowPrivilegeEscalation: true,
+                        privileged: true,
                     },
                 },
             },
-            { parent: this },
-        );
+        });
     }
 
     // Based on https://github.com/ROCm/gpu-operator/blob/main/helm-charts/templates/nfd-default-rule.yaml

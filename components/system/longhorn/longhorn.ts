@@ -73,82 +73,75 @@ export class Longhorn extends pulumi.ComponentResource {
         backupTarget?: string;
         ingresInfo: IngressInfo;
     }) {
-        return new kubernetes.helm.v3.Release(
-            this.name,
-            {
-                chart: 'longhorn',
-                namespace: this.app.namespace,
-                version: this.config.get('version'),
-                repositoryOpts: { repo: 'https://charts.longhorn.io' },
-                maxHistory: rootConfig.helmHistoryLimit,
-                values: {
-                    defaultBackupStore: backupSecretName
-                        ? {
-                              backupTarget,
-                              backupTargetCredentialSecret: backupSecretName,
-                          }
-                        : undefined,
-                    defaultSettings: {
-                        allowEmptyDiskSelectorVolume: 'false',
-                        allowEmptyNodeSelectorVolume: 'true',
-                        autoCleanupRecurringJobBackupSnapshot: 'true',
-                        autoCleanupSnapshotAfterOnDemandBackupCompleted: 'true',
-                        autoCleanupSnapshotWhenDeleteBackup: 'true',
-                        backupConcurrentLimit: '2',
-                        defaultDataLocality: 'best-effort',
-                        defaultReplicaCount: rootConfig.longhorn.replicaCount.toString(),
-                        deletingConfirmationFlag: 'false',
-                        detachManuallyAttachedVolumesWhenCordoned: 'true',
-                        fastReplicaRebuildEnabled: 'true',
-                        nodeDownPodDeletionPolicy:
-                            'delete-both-statefulset-and-deployment-pod',
-                        nodeDrainPolicy: 'always-allow',
-                        offlineRelicaRebuilding: 'true',
-                        orphanResourceAutoDeletion: 'replica-data;instance',
-                        recurringJobMaxRetention: '20',
-                        replicaAutoBalance: rootConfig.longhorn.replicaAutoBalance,
-                        replicaDiskSoftAntiAffinity: 'true',
-                        replicaReplenishmentWaitInterval: '900',
-                        replicaSoftAntiAffinity: 'true',
-                        replicaZoneSoftAntiAffinity: 'true',
-                        snapshotMaxCount: '10',
-                        storageMinimalAvailablePercentage: '10',
-                        storageOverProvisioningPercentage: '100',
-                        storageReservedPercentageForDefaultDisk: '30',
-                        systemManagedComponentsNodeSelector: 'orangelab/storage:true',
-                    },
-                    global: {
-                        nodeSelector: {
-                            'orangelab/storage': 'true',
-                        },
-                    },
-                    csi: {
-                        attacherReplicaCount: 1,
-                        provisionerReplicaCount: 1,
-                        resizerReplicaCount: 1,
-                        snapshotterReplicaCount: 1,
-                    },
-                    longhornUI: {
-                        replicas: 1,
-                    },
-                    persistence: {
-                        defaultClassReplicaCount: rootConfig.longhorn.replicaCount,
-                        defaultDataLocality: 'best-effort',
-                    },
-                    ingress: {
-                        enabled: true,
-                        host: ingresInfo.hostname,
-                        ingressClassName: ingresInfo.className,
-                        tls: ingresInfo.tls,
-                        annotations: ingresInfo.annotations,
-                    },
-                    metrics: rootConfig.enableMonitoring()
-                        ? { serviceMonitor: { enabled: true } }
-                        : undefined,
+        return this.app.addHelmChart(this.name, {
+            chart: 'longhorn',
+            repo: 'https://charts.longhorn.io',
+            values: {
+                defaultBackupStore: backupSecretName
+                    ? {
+                          backupTarget,
+                          backupTargetCredentialSecret: backupSecretName,
+                      }
+                    : undefined,
+                defaultSettings: {
+                    allowEmptyDiskSelectorVolume: 'false',
+                    allowEmptyNodeSelectorVolume: 'true',
+                    autoCleanupRecurringJobBackupSnapshot: 'true',
+                    autoCleanupSnapshotAfterOnDemandBackupCompleted: 'true',
+                    autoCleanupSnapshotWhenDeleteBackup: 'true',
+                    backupConcurrentLimit: '2',
+                    defaultDataLocality: 'best-effort',
+                    defaultReplicaCount: rootConfig.longhorn.replicaCount.toString(),
+                    deletingConfirmationFlag: 'false',
+                    detachManuallyAttachedVolumesWhenCordoned: 'true',
+                    fastReplicaRebuildEnabled: 'true',
+                    nodeDownPodDeletionPolicy:
+                        'delete-both-statefulset-and-deployment-pod',
+                    nodeDrainPolicy: 'always-allow',
+                    offlineRelicaRebuilding: 'true',
+                    orphanResourceAutoDeletion: 'replica-data;instance',
+                    recurringJobMaxRetention: '20',
+                    replicaAutoBalance: rootConfig.longhorn.replicaAutoBalance,
+                    replicaDiskSoftAntiAffinity: 'true',
+                    replicaReplenishmentWaitInterval: '900',
+                    replicaSoftAntiAffinity: 'true',
+                    replicaZoneSoftAntiAffinity: 'true',
+                    snapshotMaxCount: '10',
+                    storageMinimalAvailablePercentage: '10',
+                    storageOverProvisioningPercentage: '100',
+                    storageReservedPercentageForDefaultDisk: '30',
+                    systemManagedComponentsNodeSelector: 'orangelab/storage:true',
                 },
+                global: {
+                    nodeSelector: {
+                        'orangelab/storage': 'true',
+                    },
+                },
+                csi: {
+                    attacherReplicaCount: 1,
+                    provisionerReplicaCount: 1,
+                    resizerReplicaCount: 1,
+                    snapshotterReplicaCount: 1,
+                },
+                longhornUI: {
+                    replicas: 1,
+                },
+                persistence: {
+                    defaultClassReplicaCount: rootConfig.longhorn.replicaCount,
+                    defaultDataLocality: 'best-effort',
+                },
+                ingress: {
+                    enabled: true,
+                    host: ingresInfo.hostname,
+                    ingressClassName: ingresInfo.className,
+                    tls: ingresInfo.tls,
+                    annotations: ingresInfo.annotations,
+                },
+                metrics: rootConfig.enableMonitoring()
+                    ? { serviceMonitor: { enabled: true } }
+                    : undefined,
             },
-            { parent: this },
-        );
+        });
     }
 
     private createStorageClasses() {

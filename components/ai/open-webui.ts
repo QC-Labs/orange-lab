@@ -1,4 +1,3 @@
-import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
 import { Application } from '../application';
@@ -21,7 +20,6 @@ export class OpenWebUI extends pulumi.ComponentResource {
         super('orangelab:ai:OpenWebUI', name, args, opts);
 
         const config = new pulumi.Config(name);
-        const version = config.get('version');
         const hostname = config.require('hostname');
         const appVersion = config.get('appVersion');
         const amdGpu = config.get('amd-gpu');
@@ -38,13 +36,11 @@ export class OpenWebUI extends pulumi.ComponentResource {
         const ingresInfo = app.network.getIngressInfo(hostname);
         const isTailscale = ingresInfo.className === 'tailscale';
         this.endpointUrl = ingresInfo.url;
-        new kubernetes.helm.v3.Release(
+        app.addHelmChart(
             name,
             {
                 chart: 'open-webui',
-                namespace: app.namespace,
-                version,
-                repositoryOpts: { repo: 'https://helm.openwebui.com/' },
+                repo: 'https://helm.openwebui.com/',
                 values: {
                     affinity: app.nodes.getAffinity(),
                     containerSecurityContext: amdGpu ? undefined : { privileged: true },
@@ -127,7 +123,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
                     runtimeClassName: amdGpu ? undefined : 'nvidia',
                 },
             },
-            { parent: this, dependsOn: app.storage },
+            { dependsOn: app.storage },
         );
     }
 

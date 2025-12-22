@@ -1,4 +1,3 @@
-import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
 import { GrafanaDashboard } from '../grafana-dashboard';
@@ -16,88 +15,77 @@ export class KubeAi extends pulumi.ComponentResource {
         super('orangelab:ai:KubeAi', name, {}, opts);
 
         this.config = new pulumi.Config(name);
-        const version = this.config.get('version');
         const hostname = this.config.require('hostname');
         const huggingfaceToken = this.config.getSecret('huggingfaceToken');
         const models = this.config.get('models')?.split(',') ?? [];
 
         this.app = new Application(this, name, { gpu: true });
         const ingresInfo = this.app.network.getIngressInfo();
-        const kubeAi = new kubernetes.helm.v3.Release(
-            name,
-            {
-                chart: 'kubeai',
-                namespace: this.app.namespace,
-                version,
-                repositoryOpts: { repo: 'https://www.kubeai.org' },
-                values: {
-                    affinity: this.app.nodes.getAffinity(),
-                    ingress: {
-                        enabled: true,
-                        className: ingresInfo.className,
-                        rules: [
-                            {
-                                host: ingresInfo.hostname,
-                                paths: [
-                                    { path: '/', pathType: 'ImplementationSpecific' },
-                                ],
-                            },
-                        ],
-                        tls: [{ hosts: [ingresInfo.hostname] }],
-                    },
-                    metrics: rootConfig.enableMonitoring()
-                        ? {
-                              prometheusOperator: {
-                                  vLLMPodMonitor: {
-                                      enabled: true,
-                                      labels: {},
-                                  },
-                              },
-                          }
-                        : undefined,
-                    modelServers: {
-                        OLlama: {
-                            images: {
-                                'amd-gpu': 'ollama/ollama:rocm',
-                            },
+        const kubeAi = this.app.addHelmChart(name, {
+            chart: 'kubeai',
+            repo: 'https://www.kubeai.org',
+            values: {
+                affinity: this.app.nodes.getAffinity(),
+                ingress: {
+                    enabled: true,
+                    className: ingresInfo.className,
+                    rules: [
+                        {
+                            host: ingresInfo.hostname,
+                            paths: [{ path: '/', pathType: 'ImplementationSpecific' }],
                         },
-                    },
-                    modelAutoscaling: { timeWindow: '30m' },
-                    modelServerPods: {
-                        // required for NVidia detection
-                        securityContext: {
-                            privileged: true,
-                            allowPrivilegeEscalation: true,
-                        },
-                    },
-                    ['open-webui']: { enabled: false },
-                    resourceProfiles: {
-                        nvidia: {
-                            runtimeClassName: 'nvidia',
-                            nodeSelector: { 'orangelab/gpu-nvidia': 'true' },
-                        },
-                        amd: {
-                            imageName: 'amd-gpu',
-                            nodeSelector: { 'orangelab/gpu-amd': 'true' },
-                            limits: { 'amd.com/gpu': 1 },
-                        },
-                    },
-                    secrets: { huggingface: { token: huggingfaceToken } },
+                    ],
+                    tls: [{ hosts: [ingresInfo.hostname] }],
                 },
+                metrics: rootConfig.enableMonitoring()
+                    ? {
+                          prometheusOperator: {
+                              vLLMPodMonitor: {
+                                  enabled: true,
+                                  labels: {},
+                              },
+                          },
+                      }
+                    : undefined,
+                modelServers: {
+                    OLlama: {
+                        images: {
+                            'amd-gpu': 'ollama/ollama:rocm',
+                        },
+                    },
+                },
+                modelAutoscaling: { timeWindow: '30m' },
+                modelServerPods: {
+                    // required for NVidia detection
+                    securityContext: {
+                        privileged: true,
+                        allowPrivilegeEscalation: true,
+                    },
+                },
+                ['open-webui']: { enabled: false },
+                resourceProfiles: {
+                    nvidia: {
+                        runtimeClassName: 'nvidia',
+                        nodeSelector: { 'orangelab/gpu-nvidia': 'true' },
+                    },
+                    amd: {
+                        imageName: 'amd-gpu',
+                        nodeSelector: { 'orangelab/gpu-amd': 'true' },
+                        limits: { 'amd.com/gpu': 1 },
+                    },
+                },
+                secrets: { huggingface: { token: huggingfaceToken } },
             },
-            { parent: this },
-        );
+        });
 
-        new kubernetes.helm.v3.Release(
+        this.app.addHelmChart(
             `${name}-models`,
             {
                 chart: 'models',
-                namespace: this.app.namespace,
-                version,
-                repositoryOpts: { repo: 'https://www.kubeai.org' },
+                repo: 'https://www.kubeai.org',
                 values: { catalog: this.createModelCatalog(models) },
             },
-            { parent: this, dependsOn: [kubeAi] },
+            { dependsOn: [kubeAi] },
         );
 
         if (rootConfig.enableMonitoring()) {

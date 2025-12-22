@@ -9,7 +9,6 @@ import dashboardNodeJson from './amd-dashboard_node.json';
 import dashboardOverviewJson from './amd-dashboard_overview.json';
 
 export class AmdGPUOperator extends pulumi.ComponentResource {
-    private readonly config: pulumi.Config;
     private readonly app: Application;
 
     constructor(private readonly name: string, opts?: pulumi.ResourceOptions) {
@@ -18,7 +17,6 @@ export class AmdGPUOperator extends pulumi.ComponentResource {
         rootConfig.require(name, 'cert-manager');
         rootConfig.require(name, 'nfd');
 
-        this.config = new pulumi.Config(name);
         this.app = new Application(this, name);
 
         const chart = this.createChart();
@@ -30,23 +28,17 @@ export class AmdGPUOperator extends pulumi.ComponentResource {
     }
 
     private createChart(): kubernetes.helm.v3.Release {
-        return new kubernetes.helm.v3.Release(
-            this.name,
-            {
-                chart: 'gpu-operator-charts',
-                repositoryOpts: { repo: 'https://rocm.github.io/gpu-operator' },
-                version: this.config.get('version'),
-                namespace: this.app.namespace,
-                values: {
-                    kmm: { enabled: true },
-                    installdefaultNFDRule: false,
-                    crds: { defaultCR: { install: false } },
-                    nodeSelector: { 'orangelab/gpu-amd': 'true' },
-                    'node-feature-discovery': { enabled: false },
-                },
+        return this.app.addHelmChart(this.name, {
+            chart: 'gpu-operator-charts',
+            repo: 'https://rocm.github.io/gpu-operator',
+            values: {
+                kmm: { enabled: true },
+                installdefaultNFDRule: false,
+                crds: { defaultCR: { install: false } },
+                nodeSelector: { 'orangelab/gpu-amd': 'true' },
+                'node-feature-discovery': { enabled: false },
             },
-            { parent: this },
-        );
+        });
     }
 
     private createDeviceConfig(chart: kubernetes.helm.v3.Release) {

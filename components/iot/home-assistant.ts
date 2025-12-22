@@ -1,4 +1,3 @@
-import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
 
@@ -12,24 +11,17 @@ export class HomeAssistant extends pulumi.ComponentResource {
     constructor(name: string, args: HomeAssistantArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:iot:HomeAssistant', name, args, opts);
 
-        const config = new pulumi.Config('home-assistant');
-        const version = config.get('version');
-
         const app = new Application(this, name).addStorage({
             overrideFullname: 'home-assistant-home-assistant-0',
         });
 
         if (app.storageOnly) return;
         const ingressInfo = app.network.getIngressInfo();
-        new kubernetes.helm.v3.Release(
+        app.addHelmChart(
             name,
             {
                 chart: 'home-assistant',
-                namespace: app.namespace,
-                version,
-                repositoryOpts: {
-                    repo: 'http://pajikos.github.io/home-assistant-helm-chart/',
-                },
+                repo: 'http://pajikos.github.io/home-assistant-helm-chart/',
                 values: {
                     additionalMounts: [
                         { mountPath: '/run/dbus', name: 'dbus', readOnly: true },
@@ -82,7 +74,7 @@ export class HomeAssistant extends pulumi.ComponentResource {
                     },
                 },
             },
-            { parent: this, dependsOn: app.storage },
+            { dependsOn: app.storage },
         );
 
         this.endpointUrl = ingressInfo.url;

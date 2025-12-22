@@ -1,29 +1,22 @@
-import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
+import { Application } from '../application';
 import { rootConfig } from '../root-config';
 
 export class NvidiaGPUOperator extends pulumi.ComponentResource {
+    private readonly app: Application;
+
     constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
         super('orangelab:system:NvidiaGPUOperator', name, args, opts);
 
         rootConfig.require(name, 'nfd');
 
-        const config = new pulumi.Config(name);
-        const version = config.get('version');
+        this.app = new Application(this, name);
 
-        const namespace = new kubernetes.core.v1.Namespace(
-            `${name}-ns`,
-            { metadata: { name } },
-            { parent: this },
-        );
-
-        new kubernetes.helm.v3.Release(
+        this.app.addHelmChart(
             name,
             {
                 chart: 'gpu-operator',
-                namespace: namespace.metadata.name,
-                version,
-                repositoryOpts: { repo: 'https://helm.ngc.nvidia.com/nvidia' },
+                repo: 'https://helm.ngc.nvidia.com/nvidia',
                 values: {
                     // NVIDIA Confidential Computing Manager for Kubernetes
                     ccManager: { enabled: false },
@@ -102,7 +95,7 @@ export class NvidiaGPUOperator extends pulumi.ComponentResource {
                     vgpuManager: { enabled: false },
                 },
             },
-            { parent: this, deleteBeforeReplace: true },
+            { deleteBeforeReplace: true },
         );
     }
 }

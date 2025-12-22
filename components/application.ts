@@ -5,6 +5,7 @@ import { Databases } from './databases';
 import { Metadata } from './metadata';
 import { Network } from './network';
 import { Nodes } from './nodes';
+import { rootConfig } from './root-config';
 import { Services } from './services';
 import { Storage } from './storage';
 import { ConfigVolume, ContainerSpec, LocalVolume, PersistentVolume } from './types';
@@ -191,6 +192,29 @@ export class Application {
             { parent: this.scope },
         );
         return this;
+    }
+
+    addHelmChart(
+        name: string,
+        args: {
+            chart: string;
+            repo: string;
+            values?: pulumi.Inputs;
+        },
+        opts?: pulumi.CustomResourceOptions,
+    ) {
+        return new kubernetes.helm.v3.Release(
+            name,
+            {
+                chart: args.chart,
+                namespace: this.namespace,
+                version: this.config.get('version'),
+                repositoryOpts: { repo: args.repo },
+                maxHistory: rootConfig.helmHistoryLimit,
+                values: args.values,
+            },
+            { parent: this.scope, ...opts },
+        );
     }
 
     private createNamespace(name: string) {

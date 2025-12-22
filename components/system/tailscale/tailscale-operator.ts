@@ -3,8 +3,8 @@ import { ClusterRole } from '@pulumi/kubernetes/rbac/v1';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../../application';
 import { GrafanaDashboard } from '../../grafana-dashboard';
-import dashboardJson from './tailscale-dashboard.json';
 import { rootConfig } from '../../root-config';
+import dashboardJson from './tailscale-dashboard.json';
 
 interface TailscaleOperatorArgs {
     namespace?: string;
@@ -21,7 +21,6 @@ export class TailscaleOperator extends pulumi.ComponentResource {
         super('orangelab:system:TailscaleOperator', name, args, opts);
 
         const config = new pulumi.Config(name);
-        const version = config.get('version');
         const hostname = config.require('hostname');
         const oauthClientId = config.requireSecret('oauthClientId');
         const oauthClientSecret = config.requireSecret('oauthClientSecret');
@@ -61,28 +60,21 @@ export class TailscaleOperator extends pulumi.ComponentResource {
             new GrafanaDashboard(name, this, { configJson: dashboardJson });
         }
 
-        new kubernetes.helm.v3.Release(
-            name,
-            {
-                chart: 'tailscale-operator',
-                namespace: this.app.namespace,
-                version,
-                repositoryOpts: { repo: 'https://pkgs.tailscale.com/helmcharts' },
-                maxHistory: rootConfig.helmHistoryLimit,
-                values: {
-                    oauth: { clientId: oauthClientId, clientSecret: oauthClientSecret },
-                    apiServerProxyConfig: { mode: 'true' },
-                    operatorConfig: {
-                        hostname,
-                        logging: 'debug', // info, debug, dev
-                    },
-                    proxyConfig: rootConfig.enableMonitoring()
-                        ? { defaultProxyClass: proxyClass?.metadata.name }
-                        : undefined,
+        this.app.addHelmChart(name, {
+            chart: 'tailscale-operator',
+            repo: 'https://pkgs.tailscale.com/helmcharts',
+            values: {
+                oauth: { clientId: oauthClientId, clientSecret: oauthClientSecret },
+                apiServerProxyConfig: { mode: 'true' },
+                operatorConfig: {
+                    hostname,
+                    logging: 'debug', // info, debug, dev
                 },
+                proxyConfig: rootConfig.enableMonitoring()
+                    ? { defaultProxyClass: proxyClass?.metadata.name }
+                    : undefined,
             },
-            { parent: this },
-        );
+        });
     }
 
     private createUserRoleBinding(userRole: ClusterRole, groupName: string) {

@@ -43,13 +43,11 @@ export class Nextcloud extends pulumi.ComponentResource {
     }) {
         const waitForDb = this.app.databases?.getWaitContainer();
         const debug = this.config.getBoolean('debug') ?? false;
-        return new k8s.helm.v3.Release(
+        return this.app.addHelmChart(
             this.appName,
             {
                 chart: 'nextcloud',
-                version: this.config.get('version'),
-                repositoryOpts: { repo: 'https://nextcloud.github.io/helm/' },
-                namespace: this.app.namespace,
+                repo: 'https://nextcloud.github.io/helm/',
                 values: {
                     affinity: this.app.nodes.getAffinity(),
                     externalDatabase: {

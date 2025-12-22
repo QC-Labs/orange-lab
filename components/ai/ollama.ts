@@ -1,8 +1,7 @@
-import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
-import { StorageType } from '../types';
 import { IngressInfo } from '../network';
+import { StorageType } from '../types';
 
 export class Ollama extends pulumi.ComponentResource {
     public readonly endpointUrl?: string;
@@ -64,13 +63,11 @@ export class Ollama extends pulumi.ComponentResource {
         }
         let imageTag = this.config.get('appVersion');
         if (amdGpu && imageTag) imageTag = imageTag.concat('-rocm');
-        new kubernetes.helm.v3.Release(
+        this.app.addHelmChart(
             this.name,
             {
                 chart: 'ollama',
-                namespace: this.app.namespace,
-                version: this.config.get('version'),
-                repositoryOpts: { repo: 'https://otwld.github.io/ollama-helm/' },
+                repo: 'https://otwld.github.io/ollama-helm/',
                 values: {
                     affinity: this.app.nodes.getAffinity(),
                     extraEnv,
@@ -132,7 +129,7 @@ export class Ollama extends pulumi.ComponentResource {
                     securityContext: { privileged: true },
                 },
             },
-            { parent: this, dependsOn: this.app.storage },
+            { dependsOn: this.app.storage },
         );
     }
 }
