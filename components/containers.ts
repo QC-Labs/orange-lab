@@ -44,6 +44,7 @@ export class Containers {
             annotations: this.storage?.configFilesHash
                 ? { 'checksum/config': this.storage.configFilesHash }
                 : undefined,
+            includeVersionLabel: true,
         });
         return {
             metadata,

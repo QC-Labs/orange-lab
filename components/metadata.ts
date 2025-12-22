@@ -15,6 +15,7 @@ export class Metadata {
     get(params?: {
         component?: string;
         annotations?: Record<string, pulumi.Output<string> | undefined>;
+        includeVersionLabel?: boolean;
     }): {
         name: string;
         namespace: string;
@@ -27,7 +28,12 @@ export class Metadata {
                 : this.appName,
             namespace: this.namespace,
             labels:
-                this.removeUndefinedValues(this.createLabels(params?.component)) ?? {},
+                this.removeUndefinedValues(
+                    this.createLabels({
+                        componentName: params?.component,
+                        includeVersionLabel: params?.includeVersionLabel,
+                    }),
+                ) ?? {},
             annotations: this.removeUndefinedValues(params?.annotations),
         };
     }
@@ -58,15 +64,20 @@ export class Metadata {
         return labels;
     }
 
-    private createLabels(componentName?: string) {
+    private createLabels(args: {
+        componentName?: string;
+        includeVersionLabel?: boolean;
+    }) {
         const labels: Record<string, string | undefined> = {
             'app.kubernetes.io/name': this.appName,
             'app.kubernetes.io/managed-by': 'OrangeLab',
-            'app.kubernetes.io/component': componentName ?? 'default',
+            'app.kubernetes.io/component': args.componentName ?? 'default',
         };
         const version = this.config.get('version');
         const appVersion = this.config.get('appVersion');
-        labels['app.kubernetes.io/version'] = appVersion ?? version;
+        if (args.includeVersionLabel) {
+            labels['app.kubernetes.io/version'] = appVersion ?? version;
+        }
         return labels;
     }
 }

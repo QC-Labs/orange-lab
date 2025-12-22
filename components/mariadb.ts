@@ -66,7 +66,10 @@ export class MariaDbCluster extends pulumi.ComponentResource {
     }
 
     private createCluster(): kubernetes.apiextensions.CustomResource {
-        const metadata = this.args.metadata.get({ component: this.args.name });
+        const metadata = this.args.metadata.get({
+            component: this.args.name,
+            includeVersionLabel: true,
+        });
         const myCnf = pulumi.interpolate`
         [mariadb]
         skip-name-resolve
@@ -83,9 +86,7 @@ export class MariaDbCluster extends pulumi.ComponentResource {
                 spec: {
                     affinity: this.args.affinity,
                     database: this.appName,
-                    inheritMetadata: {
-                        labels: this.args.metadata.getAppLabels(this.args.name),
-                    },
+                    inheritMetadata: { labels: metadata.labels },
                     metrics: { enabled: true },
                     myCnf,
                     passwordSecretKeyRef: {

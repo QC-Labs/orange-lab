@@ -62,7 +62,10 @@ export class Services {
             },
             this.opts,
         );
-        const metadata = this.metadata.get({ component: spec.name });
+        const metadata = this.metadata.get({
+            component: spec.name,
+            includeVersionLabel: true,
+        });
         return new kubernetes.apps.v1.Deployment(
             `${metadata.name}-deployment`,
             {
