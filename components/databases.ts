@@ -94,17 +94,18 @@ export class Databases {
         const db = new PostgresCluster(
             this.appName,
             {
-                name,
+                enabled: this.config.getBoolean(`${name}/enabled`) ?? enabledDefault,
+                fromPVC: existingVolume ? this.storage.getClaimName(name) : undefined,
+                imageVersion: this.config.get(`${name}/imageVersion`),
+                instances: this.config.getNumber(`${name}/instances`),
                 metadata: this.metadata,
+                name,
                 nodes: this.nodes,
-                storageSize: this.config.require(`${name}/storageSize`),
+                password: this.config.getSecret(`${name}/password`),
                 storageClassName: existingVolume
                     ? this.storage.getStorageClass(name)
                     : rootConfig.storageClass.Database,
-                password: this.config.getSecret(`${name}/password`),
-                enabled: this.config.getBoolean(`${name}/enabled`) ?? enabledDefault,
-                fromPVC: existingVolume ? this.storage.getClaimName(name) : undefined,
-                instances: this.config.getNumber(`${name}/instances`),
+                storageSize: this.config.require(`${name}/storageSize`),
             },
             this.opts,
         );

@@ -139,7 +139,31 @@ For manual database operations, use the provided scripts in the `scripts/` direc
 # Requires: n8n.dump file to exist
 ```
 
-#### Uninstall
+### Database upgrade
+
+Generally database upgrades are handled automatically by CloudNative-PG.
+
+One case where some manual intevention is needed is when restoring backup containing old version of database.
+
+In that case you need to deploy with downgraded Postgres first, then upgrade.
+
+```sh
+pulumi config set <app>:enabled true
+# Bookworm variant required for 17 to fix libssl error during upgrade
+# https://github.com/cloudnative-pg/cloudnative-pg/issues/7580
+pulumi config set <app>:db/imageVersion 17-bookworm
+pulumi up
+
+# upgrade to 18
+pulumi config set <app>:db/imageVersion 18
+
+# upgrade to latest
+pulumi config rm <app>:db/imageVersion
+
+pulumi up
+```
+
+### Uninstall
 
 ```sh
 pulumi config set cloudnative-pg:enabled false
