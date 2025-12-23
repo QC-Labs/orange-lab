@@ -251,10 +251,6 @@ pulumi config set n8n:enabled true
 pulumi config set n8n:fromVolume n8n
 pulumi config set n8n:db/fromVolume n8n-db
 
-# Optional: add PostgreSQL replicas, 1 is default (just primary)
-pulumi config set n8n:db/instances 3
-
-# Update cluster
 pulumi up
 ```
 

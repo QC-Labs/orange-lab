@@ -111,6 +111,9 @@ When setting `<app>:storageOnly` to `true`, databases are shut down and only sto
 
 ```sh
 pulumi config set <app>:db/enabled true
+
+# Optional: add PostgreSQL replicas, 1 is default (just primary)
+pulumi config set n8n:db/instances 3
 ```
 
 ### Manual Backup and Restore
