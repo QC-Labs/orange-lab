@@ -53,6 +53,7 @@ export class N8n extends pulumi.ComponentResource {
                 N8N_PROTOCOL: 'http',
                 N8N_PROXY_HOPS: '1',
                 N8N_SECURE_COOKIE: 'false',
+                WEBHOOK_URL: this.app.network.getIngressInfo().url,
             },
             envSecret: {
                 DB_POSTGRESDB_DATABASE: this.postgresConfig?.database,
