@@ -9,14 +9,17 @@ export class Beszel extends pulumi.ComponentResource {
 
         const config = new pulumi.Config(name);
         const hubKey = config.get('hubKey');
+        const token = config.getSecret('TOKEN');
+        this.app = new Application(this, name).addStorage();
+        const ingressInfo = this.app.network.getIngressInfo();
 
-        this.app = new Application(this, name).addStorage().addDeployment({
+        this.app.addDeployment({
             image: 'henrygd/beszel:latest',
             port: 8090,
             env: {
                 USER_CREATION: 'true',
+                APP_URL: ingressInfo.url,
             },
-            hostNetwork: true,
             volumeMounts: [{ mountPath: '/beszel_data' }],
             resources: {
                 requests: { cpu: '5m', memory: '50Mi' },
@@ -30,8 +33,12 @@ export class Beszel extends pulumi.ComponentResource {
                 image: `henrygd/beszel-agent`,
                 hostNetwork: true,
                 env: {
-                    PORT: '45876',
+                    LISTEN: '45876',
+                    HUB_URL: ingressInfo.url,
+                },
+                envSecret: {
                     KEY: hubKey,
+                    TOKEN: token,
                 },
                 resources: {
                     requests: { cpu: '5m', memory: '20Mi' },

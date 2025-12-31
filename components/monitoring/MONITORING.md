@@ -36,9 +36,13 @@ Once the hub is deployed, go to `beszel.<tsnet>.ts.net` endpoint and create an a
 
 To deploy agents you need to find the generated public key. Click `Add system`, then copy the `Public key` field. Close the popup and do not add any systems yet.
 
+You can automatically add all agents by enabling universal token (Settings -> Token & Fingerprints -> Universal token).
+
 ```sh
 # replace <KEY> with the copied value "ssh-ed25519 ..."
 pulumi config set beszel:hubKey <KEY>
+# copy universal token from UI so agents can automatically register
+pulumi config set beszel:TOKEN <TOKEN> --secret
 pulumi up
 ```
 
@@ -46,18 +50,6 @@ Make sure to allow traffic to agents on port `45876`:
 
 ```sh
 firewall-cmd --permanent --add-port=45876/tcp
-```
-
-Once the agents are deployed, you need to manually add them in the UI of Beszel. Click `Add system`, select `docker`, then enter the hostname in the `Name` field and Tailscale IP in `Host/IP`
-
-You can find the IP address of your node using one of two ways:
-
-```sh
-# List all hosts and IPs
-tailscale status
-
-# List only nodes added to cluster
-kubectl get nodes -o json | jq -r '.items[] | .metadata.name + " - " + .metadata.annotations["flannel.alpha.coreos.com/public-ip"]'
 ```
 
 ## Prometheus
