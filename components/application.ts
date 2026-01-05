@@ -200,6 +200,7 @@ export class Application {
             chart: string;
             repo: string;
             values?: pulumi.Inputs;
+            skipCrds?: boolean;
         },
         opts?: pulumi.CustomResourceOptions,
     ) {
@@ -211,6 +212,7 @@ export class Application {
                 version: this.config.get('version'),
                 repositoryOpts: { repo: args.repo },
                 maxHistory: rootConfig.helmHistoryLimit,
+                skipCrds: args.skipCrds,
                 values: args.values,
             },
             { parent: this.scope, ...opts },

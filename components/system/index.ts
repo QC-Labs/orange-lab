@@ -9,6 +9,7 @@ import { NodeFeatureDiscovery } from './nfd';
 import { NvidiaGPUOperator } from './nvidia-gpu-operator';
 import { Tailscale } from './tailscale/tailscale';
 import { TailscaleOperator } from './tailscale/tailscale-operator';
+import { Traefik } from './traefik';
 
 export class SystemModule extends pulumi.ComponentResource {
     tailscaleServerKey: pulumi.Output<string> | undefined;
@@ -48,6 +49,10 @@ export class SystemModule extends pulumi.ComponentResource {
                 { namespace: 'tailscale' },
                 { parent: this },
             );
+        }
+
+        if (rootConfig.customDomain) {
+            new Traefik('traefik', {}, { parent: this });
         }
 
         let nfd: NodeFeatureDiscovery | undefined;

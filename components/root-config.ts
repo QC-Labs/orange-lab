@@ -19,6 +19,7 @@ export const moduleDependencies: Record<string, string[]> = {
         'nvidia-gpu-operator',
         'tailscale',
         'tailscale-operator',
+        'traefik',
     ],
 };
 

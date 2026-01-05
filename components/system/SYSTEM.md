@@ -50,8 +50,7 @@ Note that Tailscale authentication does not work on custom domains.
 
 You need to:
 
-- make sure ServiceLB/Traefik included in K3s is running, use `./scripts/k3s-server.sh` to update server node if needed
-- set `orangelab:customDomain` to the name fo your domain
+- set `orangelab:customDomain` to the name of your domain
 - add A record to your DNS pointing `*` (or each subdomain separately) to one of your Tailscale node IPs
 - configure `cert-manager` to use `ClusterIssuer` to provision Let's Encrypt SSL certificates
 
@@ -71,7 +70,7 @@ kubectl label node <node> svccontroller.k3s.cattle.io/enablelb=true
 pulumi config set longhorn:backupEnabled false
 pulumi up
 
-# Enable custom domain
+# Enable custom domain, this will also install Traefik
 pulumi config set orangelab:customDomain example.com
 pulumi up
 
