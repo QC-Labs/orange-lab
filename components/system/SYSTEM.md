@@ -50,9 +50,9 @@ Note that Tailscale authentication does not work on custom domains.
 
 You need to:
 
-- set `orangelab:customDomain` to the name of your domain
 - add A record to your DNS pointing `*` (or each subdomain separately) to one of your Tailscale node IPs
 - configure `cert-manager` to use `ClusterIssuer` to provision Let's Encrypt SSL certificates
+- set `orangelab:customDomain` to the name of your domain
 
 ServiceLB creates an endpoint on port 80/443 on each node in the cluster.
 
@@ -137,6 +137,39 @@ To be able to connect to the cluster as a read-only user, generate `~/.kube/conf
 
 ```sh
 tailscale configure kubeconfig k8s
+```
+
+## Traefik
+
+|               |                                                                               |
+| ------------- | ----------------------------------------------------------------------------- |
+| Homepage      | https://traefik.io/                                                           |
+| Helm chart    | https://github.com/traefik/traefik-helm-chart                                 |
+| Values        | https://github.com/traefik/traefik-helm-chart/blob/master/traefik/values.yaml |
+| Documentation | https://doc.traefik.io/traefik/                                               |
+| Dashboard     | https://traefik.<domain>/                                                     |
+
+Traefik is a cloud-native edge router that handles external HTTP/HTTPS traffic to cluster. It's installed automatically when `customDomain` is configured and serves as a ingress controller for custom domain services.
+
+### Installation
+
+```sh
+# Set it to your domain, this installs Traefik as well
+pulumi config set orangelab:customDomain example.com
+
+# (Optional) Change dashboard hostname
+pulumi config set traefik:hostname traefik
+
+pulumi up
+```
+
+### Uninstall
+
+Traefik CRDs left intact when `customDomain` set but the pods can be removed temporarily if needed.
+
+```sh
+pulumi config set traefik:enabled false
+pulumi up
 ```
 
 ## Longhorn
