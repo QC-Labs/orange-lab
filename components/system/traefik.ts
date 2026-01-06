@@ -1,10 +1,11 @@
-import * as pulumi from '@pulumi/pulumi';
 import * as kubernetes from '@pulumi/kubernetes';
+import * as pulumi from '@pulumi/pulumi';
 import { Application } from '../application';
 import { rootConfig } from '../root-config';
 
 export class Traefik extends pulumi.ComponentResource {
     private readonly crdsChart: kubernetes.helm.v3.Release;
+    private readonly app: Application;
 
     constructor(
         private name: string,
@@ -13,16 +14,17 @@ export class Traefik extends pulumi.ComponentResource {
     ) {
         super('orangelab:system:Traefik', name, args, opts);
 
-        const app = new Application(this, name, { existingNamespace: 'kube-system' });
+        this.app = new Application(this, name, { existingNamespace: 'kube-system' });
 
-        this.crdsChart = this.createCRDs(app);
+        this.crdsChart = this.createCRDs();
         if (rootConfig.isEnabled('traefik')) {
-            this.createChart(app);
+            this.createChart();
+            this.createDashboard();
         }
     }
 
-    private createCRDs(app: Application): kubernetes.helm.v3.Release {
-        return app.addHelmChart(`${this.name}-crds`, {
+    private createCRDs(): kubernetes.helm.v3.Release {
+        return this.app.addHelmChart(`${this.name}-crds`, {
             chart: 'traefik-crds',
             repo: 'https://traefik.github.io/charts',
             values: {
@@ -31,15 +33,15 @@ export class Traefik extends pulumi.ComponentResource {
         });
     }
 
-    private createChart(app: Application): kubernetes.helm.v3.Release {
-        return app.addHelmChart(
+    private createChart(): kubernetes.helm.v3.Release {
+        return this.app.addHelmChart(
             this.name,
             {
                 chart: 'traefik',
                 repo: 'https://traefik.github.io/charts',
                 skipCrds: true,
                 values: {
-                    affinity: app.nodes.getAffinity(),
+                    affinity: this.app.nodes.getAffinity(),
                     ingressClass: {
                         enabled: true,
                         isDefaultClass: true,
@@ -82,6 +84,57 @@ export class Traefik extends pulumi.ComponentResource {
                 },
             },
             { dependsOn: [this.crdsChart] },
+        );
+    }
+
+    private createDashboard() {
+        const ingressInfo = this.app.network.getIngressInfo();
+        const metadata = this.app.metadata.get({ component: 'dashboard' });
+
+        new kubernetes.apiextensions.CustomResource(
+            `${metadata.name}-certificate`,
+            {
+                apiVersion: 'cert-manager.io/v1',
+                kind: 'Certificate',
+                metadata,
+                spec: {
+                    secretName: ingressInfo.tlsSecretName,
+                    dnsNames: [ingressInfo.hostname],
+                    issuerRef: {
+                        name: rootConfig.certManager.clusterIssuer,
+                        kind: 'ClusterIssuer',
+                    },
+                },
+            },
+            { parent: this },
+        );
+
+        new kubernetes.apiextensions.CustomResource(
+            `${metadata.name}-ingressroute`,
+            {
+                apiVersion: 'traefik.io/v1alpha1',
+                kind: 'IngressRoute',
+                metadata,
+                spec: {
+                    entryPoints: ['websecure'],
+                    routes: [
+                        {
+                            match: `Host(\`${ingressInfo.hostname}\`)`,
+                            kind: 'Rule',
+                            services: [
+                                {
+                                    name: 'api@internal',
+                                    kind: 'TraefikService',
+                                },
+                            ],
+                        },
+                    ],
+                    tls: {
+                        secretName: ingressInfo.tlsSecretName,
+                    },
+                },
+            },
+            { parent: this },
         );
     }
 }

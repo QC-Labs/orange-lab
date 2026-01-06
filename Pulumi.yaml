@@ -26,6 +26,8 @@ config:
 
     # TraefikCRDs are installed when customDomain is set. Also install Traefik by default
     traefik:enabled: true
+    traefik:hostname: traefik
+
     tailscale-operator:enabled: false
     # Hostname for Tailscale operator proxy for Kubernetes API
     tailscale-operator:hostname: k8s
