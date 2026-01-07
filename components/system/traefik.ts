@@ -42,12 +42,32 @@ export class Traefik extends pulumi.ComponentResource {
                 skipCrds: true,
                 values: {
                     affinity: this.app.nodes.getAffinity(),
+                    api: {
+                        dashboard: true,
+                    },
+                    deployment: {
+                        kind: 'DaemonSet',
+                    },
                     ingressClass: {
                         enabled: true,
                         isDefaultClass: true,
                         name: 'traefik',
                     },
+                    ports: {
+                        web: {
+                            redirections: {
+                                entryPoint: {
+                                    permanent: true,
+                                    scheme: 'https',
+                                    to: 'websecure',
+                                },
+                            },
+                        },
+                    },
                     priorityClassName: 'system-cluster-critical',
+                    service: {
+                        ipFamilyPolicy: 'PreferDualStack',
+                    },
                     tolerations: [
                         {
                             key: 'CriticalAddonsOnly',
@@ -64,23 +84,6 @@ export class Traefik extends pulumi.ComponentResource {
                             effect: 'NoSchedule',
                         },
                     ],
-                    service: {
-                        ipFamilyPolicy: 'PreferDualStack',
-                    },
-                    ports: {
-                        web: {
-                            redirections: {
-                                entryPoint: {
-                                    to: 'websecure',
-                                    scheme: 'https',
-                                    permanent: true,
-                                },
-                            },
-                        },
-                    },
-                    api: {
-                        dashboard: true,
-                    },
                 },
             },
             { dependsOn: [this.crdsChart] },
