@@ -14,7 +14,7 @@ export class Traefik extends pulumi.ComponentResource {
     ) {
         super('orangelab:system:Traefik', name, args, opts);
 
-        this.app = new Application(this, name, { existingNamespace: 'kube-system' });
+        this.app = new Application(this, name);
 
         this.crdsChart = this.createCRDs();
         if (rootConfig.isEnabled('traefik')) {
@@ -24,13 +24,17 @@ export class Traefik extends pulumi.ComponentResource {
     }
 
     private createCRDs(): kubernetes.helm.v3.Release {
-        return this.app.addHelmChart(`${this.name}-crds`, {
-            chart: 'traefik-crds',
-            repo: 'https://traefik.github.io/charts',
-            values: {
-                deleteOnUninstall: true,
+        return this.app.addHelmChart(
+            `${this.name}-crds`,
+            {
+                chart: 'traefik-crds',
+                repo: 'https://traefik.github.io/charts',
+                values: {
+                    deleteOnUninstall: true,
+                },
             },
-        });
+            { deleteBeforeReplace: true },
+        );
     }
 
     private createChart(): kubernetes.helm.v3.Release {
@@ -86,7 +90,7 @@ export class Traefik extends pulumi.ComponentResource {
                     ],
                 },
             },
-            { dependsOn: [this.crdsChart] },
+            { dependsOn: [this.crdsChart], deleteBeforeReplace: true },
         );
     }
 
