@@ -121,6 +121,11 @@ export class OpenWebUI extends pulumi.ComponentResource {
                     },
                     pipelines: { enabled: false },
                     runtimeClassName: amdGpu ? undefined : 'nvidia',
+                    websocket: {
+                        redis: {
+                            affinity: app.nodes.getAffinity(),
+                        },
+                    },
                 },
             },
             { dependsOn: app.storage },
