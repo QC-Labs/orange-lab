@@ -30,6 +30,7 @@ export class Traefik extends pulumi.ComponentResource {
                 chart: 'traefik-crds',
                 repo: 'https://traefik.github.io/charts',
                 values: {
+                    gatewayAPI: true,
                     deleteOnUninstall: true,
                 },
             },
@@ -52,6 +53,15 @@ export class Traefik extends pulumi.ComponentResource {
                     deployment: {
                         kind: 'DaemonSet',
                     },
+                    gateway: {
+                        listeners: {
+                            web: {
+                                namespacePolicy: {
+                                    from: 'All',
+                                },
+                            },
+                        },
+                    },
                     ingressClass: {
                         enabled: true,
                         isDefaultClass: true,
@@ -69,6 +79,11 @@ export class Traefik extends pulumi.ComponentResource {
                         },
                     },
                     priorityClassName: 'system-cluster-critical',
+                    providers: {
+                        kubernetesGateway: {
+                            enabled: true,
+                        },
+                    },
                     service: {
                         ipFamilyPolicy: 'PreferDualStack',
                     },
