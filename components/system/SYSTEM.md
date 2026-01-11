@@ -139,6 +139,32 @@ To be able to connect to the cluster as a read-only user, generate `~/.kube/conf
 tailscale configure kubeconfig k8s
 ```
 
+### Uninstall
+
+````sh
+pulumi config set tailscale-operator:enabled false
+pulumi up
+
+kubectl delete crd \
+  connectors.tailscale.com \
+  dnsconfigs.tailscale.com \
+  proxyclasses.tailscale.com \
+  proxygroups.tailscale.com \
+  recorders.tailscale.com
+
+kubectl delete clusterrole \
+  tailscale-auth-proxy \
+  tailscale-operator
+
+kubectl delete clusterrolebinding \
+  tailscale-auth-proxy \
+  tailscale-operator
+
+# This will remove all existing ingress instances using tailscale class
+# They will be recreated once tailscale-operator is installed again
+# Make sure to remove any left-over nodes at https://login.tailscale.com/admin/machines
+kubectl delete ingressclass tailscale
+```
 ## Traefik
 
 |               |                                                                               |
