@@ -7,7 +7,9 @@
             "git diff": "allow",
             "ls": "allow",
             "pwd": "allow",
-            "npm run lint": "allow"
+            "npm run lint": "allow",
+            "npm test": "allow",
+            "npm run test": "allow"
         }
     }
 }
