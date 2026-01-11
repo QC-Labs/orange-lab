@@ -8,6 +8,8 @@ import dashboardJson from './tailscale-dashboard.json';
 
 interface TailscaleOperatorArgs {
     namespace?: string;
+    oauthClientId: pulumi.Input<string>;
+    oauthClientSecret: pulumi.Input<string>;
 }
 
 export class TailscaleOperator extends pulumi.ComponentResource {
@@ -15,15 +17,13 @@ export class TailscaleOperator extends pulumi.ComponentResource {
 
     constructor(
         private name: string,
-        args: TailscaleOperatorArgs = {},
+        args: TailscaleOperatorArgs,
         opts?: pulumi.ResourceOptions,
     ) {
         super('orangelab:system:TailscaleOperator', name, args, opts);
 
         const config = new pulumi.Config(name);
         const hostname = config.require('hostname');
-        const oauthClientId = config.requireSecret('oauthClientId');
-        const oauthClientSecret = config.requireSecret('oauthClientSecret');
 
         this.app = new Application(this, name, {
             namespace: args.namespace,
@@ -64,15 +64,18 @@ export class TailscaleOperator extends pulumi.ComponentResource {
             chart: 'tailscale-operator',
             repo: 'https://pkgs.tailscale.com/helmcharts',
             values: {
-                oauth: { clientId: oauthClientId, clientSecret: oauthClientSecret },
                 apiServerProxyConfig: { mode: 'true' },
+                oauth: {
+                    clientId: args.oauthClientId,
+                    clientSecret: args.oauthClientSecret,
+                },
                 operatorConfig: {
                     hostname,
                     logging: 'debug', // info, debug, dev
                 },
-                proxyConfig: rootConfig.enableMonitoring()
-                    ? { defaultProxyClass: proxyClass?.metadata.name }
-                    : undefined,
+                proxyConfig: {
+                    defaultProxyClass: proxyClass?.metadata.name,
+                },
             },
         });
     }

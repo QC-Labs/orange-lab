@@ -46,7 +46,11 @@ export class SystemModule extends pulumi.ComponentResource {
         if (rootConfig.isEnabled('tailscale-operator')) {
             new TailscaleOperator(
                 'tailscale-operator',
-                { namespace: 'tailscale' },
+                {
+                    namespace: 'tailscale',
+                    oauthClientId: tailscale.oauthClientId,
+                    oauthClientSecret: tailscale.oauthClientSecret,
+                },
                 { parent: this },
             );
         }
