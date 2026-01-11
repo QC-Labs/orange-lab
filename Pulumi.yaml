@@ -13,8 +13,10 @@ config:
 
     ### SYSTEM ###
 
-    # tailscale:apiKey: TAILSCALE_API_KEY
-    # tailscale:tailnet: TAILSCALE_TAILNET
+    # tailscale:tailnet: <*.ts.net>
+    # tailscale:oauthClientId: OAUTH_CLIENT_ID
+    # tailscale:oauthClientSecret:
+    #   secure: OAUTH_CLIENT_SECRET
 
     # k3s:serverIp: localhost
     # k3s:agentToken: K3S_TOKEN

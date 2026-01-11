@@ -41,12 +41,17 @@ pulumi stack select <stack-name>
 
 ## Tailscale
 
+### Clients
+
+Start Tailscale service on each node
+
 ```sh
-# Start Tailscale service on each node
 sudo tailscale up --operator=$USER --accept-routes
 ```
 
-Add tags to your Tailnet ACLs (https://login.tailscale.com/admin/acls/file):
+### Tags
+
+Add tags to your Tailnet ACLs (https://login.tailscale.com/admin/acls/file)
 
 ```json
 "tagOwners": {
@@ -57,14 +62,24 @@ Add tags to your Tailnet ACLs (https://login.tailscale.com/admin/acls/file):
 }
 ```
 
-Create Tailscale API access token for Pulumi (https://login.tailscale.com/admin/settings/keys) and add it to `Pulumi.<stack>.yaml` with:
+### OAuth token
 
-```sh
-pulumi config set tailscale:apiKey <TAILSCALE_API_KEY> --secret
-pulumi config set tailscale:tailnet <TAILSCALE_TAILNET>
-pulumi up
-```
+Create Tailscale OAuth token for OrangeLab (https://login.tailscale.com/admin/settings/trust-credentials)
+
+<img src="./tailscale-oauth.png" alt="New Tailscale OAuth token screen" style="width:50%;border:1px solid orange;margin-bottom:1em;" />
+
+Make sure token has write permissions for `Devices/Core` and `Keys/Auth keys`.
+
+Add the token values to `Pulumi.<stack>.yaml`.
 
 You can find Tailnet DNS name at https://login.tailscale.com/admin/dns
+
+```sh
+pulumi config set tailscale:tailnet <*.ts.net*>
+pulumi config set tailscale:oauthClientId <OAUTH_CLIENT_ID>
+pulumi config set tailscale:oauthClientSecret <OAUTH_CLIENT_SECRET> --secret
+
+pulumi up
+```
 
 Enable MagicDNS and HTTPS certificates on https://login.tailscale.com/admin/dns

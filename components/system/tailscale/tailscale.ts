@@ -5,11 +5,25 @@ export class Tailscale extends pulumi.ComponentResource {
     public readonly serverKey: pulumi.Output<string> | undefined;
     public readonly agentKey: pulumi.Output<string> | undefined;
     public readonly tailnet: string;
+    public readonly oauthClientId: string;
+    public readonly oauthClientSecret: pulumi.Output<string>;
 
     constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
         super('orangelab:system:Tailscale', name, args, opts);
 
-        this.tailnet = new pulumi.Config(name).require('tailnet');
+        const config = new pulumi.Config(name);
+        this.tailnet = config.require('tailnet');
+        this.oauthClientId = config.require('oauthClientId');
+        this.oauthClientSecret = config.requireSecret('oauthClientSecret');
+
+        const provider = new tailscale.Provider(
+            `${name}-provider`,
+            {
+                oauthClientId: this.oauthClientId,
+                oauthClientSecret: this.oauthClientSecret,
+            },
+            { parent: this, aliases: [{ name: 'default_0_23_0' }] },
+        );
 
         const serverKey = new tailscale.TailnetKey(
             `${name}-server-key`,
@@ -22,7 +36,7 @@ export class Tailscale extends pulumi.ComponentResource {
                 recreateIfInvalid: 'always',
                 tags: ['tag:k8s-server'],
             },
-            { parent: this },
+            { parent: this, provider },
         );
         this.serverKey = serverKey.key;
 
@@ -37,7 +51,7 @@ export class Tailscale extends pulumi.ComponentResource {
                 recreateIfInvalid: 'always',
                 tags: ['tag:k8s-agent'],
             },
-            { parent: this },
+            { parent: this, provider },
         );
         this.agentKey = agentKey.key;
     }
