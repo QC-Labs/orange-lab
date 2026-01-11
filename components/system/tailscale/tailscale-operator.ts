@@ -24,6 +24,7 @@ export class TailscaleOperator extends pulumi.ComponentResource {
 
         const config = new pulumi.Config(name);
         const hostname = config.require('hostname');
+        const debug = rootConfig.isDebugEnabled(name);
 
         this.app = new Application(this, name, {
             namespace: args.namespace,
@@ -72,7 +73,7 @@ export class TailscaleOperator extends pulumi.ComponentResource {
                 operatorConfig: {
                     affinity: this.app.nodes.getAffinity(),
                     hostname,
-                    logging: 'debug', // info, debug, dev
+                    logging: debug ? 'debug' : 'info', // info, debug, dev
                 },
                 proxyConfig: {
                     defaultProxyClass: proxyClass?.metadata.name,
