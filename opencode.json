@@ -3,13 +3,22 @@
     "permission": {
         "bash": {
             "*": "ask",
-            "git status": "allow",
-            "git diff": "allow",
+            "git status *": "allow",
+            "git diff *": "allow",
+            "git log *": "allow",
+            "git show *": "allow",
             "ls": "allow",
             "pwd": "allow",
             "npm run lint": "allow",
             "npm test": "allow",
             "npm run test": "allow"
+        },
+        "read": {
+            "Pulumi.*.yaml": "deny"
+        },
+        "write": {
+            "Pulumi.*.yaml": "deny",
+            "node_modules/*": "deny"
         }
     }
 }
