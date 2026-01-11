@@ -2,10 +2,9 @@
 
 ## Build/Lint/Test Commands
 
-- Deployment: `pulumi up`
-- Preview changes: `pulumi preview --diff`
-- Lint: `npm run lint`
-- Test: `npm run test` (runs lint)
+- Deployment: `pulumi up --yes` (only with user approval)
+- Preview changes: `pulumi preview --diff` (useful for checking for any unintended changes after major code updates or refactoring)
+- Test: `npm test` (same as `npm run lint` - use after making code changes, but not documentation)
 
 ## Architectural Principles
 
@@ -23,6 +22,7 @@
 - Modular architecture with clear separation of concerns
 - Prefer self-documenting code over comments
 - Use descriptive variable names and clear function signatures
+- Keep the code concise omitting default values unless useful to communicate intent
 
 ### Naming Conventions
 
@@ -51,17 +51,23 @@
 - Prefer nullish coalescing operator (??) over logical OR (||)
 - Prefix unused variables with underscore (\_)
 
-### Components
-
-- Applications should use the Application class for Kubernetes resources
-- For Helm charts, use Application class for namespaces and storage
-- Follow the established pattern for new modules and components
-- Use constructor parameter properties with access modifiers (e.g., `constructor(private readonly args: Args)`)
-- Prefer composition over inheritance for component relationships
-
 ### Secrets and Security
 
 - Use `envSecret` field in `ContainerSpec` for sensitive data instead of command args
 - Application class automatically creates Kubernetes Secrets and configures envFrom
 - Environment variable names should be UPPERCASE following conventions
 - Never expose passwords or sensitive data in command line arguments
+
+## Components
+
+- Applications should use the Application class for Kubernetes resources
+- For Helm charts, use Application class for namespaces and storage
+- Follow the established pattern for new modules and components
+- Use constructor parameter properties with access modifiers (e.g., `constructor(private readonly args: Args)`)
+- Prefer composition over inheritance for component relationships
+- Only export fields when needed for external use; keep sensitive values like auth keys internal when not required
+- Share provider instances across components (pass via args) rather than creating duplicates
+
+### Tailscale
+
+- Use `tag:orangelab` consistently for all TailnetKey resources (the only tag configured in ACLs)
