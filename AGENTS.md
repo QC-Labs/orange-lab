@@ -1,6 +1,6 @@
-# OrangeLab Commands & Style Guide
+# OrangeLab Guidelines
 
-## Build/Lint/Test Commands
+## Commands
 
 - Deployment: `pulumi up --yes` (only with user approval)
 - Preview changes: `pulumi preview --diff` (useful for checking for any unintended changes after major code updates or refactoring)
@@ -9,9 +9,35 @@
 ## Architectural Principles
 
 - **Simplicity Over Complexity (KISS):** Prioritize simple, straightforward solutions. Avoid over-engineering or introducing complex patterns without consultation.
+- **You aren't gonna need it (YAGNI):** Only implement features and functionality that are required now. Avoid building for hypothetical future scenarios.
 - **Loose Coupling:** Strive to keep components independent. Avoid creating circular dependencies.
-- **Consult on Architectural Changes:** Before implementing significant architectural changes (e.g., introducing new base classes, changing configuration management), discuss the proposed approach and alternatives first.
-- **Centralized Concerns:** Keep related logic together. For example, all user-facing console output should ideally be handled in a single, designated component like `root-config.ts` to ensure consistency.
+- **Single Responsibility:** Each class has one clear purpose: Metadata for labels/annotations, Network for ingress/services, Storage for volumes, etc.
+
+## Working Conventions
+
+### Step-by-Step Approach
+
+- Agree on plan first before making changes
+- Ask questions about trade-offs if multiple paths exist
+- Work incrementally on one task at a time
+- Ask for confirmation before moving to next phase
+
+### Asking for Confirmation
+
+- Before implementing significant changes, discuss the proposed approach and alternatives first
+- When working through multiple files, show a brief diff/context before asking to proceed
+- Keep descriptions concise and focused on the specific change
+
+### Commit Messages
+
+- Use conventional commits: `scope:` or `fix(scope):` for normal changes and bug fixes, `scope!: BREAKING CHANGE` for breaking changes
+- Include why the change matters (e.g., "shows up in Headlamp in Cluster/Nodes")
+- Don't use "refactor:" for breaking changes
+
+### Kubernetes Standards
+
+- Prefer standard Kubernetes conventions unless there's a specific reason to deviate
+- Example: node-role labels use `true` value to match k3s `control-plane` and `master` roles
 
 ## Code Style
 
@@ -23,12 +49,12 @@
 - Prefer self-documenting code over comments
 - Use descriptive variable names and clear function signatures
 - Keep the code concise omitting default values unless useful to communicate intent
+- Pass dependencies through args (providers, config, metadata) rather than accessing globals (except `root-config.ts`)
 
 ### Naming Conventions
 
 - Use camelCase for variables, functions, and methods
 - Use PascalCase for classes, interfaces, and type aliases
-- Prefix private class members with underscore (\_)
 
 ### Import/Export Style
 
