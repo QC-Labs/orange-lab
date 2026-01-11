@@ -32,8 +32,8 @@ systemctl status k3s.service
 
 The server should also create two files:
 
--   `/var/lib/rancher/k3s/server/token` - server token, needed by agents to connect
--   `/etc/rancher/k3s/k3s.yaml` - kubeconfig file, copy to your `~/.kube/config`
+- `/var/lib/rancher/k3s/server/token` - server token, needed by agents to connect
+- `/etc/rancher/k3s/k3s.yaml` - kubeconfig file, copy to your `~/.kube/config`
 
 ## Save server configuration
 
@@ -96,7 +96,7 @@ You can set node labels later when installing applications. Examples:
 
 ```sh
 # Storage node used by Longhorn, at least one is needed
-kubectl label nodes <node-name> orangelab/storage=true
+kubectl label nodes <node-name> node-role.kubernetes.io/longhorn=true
 
 # Set zone, used f.e. by home-assistant to deploy to node on same network as sensors
 kubectl label nodes <node-name> topology.kubernetes.io/zone=home

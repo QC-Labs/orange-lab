@@ -27,7 +27,7 @@ pulumi config set tailscale-operator:enabled true
 pulumi up
 
 # Add tag to storage nodes that will be used by Longhorn
-kubectl label nodes <node-name> orangelab/storage=true
+kubectl label nodes <node-name> node-role.kubernetes.io/longhorn=true
 pulumi config set longhorn:enabled true
 pulumi up
 
@@ -166,6 +166,7 @@ kubectl delete ingressclass tailscale
 ```
 
 **Important:** Remove any leftover nodes with `tag:orangelab` at https://login.tailscale.com/admin/machines, otherwise Tailscale will create `<app>-1` entries and connections will fail.
+
 ## Traefik
 
 |               |                                                                               |
@@ -212,7 +213,7 @@ pulumi up
 | StorageClass parameters | https://longhorn.io/docs/1.8.0/references/storage-class-parameters/ |
 | Endpoints               | `https://longhorn.<tsnet>.ts.net/`                                  |
 
-Longhorn adds permanent storage that is replicated across multiple nodes. It also supports snapshots and backups of data volumes. The nodes need to be labeled with `orangelab/storage=true` - you need at least one. Volumes stored at `/var/lib/longhorn/`.
+Longhorn adds permanent storage that is replicated across multiple nodes. It also supports snapshots and backups of data volumes. The nodes need to be labeled with `node-role.kubernetes.io/longhorn=true` - you need at least one. Volumes stored at `/var/lib/longhorn/`.
 
 ### Installation
 
@@ -224,7 +225,7 @@ systemctl enable iscsid.service --now
 systemctl enable iscsid.socket --now
 
 # Add tag to storage nodes that will be used by Longhorn
-kubectl label nodes <node-name> orangelab/storage=true
+kubectl label nodes <node-name> node-role.kubernetes.io/longhorn=true
 
 # Enable module
 pulumi config set longhorn:enabled true

@@ -110,11 +110,12 @@ export class Longhorn extends pulumi.ComponentResource {
                     storageMinimalAvailablePercentage: '10',
                     storageOverProvisioningPercentage: '100',
                     storageReservedPercentageForDefaultDisk: '30',
-                    systemManagedComponentsNodeSelector: 'orangelab/storage:true',
+                    systemManagedComponentsNodeSelector:
+                        'node-role.kubernetes.io/longhorn=true',
                 },
                 global: {
                     nodeSelector: {
-                        'orangelab/storage': 'true',
+                        'node-role.kubernetes.io/longhorn': 'true',
                     },
                 },
                 csi: {
