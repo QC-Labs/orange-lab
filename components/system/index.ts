@@ -14,7 +14,6 @@ import { Traefik } from './traefik';
 export class SystemModule extends pulumi.ComponentResource {
     tailscaleServerKey: pulumi.Output<string> | undefined;
     tailscaleAgentKey: pulumi.Output<string> | undefined;
-    domainName: string;
 
     longhorn?: Longhorn;
     minio?: Minio;
@@ -31,7 +30,7 @@ export class SystemModule extends pulumi.ComponentResource {
             minioUsers: this.minio?.users,
             tailscaleAgentKey: this.tailscaleAgentKey,
             tailscaleServerKey: this.tailscaleServerKey,
-            tailscaleDomain: this.domainName,
+            tailscaleDomain: rootConfig.tailnetDomain,
         };
     }
 
@@ -41,7 +40,6 @@ export class SystemModule extends pulumi.ComponentResource {
         const tailscale = new Tailscale('tailscale', {}, { parent: this });
         this.tailscaleServerKey = tailscale.serverKey;
         this.tailscaleAgentKey = tailscale.agentKey;
-        this.domainName = tailscale.tailnet;
 
         if (rootConfig.isEnabled('tailscale-operator')) {
             new TailscaleOperator(
