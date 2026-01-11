@@ -72,10 +72,12 @@ export class TailscaleOperator extends pulumi.ComponentResource {
                 },
                 operatorConfig: {
                     affinity: this.app.nodes.getAffinity(),
+                    defaultTags: ['tag:orangelab'],
                     hostname,
                     logging: debug ? 'debug' : 'info', // info, debug, dev
                 },
                 proxyConfig: {
+                    defaultTags: 'tag:orangelab',
                     defaultProxyClass: proxyClass?.metadata.name,
                 },
             },

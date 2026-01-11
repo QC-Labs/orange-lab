@@ -51,14 +51,11 @@ sudo tailscale up --operator=$USER --accept-routes
 
 ### Tags
 
-Add tags to your Tailnet ACLs (https://login.tailscale.com/admin/acls/file)
+Add tag to your Tailnet ACLs (https://login.tailscale.com/admin/acls/file)
 
 ```json
 "tagOwners": {
-    "tag:k8s-server":   [],
-    "tag:k8s-agent":    [],
-    "tag:k8s-operator": [],
-    "tag:k8s":          ["tag:k8s-operator"],
+    "tag:orangelab":   [],
 }
 ```
 
@@ -69,6 +66,10 @@ Create Tailscale OAuth token for OrangeLab (https://login.tailscale.com/admin/se
 <img src="./tailscale-oauth.png" alt="New Tailscale OAuth token screen" style="width:50%;border:1px solid orange;margin-bottom:1em;" />
 
 Make sure token has write permissions for `Devices/Core` and `Keys/Auth keys`.
+
+Assign `orangelab` tag as well.
+
+<img src="./tailscale-oauth-devices.png" alt="New Tailscale OAuth devices permission" style="width:50%;border:1px solid orange;margin-bottom:1em;" />
 
 Add the token values to `Pulumi.<stack>.yaml`.
 

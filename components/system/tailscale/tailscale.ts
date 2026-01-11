@@ -34,7 +34,7 @@ export class Tailscale extends pulumi.ComponentResource {
                 description: 'Kubernetes server',
                 expiry: 7776000,
                 recreateIfInvalid: 'always',
-                tags: ['tag:k8s-server'],
+                tags: ['tag:orangelab'],
             },
             { parent: this, provider },
         );
@@ -49,7 +49,7 @@ export class Tailscale extends pulumi.ComponentResource {
                 description: 'Kubernetes agents',
                 expiry: 7776000,
                 recreateIfInvalid: 'always',
-                tags: ['tag:k8s-agent'],
+                tags: ['tag:orangelab'],
             },
             { parent: this, provider },
         );

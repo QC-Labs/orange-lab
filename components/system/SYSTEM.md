@@ -141,7 +141,7 @@ tailscale configure kubeconfig k8s
 
 ### Uninstall
 
-````sh
+```sh
 pulumi config set tailscale-operator:enabled false
 pulumi up
 
@@ -162,9 +162,10 @@ kubectl delete clusterrolebinding \
 
 # This will remove all existing ingress instances using tailscale class
 # They will be recreated once tailscale-operator is installed again
-# Make sure to remove any left-over nodes at https://login.tailscale.com/admin/machines
 kubectl delete ingressclass tailscale
 ```
+
+**Important:** Remove any leftover nodes with `tag:orangelab` at https://login.tailscale.com/admin/machines, otherwise Tailscale will create `<app>-1` entries and connections will fail.
 ## Traefik
 
 |               |                                                                               |
