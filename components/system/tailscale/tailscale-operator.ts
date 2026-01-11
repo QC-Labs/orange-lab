@@ -70,6 +70,7 @@ export class TailscaleOperator extends pulumi.ComponentResource {
                     clientSecret: args.oauthClientSecret,
                 },
                 operatorConfig: {
+                    affinity: this.app.nodes.getAffinity(),
                     hostname,
                     logging: 'debug', // info, debug, dev
                 },
