@@ -432,12 +432,12 @@ Nodes with GPUs will have the following labels added:
 
 For NVIDIA GPUs:
 
-- `orangelab/gpu: "true"`
+- `node-role.kubernetes.io/gpu: "true"`
 - `orangelab/gpu-nvidia: "true"`
 
 For AMD GPUs:
 
-- `orangelab/gpu: "true"`
+- `node-role.kubernetes.io/gpu: "true"`
 - `orangelab/gpu-amd: "true"`
 
 These labels can be used for node selection in applications.
@@ -450,7 +450,7 @@ pulumi config set nfd:gpu-autodetect false
 pulumi up
 
 # Remove node labels
-kubectl label nodes <node_name> orangelab/gpu-
+kubectl label nodes <node_name> node-role.kubernetes.io/gpu-
 kubectl label nodes <node_name> orangelab/gpu-nvidia-
 kubectl label nodes <node_name> orangelab/gpu-amd-
 ```

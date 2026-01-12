@@ -56,7 +56,9 @@ export class Nodes {
         return this.args.gpu
             ? {
                   required: {
-                      nodeSelectorTerms: [this.getNodeSelectorTerm('orangelab/gpu=true')],
+                      nodeSelectorTerms: [
+                          this.getNodeSelectorTerm('node-role.kubernetes.io/gpu=true'),
+                      ],
                   },
               }
             : undefined;
@@ -84,8 +86,8 @@ export class Nodes {
      * Format: key=value1|value2|value3
      *
      * Examples:
-     * - "orangelab/gpu=true|nvidia" - matches nodes with label orangelab/gpu set to either "true" or "nvidia"
-     * - "orangelab/gpu" - matches nodes that have the orangelab/gpu label (any value)
+     * - "topology.kubernetes.io/zone: zone1|zone2" - matches nodes with label set to either "zone1" or "zone2"
+     * - "orangelab/gpu-nvidia" - matches nodes that have the label (any value)
      *
      * @param labelSpec - Label specification in format "key", "key=value" or "key=value1|value2"
      * @returns NodeSelectorTerm with appropriate matchExpressions

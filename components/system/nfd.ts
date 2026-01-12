@@ -30,6 +30,10 @@ export class NodeFeatureDiscovery extends pulumi.ComponentResource {
             repo: 'https://kubernetes-sigs.github.io/node-feature-discovery/charts',
             values: {
                 prometheus: { enable: rootConfig.enableMonitoring() },
+                master: {
+                    denyLabelNs: [],
+                    extraLabelNs: ['node-role.kubernetes.io'],
+                },
                 worker: {
                     // set as priviledged to allow access to /etc/kubernetes/node-feature-discovery/features.d/
                     securityContext: {
@@ -60,7 +64,7 @@ export class NodeFeatureDiscovery extends pulumi.ComponentResource {
                                     '["gpu", "gpu-amd"]',
                             },
                             labels: {
-                                'orangelab/gpu': 'true',
+                                'node-role.kubernetes.io/gpu': 'true',
                                 'orangelab/gpu-amd': 'true',
                             },
                             matchAny: [
@@ -102,7 +106,7 @@ export class NodeFeatureDiscovery extends pulumi.ComponentResource {
                                     '["gpu","gpu-nvidia"]',
                             },
                             labels: {
-                                'orangelab/gpu': 'true',
+                                'node-role.kubernetes.io/gpu': 'true',
                                 'orangelab/gpu-nvidia': 'true',
                             },
                             matchAny: [
