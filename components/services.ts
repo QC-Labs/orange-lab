@@ -80,6 +80,7 @@ export class Services {
             {
                 ...this.opts,
                 deleteBeforeReplace: true,
+                dependsOn: this.storage,
             },
         );
     }
@@ -105,7 +106,7 @@ export class Services {
                     template: podSpec.createPodTemplateSpec(spec),
                 },
             },
-            this.opts,
+            { ...this.opts, dependsOn: this.storage },
         );
     }
 
@@ -131,7 +132,7 @@ export class Services {
                     template: podSpec.createPodTemplateSpec(spec),
                 },
             },
-            this.opts,
+            { ...this.opts, dependsOn: this.storage },
         );
     }
 }
