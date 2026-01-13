@@ -17,7 +17,7 @@ Private infrastructure for cloud natives.
 
 - decentralized - uses your physical machines potentially spread out over geographical locations, minimise dependency on external services and cloud providers
 - private by default - uses Tailscale/WireGuard for end to end encrypted communication, making services public has to be explicitly defined
-- OSS - prefer open source components that can be run locally
+- OSS - only open source components that can be run locally
 - automation - use Pulumi and Helm to automate most tasks and configuration
 - easy to use - no deep Kubernetes knowledge required, sensible defaults
 - offline mode - continue working (with some limitations) over local network when internet connection lost
@@ -38,6 +38,7 @@ Private infrastructure for cloud natives.
 - `nfd` - Node Feature Discovery (GPU autodetection)
 - `nvidia-gpu-operator` - NVidia GPU support
 - `tailscale-operator` - ingress support with Tailscale authentication
+- `traefik` - reverse proxy for custom domain support
 
 [Data module](./components/data/DATA.md):
 
