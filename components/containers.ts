@@ -50,7 +50,6 @@ export class Containers {
             metadata,
             spec: {
                 affinity: this.nodes.getAffinity(),
-                securityContext: this.createPodSecurityContext(spec.runAsUser),
                 hostNetwork: spec.hostNetwork,
                 containers: [
                     {
@@ -76,7 +75,9 @@ export class Containers {
                             healthChecks: spec.healthChecks,
                         }),
                         resources: this.createResourceLimits(spec.resources),
-                        securityContext: this.createSecurityContext(),
+                        securityContext: this.createContainerSecurityContext(
+                            spec.runAsUser,
+                        ),
                         startupProbe: this.createProbe({
                             healthChecks: spec.healthChecks,
                             failureThreshold: 10,
@@ -113,15 +114,21 @@ export class Containers {
         }));
     }
 
-    private createSecurityContext():
-        | kubernetes.types.input.core.v1.SecurityContext
-        | undefined {
+    private createContainerSecurityContext(
+        runAsUser?: number,
+    ): kubernetes.types.input.core.v1.SecurityContext | undefined {
+        const context: kubernetes.types.input.core.v1.SecurityContext = {};
         if (this.nodes.gpu === 'amd') {
-            return { seccompProfile: { type: 'Unconfined' } };
+            context.seccompProfile = { type: 'Unconfined' };
+        } else if (this.nodes.gpu === 'nvidia' || this.storage?.hasLocal()) {
+            context.privileged = true;
         }
-        return this.nodes.gpu || this.storage?.hasLocal()
-            ? { privileged: true }
-            : undefined;
+        if (runAsUser) {
+            context.runAsUser = runAsUser;
+            context.runAsGroup = runAsUser;
+        }
+        return Object.keys(context).length ? context : undefined;
+    }
     }
 
     private createPorts(args: { port?: number; ports?: ServicePort[] }) {
@@ -166,16 +173,6 @@ export class Containers {
             mounts.push({ name: 'dev-dri', mountPath: '/dev/dri' });
         }
         return mounts;
-    }
-
-    private createPodSecurityContext(runAsUser?: number) {
-        return runAsUser
-            ? {
-                  runAsUser,
-                  runAsGroup: runAsUser,
-                  fsGroup: runAsUser,
-              }
-            : undefined;
     }
 
     private createResourceLimits(
