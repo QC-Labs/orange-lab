@@ -108,6 +108,7 @@ export class Containers {
             image: initContainer.image ?? 'busybox:latest',
             command: initContainer.command,
             imagePullPolicy: 'IfNotPresent',
+            securityContext: this.createInitContainerSecurityContext(),
             volumeMounts: this.createVolumeMounts(
                 initContainer.volumeMounts ?? params.volumeMounts,
             ),
@@ -129,6 +130,11 @@ export class Containers {
         }
         return Object.keys(context).length ? context : undefined;
     }
+
+    private createInitContainerSecurityContext():
+        | kubernetes.types.input.core.v1.SecurityContext
+        | undefined {
+        return this.storage?.hasLocal() ? { privileged: true } : undefined;
     }
 
     private createPorts(args: { port?: number; ports?: ServicePort[] }) {
