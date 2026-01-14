@@ -35,8 +35,12 @@ export class Storage extends pulumi.ComponentResource {
         this.nodes = args.nodes;
     }
 
-    createVolumes(): kubernetes.types.input.core.v1.Volume[] {
+    getVolumes(): kubernetes.types.input.core.v1.Volume[] {
         return Array.from(this.volumes.values());
+    }
+
+    getLocalVolumes(): kubernetes.types.input.core.v1.Volume[] {
+        return this.getVolumes().filter(v => v.hostPath !== undefined);
     }
 
     addLocalVolume(volume: LocalVolume) {
@@ -98,7 +102,7 @@ export class Storage extends pulumi.ComponentResource {
     }
 
     hasLocal(): boolean {
-        return this.createVolumes().some(volume => volume.hostPath !== undefined);
+        return this.getVolumes().some(volume => volume.hostPath !== undefined);
     }
 
     hasVolumes(): boolean {

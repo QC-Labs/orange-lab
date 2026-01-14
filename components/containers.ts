@@ -85,10 +85,7 @@ export class Containers {
                         volumeMounts: this.createVolumeMounts(spec.volumeMounts),
                     },
                 ],
-                initContainers: this.createInitContainers({
-                    initContainers: spec.initContainers,
-                    volumeMounts: spec.volumeMounts,
-                }),
+                initContainers: this.createAllInitContainers(spec),
                 restartPolicy: spec.restartPolicy,
                 serviceAccountName: this.serviceAccount.metadata.name,
                 runtimeClassName: this.nodes.gpu === 'nvidia' ? 'nvidia' : undefined,
@@ -97,22 +94,53 @@ export class Containers {
         };
     }
 
-    private createInitContainers(params: {
-        initContainers?: InitContainerSpec[];
-        volumeMounts?: VolumeMount[];
-    }):
-        | pulumi.Input<pulumi.Input<kubernetes.types.input.core.v1.Container>[]>
-        | undefined {
-        return params.initContainers?.map(initContainer => ({
+    private createAllInitContainers(
+        spec: ContainerSpec,
+    ): pulumi.Input<pulumi.Input<kubernetes.types.input.core.v1.Container>[]> {
+        const initContainers = spec.initContainers ?? [];
+
+        const mountPaths = this.getLocalVolumeMounts(spec.volumeMounts);
+        if (spec.runAsUser && mountPaths.length > 0) {
+            initContainers.push(
+                this.createPermissionsInitContainer(spec.runAsUser, mountPaths),
+            );
+        }
+        return this.createInitContainers(initContainers, spec.volumeMounts);
+    }
+
+    private createInitContainers(
+        initContainerSpec: InitContainerSpec[],
+        defaultVolumeMounts?: VolumeMount[],
+    ): pulumi.Input<pulumi.Input<kubernetes.types.input.core.v1.Container>[]> {
+        return initContainerSpec.map(initContainer => ({
             name: initContainer.name,
             image: initContainer.image ?? 'busybox:latest',
             command: initContainer.command,
             imagePullPolicy: 'IfNotPresent',
             securityContext: this.createInitContainerSecurityContext(),
             volumeMounts: this.createVolumeMounts(
-                initContainer.volumeMounts ?? params.volumeMounts,
+                initContainer.volumeMounts ?? defaultVolumeMounts,
             ),
         }));
+    }
+
+    private createPermissionsInitContainer(
+        runAsUser: number,
+        mountPaths: string[],
+    ): InitContainerSpec {
+        const userId = String(runAsUser);
+        const paths = mountPaths.join(' ');
+        return {
+            name: 'fix-volume-permissions',
+            command: ['sh', '-c', `chown -R ${userId}:${userId} ${paths}`],
+        };
+    }
+
+    private getLocalVolumeMounts(volumeMounts?: VolumeMount[]): string[] {
+        const localVolumeNames = this.storage?.getLocalVolumes().map(v => v.name) ?? [];
+        return (volumeMounts ?? [])
+            .filter(mount => localVolumeNames.includes(mount.name ?? this.appName))
+            .map(mount => mount.mountPath);
     }
 
     private createContainerSecurityContext(
@@ -164,7 +192,7 @@ export class Containers {
                 type: 'Directory',
             });
         }
-        return volumeMounts?.length ? (this.storage?.createVolumes() ?? []) : undefined;
+        return volumeMounts?.length ? (this.storage?.getVolumes() ?? []) : undefined;
     }
 
     private createVolumeMounts(
