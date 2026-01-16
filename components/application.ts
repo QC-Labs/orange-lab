@@ -1,5 +1,4 @@
 import * as kubernetes from '@pulumi/kubernetes';
-import { LimitRange } from '@pulumi/kubernetes/core/v1';
 import * as pulumi from '@pulumi/pulumi';
 import { Databases } from './databases';
 import { Metadata } from './metadata';
@@ -168,29 +167,6 @@ export class Application {
     addJob(spec: ContainerSpec) {
         if (this.storageOnly) return this;
         this.getServices().createJob(spec);
-        return this;
-    }
-
-    addDefaultLimits(args: {
-        request?: Record<string, string>;
-        limit?: Record<string, string>;
-    }) {
-        new LimitRange(
-            `${this.appName}-limits`,
-            {
-                metadata: this.metadata.get(),
-                spec: {
-                    limits: [
-                        {
-                            type: 'Container',
-                            defaultRequest: args.request,
-                            default: args.limit,
-                        },
-                    ],
-                },
-            },
-            { parent: this.scope },
-        );
         return this;
     }
 
