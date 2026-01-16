@@ -150,6 +150,19 @@ class RootConfig {
                 'mempool:db/maintenance is deprecated. Use mempool:db/disableAuth instead.',
             );
         }
+        if (this.getAppConfig('tailscale', 'apiKey')) {
+            console.warn('tailscale:apiKey is deprecated. Use OAuth instead.');
+        }
+        if (this.getAppConfig('tailscale-operator', 'oauthClientId')) {
+            console.warn(
+                'tailscale-operator:oauthClientId is deprecated. Create tailscale:oauthClientId.',
+            );
+        }
+        if (this.getAppConfig('tailscale-operator', 'oauthClientSecret')) {
+            console.warn(
+                'tailscale-operator:oauthClientSecret is deprecated. Create tailscale:oauthClientSecret.',
+            );
+        }
     }
 
     /**
