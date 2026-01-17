@@ -1,25 +1,140 @@
+import * as kubernetes from '@pulumi/kubernetes';
+import { ClusterRole } from '@pulumi/kubernetes/rbac/v1';
 import * as pulumi from '@pulumi/pulumi';
-import * as tailscale from '@pulumi/tailscale';
+import { Application } from '../../application';
+import { GrafanaDashboard } from '../../grafana-dashboard';
+import { rootConfig } from '../../root-config';
+import dashboardJson from './tailscale-dashboard.json';
 
-export class Tailscale extends pulumi.ComponentResource {
-    public readonly oauthClientId: string;
-    public readonly oauthClientSecret: pulumi.Output<string>;
-    public readonly provider: tailscale.Provider;
+interface TailscaleOperatorArgs {
+    namespace?: string;
+}
 
-    constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
+export class TailscaleOperator extends pulumi.ComponentResource {
+    private readonly app: Application;
+
+    constructor(
+        private name: string,
+        args: TailscaleOperatorArgs,
+        opts?: pulumi.ResourceOptions,
+    ) {
         super('orangelab:system:Tailscale', name, args, opts);
 
         const config = new pulumi.Config(name);
-        this.oauthClientId = config.require('oauthClientId');
-        this.oauthClientSecret = config.requireSecret('oauthClientSecret');
+        const oauthClientId = config.require('oauthClientId');
+        const oauthClientSecret = config.requireSecret('oauthClientSecret');
+        const hostname = config.require('hostname');
+        const debug = rootConfig.isDebugEnabled(name);
 
-        this.provider = new tailscale.Provider(
-            `${name}-provider`,
-            {
-                oauthClientId: this.oauthClientId,
-                oauthClientSecret: this.oauthClientSecret,
+        this.app = new Application(this, name, { namespace: args.namespace });
+
+        const userRole = this.createUserRole(name);
+        this.createUserRoleBinding(userRole, 'orangelab:users');
+
+        let proxyClass;
+        if (rootConfig.enableMonitoring()) {
+            proxyClass = new kubernetes.apiextensions.CustomResource(
+                'proxyClass',
+                {
+                    apiVersion: 'tailscale.com/v1alpha1',
+                    kind: 'ProxyClass',
+                    metadata: {
+                        name: 'tailscale-proxyclass',
+                        namespace: this.app.namespace,
+                    },
+                    spec: {
+                        metrics: {
+                            enable: true,
+                            serviceMonitor: {
+                                enable: true,
+                            },
+                        },
+                    },
+                },
+                { parent: this, deleteBeforeReplace: true },
+            );
+            new GrafanaDashboard(name, this, { configJson: dashboardJson });
+        }
+
+        this.app.addHelmChart(name, {
+            chart: 'tailscale-operator',
+            repo: 'https://pkgs.tailscale.com/helmcharts',
+            values: {
+                apiServerProxyConfig: { mode: 'true' },
+                oauth: {
+                    clientId: oauthClientId,
+                    clientSecret: oauthClientSecret,
+                },
+                operatorConfig: {
+                    affinity: this.app.nodes.getAffinity(),
+                    defaultTags: ['tag:orangelab'],
+                    hostname,
+                    logging: debug ? 'debug' : 'info', // info, debug, dev
+                },
+                proxyConfig: {
+                    defaultTags: 'tag:orangelab',
+                    defaultProxyClass: proxyClass?.metadata.name,
+                },
             },
-            { parent: this, aliases: [{ name: 'default_0_23_0' }] },
+        });
+    }
+
+    private createUserRoleBinding(userRole: ClusterRole, groupName: string) {
+        new kubernetes.rbac.v1.ClusterRoleBinding(
+            `${this.name}-user-cluster-role-binding`,
+            {
+                metadata: { ...this.app.metadata.get(), name: 'orangelab-user' },
+                subjects: [
+                    {
+                        kind: 'Group',
+                        name: groupName,
+                    },
+                ],
+                roleRef: {
+                    apiGroup: 'rbac.authorization.k8s.io',
+                    kind: 'ClusterRole',
+                    name: userRole.metadata.name,
+                },
+            },
+            { parent: this },
+        );
+    }
+
+    private createUserRole(name: string) {
+        return new kubernetes.rbac.v1.ClusterRole(
+            `${name}-user-cluster-role`,
+            {
+                metadata: {
+                    ...this.app.metadata.get(),
+                    name: 'orangelab-user-cluster-role',
+                },
+                rules: [
+                    {
+                        apiGroups: [
+                            '',
+                            'admissionregistration.k8s.io',
+                            'apiextensions',
+                            'apps',
+                            'autoscaling',
+                            'batch',
+                            'coordination.k8s.io',
+                            'discovery.k8s.io',
+                            'extensions',
+                            'helm.cattle.io',
+                            'metrics.k8s.io',
+                            'networking.k8s.io',
+                            'node.k8s.io',
+                            'policy',
+                            'rbac.authorization.k8s.io',
+                            'scheduling.k8s.io',
+                            'storage.k8s.io',
+                        ],
+                        resources: ['*'],
+                        verbs: ['get', 'list', 'watch'],
+                    },
+                ],
+            },
+            { parent: this },
         );
     }
 }

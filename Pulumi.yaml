@@ -13,15 +13,18 @@ config:
 
     ### SYSTEM ###
 
-    # tailscale:tailnet: <*.ts.net>
-    # tailscale:oauthClientId: OAUTH_CLIENT_ID
-    # tailscale:oauthClientSecret:
-    #   secure: OAUTH_CLIENT_SECRET
-
     # k3s:serverIp: localhost
     # k3s:agentToken: K3S_TOKEN
     k3s:clusterCidr: 10.42.0.0/16
     k3s:serviceCidr: 10.43.0.0/16
+
+    tailscale:enabled: false
+    # tailscale:tailnet: <*.ts.net>
+    # tailscale:oauthClientId: OAUTH_CLIENT_ID
+    # tailscale:oauthClientSecret:
+    #   secure: OAUTH_CLIENT_SECRET
+    # Hostname for Tailscale operator proxy for Kubernetes API
+    tailscale:hostname: k8s
 
     # Note: add A record for "*" pointing to one of your Tailscale IPs
     # orangelab:customDomain: 'example.com'
@@ -29,12 +32,6 @@ config:
     # TraefikCRDs are installed when customDomain is set. Also install Traefik by default
     traefik:enabled: true
     traefik:hostname: traefik
-
-    tailscale-operator:enabled: false
-    # Hostname for Tailscale operator proxy for Kubernetes API
-    tailscale-operator:hostname: k8s
-    # tailscale-operator:oauthClientId: OAUTH_CLIENT_ID
-    # tailscale-operator:oauthClientSecret: OAUTH_CLIENT_SECRET
 
     longhorn:enabled: false
     longhorn:version: 1.10.1

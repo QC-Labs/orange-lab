@@ -151,16 +151,16 @@ class RootConfig {
             );
         }
         if (this.getAppConfig('tailscale', 'apiKey')) {
-            console.warn('tailscale:apiKey is deprecated. Use OAuth instead.');
+            console.warn('tailscale:apiKey is deprecated. Use tailscale OAuth instead.');
         }
         if (this.getAppConfig('tailscale-operator', 'oauthClientId')) {
             console.warn(
-                'tailscale-operator:oauthClientId is deprecated. Create tailscale:oauthClientId.',
+                'tailscale-operator:oauthClientId is deprecated. Use tailscale:oauthClientId.',
             );
         }
         if (this.getAppConfig('tailscale-operator', 'oauthClientSecret')) {
             console.warn(
-                'tailscale-operator:oauthClientSecret is deprecated. Create tailscale:oauthClientSecret.',
+                'tailscale-operator:oauthClientSecret is deprecated. Use tailscale:oauthClientSecret.',
             );
         }
     }

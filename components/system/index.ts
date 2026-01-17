@@ -7,8 +7,7 @@ import { Longhorn } from './longhorn/longhorn';
 import { Minio } from './minio/minio';
 import { NodeFeatureDiscovery } from './nfd';
 import { NvidiaGPUOperator } from './nvidia-gpu-operator';
-import { Tailscale } from './tailscale/tailscale';
-import { TailscaleOperator } from './tailscale/tailscale-operator';
+import { TailscaleOperator } from './tailscale/tailscale';
 import { Traefik } from './traefik';
 
 export class SystemModule extends pulumi.ComponentResource {
@@ -32,17 +31,14 @@ export class SystemModule extends pulumi.ComponentResource {
     constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
         super('orangelab:system', name, args, opts);
 
-        const tailscale = new Tailscale('tailscale', {}, { parent: this });
-
-        if (rootConfig.isEnabled('tailscale-operator')) {
+        if (rootConfig.isEnabled('tailscale')) {
             new TailscaleOperator(
-                'tailscale-operator',
+                'tailscale',
+                {},
                 {
-                    namespace: 'tailscale',
-                    oauthClientId: tailscale.oauthClientId,
-                    oauthClientSecret: tailscale.oauthClientSecret,
+                    parent: this,
+                    aliases: [{ type: 'orangelab:system:TailscaleOperator' }],
                 },
-                { parent: this },
             );
         }
 
