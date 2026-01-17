@@ -1,5 +1,5 @@
 ---
-description: Review staged code changes for OrangeLab best practices and architectural principles
+description: Review staged code changes
 ---
 
 Review staged code changes for quality, security, and adherence to OrangeLab's specific conventions.

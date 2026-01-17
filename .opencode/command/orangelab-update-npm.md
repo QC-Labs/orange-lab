@@ -1,5 +1,5 @@
 ---
-description: Update npm dependencies with locked versions and validate infrastructure
+description: Update npm dependencies
 ---
 
 Update npm dependencies in this project, ensuring all versions are properly locked and no infrastructure changes are introduced.
