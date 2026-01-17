@@ -1,5 +1,6 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
+import assert from 'node:assert';
 import { Databases } from './databases';
 import { Metadata } from './metadata';
 import { Network } from './network';
@@ -39,6 +40,7 @@ export class Application {
         },
     ) {
         this.config = new pulumi.Config(appName);
+        this.processDeprecated();
         this.storageOnly = this.config.getBoolean('storageOnly') ?? false;
         if (args?.existingNamespace) {
             this.namespace = args.existingNamespace;
@@ -61,6 +63,17 @@ export class Application {
                 metadata: this.metadata,
             },
             { parent: this.scope },
+        );
+    }
+
+    private processDeprecated() {
+        assert(
+            !this.config.get('fromBackup'),
+            `${this.appName}:fromBackup is not supported. Use fromVolume instead.`,
+        );
+        assert(
+            !this.config.get('cloneFromClaim'),
+            `${this.appName}:cloneFromClaim is not supported. Use fromVolume instead.`,
         );
     }
 
