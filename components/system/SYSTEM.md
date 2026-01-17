@@ -79,11 +79,11 @@ pulumi config set longhorn:backupEnabled true
 pulumi up
 ```
 
-## Tailscale-operator
+## Tailscale Kubernetes-operator
 
 |                |                                                                                            |
 | -------------- | ------------------------------------------------------------------------------------------ |
-| Homepage       | https://tailscale.com/kubernetes-operator                                                  |
+| Homepage       | https://tailscale.com/kb/1236/kubernetes-operator                                          |
 | Versions       | https://tailscale.com/changelog                                                            |
 | Default values | https://github.com/tailscale/tailscale/blob/main/cmd/k8s-operator/deploy/chart/values.yaml |
 | Endpoints      | `https://k8s.<tsnet>.ts.net/`                                                              |
