@@ -93,7 +93,3 @@
 - Prefer composition over inheritance for component relationships
 - Only export fields when needed for external use; keep sensitive values like auth keys internal when not required
 - Share provider instances across components (pass via args) rather than creating duplicates
-
-### Tailscale
-
-- Use `tag:orangelab` consistently for all TailnetKey resources (the only tag configured in ACLs)
