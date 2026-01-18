@@ -50,42 +50,6 @@ sudo tailscale up  --reset --operator=$USER --accept-routes
 
 # (Optional) Also allow the host to be used as exit node
 sudo tailscale up  --reset --operator=$USER --accept-routes --advertise-exit-node
-
-
 ```
 
-### Tags
-
-Add tag to your Tailnet ACLs (https://login.tailscale.com/admin/acls/file)
-
-```json
-"tagOwners": {
-    "tag:orangelab":   [],
-}
-```
-
-### OAuth token
-
-Create Tailscale OAuth token for OrangeLab (https://login.tailscale.com/admin/settings/trust-credentials)
-
-<img src="./tailscale-oauth.png" alt="New Tailscale OAuth token screen" style="width:50%;border:1px solid orange;margin-bottom:1em;" />
-
-Make sure token has write permissions for `Devices/Core` and `Keys/Auth keys`.
-
-Assign `orangelab` tag as well.
-
-<img src="./tailscale-oauth-devices.png" alt="New Tailscale OAuth devices permission" style="width:50%;border:1px solid orange;margin-bottom:1em;" />
-
-Add the token values to `Pulumi.<stack>.yaml`.
-
-You can find Tailnet DNS name at https://login.tailscale.com/admin/dns
-
-```sh
-pulumi config set tailscale:tailnet <*.ts.net*>
-pulumi config set tailscale:oauthClientId <OAUTH_CLIENT_ID>
-pulumi config set tailscale:oauthClientSecret <OAUTH_CLIENT_SECRET> --secret
-
-pulumi up
-```
-
-Enable MagicDNS and HTTPS certificates on https://login.tailscale.com/admin/dns
+For cluster-wide Tailscale integration and ingress support, see the [Tailscale Operator Guide](/components/system/tailscale/tailscale.md).

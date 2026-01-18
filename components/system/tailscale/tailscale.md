@@ -11,23 +11,41 @@ The operator manages cluster ingress endpoints on Tailnet as well as adds Tailsc
 
 ## Installation
 
-Add `k8s-operator` and `k8s` tags to your Tailnet in ACLs (https://login.tailscale.com/admin/acls/file):
+### DNS/HTTPS
+
+Enable MagicDNS and HTTPS certificates on https://login.tailscale.com/admin/dns
+
+### Tags
+
+Add `orangelab` tag to your Tailnet ACLs (https://login.tailscale.com/admin/acls/file):
 
 ```json
 "tagOwners": {
-    "tag:k8s-operator": [],
-    "tag:k8s":          ["tag:k8s-operator"],
+    "tag:orangelab":   [],
 }
 ```
 
-Go to https://login.tailscale.com/admin/settings/oauth and create OAuth client for tailscale-operator with write permissions for `auth_keys, devices:core`
+### OAuth token
 
-Details at: https://tailscale.com/learn/managing-access-to-kubernetes-with-tailscale#preparing-the-operator
+Create Tailscale OAuth token for OrangeLab (https://login.tailscale.com/admin/settings/trust-credentials)
+
+<img src="./tailscale-oauth.png" alt="New Tailscale OAuth token screen" style="width:50%;border:1px solid orange;margin-bottom:1em;" />
+
+Make sure token has write permissions for `Devices/Core` and `Keys/Auth keys`.
+
+Assign `orangelab` tag as well.
+
+<img src="./tailscale-oauth-devices.png" alt="New Tailscale OAuth devices permission" style="width:50%;border:1px solid orange;margin-bottom:1em;" />
+
+Add the token values to `Pulumi.<stack>.yaml`.
+
+You can find Tailnet DNS name at https://login.tailscale.com/admin/dns
 
 ```sh
-pulumi config set tailscale-operator:oauthClientId <OAUTH_CLIENT_ID> --secret
-pulumi config set tailscale-operator:oauthClientSecret <OAUTH_CLIENT_SECRET> --secret
-pulumi config set tailscale-operator:enabled true
+pulumi config set tailscale:tailnet <*.ts.net*>
+pulumi config set tailscale:oauthClientId <OAUTH_CLIENT_ID>
+pulumi config set tailscale:oauthClientSecret <OAUTH_CLIENT_SECRET> --secret
+pulumi config set tailscale:enabled true
 
 pulumi up
 ```
@@ -41,7 +59,7 @@ Add this grant to your Tailscale ACLs:
 ```json
 "grants": [{
     "src": ["autogroup:member"],
-    "dst": ["tag:k8s-operator"],
+    "dst": ["tag:orangelab"],
     "app": {
         "tailscale.com/cap/kubernetes": [{
             "impersonate": {
@@ -61,7 +79,7 @@ tailscale configure kubeconfig k8s
 ## Uninstall
 
 ```sh
-pulumi config set tailscale-operator:enabled false
+pulumi config set tailscale:enabled false
 pulumi up
 
 kubectl delete crd \
