@@ -9,8 +9,6 @@
 
 Ollama requires to be run on GPU nodes. You need to install NVidia or AMD operator first.
 
-For detailed AMD GPU setup, see the [AMD GPU Guide](/docs/amd-gpu.md).
-
 ```sh
 # Enable NVidia integration
 pulumi config set nvidia-gpu-operator:enabled true

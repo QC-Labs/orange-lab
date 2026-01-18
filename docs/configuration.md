@@ -101,13 +101,13 @@ pulumi config set prometheus:requiredNodeLabel orangelab/prometheus=true
 
 GPU node labeling is automatic with Node Feature Discovery (NFD) enabled.
 
-To deploy to nodes with `orangelab/gpu-amd` label and switch to ROCm image if needed:
+Switch to ROCm image if needed:
 
 ```sh
 pulumi config set ollama:amd-gpu true
 ```
 
-More details at [docs/amd-gpu.md](./amd-gpu.md)
+More details at [/components/system/amd-gpu-operator/amd-gpu-operator.md](/components/system/amd-gpu-operator/amd-gpu-operator.md)
 
 ### Storage
 
@@ -162,10 +162,9 @@ pulumi up
 
 Default storage classes:
 
--   Regular applications: `longhorn`
--   GPU workloads: `longhorn-gpu`
--   Large volumes: `longhorn-large`
--   Database volumes: `longhorn-database`
+- Regular applications: `longhorn`
+- GPU workloads: `longhorn-gpu`
+- Large volumes: `longhorn-large`
 
 For single node or non-Linux systems, you can use override application to use `local-path` storage class instead:
 

@@ -84,7 +84,7 @@ Windows and MacOS support is limited, specifically they cannot be used as storag
 
 See [Disabling Longhorn Guide](./docs/longhorn-disable.md) with instructions on using `local-path-provisioner` instead of Longhorn.
 
-Both NVIDIA and AMD GPUs are supported. See [AMD GPU support](/docs/amd-gpu.md) for more information.
+Both NVIDIA and AMD GPUs are supported. See [AMD GPU support](/components/system/amd-gpu-operator/amd-gpu-operator.md) for more information.
 
 # Installation
 
@@ -105,6 +105,5 @@ For general application configuration and deployment instructions, see [Configur
 - [Configuration Guide](./docs/configuration.md) - Application configuration and deployment
 - [Upgrade Guide](./docs/upgrade.md) - Upgrading your OrangeLab installation
 - [Disabling Longhorn](./docs/longhorn-disable.md) - Running OrangeLab without distributed storage
-- [AMD GPU support](./docs/amd-gpu.md) - Using AMD GPUs with OrangeLab
 - [Backup and Restore](./docs/backup.md) - Using Longhorn backups with S3 storage
 - [Troubleshooting](./docs/troubleshooting.md) - Common issues and solutions
