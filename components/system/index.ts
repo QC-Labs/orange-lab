@@ -1,14 +1,14 @@
 import * as pulumi from '@pulumi/pulumi';
 import { rootConfig } from '../root-config';
 import { AmdGPUOperator } from './amd-gpu-operator/amd-gpu-operator';
-import { CertManager } from './cert-manager';
-import { Debug } from './debug';
+import { CertManager } from './cert-manager/cert-manager';
+import { Debug } from './debug/debug';
 import { Longhorn } from './longhorn/longhorn';
 import { Minio } from './minio/minio';
-import { NodeFeatureDiscovery } from './nfd';
-import { NvidiaGPUOperator } from './nvidia-gpu-operator';
+import { NodeFeatureDiscovery } from './nfd/nfd';
+import { NvidiaGPUOperator } from './nvidia-gpu-operator/nvidia-gpu-operator';
 import { TailscaleOperator } from './tailscale/tailscale';
-import { Traefik } from './traefik';
+import { Traefik } from './traefik/traefik';
 
 export class SystemModule extends pulumi.ComponentResource {
     longhorn?: Longhorn;

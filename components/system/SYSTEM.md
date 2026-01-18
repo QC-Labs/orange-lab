@@ -82,11 +82,11 @@ pulumi up
 ## Components
 
 - [Tailscale Operator](./tailscale/tailscale.md) - Manages cluster ingress endpoints and Kubernetes API access.
-- [Traefik](./traefik.md) - Edge router and ingress controller for custom domain traffic.
+- [Traefik](./traefik/traefik.md) - Edge router and ingress controller for custom domain traffic.
 - [Longhorn](./longhorn/longhorn.md) - Replicated block storage for Kubernetes workloads.
 - [Minio](./minio/minio.md) - S3-compatible object storage for backups and data.
-- [Cert-manager](./cert-manager.md) - Automated certificate management for custom domains.
-- [NFD](./nfd.md) - Node Feature Discovery for hardware-aware scheduling.
-- [NVIDIA GPU Operator](./nvidia-gpu-operator.md) - Enables NVIDIA GPU support for containerized workloads.
+- [Cert-manager](./cert-manager/cert-manager.md) - Automated certificate management for custom domains.
+- [NFD](./nfd/nfd.md) - Node Feature Discovery for hardware-aware scheduling.
+- [NVIDIA GPU Operator](./nvidia-gpu-operator/nvidia-gpu-operator.md) - Enables NVIDIA GPU support for containerized workloads.
 - [AMD GPU Operator](./amd-gpu-operator/amd-gpu-operator.md) - Enables AMD GPU support for ROCm workloads.
-- [Debug](./debug.md) - Troubleshooting utilities and volume access tools.
+- [Debug](./debug/debug.md) - Troubleshooting utilities and volume access tools.

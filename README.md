@@ -32,13 +32,13 @@ Private infrastructure for cloud natives.
 [System module](./components/system/SYSTEM.md):
 
 - [`amd-gpu-operator`](./components/system/amd-gpu-operator/amd-gpu-operator.md) - AMD GPU support
-- [`cert-manager`](./components/system/cert-manager.md) - certificate management
+- [`cert-manager`](./components/system/cert-manager/cert-manager.md) - certificate management
 - [`longhorn`](./components/system/longhorn/longhorn.md) - replicated storage
 - [`minio`](./components/system/minio/minio.md) - S3-compatible storage (used as Longhorn backup target)
-- [`nfd`](./components/system/nfd.md) - Node Feature Discovery (GPU autodetection)
-- [`nvidia-gpu-operator`](./components/system/nvidia-gpu-operator.md) - NVidia GPU support
+- [`nfd`](./components/system/nfd/nfd.md) - Node Feature Discovery (GPU autodetection)
+- [`nvidia-gpu-operator`](./components/system/nvidia-gpu-operator/nvidia-gpu-operator.md) - NVidia GPU support
 - [`tailscale-operator`](./components/system/tailscale/tailscale.md) - ingress support with Tailscale authentication
-- [`traefik`](./components/system/traefik.md) - reverse proxy for custom domain support
+- [`traefik`](./components/system/traefik/traefik.md) - reverse proxy for custom domain support
 
 [Data module](./components/data/DATA.md):
 
