@@ -7,7 +7,7 @@
             "git diff *": "allow",
             "git log *": "allow",
             "git show *": "allow",
-            "ls": "allow",
+            "ls *": "allow",
             "pwd": "allow",
             "npm run lint": "allow",
             "npm test": "allow",
@@ -15,6 +15,9 @@
         },
         "read": {
             "Pulumi.*.yaml": "deny"
+        },
+        "edit": {
+            "*": "ask"
         },
         "write": {
             "Pulumi.*.yaml": "deny",
