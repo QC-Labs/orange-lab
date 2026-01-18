@@ -47,8 +47,8 @@ Private infrastructure for cloud natives.
 
 [Monitoring module](./components/monitoring/MONITORING.md):
 
-- [`beszel`](./components/monitoring/beszel.md) - Beszel lightweight monitoring
-- [`prometheus`](./components/monitoring/prometheus.md) - Prometheus/Grafana monitoring
+- [`beszel`](./components/monitoring/beszel/beszel.md) - Beszel lightweight monitoring
+- [`prometheus`](./components/monitoring/prometheus/prometheus.md) - Prometheus/Grafana monitoring
 
 [IoT module](./components/iot/IOT.md):
 

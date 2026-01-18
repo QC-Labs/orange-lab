@@ -17,5 +17,5 @@ pulumi up
 
 ## Components
 
-- [Beszel](./beszel.md) - Lightweight resource monitoring for servers and containers.
-- [Prometheus](./prometheus.md) - Comprehensive monitoring system with Grafana dashboards.
+- [Beszel](./beszel/beszel.md) - Lightweight resource monitoring for servers and containers.
+- [Prometheus](./prometheus/prometheus.md) - Comprehensive monitoring system with Grafana dashboards.
