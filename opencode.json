@@ -17,9 +17,7 @@
             "Pulumi.*.yaml": "deny"
         },
         "edit": {
-            "*": "ask"
-        },
-        "write": {
+            "*": "ask",
             "Pulumi.*.yaml": "deny",
             "node_modules/*": "deny"
         }
