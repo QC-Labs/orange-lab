@@ -18,4 +18,4 @@ pulumi up
 
 ## Components
 
-- [Nextcloud](./nextcloud.md) - Self-hosted productivity platform for file storage, collaboration, and office apps.
+- [Nextcloud](./nextcloud/nextcloud.md) - Self-hosted productivity platform for file storage, collaboration, and office apps.

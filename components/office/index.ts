@@ -1,6 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import { rootConfig } from '../root-config';
-import { Nextcloud } from './nextcloud';
+import { Nextcloud } from './nextcloud/nextcloud';
 
 export class OfficeModule extends pulumi.ComponentResource {
     private readonly nextcloud?: Nextcloud;

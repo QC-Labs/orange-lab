@@ -1,10 +1,10 @@
 import * as k8s from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
-import { Application } from '../application';
-import { IngressInfo } from '../network';
-import { rootConfig } from '../root-config';
-import { DatabaseConfig } from '../types';
+import { Application } from '../../application';
+import { IngressInfo } from '../../network';
+import { rootConfig } from '../../root-config';
+import { DatabaseConfig } from '../../types';
 
 export class Nextcloud extends pulumi.ComponentResource {
     public readonly serviceUrl?: string;
