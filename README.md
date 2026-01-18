@@ -56,13 +56,13 @@ Private infrastructure for cloud natives.
 
 [AI module](./components/ai/AI.md):
 
-- [`automatic1111`](./components/ai/automatic1111.md) - Automatic1111 Stable Diffusion WebUI
-- [`kubeai`](./components/ai/kubeai.md) - Ollama and vLLM models over OpenAI-compatible API
-- [`invokeai`](./components/ai/invokeai.md) - generative AI plaform, community edition
-- [`n8n`](./components/ai/n8n.md) - AI workflow automation
-- [`ollama`](./components/ai/ollama.md) - local large language models
-- [`open-webui`](./components/ai/open-webui.md) - Open WebUI frontend
-- [`sdnext`](./components/ai/sdnext.md) - SD.Next Stable Diffusion WebUI
+- [`automatic1111`](./components/ai/automatic1111/automatic1111.md) - Automatic1111 Stable Diffusion WebUI
+- [`kubeai`](./components/ai/kubeai/kubeai.md) - Ollama and vLLM models over OpenAI-compatible API
+- [`invokeai`](./components/ai/invokeai/invokeai.md) - generative AI plaform, community edition
+- [`n8n`](./components/ai/n8n/n8n.md) - AI workflow automation
+- [`ollama`](./components/ai/ollama/ollama.md) - local large language models
+- [`open-webui`](./components/ai/open-webui/open-webui.md) - Open WebUI frontend
+- [`sdnext`](./components/ai/sdnext/sdnext.md) - SD.Next Stable Diffusion WebUI
 
 [Bitcoin module](./components/bitcoin/BITCOIN.md):
 

@@ -1,7 +1,7 @@
 import * as pulumi from '@pulumi/pulumi';
-import { Application } from '../application';
-import { IngressInfo } from '../network';
-import { StorageType } from '../types';
+import { Application } from '../../application';
+import { IngressInfo } from '../../network';
+import { StorageType } from '../../types';
 
 export class Ollama extends pulumi.ComponentResource {
     public readonly endpointUrl?: string;

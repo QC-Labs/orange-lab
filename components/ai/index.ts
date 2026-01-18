@@ -1,12 +1,12 @@
 import * as pulumi from '@pulumi/pulumi';
 import { rootConfig } from '../root-config';
-import { Automatic1111 } from './automatic1111';
-import { InvokeAi } from './invokeai';
-import { KubeAi } from './kubeai';
-import { N8n } from './n8n';
-import { Ollama } from './ollama';
-import { OpenWebUI } from './open-webui';
-import { SDNext } from './sdnext';
+import { Automatic1111 } from './automatic1111/automatic1111';
+import { InvokeAi } from './invokeai/invokeai';
+import { KubeAi } from './kubeai/kubeai';
+import { N8n } from './n8n/n8n';
+import { Ollama } from './ollama/ollama';
+import { OpenWebUI } from './open-webui/open-webui';
+import { SDNext } from './sdnext/sdnext';
 
 export class AIModule extends pulumi.ComponentResource {
     private readonly ollama?: Ollama;

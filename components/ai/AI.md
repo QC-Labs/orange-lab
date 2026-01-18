@@ -15,10 +15,10 @@ pulumi up
 
 ## Components
 
-- [Ollama](./ollama.md) - Run large language models locally with GPU support.
-- [Automatic1111](./automatic1111.md) - Popular web interface for Stable Diffusion image generation.
-- [SD.Next](./sdnext.md) - Advanced Stable Diffusion web interface with extended features.
-- [Open-WebUI](./open-webui.md) - User-friendly web interface for LLMs with RAG support.
-- [InvokeAI](./invokeai.md) - Professional-grade generative AI toolkit for image creation.
-- [KubeAI](./kubeai.md) - Private AI SDK for Kubernetes with OpenAI-compatible API.
-- [N8n](./n8n.md) - Workflow automation tool with native AI integration.
+- [Ollama](./ollama/ollama.md) - Run large language models locally with GPU support.
+- [Automatic1111](./automatic1111/automatic1111.md) - Popular web interface for Stable Diffusion image generation.
+- [SD.Next](./sdnext/sdnext.md) - Advanced Stable Diffusion web interface with extended features.
+- [Open-WebUI](./open-webui/open-webui.md) - User-friendly web interface for LLMs with RAG support.
+- [InvokeAI](./invokeai/invokeai.md) - Professional-grade generative AI toolkit for image creation.
+- [KubeAI](./kubeai/kubeai.md) - Private AI SDK for Kubernetes with OpenAI-compatible API.
+- [N8n](./n8n/n8n.md) - Workflow automation tool with native AI integration.

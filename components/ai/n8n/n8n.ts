@@ -1,8 +1,8 @@
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
-import { Application } from '../application';
-import { rootConfig } from '../root-config';
-import { DatabaseConfig } from '../types';
+import { Application } from '../../application';
+import { rootConfig } from '../../root-config';
+import { DatabaseConfig } from '../../types';
 
 export interface N8nArgs {
     ollamaUrl?: string;

@@ -1,7 +1,7 @@
 import * as pulumi from '@pulumi/pulumi';
-import { Application } from '../application';
-import { GrafanaDashboard } from '../grafana-dashboard';
-import { rootConfig } from '../root-config';
+import { Application } from '../../application';
+import { GrafanaDashboard } from '../../grafana-dashboard';
+import { rootConfig } from '../../root-config';
 import dashboardJson from './kubeai-dashboard-vllm.json';
 
 export class KubeAi extends pulumi.ComponentResource {
@@ -11,7 +11,10 @@ export class KubeAi extends pulumi.ComponentResource {
     private readonly app: Application;
     private readonly config: pulumi.Config;
 
-    constructor(private name: string, opts?: pulumi.ResourceOptions) {
+    constructor(
+        private name: string,
+        opts?: pulumi.ResourceOptions,
+    ) {
         super('orangelab:ai:KubeAi', name, {}, opts);
 
         this.config = new pulumi.Config(name);

@@ -1,6 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
-import { Application } from '../application';
-import { StorageType } from '../types';
+import { Application } from '../../application';
+import { StorageType } from '../../types';
 
 export class SDNext extends pulumi.ComponentResource {
     app: Application;
