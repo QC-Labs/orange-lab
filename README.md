@@ -31,49 +31,49 @@ Private infrastructure for cloud natives.
 
 [System module](./components/system/SYSTEM.md):
 
-- `amd-gpu-operator` - AMD GPU support
-- `cert-manager` - certificate management
-- `longhorn` - replicated storage
-- `minio` - S3-compatible storage (used as Longhorn backup target)
-- `nfd` - Node Feature Discovery (GPU autodetection)
-- `nvidia-gpu-operator` - NVidia GPU support
-- `tailscale-operator` - ingress support with Tailscale authentication
-- `traefik` - reverse proxy for custom domain support
+- [`amd-gpu-operator`](./components/system/amd-gpu-operator/amd-gpu-operator.md) - AMD GPU support
+- [`cert-manager`](./components/system/cert-manager.md) - certificate management
+- [`longhorn`](./components/system/longhorn/longhorn.md) - replicated storage
+- [`minio`](./components/system/minio/minio.md) - S3-compatible storage (used as Longhorn backup target)
+- [`nfd`](./components/system/nfd.md) - Node Feature Discovery (GPU autodetection)
+- [`nvidia-gpu-operator`](./components/system/nvidia-gpu-operator.md) - NVidia GPU support
+- [`tailscale-operator`](./components/system/tailscale/tailscale.md) - ingress support with Tailscale authentication
+- [`traefik`](./components/system/traefik.md) - reverse proxy for custom domain support
 
 [Data module](./components/data/DATA.md):
 
-- `cloudnative-pg` - PostgreSQL operator
-- `mariadb-operator` - MariaDB operator
+- [`cloudnative-pg`](./components/data/cloudnative-pg/cloudnative-pg.md) - PostgreSQL operator
+- [`mariadb-operator`](./components/data/mariadb-operator/mariadb-operator.md) - MariaDB operator
 
 [Monitoring module](./components/monitoring/MONITORING.md):
 
-- `beszel` - Beszel lightweight monitoring
-- `prometheus` - Prometheus/Grafana monitoring
+- [`beszel`](./components/monitoring/beszel.md) - Beszel lightweight monitoring
+- [`prometheus`](./components/monitoring/prometheus.md) - Prometheus/Grafana monitoring
 
 [IoT module](./components/iot/IOT.md):
 
-- `home-assistant` - sensor and home automation platform
+- [`home-assistant`](./components/iot/home-assistant.md) - sensor and home automation platform
 
 [AI module](./components/ai/AI.md):
 
-- `automatic1111` - Automatic1111 Stable Diffusion WebUI
-- `kubeai` - Ollama and vLLM models over OpenAI-compatible API
-- `invokeai` - generative AI plaform, community edition
-- `n8n` - AI workflow automation
-- `ollama` - local large language models
-- `open-webui` - Open WebUI frontend
-- `sdnext` - SD.Next Stable Diffusion WebUI
+- [`automatic1111`](./components/ai/automatic1111.md) - Automatic1111 Stable Diffusion WebUI
+- [`kubeai`](./components/ai/kubeai.md) - Ollama and vLLM models over OpenAI-compatible API
+- [`invokeai`](./components/ai/invokeai.md) - generative AI plaform, community edition
+- [`n8n`](./components/ai/n8n.md) - AI workflow automation
+- [`ollama`](./components/ai/ollama.md) - local large language models
+- [`open-webui`](./components/ai/open-webui.md) - Open WebUI frontend
+- [`sdnext`](./components/ai/sdnext.md) - SD.Next Stable Diffusion WebUI
 
 [Bitcoin module](./components/bitcoin/BITCOIN.md):
 
-- `bitcoin-core` - Bitcoin Core node
-- `bitcoin-knots` - Bitcoin Knots node
-- `electrs` - Electrs (Electrum) server implementation
-- `mempool` - Blockchain explorer
+- [`bitcoin-core`](./components/bitcoin/bitcoin-core.md) - Bitcoin Core node
+- [`bitcoin-knots`](./components/bitcoin/bitcoin-knots.md) - Bitcoin Knots node
+- [`electrs`](./components/bitcoin/electrs.md) - Electrs (Electrum) server implementation
+- [`mempool`](./components/bitcoin/mempool.md) - Blockchain explorer
 
 [Office module](./components/office/OFFICE.md):
 
-- `nextcloud` - File sharing and collaboration suite
+- [`nextcloud`](./components/office/nextcloud.md) - File sharing and collaboration suite
 
 # Platforms and limitations
 
