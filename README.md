@@ -52,7 +52,7 @@ Private infrastructure for cloud natives.
 
 [IoT module](./components/iot/IOT.md):
 
-- [`home-assistant`](./components/iot/home-assistant.md) - sensor and home automation platform
+- [`home-assistant`](./components/iot/home-assistant/home-assistant.md) - sensor and home automation platform
 
 [AI module](./components/ai/AI.md):
 

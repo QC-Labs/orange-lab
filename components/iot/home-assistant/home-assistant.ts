@@ -1,5 +1,5 @@
 import * as pulumi from '@pulumi/pulumi';
-import { Application } from '../application';
+import { Application } from '../../application';
 
 export interface HomeAssistantArgs {
     trustedProxies?: string[];
