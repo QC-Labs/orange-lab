@@ -60,6 +60,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
                         { name: 'ENABLE_PERSISTENT_CONFIG', value: 'False' },
                         { name: 'ENABLE_SEARCH_QUERY_GENERATION', value: 'True' },
                         { name: 'ENABLE_SIGNUP', value: 'True' },
+                        { name: 'ENABLE_VERSION_UPDATE_CHECK', value: 'False' },
                         { name: 'ENABLE_WEB_SEARCH', value: 'True' },
                         { name: 'IMAGE_GENERATION_ENGINE', value: 'automatic1111' },
                         { name: 'USE_CUDA_DOCKER', value: amdGpu ? 'False' : 'True' },
