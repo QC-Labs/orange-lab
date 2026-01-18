@@ -18,4 +18,4 @@ pulumi config set electrs:version v0.10.9
 pulumi up
 ```
 
-Once indexing finishes, use `electrs:50001` to connect your wallets. More info at [Electrs wallet guide](../../docs/electrs-wallet.md)
+Once indexing finishes, use `electrs:50001` to connect your wallets. More info at [Electrs wallet guide](/docs/electrs-wallet.md)

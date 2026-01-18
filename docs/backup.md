@@ -14,7 +14,7 @@ Please refer to the official MinIO installation documentation for detailed instr
 
 ## Setup S3 storage (MinIO)
 
-Make sure MinIO is installed and functioning before enabling backups. See [MinIO installation instructions](/components/system/SYSTEM.md#minio-recommended) for details.
+Make sure MinIO is installed and functioning before enabling backups. See [MinIO installation instructions](/components/system/minio/minio.md) for details.
 
 ```sh
 # S3 bucket that will be used for backups. Default: backup-longhorn

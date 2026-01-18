@@ -6,7 +6,7 @@ The first time you configure the cluster, it's best to run `pulumi up` after eac
 
 **Tailscale operator** used for internal HTTPS endpoints.
 
-**Longhorn** required for storage nodes but only runs on Linux. You can use local storage when using MacOS, Windows or when running [single node](../../docs/single-node.md) only.
+**Longhorn** required for storage nodes but only runs on Linux. You can use local storage when using MacOS, Windows or when running [single node](/docs/single-node.md) only.
 
 **MinIO** is used by Longhorn and required for automatic backups.
 
