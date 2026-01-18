@@ -1,8 +1,8 @@
 import * as pulumi from '@pulumi/pulumi';
-import { Application } from '../application';
-import { rootConfig } from '../root-config';
-import { DatabaseConfig } from '../types';
-import { RpcUser } from './utils/rpc-user';
+import { Application } from '../../application';
+import { rootConfig } from '../../root-config';
+import { DatabaseConfig } from '../../types';
+import { RpcUser } from '../utils/rpc-user';
 
 export interface MempoolArgs {
     electrsUrl: pulumi.Input<string>;

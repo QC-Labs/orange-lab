@@ -1,26 +1,27 @@
 import * as pulumi from '@pulumi/pulumi';
-import { Application } from '../application';
-import { StorageType } from '../types';
-import { BitcoinConf } from './utils/bitcoin-conf';
-import { RpcUser } from './utils/rpc-user';
+import { Application } from '../../application';
+import { StorageType } from '../../types';
+import { BitcoinConf } from '../utils/bitcoin-conf';
+import { RpcUser } from '../utils/rpc-user';
 
-export interface BitcoinKnotsArgs {
+export interface BitcoinCoreArgs {
     rpcUsers: Record<string, RpcUser>;
 }
 
-export class BitcoinKnots extends pulumi.ComponentResource {
+export class BitcoinCore extends pulumi.ComponentResource {
     public readonly app: Application;
     private readonly config: pulumi.Config;
+    private readonly prune: number;
 
     constructor(
-        name: string,
-        private args: BitcoinKnotsArgs,
+        private name: string,
+        private args: BitcoinCoreArgs,
         opts?: pulumi.ResourceOptions,
     ) {
-        super('orangelab:bitcoin:BitcoinKnots', name, args, opts);
+        super('orangelab:bitcoin:BitcoinCore', name, args, opts);
 
         this.config = new pulumi.Config(name);
-        const prune = this.config.requireNumber('prune');
+        this.prune = this.config.requireNumber('prune');
         const debug = this.config.getBoolean('debug');
 
         this.app = new Application(this, name)
@@ -28,7 +29,7 @@ export class BitcoinKnots extends pulumi.ComponentResource {
             .addConfigVolume({
                 name: 'config',
                 files: {
-                    'bitcoin.conf': BitcoinConf.create({ prune, debug }),
+                    'bitcoin.conf': BitcoinConf.create({ prune: this.prune, debug }),
                     'rpc.conf': BitcoinConf.createRpc(this.args.rpcUsers),
                 },
             });
@@ -45,7 +46,7 @@ export class BitcoinKnots extends pulumi.ComponentResource {
                 requests: { cpu: '100m', memory: '2Gi' },
                 limits: { cpu: '2000m', memory: '8Gi' },
             },
-            image: `btcpayserver/bitcoinknots:${version}`,
+            image: `btcpayserver/bitcoin:${version}`,
             ports: [
                 { name: 'rpc', port: 8332, tcp: true },
                 { name: 'p2p', port: 8333, tcp: true },

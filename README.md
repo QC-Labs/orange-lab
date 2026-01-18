@@ -66,14 +66,14 @@ Private infrastructure for cloud natives.
 
 [Bitcoin module](./components/bitcoin/BITCOIN.md):
 
-- [`bitcoin-core`](./components/bitcoin/bitcoin-core.md) - Bitcoin Core node
-- [`bitcoin-knots`](./components/bitcoin/bitcoin-knots.md) - Bitcoin Knots node
-- [`electrs`](./components/bitcoin/electrs.md) - Electrs (Electrum) server implementation
-- [`mempool`](./components/bitcoin/mempool.md) - Blockchain explorer
+- [`bitcoin-core`](./components/bitcoin/bitcoin-core/bitcoin-core.md) - Bitcoin Core node
+- [`bitcoin-knots`](./components/bitcoin/bitcoin-knots/bitcoin-knots.md) - Bitcoin Knots node
+- [`electrs`](./components/bitcoin/electrs/electrs.md) - Electrs (Electrum) server implementation
+- [`mempool`](./components/bitcoin/mempool/mempool.md) - Blockchain explorer
 
 [Office module](./components/office/OFFICE.md):
 
-- [`nextcloud`](./components/office/nextcloud.md) - File sharing and collaboration suite
+- [`nextcloud`](./components/office/nextcloud/nextcloud.md) - File sharing and collaboration suite
 
 # Platforms and limitations
 

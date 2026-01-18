@@ -28,7 +28,7 @@ brew install bitcoin
 
 ## Components
 
-- [Bitcoin Knots](./bitcoin-knots.md) - A conservative fork of Bitcoin Core focused on stability and improvements.
-- [Bitcoin Core](./bitcoin-core.md) - The reference implementation of the Bitcoin protocol.
-- [Electrs](./electrs.md) - Efficient Electrum Server implementation for wallet synchronization.
-- [Mempool](./mempool.md) - Full-stack block explorer and visualization tool.
+- [Bitcoin Knots](./bitcoin-knots/bitcoin-knots.md) - A conservative fork of Bitcoin Core focused on stability and improvements.
+- [Bitcoin Core](./bitcoin-core/bitcoin-core.md) - The reference implementation of the Bitcoin protocol.
+- [Electrs](./electrs/electrs.md) - Efficient Electrum Server implementation for wallet synchronization.
+- [Mempool](./mempool/mempool.md) - Full-stack block explorer and visualization tool.

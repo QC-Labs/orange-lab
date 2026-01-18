@@ -1,7 +1,7 @@
 import * as pulumi from '@pulumi/pulumi';
-import { Application } from '../application';
-import { StorageType } from '../types';
-import { RpcUser } from './utils/rpc-user';
+import { Application } from '../../application';
+import { StorageType } from '../../types';
+import { RpcUser } from '../utils/rpc-user';
 
 export interface ElectrsArgs {
     rpcUser: RpcUser;
@@ -13,7 +13,11 @@ export class Electrs extends pulumi.ComponentResource {
     public readonly app: Application;
     private readonly config: pulumi.Config;
 
-    constructor(name: string, private args: ElectrsArgs, opts?: pulumi.ResourceOptions) {
+    constructor(
+        name: string,
+        private args: ElectrsArgs,
+        opts?: pulumi.ResourceOptions,
+    ) {
         super('orangelab:bitcoin:Electrs', name, args, opts);
 
         this.config = new pulumi.Config(name);
@@ -29,8 +33,8 @@ export class Electrs extends pulumi.ComponentResource {
                 files: {
                     'electrs.toml': pulumi.interpolate`
                         auth = "${this.args.rpcUser.username}:${
-                        this.args.rpcUser.password
-                    }"
+                            this.args.rpcUser.password
+                        }"
                         daemon_rpc_addr = "${rpcHost}"
                         daemon_p2p_addr = "${this.args.bitcoinP2pUrl}"
                         db_dir = "/data"

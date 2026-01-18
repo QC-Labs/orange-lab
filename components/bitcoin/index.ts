@@ -1,11 +1,10 @@
- 
 import * as pulumi from '@pulumi/pulumi';
 import assert from 'assert';
 import { rootConfig } from '../root-config';
-import { BitcoinCore } from './bitcoin-core';
-import { BitcoinKnots } from './bitcoin-knots';
-import { Electrs } from './electrs';
-import { Mempool } from './mempool';
+import { BitcoinCore } from './bitcoin-core/bitcoin-core';
+import { BitcoinKnots } from './bitcoin-knots/bitcoin-knots';
+import { Electrs } from './electrs/electrs';
+import { Mempool } from './mempool/mempool';
 import { RpcUser } from './utils/rpc-user';
 
 export class BitcoinModule extends pulumi.ComponentResource {
