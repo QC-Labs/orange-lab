@@ -29,6 +29,7 @@ export class Application {
 
     private readonly config: pulumi.Config;
     private services?: Services;
+    private namespaceResource?: kubernetes.core.v1.Namespace;
 
     constructor(
         private readonly scope: pulumi.ComponentResource,
@@ -44,9 +45,14 @@ export class Application {
         this.storageOnly = this.config.getBoolean('storageOnly') ?? false;
         if (args?.existingNamespace) {
             this.namespace = args.existingNamespace;
+            this.namespaceResource = kubernetes.core.v1.Namespace.get(
+                `${appName}-ns`,
+                args.existingNamespace,
+                { parent: this.scope },
+            );
         } else {
             this.namespace = args?.namespace ?? appName;
-            this.createNamespace(this.namespace);
+            this.namespaceResource = this.createNamespace(this.namespace);
         }
         this.metadata = new Metadata(appName, {
             config: this.config,
@@ -204,7 +210,16 @@ export class Application {
                 skipCrds: args.skipCrds,
                 values: args.values,
             },
-            { parent: this.scope, ...opts },
+            {
+                parent: this.scope,
+                dependsOn: [
+                    this.namespaceResource,
+                    ...(Array.isArray(opts?.dependsOn)
+                        ? opts.dependsOn
+                        : [opts?.dependsOn]),
+                ].filter(Boolean) as pulumi.Resource[],
+                ...opts,
+            },
         );
     }
 
