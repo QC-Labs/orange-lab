@@ -46,7 +46,12 @@ pulumi stack select <stack-name>
 Start Tailscale service on each node
 
 ```sh
-sudo tailscale up --operator=$USER --accept-routes
+sudo tailscale up  --reset --operator=$USER --accept-routes
+
+# (Optional) Also allow the host to be used as exit node
+sudo tailscale up  --reset --operator=$USER --accept-routes --advertise-exit-node
+
+
 ```
 
 ### Tags
