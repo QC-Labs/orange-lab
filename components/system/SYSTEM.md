@@ -19,11 +19,11 @@ To run GPU workloads, either **NVidia or AMD operator** has to be installed.
 Recommended setup/tldr:
 
 ```sh
-# Add k8s and k8s-operator tags to Tailscale ACL
+# Add orangelab tag to Tailscale ACL
 # Create OAuth client in Tailscale
-pulumi config set tailscale-operator:oauthClientId <OAUTH_CLIENT_ID> --secret
-pulumi config set tailscale-operator:oauthClientSecret <OAUTH_CLIENT_SECRET> --secret
-pulumi config set tailscale-operator:enabled true
+pulumi config set tailscale:oauthClientId <OAUTH_CLIENT_ID> --secret
+pulumi config set tailscale:oauthClientSecret <OAUTH_CLIENT_SECRET> --secret
+pulumi config set tailscale:enabled true
 pulumi up
 
 # Add tag to storage nodes that will be used by Longhorn
