@@ -47,19 +47,12 @@ export class SystemModule extends pulumi.ComponentResource {
         }
 
         let nfd: NodeFeatureDiscovery | undefined;
-        if (
-            rootConfig.isEnabled('nfd') ||
-            rootConfig.isEnabled('nvidia-gpu-operator') ||
-            rootConfig.isEnabled('amd-gpu-operator')
-        ) {
+        if (rootConfig.isEnabled('nfd')) {
             nfd = new NodeFeatureDiscovery('nfd', { parent: this });
         }
 
         let certManager: CertManager | undefined;
-        if (
-            rootConfig.isEnabled('cert-manager') ||
-            rootConfig.isEnabled('amd-gpu-operator')
-        ) {
+        if (rootConfig.isEnabled('cert-manager')) {
             certManager = new CertManager('cert-manager', {}, { parent: this });
         }
 
