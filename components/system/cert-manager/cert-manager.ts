@@ -12,6 +12,7 @@ export class CertManager extends pulumi.ComponentResource {
             chart: 'cert-manager',
             repo: 'https://charts.jetstack.io',
             values: {
+                affinity: app.nodes.getAffinity(),
                 crds: {
                     enabled: true,
                     keep: true,
