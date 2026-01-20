@@ -89,6 +89,7 @@ kubectl delete crd \
   clusterimagecatalogs.postgresql.cnpg.io \
   clusters.postgresql.cnpg.io \
   databases.postgresql.cnpg.io \
+  failoverquorums.postgresql.cnpg.io \
   imagecatalogs.postgresql.cnpg.io \
   poolers.postgresql.cnpg.io \
   publications.postgresql.cnpg.io \
