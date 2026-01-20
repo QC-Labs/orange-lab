@@ -1,10 +1,10 @@
 # Cert-manager
 
-|                         |                                                        |
-| ----------------------- | ------------------------------------------------------ |
-| Homepage                | https://cert-manager.io/                               |
-| Helm chart              | https://charts.jetstack.io                             |
-| Supported DNS providers | https://cert-manager.io/docs/configuration/acme/dns01/ |
+|                         |                                                                |
+| ----------------------- | -------------------------------------------------------------- |
+| Homepage                | https://cert-manager.io/                                       |
+| Helm chart              | https://artifacthub.io/packages/helm/cert-manager/cert-manager |
+| Supported DNS providers | https://cert-manager.io/docs/configuration/acme/dns01/         |
 
 Cert-manager is a Kubernetes certificate management controller that automates the management and issuance of TLS certificates.
 
