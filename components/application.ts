@@ -23,13 +23,11 @@ export class Application {
     readonly metadata: Metadata;
     readonly nodes: Nodes;
     readonly network: Network;
-    readonly namespace: string;
     databases?: Databases;
     storage?: Storage;
 
     private readonly config: pulumi.Config;
     private services?: Services;
-    private namespaceResource?: kubernetes.core.v1.Namespace;
 
     constructor(
         private readonly scope: pulumi.ComponentResource,
@@ -43,21 +41,15 @@ export class Application {
         this.config = new pulumi.Config(appName);
         this.processDeprecated();
         this.storageOnly = this.config.getBoolean('storageOnly') ?? false;
-        if (args?.existingNamespace) {
-            this.namespace = args.existingNamespace;
-            this.namespaceResource = kubernetes.core.v1.Namespace.get(
-                `${appName}-ns`,
-                args.existingNamespace,
-                { parent: this.scope },
-            );
-        } else {
-            this.namespace = args?.namespace ?? appName;
-            this.namespaceResource = this.createNamespace(this.namespace);
-        }
-        this.metadata = new Metadata(appName, {
-            config: this.config,
-            namespace: this.namespace,
-        });
+        this.metadata = new Metadata(
+            appName,
+            {
+                config: this.config,
+                namespace: args?.namespace,
+                existingNamespace: args?.existingNamespace,
+            },
+            { parent: this.scope },
+        );
         this.nodes = new Nodes({
             config: this.config,
             gpu: args?.gpu,
@@ -202,31 +194,14 @@ export class Application {
             name,
             {
                 chart: args.chart,
-                namespace: this.namespace,
+                namespace: this.metadata.namespace,
                 version: this.config.get('version'),
                 repositoryOpts: { repo: args.repo },
                 maxHistory: rootConfig.helmHistoryLimit,
                 skipCrds: args.skipCrds,
                 values: args.values,
             },
-            {
-                parent: this.scope,
-                dependsOn: [
-                    this.namespaceResource,
-                    ...(Array.isArray(opts?.dependsOn)
-                        ? opts.dependsOn
-                        : [opts?.dependsOn]),
-                ].filter(Boolean) as pulumi.Resource[],
-                ...opts,
-            },
-        );
-    }
-
-    private createNamespace(name: string) {
-        return new kubernetes.core.v1.Namespace(
-            `${this.appName}-ns`,
-            { metadata: { name } },
-            { parent: this.scope },
+            { ...opts, parent: this.scope },
         );
     }
 }

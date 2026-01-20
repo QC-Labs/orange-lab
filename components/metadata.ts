@@ -1,15 +1,26 @@
+import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 
 export class Metadata {
-    public namespace: string;
+    public readonly namespace: pulumi.Output<string>;
+
     private config: pulumi.Config;
 
     constructor(
         private appName: string,
-        args: { namespace: string; config: pulumi.Config },
+        args: { namespace?: string; existingNamespace?: string; config: pulumi.Config },
+        opts: pulumi.ComponentResourceOptions,
     ) {
         this.config = args.config;
-        this.namespace = args.namespace;
+        const namespaceName = args.existingNamespace ?? args.namespace ?? appName;
+        const namespaceResource = args.existingNamespace
+            ? kubernetes.core.v1.Namespace.get(`${this.appName}-ns`, namespaceName, opts)
+            : new kubernetes.core.v1.Namespace(
+                  `${this.appName}-ns`,
+                  { metadata: { name: namespaceName } },
+                  opts,
+              );
+        this.namespace = namespaceResource.metadata.name;
     }
 
     get(params?: {
@@ -18,7 +29,7 @@ export class Metadata {
         includeVersionLabel?: boolean;
     }): {
         name: string;
-        namespace: string;
+        namespace: pulumi.Input<string>;
         labels: Record<string, string>;
         annotations?: Record<string, pulumi.Output<string>>;
     } {

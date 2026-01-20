@@ -40,7 +40,7 @@ export class TailscaleOperator extends pulumi.ComponentResource {
                     kind: 'ProxyClass',
                     metadata: {
                         name: 'tailscale-proxyclass',
-                        namespace: this.app.namespace,
+                        namespace: this.app.metadata.namespace,
                     },
                     spec: {
                         metrics: {

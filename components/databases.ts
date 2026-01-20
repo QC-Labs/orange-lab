@@ -126,14 +126,14 @@ export class Databases {
      * Returns an initContainer spec to wait for database until it accepts connections.
      */
     getWaitContainer(dbConfig: DatabaseConfig = this.getConfig()): InitContainerSpec {
-        const hostPort = `${dbConfig.hostname} ${dbConfig.port.toString()}`;
+        const hostPort = pulumi.interpolate`${dbConfig.hostname} ${dbConfig.port.toString()}`;
         return {
             name: 'wait-for-db',
             image: 'busybox:latest',
             command: [
                 'sh',
                 '-c',
-                `until nc -z -v -w30 ${hostPort}; do echo "Waiting for database...${hostPort}" && sleep 5; done`,
+                pulumi.interpolate`until nc -z -v -w30 ${hostPort}; do echo "Waiting for database...${hostPort}" && sleep 5; done`,
             ],
             volumeMounts: [],
         };

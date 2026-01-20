@@ -11,7 +11,10 @@ import dashboardOverviewJson from './amd-dashboard_overview.json';
 export class AmdGPUOperator extends pulumi.ComponentResource {
     private readonly app: Application;
 
-    constructor(private readonly name: string, opts?: pulumi.ResourceOptions) {
+    constructor(
+        private readonly name: string,
+        opts?: pulumi.ResourceOptions,
+    ) {
         super('orangelab:system:AmdGPUOperator', name, {}, opts);
 
         rootConfig.require(name, 'cert-manager');
@@ -47,7 +50,7 @@ export class AmdGPUOperator extends pulumi.ComponentResource {
             {
                 apiVersion: 'amd.com/v1alpha1',
                 kind: 'DeviceConfig',
-                metadata: { name: this.name, namespace: this.app.namespace },
+                metadata: { name: this.name, namespace: this.app.metadata.namespace },
                 spec: {
                     driver: { enable: false },
                     devicePlugin: { enableNodeLabeller: true },

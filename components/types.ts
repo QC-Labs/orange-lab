@@ -28,7 +28,7 @@ export interface InitContainerSpec {
      * Defaults to 'alpine:latest'.
      */
     image?: string;
-    command?: string[];
+    command?: pulumi.Input<string>[];
     /**
      * Optional volume mounts for the init container.
      * If not provided, it will use the main container's volume mounts.
@@ -148,9 +148,9 @@ export interface ConfigVolume {
  * Represents the configuration needed to connect to a database instance.
  */
 export interface DatabaseConfig {
-    hostname: string;
-    database: string;
-    username: string;
+    hostname: pulumi.Input<string>;
+    database: pulumi.Input<string>;
+    username: pulumi.Input<string>;
     password: pulumi.Output<string>;
     port: number;
 }

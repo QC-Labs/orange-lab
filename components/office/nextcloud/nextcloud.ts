@@ -128,7 +128,7 @@ $CONFIG = array (
         return new k8s.core.v1.Secret(
             `${this.appName}-admin-secret`,
             {
-                metadata: { namespace: this.app.namespace },
+                metadata: { namespace: this.app.metadata.namespace },
                 stringData: {
                     username: 'admin',
                     password,

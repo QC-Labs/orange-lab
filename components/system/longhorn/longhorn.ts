@@ -151,7 +151,7 @@ export class Longhorn extends pulumi.ComponentResource {
             {
                 metadata: {
                     name: rootConfig.storageClass.GPU,
-                    namespace: this.app.namespace,
+                    namespace: this.app.metadata.namespace,
                 },
                 allowVolumeExpansion: true,
                 provisioner: 'driver.longhorn.io',
@@ -175,7 +175,7 @@ export class Longhorn extends pulumi.ComponentResource {
             {
                 metadata: {
                     name: rootConfig.storageClass.Large,
-                    namespace: this.app.namespace,
+                    namespace: this.app.metadata.namespace,
                 },
                 allowVolumeExpansion: true,
                 provisioner: 'driver.longhorn.io',
@@ -204,7 +204,7 @@ export class Longhorn extends pulumi.ComponentResource {
             {
                 metadata: {
                     name: secretName,
-                    namespace: this.app.namespace,
+                    namespace: this.app.metadata.namespace,
                 },
                 stringData: {
                     AWS_ACCESS_KEY_ID: s3User.accessKey,
@@ -245,7 +245,7 @@ export class Longhorn extends pulumi.ComponentResource {
                 kind: 'RecurringJob',
                 metadata: {
                     name: 'snapshot',
-                    namespace: this.app.namespace,
+                    namespace: this.app.metadata.namespace,
                 },
                 spec: {
                     groups: ['default'],
@@ -270,7 +270,7 @@ export class Longhorn extends pulumi.ComponentResource {
                 kind: 'RecurringJob',
                 metadata: {
                     name: 'backup',
-                    namespace: this.app.namespace,
+                    namespace: this.app.metadata.namespace,
                 },
                 spec: {
                     groups: ['backup'],
@@ -298,7 +298,7 @@ export class Longhorn extends pulumi.ComponentResource {
                 kind: 'RecurringJob',
                 metadata: {
                     name: 'trim',
-                    namespace: this.app.namespace,
+                    namespace: this.app.metadata.namespace,
                 },
                 spec: {
                     groups: ['default'],
