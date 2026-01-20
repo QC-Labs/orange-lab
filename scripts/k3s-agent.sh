@@ -15,6 +15,7 @@ echo "curl -sfL https://get.k3s.io |  sh -s - \
 --server \$K3S_URL \
 --token \$K3S_TOKEN \
 --bind-address=\$NODE_IP \
+--flannel-iface=tailscale0 \
 --node-ip=\$NODE_IP \
 --selinux"
 echo

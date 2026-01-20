@@ -18,6 +18,7 @@ echo "curl -sfL https://get.k3s.io |  sh -s - \
 --secrets-encryption \
 --cluster-cidr=\$CLUSTER_CIDR \
 --service-cidr=\$SERVICE_CIDR \
+--flannel-iface=tailscale0 \
 --disable=traefik \
 --kube-apiserver-arg=enable-admission-plugins=DefaultTolerationSeconds \
 --kube-apiserver-arg=default-not-ready-toleration-seconds=10 \
