@@ -90,7 +90,6 @@ export class Application {
                 this.appName,
                 {
                     config: this.config,
-                    namespace: this.namespace,
                     metadata: this.metadata,
                     nodes: this.nodes,
                 },

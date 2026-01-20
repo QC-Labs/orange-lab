@@ -13,7 +13,6 @@ export class Storage extends pulumi.ComponentResource {
     private readonly longhornVolumes = new Map<string, LonghornVolume>();
     private readonly volumes = new Map<string, kubernetes.types.input.core.v1.Volume>();
     private readonly config: pulumi.Config;
-    private readonly namespace: string;
     private readonly metadata: Metadata;
     private readonly nodes: Nodes;
     public configFilesHash?: pulumi.Output<string>;
@@ -22,7 +21,6 @@ export class Storage extends pulumi.ComponentResource {
         private readonly appName: string,
         args: {
             readonly config: pulumi.Config;
-            readonly namespace: string;
             readonly metadata: Metadata;
             readonly nodes: Nodes;
         },
@@ -30,7 +28,6 @@ export class Storage extends pulumi.ComponentResource {
     ) {
         super('orangelab:Storage', `${appName}-storage`, args, opts);
         this.config = args.config;
-        this.namespace = args.namespace;
         this.metadata = args.metadata;
         this.nodes = args.nodes;
     }
@@ -66,7 +63,7 @@ export class Storage extends pulumi.ComponentResource {
                 fromVolume: volume?.fromVolume ?? this.config.get(`${prefix}fromVolume`),
                 labels: { ...labels, ...volume?.labels },
                 name: volume?.overrideFullname ?? volumeName,
-                namespace: this.namespace,
+                namespace: this.metadata.namespace,
                 size: volume?.size ?? this.config.require(`${prefix}storageSize`),
                 storageClass: this.config.get(`${prefix}storageClass`),
                 type: volume?.type,
@@ -126,7 +123,7 @@ export class Storage extends pulumi.ComponentResource {
             {
                 metadata: {
                     name: volumeName,
-                    namespace: this.namespace,
+                    namespace: this.metadata.namespace,
                     labels: this.metadata.get().labels,
                 },
                 data: configVolume.files,
