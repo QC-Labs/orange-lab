@@ -4,7 +4,7 @@
 
 - Deployment: `pulumi up --yes` (only with user approval)
 - Preview changes: `pulumi preview --diff` (useful for checking for any unintended changes after major code updates or refactoring)
-- Test: `npm test` (same as `npm run lint` - use after making code changes, but not documentation)
+- Test: `npm test`
 
 ## Architectural Principles
 
