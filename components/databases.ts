@@ -8,19 +8,11 @@ import { Storage } from './storage';
 import { DatabaseConfig, InitContainerSpec, StorageType } from './types';
 
 export class Databases {
-    private readonly databases: Record<
-        string,
-        MariaDbCluster | PostgresCluster | undefined
-    > = {};
-    private readonly storage: Storage;
-    private readonly storageOnly: boolean;
-    private readonly metadata: Metadata;
-    private readonly config: pulumi.Config;
-    private readonly nodes: Nodes;
+    private databases: Record<string, MariaDbCluster | PostgresCluster | undefined> = {};
 
     constructor(
         private appName: string,
-        args: {
+        private args: {
             config: pulumi.Config;
             metadata: Metadata;
             nodes: Nodes;
@@ -28,38 +20,32 @@ export class Databases {
             storageOnly?: boolean;
         },
         private opts?: pulumi.ComponentResourceOptions,
-    ) {
-        this.storage = args.storage;
-        this.storageOnly = args.storageOnly ?? false;
-        this.metadata = args.metadata;
-        this.nodes = args.nodes;
-        this.config = args.config;
-    }
+    ) {}
 
     addMariaDB(name = 'db'): void {
         rootConfig.require(this.appName, 'mariadb-operator');
         if (this.databases[name]) {
             throw new Error(`Database ${this.appName}-${name} already exists.`);
         }
-        this.storage.addPersistentVolume({
+        this.args.storage.addPersistentVolume({
             name,
             overrideFullname: `storage-${this.appName}-${name}-0`,
             type: StorageType.Database,
         });
-        const enabledDefault = this.config.getBoolean(`storageOnly`) ? false : true;
+        const enabledDefault = this.args.config.getBoolean(`storageOnly`) ? false : true;
         const db = new MariaDbCluster(
             this.appName,
             {
-                affinity: this.nodes.getAffinity(name),
-                disableAuth: this.config.getBoolean(`${name}/disableAuth`),
-                enabled: this.config.getBoolean(`${name}/enabled`) ?? enabledDefault,
-                metadata: this.metadata,
+                affinity: this.args.nodes.getAffinity(name),
+                disableAuth: this.args.config.getBoolean(`${name}/disableAuth`),
+                enabled: this.args.config.getBoolean(`${name}/enabled`) ?? enabledDefault,
+                metadata: this.args.metadata,
                 name,
-                password: this.config.getSecret(`${name}/password`),
-                rootPassword: this.config.getSecret(`${name}/rootPassword`),
-                storageClassName: this.storage.getStorageClass(name),
-                storageOnly: this.storageOnly,
-                storageSize: this.storage.getStorageSize(name),
+                password: this.args.config.getSecret(`${name}/password`),
+                rootPassword: this.args.config.getSecret(`${name}/rootPassword`),
+                storageClassName: this.args.storage.getStorageClass(name),
+                storageOnly: this.args.storageOnly,
+                storageSize: this.args.storage.getStorageSize(name),
             },
             this.opts,
         );
@@ -71,9 +57,9 @@ export class Databases {
         if (this.databases[name]) {
             throw new Error(`Database ${this.appName}-${name} already exists.`);
         }
-        const existingVolume = this.config.get(`${name}/fromVolume`);
+        const existingVolume = this.args.config.get(`${name}/fromVolume`);
         if (existingVolume) {
-            this.storage.addPersistentVolume({
+            this.args.storage.addPersistentVolume({
                 name,
                 overrideFullname: `${this.appName}-${name}-1`,
                 type: StorageType.Database,
@@ -90,22 +76,24 @@ export class Databases {
                 },
             });
         }
-        const enabledDefault = this.config.getBoolean(`storageOnly`) ? false : true;
+        const enabledDefault = this.args.config.getBoolean(`storageOnly`) ? false : true;
         const db = new PostgresCluster(
             this.appName,
             {
-                enabled: this.config.getBoolean(`${name}/enabled`) ?? enabledDefault,
-                fromPVC: existingVolume ? this.storage.getClaimName(name) : undefined,
-                imageVersion: this.config.get(`${name}/imageVersion`),
-                instances: this.config.getNumber(`${name}/instances`),
-                metadata: this.metadata,
+                enabled: this.args.config.getBoolean(`${name}/enabled`) ?? enabledDefault,
+                fromPVC: existingVolume
+                    ? this.args.storage.getClaimName(name)
+                    : undefined,
+                imageVersion: this.args.config.get(`${name}/imageVersion`),
+                instances: this.args.config.getNumber(`${name}/instances`),
+                metadata: this.args.metadata,
                 name,
-                nodes: this.nodes,
-                password: this.config.getSecret(`${name}/password`),
+                nodes: this.args.nodes,
+                password: this.args.config.getSecret(`${name}/password`),
                 storageClassName: existingVolume
-                    ? this.storage.getStorageClass(name)
+                    ? this.args.storage.getStorageClass(name)
                     : rootConfig.storageClass.Database,
-                storageSize: this.config.require(`${name}/storageSize`),
+                storageSize: this.args.config.require(`${name}/storageSize`),
             },
             this.opts,
         );

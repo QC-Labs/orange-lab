@@ -10,26 +10,20 @@ import { rootConfig } from './root-config';
 import { ConfigVolume, LocalVolume, PersistentVolume } from './types';
 
 export class Storage extends pulumi.ComponentResource {
-    private readonly longhornVolumes = new Map<string, LonghornVolume>();
-    private readonly volumes = new Map<string, kubernetes.types.input.core.v1.Volume>();
-    private readonly config: pulumi.Config;
-    private readonly metadata: Metadata;
-    private readonly nodes: Nodes;
+    private longhornVolumes = new Map<string, LonghornVolume>();
+    private volumes = new Map<string, kubernetes.types.input.core.v1.Volume>();
     public configFilesHash?: pulumi.Output<string>;
 
     constructor(
-        private readonly appName: string,
-        args: {
-            readonly config: pulumi.Config;
-            readonly metadata: Metadata;
-            readonly nodes: Nodes;
+        private appName: string,
+        private args: {
+            config: pulumi.Config;
+            metadata: Metadata;
+            nodes: Nodes;
         },
         opts?: pulumi.ComponentResourceOptions,
     ) {
         super('orangelab:Storage', `${appName}-storage`, args, opts);
-        this.config = args.config;
-        this.metadata = args.metadata;
-        this.nodes = args.nodes;
     }
 
     getVolumes(): kubernetes.types.input.core.v1.Volume[] {
@@ -52,20 +46,21 @@ export class Storage extends pulumi.ComponentResource {
         const volumeName = this.getVolumeName(volume?.name);
         const prefix = volume?.name ? `${volume.name}/` : '';
         const labels = volume?.name
-            ? this.metadata.get({ component: volume.name }).labels
-            : this.metadata.get().labels;
+            ? this.args.metadata.get({ component: volume.name }).labels
+            : this.args.metadata.get().labels;
         const storage = new LonghornVolume(
             `${volumeName}-storage`,
             {
-                affinity: this.nodes.getVolumeAffinity(),
+                affinity: this.args.nodes.getVolumeAffinity(),
                 annotations: volume?.annotations,
                 enableBackup: rootConfig.isBackupEnabled(this.appName, volume?.name),
-                fromVolume: volume?.fromVolume ?? this.config.get(`${prefix}fromVolume`),
+                fromVolume:
+                    volume?.fromVolume ?? this.args.config.get(`${prefix}fromVolume`),
                 labels: { ...labels, ...volume?.labels },
                 name: volume?.overrideFullname ?? volumeName,
-                namespace: this.metadata.namespace,
-                size: volume?.size ?? this.config.require(`${prefix}storageSize`),
-                storageClass: this.config.get(`${prefix}storageClass`),
+                namespace: this.args.metadata.namespace,
+                size: volume?.size ?? this.args.config.require(`${prefix}storageSize`),
+                storageClass: this.args.config.get(`${prefix}storageClass`),
                 type: volume?.type,
             },
             { parent: this },
@@ -123,8 +118,8 @@ export class Storage extends pulumi.ComponentResource {
             {
                 metadata: {
                     name: volumeName,
-                    namespace: this.metadata.namespace,
-                    labels: this.metadata.get().labels,
+                    namespace: this.args.metadata.namespace,
+                    labels: this.args.metadata.get().labels,
                 },
                 data: configVolume.files,
             },

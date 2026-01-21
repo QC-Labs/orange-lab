@@ -20,7 +20,7 @@ export interface PostgresClusterArgs {
 }
 
 export class PostgresCluster extends pulumi.ComponentResource {
-    private readonly secret: kubernetes.core.v1.Secret;
+    private secret: kubernetes.core.v1.Secret;
 
     private dbPassword: pulumi.Output<string>;
     private dbUser: string;

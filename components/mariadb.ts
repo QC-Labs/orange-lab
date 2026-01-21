@@ -18,8 +18,7 @@ export interface MariaDbClusterArgs {
 }
 
 export class MariaDbCluster extends pulumi.ComponentResource {
-    private readonly mariadb?: kubernetes.apiextensions.CustomResource;
-    private readonly secret: kubernetes.core.v1.Secret;
+    private secret: kubernetes.core.v1.Secret;
 
     private dbPassword: pulumi.Output<string>;
     private rootPassword: pulumi.Output<string>;
@@ -43,7 +42,7 @@ export class MariaDbCluster extends pulumi.ComponentResource {
 
         this.secret = this.createSecret();
         if (!args.enabled) return;
-        this.mariadb = this.createCluster();
+        this.createCluster();
     }
 
     private createSecret() {

@@ -92,7 +92,7 @@ export class KubeAi extends pulumi.ComponentResource {
         );
 
         if (rootConfig.enableMonitoring()) {
-            new GrafanaDashboard(name, this, { configJson: dashboardJson });
+            new GrafanaDashboard(name, { configJson: dashboardJson }, { parent: this });
         }
 
         this.endpointUrl = ingresInfo.url;

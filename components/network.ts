@@ -16,28 +16,22 @@ export interface IngressInfo {
 }
 
 export class Network {
-    readonly endpoints: Record<string, pulumi.Output<string> | string> = {};
-    readonly clusterEndpoints: Record<string, pulumi.Output<string> | string> = {};
-
-    private readonly config: pulumi.Config;
-    private readonly metadata: Metadata;
+    endpoints: Record<string, pulumi.Output<string> | string> = {};
+    clusterEndpoints: Record<string, pulumi.Output<string> | string> = {};
 
     constructor(
-        private readonly appName: string,
-        args: {
-            readonly config: pulumi.Config;
-            readonly metadata: Metadata;
+        private appName: string,
+        private args: {
+            config: pulumi.Config;
+            metadata: Metadata;
         },
         private opts?: pulumi.ComponentResourceOptions,
-    ) {
-        this.config = args.config;
-        this.metadata = args.metadata;
-    }
+    ) {}
 
     createEndpoints(spec: ContainerSpec) {
-        const hostname = this.config.get('hostname');
+        const hostname = this.args.config.get('hostname');
         if (!hostname) return;
-        const metadata = this.metadata.get({ component: spec.name });
+        const metadata = this.args.metadata.get({ component: spec.name });
         assert(metadata.namespace, 'namespace is required');
 
         const ports: ServicePort[] = [
@@ -55,7 +49,7 @@ export class Network {
 
     private createTcpEndpoints(tcpPorts: ServicePort[], component?: string) {
         if (tcpPorts.length === 0) return;
-        const hostname = this.config.require('hostname');
+        const hostname = this.args.config.require('hostname');
         const service = this.createLoadBalancer({
             hostname,
             ports: tcpPorts,
@@ -92,7 +86,7 @@ export class Network {
             domainName,
             'tailscale:tailnetDomain or orangelab:customDomain is required',
         );
-        const hostname = args.port.hostname ?? this.config.get('hostname');
+        const hostname = args.port.hostname ?? this.args.config.get('hostname');
         const url = args.port.tcp
             ? pulumi.interpolate`${hostname}:${args.port.port}`
             : pulumi.interpolate`https://${hostname}.${domainName}`;
@@ -125,7 +119,7 @@ export class Network {
         component?: string;
         ports: ServicePort[];
     }): kubernetes.core.v1.Service {
-        const metadata = this.metadata.get({ component: args.component });
+        const metadata = this.args.metadata.get({ component: args.component });
         return new kubernetes.core.v1.Service(
             `${metadata.name}-svc`,
             {
@@ -138,7 +132,7 @@ export class Network {
                         port: p.port,
                         targetPort: p.port,
                     })),
-                    selector: this.metadata.getSelectorLabels(args.component),
+                    selector: this.args.metadata.getSelectorLabels(args.component),
                 },
             },
             this.opts,
@@ -150,7 +144,7 @@ export class Network {
         ports: ServicePort[];
         component?: string;
     }): kubernetes.core.v1.Service {
-        const metadata = this.metadata.get({ component: args.component });
+        const metadata = this.args.metadata.get({ component: args.component });
         return new kubernetes.core.v1.Service(
             `${metadata.name}-lb`,
             {
@@ -167,7 +161,7 @@ export class Network {
                         port: p.port,
                         targetPort: p.port,
                     })),
-                    selector: this.metadata.getSelectorLabels(),
+                    selector: this.args.metadata.getSelectorLabels(),
                 },
             },
             this.opts,
@@ -175,7 +169,7 @@ export class Network {
     }
 
     public getIngressInfo(
-        hostname: string = this.config.require('hostname'),
+        hostname: string = this.args.config.require('hostname'),
     ): IngressInfo {
         if (!rootConfig.customDomain) {
             return {
@@ -208,7 +202,7 @@ export class Network {
         component?: string;
         ingressInfo: IngressInfo;
     }): kubernetes.networking.v1.Ingress {
-        const metadata = this.metadata.get({
+        const metadata = this.args.metadata.get({
             component: args.component
                 ? `${args.component}-${args.port.name}`
                 : args.port.name,

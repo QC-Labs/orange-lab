@@ -15,7 +15,7 @@ export class Nodes {
      */
     public readonly gpu?: 'nvidia' | 'amd';
 
-    constructor(private readonly args: NodesArgs) {
+    constructor(private args: NodesArgs) {
         if (args.gpu) {
             const useAmdGpu = args.config.getBoolean('amd-gpu') ?? false;
             this.gpu = useAmdGpu ? 'amd' : 'nvidia';

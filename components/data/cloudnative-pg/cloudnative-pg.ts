@@ -20,10 +20,14 @@ export class CloudNativePG extends pulumi.ComponentResource {
 
         this.createChart();
         if (rootConfig.enableMonitoring()) {
-            new GrafanaDashboard(this.name, this, {
-                configJson: grafanaDashboardJson,
-                title: 'CloudNativePG',
-            });
+            new GrafanaDashboard(
+                this.name,
+                {
+                    configJson: grafanaDashboardJson,
+                    title: 'CloudNativePG',
+                },
+                { parent: this },
+            );
         }
     }
 

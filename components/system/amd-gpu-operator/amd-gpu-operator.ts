@@ -64,21 +64,37 @@ export class AmdGPUOperator extends pulumi.ComponentResource {
     }
 
     private createDashboards(): void {
-        new GrafanaDashboard(`${this.name}-overview`, this, {
-            configJson: dashboardOverviewJson,
-            title: 'AMD - Overview',
-        });
-        new GrafanaDashboard(`${this.name}-gpu`, this, {
-            configJson: dashboardGpuJson,
-            title: 'AMD - GPU',
-        });
-        new GrafanaDashboard(`${this.name}-job`, this, {
-            configJson: dashboardJobJson,
-            title: 'AMD - Job',
-        });
-        new GrafanaDashboard(`${this.name}-node`, this, {
-            configJson: dashboardNodeJson,
-            title: 'AMD - Compute Node',
-        });
+        new GrafanaDashboard(
+            `${this.name}-overview`,
+            {
+                configJson: dashboardOverviewJson,
+                title: 'AMD - Overview',
+            },
+            { parent: this },
+        );
+        new GrafanaDashboard(
+            `${this.name}-gpu`,
+            {
+                configJson: dashboardGpuJson,
+                title: 'AMD - GPU',
+            },
+            { parent: this },
+        );
+        new GrafanaDashboard(
+            `${this.name}-job`,
+            {
+                configJson: dashboardJobJson,
+                title: 'AMD - Job',
+            },
+            { parent: this },
+        );
+        new GrafanaDashboard(
+            `${this.name}-node`,
+            {
+                configJson: dashboardNodeJson,
+                title: 'AMD - Compute Node',
+            },
+            { parent: this },
+        );
     }
 }

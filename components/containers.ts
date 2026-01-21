@@ -12,15 +12,9 @@ import {
 } from './types';
 
 export class Containers {
-    metadata: Metadata;
-    serviceAccount: kubernetes.core.v1.ServiceAccount;
-    storage?: Storage;
-    nodes: Nodes;
-    config: pulumi.Config;
-
     constructor(
         private appName: string,
-        args: {
+        private args: {
             metadata: Metadata;
             serviceAccount: kubernetes.core.v1.ServiceAccount;
             storage?: Storage;
@@ -28,28 +22,22 @@ export class Containers {
             config: pulumi.Config;
         },
         private opts?: pulumi.ComponentResourceOptions,
-    ) {
-        this.metadata = args.metadata;
-        this.serviceAccount = args.serviceAccount;
-        this.storage = args.storage;
-        this.nodes = args.nodes;
-        this.config = args.config;
-    }
+    ) {}
 
     public createPodTemplateSpec(
         spec: ContainerSpec,
     ): kubernetes.types.input.core.v1.PodTemplateSpec {
-        const metadata = this.metadata.get({
+        const metadata = this.args.metadata.get({
             component: spec.name,
-            annotations: this.storage?.configFilesHash
-                ? { 'checksum/config': this.storage.configFilesHash }
+            annotations: this.args.storage?.configFilesHash
+                ? { 'checksum/config': this.args.storage.configFilesHash }
                 : undefined,
             includeVersionLabel: true,
         });
         return {
             metadata,
             spec: {
-                affinity: this.nodes.getAffinity(),
+                affinity: this.args.nodes.getAffinity(),
                 hostNetwork: spec.hostNetwork,
                 containers: [
                     {
@@ -87,8 +75,8 @@ export class Containers {
                 ],
                 initContainers: this.createAllInitContainers(spec),
                 restartPolicy: spec.restartPolicy,
-                serviceAccountName: this.serviceAccount.metadata.name,
-                runtimeClassName: this.nodes.gpu === 'nvidia' ? 'nvidia' : undefined,
+                serviceAccountName: this.args.serviceAccount.metadata.name,
+                runtimeClassName: this.args.nodes.gpu === 'nvidia' ? 'nvidia' : undefined,
                 volumes: this.createVolumes(spec.volumeMounts),
             },
         };
@@ -137,7 +125,8 @@ export class Containers {
     }
 
     private getLocalVolumeMounts(volumeMounts?: VolumeMount[]): string[] {
-        const localVolumeNames = this.storage?.getLocalVolumes().map(v => v.name) ?? [];
+        const localVolumeNames =
+            this.args.storage?.getLocalVolumes().map(v => v.name) ?? [];
         return (volumeMounts ?? [])
             .filter(mount => localVolumeNames.includes(mount.name ?? this.appName))
             .map(mount => mount.mountPath);
@@ -147,9 +136,9 @@ export class Containers {
         runAsUser?: number,
     ): kubernetes.types.input.core.v1.SecurityContext | undefined {
         const context: kubernetes.types.input.core.v1.SecurityContext = {};
-        if (this.nodes.gpu === 'amd') {
+        if (this.args.nodes.gpu === 'amd') {
             context.seccompProfile = { type: 'Unconfined' };
-        } else if (this.nodes.gpu === 'nvidia' || this.storage?.hasLocal()) {
+        } else if (this.args.nodes.gpu === 'nvidia' || this.args.storage?.hasLocal()) {
             context.privileged = true;
         }
         if (runAsUser) {
@@ -162,7 +151,7 @@ export class Containers {
     private createInitContainerSecurityContext():
         | kubernetes.types.input.core.v1.SecurityContext
         | undefined {
-        return this.storage?.hasLocal() ? { privileged: true } : undefined;
+        return this.args.storage?.hasLocal() ? { privileged: true } : undefined;
     }
 
     private createPorts(args: { port?: number; ports?: ServicePort[] }) {
@@ -180,19 +169,19 @@ export class Containers {
     private createVolumes(
         volumeMounts?: VolumeMount[],
     ): kubernetes.types.input.core.v1.Volume[] | undefined {
-        if (this.nodes.gpu === 'amd') {
-            this.storage?.addLocalVolume({
+        if (this.args.nodes.gpu === 'amd') {
+            this.args.storage?.addLocalVolume({
                 name: 'dev-kfd',
                 hostPath: '/dev/kfd',
                 type: 'CharDevice',
             });
-            this.storage?.addLocalVolume({
+            this.args.storage?.addLocalVolume({
                 name: 'dev-dri',
                 hostPath: '/dev/dri',
                 type: 'Directory',
             });
         }
-        return volumeMounts?.length ? (this.storage?.getVolumes() ?? []) : undefined;
+        return volumeMounts?.length ? (this.args.storage?.getVolumes() ?? []) : undefined;
     }
 
     private createVolumeMounts(
@@ -202,7 +191,7 @@ export class Containers {
             ...volumeMount,
             ...{ name: volumeMount.name ?? this.appName },
         }));
-        if (this.nodes.gpu === 'amd') {
+        if (this.args.nodes.gpu === 'amd') {
             mounts.push({ name: 'dev-kfd', mountPath: '/dev/kfd' });
             mounts.push({ name: 'dev-dri', mountPath: '/dev/dri' });
         }
@@ -212,7 +201,7 @@ export class Containers {
     private createResourceLimits(
         resources?: ContainerResources,
     ): kubernetes.types.input.core.v1.ResourceRequirements | undefined {
-        switch (this.nodes.gpu) {
+        switch (this.args.nodes.gpu) {
             case 'nvidia':
                 return {
                     ...resources,
@@ -225,11 +214,11 @@ export class Containers {
         }
     }
 
-    private createProbe(opts: { healthChecks?: boolean; failureThreshold?: number }) {
-        return opts.healthChecks
+    private createProbe(args: { healthChecks?: boolean; failureThreshold?: number }) {
+        return args.healthChecks
             ? {
                   httpGet: { path: '/', port: 'http' },
-                  failureThreshold: opts.failureThreshold,
+                  failureThreshold: args.failureThreshold,
               }
             : undefined;
     }
@@ -237,14 +226,14 @@ export class Containers {
     private createEnv(
         specEnv?: Record<string, string | pulumi.Output<string> | undefined>,
     ) {
-        const gfxVersion = this.config.get('HSA_OVERRIDE_GFX_VERSION');
-        const amdTargets = this.config.get('HCC_AMDGPU_TARGETS');
+        const gfxVersion = this.args.config.get('HSA_OVERRIDE_GFX_VERSION');
+        const amdTargets = this.args.config.get('HCC_AMDGPU_TARGETS');
         const env = {
             ...specEnv,
             HSA_OVERRIDE_GFX_VERSION:
-                this.nodes.gpu === 'amd' && gfxVersion ? gfxVersion : undefined,
+                this.args.nodes.gpu === 'amd' && gfxVersion ? gfxVersion : undefined,
             HCC_AMDGPU_TARGETS:
-                this.nodes.gpu === 'amd' && amdTargets ? amdTargets : undefined,
+                this.args.nodes.gpu === 'amd' && amdTargets ? amdTargets : undefined,
         };
         return Object.entries(env)
             .filter(([_, value]) => value)
@@ -256,7 +245,7 @@ export class Containers {
         secretData?: Record<string, string | pulumi.Output<string> | undefined>;
     }) {
         if (!args.secretData) return;
-        const metadata = this.metadata.get({ component: args.containerName });
+        const metadata = this.args.metadata.get({ component: args.containerName });
         const secret = new kubernetes.core.v1.Secret(
             `${metadata.name}-env`,
             {

@@ -12,29 +12,16 @@ import { ContainerSpec } from './types';
  */
 export class Services {
     private serviceAccount?: kubernetes.core.v1.ServiceAccount;
-
-    private readonly appName: string;
-    private readonly metadata: Metadata;
-    private readonly storage?: Storage;
-    private readonly nodes: Nodes;
-    private readonly config: pulumi.Config;
-
     constructor(
-        appName: string,
-        params: {
+        private appName: string,
+        private args: {
             metadata: Metadata;
             storage?: Storage;
             nodes: Nodes;
             config: pulumi.Config;
         },
         private opts?: pulumi.ComponentResourceOptions,
-    ) {
-        this.appName = appName;
-        this.metadata = params.metadata;
-        this.storage = params.storage;
-        this.nodes = params.nodes;
-        this.config = params.config;
-    }
+    ) {}
 
     private getServiceAccount() {
         this.serviceAccount ??= this.createServiceAccount();
@@ -44,7 +31,7 @@ export class Services {
     private createServiceAccount() {
         return new kubernetes.core.v1.ServiceAccount(
             `${this.appName}-sa`,
-            { metadata: this.metadata.get() },
+            { metadata: this.args.metadata.get() },
             this.opts,
         );
     }
@@ -54,15 +41,15 @@ export class Services {
         const podSpec = new Containers(
             this.appName,
             {
-                metadata: this.metadata,
-                storage: this.storage,
+                metadata: this.args.metadata,
+                storage: this.args.storage,
                 serviceAccount,
-                nodes: this.nodes,
-                config: this.config,
+                nodes: this.args.nodes,
+                config: this.args.config,
             },
             this.opts,
         );
-        const metadata = this.metadata.get({
+        const metadata = this.args.metadata.get({
             component: spec.name,
             includeVersionLabel: true,
         });
@@ -72,7 +59,9 @@ export class Services {
                 metadata,
                 spec: {
                     replicas: 1,
-                    selector: { matchLabels: this.metadata.getSelectorLabels(spec.name) },
+                    selector: {
+                        matchLabels: this.args.metadata.getSelectorLabels(spec.name),
+                    },
                     template: podSpec.createPodTemplateSpec(spec),
                     strategy: { type: 'Recreate', rollingUpdate: undefined },
                 },
@@ -80,7 +69,7 @@ export class Services {
             {
                 ...this.opts,
                 deleteBeforeReplace: true,
-                dependsOn: this.storage,
+                dependsOn: this.args.storage,
             },
         );
     }
@@ -89,24 +78,24 @@ export class Services {
         assert(spec.name, 'name is required for daemonset');
         const serviceAccount = this.getServiceAccount();
         const podSpec = new Containers(this.appName, {
-            metadata: this.metadata,
+            metadata: this.args.metadata,
             serviceAccount,
-            config: this.config,
-            nodes: this.nodes,
-            storage: this.storage,
+            config: this.args.config,
+            nodes: this.args.nodes,
+            storage: this.args.storage,
         });
         return new kubernetes.apps.v1.DaemonSet(
             `${this.appName}-${spec.name}-daemonset`,
             {
-                metadata: this.metadata.get({ component: spec.name }),
+                metadata: this.args.metadata.get({ component: spec.name }),
                 spec: {
                     selector: {
-                        matchLabels: this.metadata.getSelectorLabels(spec.name),
+                        matchLabels: this.args.metadata.getSelectorLabels(spec.name),
                     },
                     template: podSpec.createPodTemplateSpec(spec),
                 },
             },
-            { ...this.opts, dependsOn: this.storage },
+            { ...this.opts, dependsOn: this.args.storage },
         );
     }
 
@@ -116,23 +105,23 @@ export class Services {
         const podSpec = new Containers(
             this.appName,
             {
-                metadata: this.metadata,
-                storage: this.storage,
+                metadata: this.args.metadata,
+                storage: this.args.storage,
                 serviceAccount,
-                config: this.config,
-                nodes: this.nodes,
+                config: this.args.config,
+                nodes: this.args.nodes,
             },
             this.opts,
         );
         return new kubernetes.batch.v1.Job(
             `${this.appName}-${spec.name}-job`,
             {
-                metadata: this.metadata.get({ component: spec.name }),
+                metadata: this.args.metadata.get({ component: spec.name }),
                 spec: {
                     template: podSpec.createPodTemplateSpec(spec),
                 },
             },
-            { ...this.opts, dependsOn: this.storage },
+            { ...this.opts, dependsOn: this.args.storage },
         );
     }
 }

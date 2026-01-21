@@ -53,7 +53,7 @@ export class TailscaleOperator extends pulumi.ComponentResource {
                 },
                 { parent: this, deleteBeforeReplace: true },
             );
-            new GrafanaDashboard(name, this, { configJson: dashboardJson });
+            new GrafanaDashboard(name, { configJson: dashboardJson }, { parent: this });
         }
 
         this.app.addHelmChart(name, {

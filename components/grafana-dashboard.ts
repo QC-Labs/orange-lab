@@ -13,13 +13,16 @@ interface GrafanaDashboardArgs {
 export class GrafanaDashboard {
     constructor(
         private name: string,
-        private scope: pulumi.ComponentResource,
         args: GrafanaDashboardArgs,
+        opts?: pulumi.ComponentResourceOptions,
     ) {
-        this.createGrafanaDashboard(args.configJson);
+        this.createGrafanaDashboard(args.configJson, opts);
     }
 
-    private createGrafanaDashboard(configJson: GrafanaJson): void {
+    private createGrafanaDashboard(
+        configJson: GrafanaJson,
+        opts?: pulumi.ResourceOptions,
+    ): void {
         new kubernetes.core.v1.ConfigMap(
             `${this.name}-dashboard`,
             {
@@ -39,7 +42,7 @@ export class GrafanaDashboard {
                     ),
                 },
             },
-            { parent: this.scope },
+            { parent: opts?.parent },
         );
     }
 }

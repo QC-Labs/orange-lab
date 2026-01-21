@@ -61,28 +61,28 @@ export class LonghornVolume extends pulumi.ComponentResource {
         this.volumeClaimName = args.name;
         this.isDynamic = !args.fromVolume;
         if (args.fromVolume) {
-            this.storageClassName = this.attachVolume(args);
+            this.storageClassName = this.attachVolume();
         } else {
-            this.storageClassName = this.createVolume(args);
+            this.storageClassName = this.createVolume();
         }
         this.size = pulumi.output(args.size);
     }
 
-    private createVolume(args: LonghornVolumeArgs) {
-        assert(!args.fromVolume);
+    private createVolume() {
+        assert(!this.args.fromVolume);
         const pvc = this.createPVC({
             name: this.volumeClaimName,
             storageClassName:
-                this.args.storageClass ?? rootConfig.getStorageClass(args.type),
+                this.args.storageClass ?? rootConfig.getStorageClass(this.args.type),
         });
         return pvc.spec.storageClassName;
     }
 
-    private attachVolume(args: LonghornVolumeArgs) {
-        assert(args.fromVolume && !args.storageClass);
+    private attachVolume() {
+        assert(this.args.fromVolume && !this.args.storageClass);
         const existingVolume = this.createLonghornPV({
-            name: args.name,
-            volumeHandle: args.fromVolume,
+            name: this.args.name,
+            volumeHandle: this.args.fromVolume,
         });
         const pvc = this.createPVC({
             name: this.volumeClaimName,

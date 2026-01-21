@@ -58,7 +58,7 @@ export class Longhorn extends pulumi.ComponentResource {
             this.createBackupJob();
         }
         if (rootConfig.enableMonitoring()) {
-            new GrafanaDashboard(name, this, { configJson: dashboardJson });
+            new GrafanaDashboard(name, { configJson: dashboardJson }, { parent: this });
         }
 
         this.endpointUrl = ingresInfo.url;
