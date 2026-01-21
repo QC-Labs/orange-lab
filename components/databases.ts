@@ -118,11 +118,11 @@ export class Databases {
         return {
             name: 'wait-for-db',
             image: 'busybox:latest',
-            command: [
+            command: pulumi.all([
                 'sh',
                 '-c',
                 pulumi.interpolate`until nc -z -v -w30 ${hostPort}; do echo "Waiting for database...${hostPort}" && sleep 5; done`,
-            ],
+            ]),
             volumeMounts: [],
         };
     }
