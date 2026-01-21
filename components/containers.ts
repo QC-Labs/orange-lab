@@ -41,9 +41,11 @@ export class Containers {
                 hostNetwork: spec.hostNetwork,
                 containers: [
                     {
-                        args: Array.isArray(spec.commandArgs)
-                            ? spec.commandArgs.filter(Boolean)
-                            : spec.commandArgs,
+                        args: spec.commandArgs
+                            ? pulumi
+                                  .output(spec.commandArgs)
+                                  .apply(args => args.filter(Boolean))
+                            : undefined,
                         command: spec.command,
                         env: this.createEnv(spec.env),
                         envFrom: this.createEnvSecret({
@@ -223,9 +225,7 @@ export class Containers {
             : undefined;
     }
 
-    private createEnv(
-        specEnv?: Record<string, string | pulumi.Output<string> | undefined>,
-    ) {
+    private createEnv(specEnv?: Record<string, pulumi.Input<string> | undefined>) {
         const gfxVersion = this.args.config.get('HSA_OVERRIDE_GFX_VERSION');
         const amdTargets = this.args.config.get('HCC_AMDGPU_TARGETS');
         const env = {
@@ -242,7 +242,7 @@ export class Containers {
 
     private createEnvSecret(args: {
         containerName?: string;
-        secretData?: Record<string, string | pulumi.Output<string> | undefined>;
+        secretData?: Record<string, pulumi.Input<string> | undefined>;
     }) {
         if (!args.secretData) return;
         const metadata = this.args.metadata.get({ component: args.containerName });

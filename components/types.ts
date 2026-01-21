@@ -28,7 +28,7 @@ export interface InitContainerSpec {
      * Defaults to 'alpine:latest'.
      */
     image?: string;
-    command?: pulumi.Input<string>[];
+    command?: pulumi.Input<string[]>;
     /**
      * Optional volume mounts for the init container.
      * If not provided, it will use the main container's volume mounts.
@@ -58,10 +58,10 @@ export interface ContainerSpec {
     image: string;
     port?: number;
     ports?: ServicePort[];
-    command?: string[];
-    commandArgs?: string[] | pulumi.Output<string[]>;
-    env?: Record<string, string | pulumi.Output<string> | undefined>;
-    envSecret?: Record<string, string | pulumi.Output<string> | undefined>;
+    command?: pulumi.Input<string[]>;
+    commandArgs?: pulumi.Input<string[]>;
+    env?: Record<string, pulumi.Input<string> | undefined>;
+    envSecret?: Record<string, pulumi.Input<string> | undefined>;
     hostNetwork?: boolean;
     initContainers?: InitContainerSpec[];
     volumeMounts?: VolumeMount[];
@@ -151,6 +151,6 @@ export interface DatabaseConfig {
     hostname: pulumi.Input<string>;
     database: pulumi.Input<string>;
     username: pulumi.Input<string>;
-    password: pulumi.Output<string>;
-    port: number;
+    password: pulumi.Input<string>;
+    port: pulumi.Input<number>;
 }

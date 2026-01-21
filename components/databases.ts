@@ -114,7 +114,7 @@ export class Databases {
      * Returns an initContainer spec to wait for database until it accepts connections.
      */
     getWaitContainer(dbConfig: DatabaseConfig = this.getConfig()): InitContainerSpec {
-        const hostPort = pulumi.interpolate`${dbConfig.hostname} ${dbConfig.port.toString()}`;
+        const hostPort = pulumi.interpolate`${dbConfig.hostname} ${dbConfig.port}`;
         return {
             name: 'wait-for-db',
             image: 'busybox:latest',

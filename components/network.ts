@@ -12,12 +12,12 @@ export interface IngressInfo {
     tls: boolean;
     tlsSecretName?: string;
     domain: string;
-    annotations?: Record<string, pulumi.Output<string>>;
+    annotations?: Record<string, pulumi.Input<string>>;
 }
 
 export class Network {
-    endpoints: Record<string, pulumi.Output<string> | string> = {};
-    clusterEndpoints: Record<string, pulumi.Output<string> | string> = {};
+    endpoints: Record<string, pulumi.Input<string>> = {};
+    clusterEndpoints: Record<string, pulumi.Input<string>> = {};
 
     constructor(
         private appName: string,

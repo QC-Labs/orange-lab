@@ -25,13 +25,13 @@ export class Metadata {
 
     get(params?: {
         component?: string;
-        annotations?: Record<string, pulumi.Output<string> | undefined>;
+        annotations?: Record<string, pulumi.Input<string> | undefined>;
         includeVersionLabel?: boolean;
     }): {
         name: string;
         namespace: pulumi.Input<string>;
         labels: Record<string, string>;
-        annotations?: Record<string, pulumi.Output<string>>;
+        annotations?: Record<string, pulumi.Input<string>>;
     } {
         return {
             name: params?.component
