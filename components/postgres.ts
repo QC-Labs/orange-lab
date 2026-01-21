@@ -117,7 +117,7 @@ export class PostgresCluster extends pulumi.ComponentResource {
                     },
                 },
             },
-            { parent: this, dependsOn: [this.secret] },
+            { parent: this },
         );
         return cluster;
     }

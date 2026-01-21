@@ -116,7 +116,7 @@ export class MariaDbCluster extends pulumi.ComponentResource {
                     username: this.dbUser,
                 },
             },
-            { parent: this, dependsOn: [this.secret] },
+            { parent: this },
         );
     }
 

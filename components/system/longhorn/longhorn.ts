@@ -213,7 +213,7 @@ export class Longhorn extends pulumi.ComponentResource {
                     VIRTUAL_HOSTED_STYLE: 'false',
                 },
             },
-            { parent: this, dependsOn: s3User },
+            { parent: this },
         );
     }
 

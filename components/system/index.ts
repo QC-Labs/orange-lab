@@ -82,7 +82,7 @@ export class SystemModule extends pulumi.ComponentResource {
                     s3EndpointUrl: this.minio?.app.network.clusterEndpoints['minio-api'],
                     minioProvider: this.minio?.minioProvider,
                 },
-                { parent: this, dependsOn: [this.minio].filter(v => v !== undefined) },
+                { parent: this },
             );
         }
 
