@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "baseUrl": ".",
         "esModuleInterop": true,
         "experimentalDecorators": true,
         "forceConsistentCasingInFileNames": true,
@@ -8,6 +9,9 @@
         "noFallthroughCasesInSwitch": true,
         "noImplicitReturns": true,
         "outDir": "bin",
+        "paths": {
+            "@orangelab/*": ["components/*"]
+        },
         "pretty": true,
         "resolveJsonModule": true,
         "sourceMap": true,

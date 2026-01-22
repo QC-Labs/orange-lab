@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+import 'tsconfig-paths/register';
 import { AIModule } from './components/ai';
 import { BitcoinModule } from './components/bitcoin';
 import { DataModule } from './components/data';
