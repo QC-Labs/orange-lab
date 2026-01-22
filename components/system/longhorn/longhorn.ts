@@ -1,9 +1,9 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
-import { Application } from '../../application';
-import { GrafanaDashboard } from '../../grafana-dashboard';
-import { IngressInfo } from '../../network';
-import { rootConfig } from '../../root-config';
+import { Application } from '@orangelab/application';
+import { GrafanaDashboard } from '@orangelab/grafana-dashboard';
+import { IngressInfo } from '@orangelab/network';
+import { rootConfig } from '@orangelab/root-config';
 import { MinioS3Bucket } from '../minio/minio-s3-bucket';
 import { MinioS3User } from '../minio/minio-s3-user';
 import dashboardJson from './longhorn-dashboard.json';

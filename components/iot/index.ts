@@ -1,5 +1,5 @@
 import * as pulumi from '@pulumi/pulumi';
-import { rootConfig } from '../root-config';
+import { rootConfig } from '@orangelab/root-config';
 import { HomeAssistant } from './home-assistant/home-assistant';
 
 export class IoTModule extends pulumi.ComponentResource {

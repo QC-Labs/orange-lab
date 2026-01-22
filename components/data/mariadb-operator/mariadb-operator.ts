@@ -1,14 +1,17 @@
+import { Application } from '@orangelab/application';
+import { rootConfig } from '@orangelab/root-config';
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
-import { Application } from '../../application';
-import { rootConfig } from '../../root-config';
 
 export class MariaDBOperator extends pulumi.ComponentResource {
     private readonly config: pulumi.Config;
     private readonly app: Application;
     private readonly crdsChart: kubernetes.helm.v3.Release;
 
-    constructor(private readonly name: string, opts?: pulumi.ResourceOptions) {
+    constructor(
+        private readonly name: string,
+        opts?: pulumi.ResourceOptions,
+    ) {
         super('orangelab:data:MariaDBOperator', name, {}, opts);
 
         this.config = new pulumi.Config(name);

@@ -6,7 +6,7 @@ import { DataModule } from './components/data';
 import { IoTModule } from './components/iot';
 import { MonitoringModule } from './components/monitoring';
 import { OfficeModule } from './components/office';
-import { rootConfig } from './components/root-config';
+import { rootConfig } from '@orangelab/root-config';
 import { SystemModule } from './components/system';
 
 const systemModule = new SystemModule('system');

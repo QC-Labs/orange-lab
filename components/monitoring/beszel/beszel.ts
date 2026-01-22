@@ -1,5 +1,5 @@
 import * as pulumi from '@pulumi/pulumi';
-import { Application } from '../../application';
+import { Application } from '@orangelab/application';
 
 export class Beszel extends pulumi.ComponentResource {
     public readonly app: Application;

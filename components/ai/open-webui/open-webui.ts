@@ -1,7 +1,7 @@
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
-import { Application } from '../../application';
-import { StorageType } from '../../types';
+import { Application } from '@orangelab/application';
+import { StorageType } from '@orangelab/types';
 
 export interface OpenWebUIArgs {
     ollamaUrl?: string;

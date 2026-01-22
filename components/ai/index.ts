@@ -1,5 +1,5 @@
 import * as pulumi from '@pulumi/pulumi';
-import { rootConfig } from '../root-config';
+import { rootConfig } from '@orangelab/root-config';
 import { Automatic1111 } from './automatic1111/automatic1111';
 import { InvokeAi } from './invokeai/invokeai';
 import { KubeAi } from './kubeai/kubeai';

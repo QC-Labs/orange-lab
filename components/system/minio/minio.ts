@@ -1,7 +1,7 @@
 import * as minio from '@pulumi/minio';
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
-import { Application } from '../../application';
+import { Application } from '@orangelab/application';
 
 export class Minio extends pulumi.ComponentResource {
     public readonly minioProvider: minio.Provider;

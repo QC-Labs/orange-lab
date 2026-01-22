@@ -1,5 +1,5 @@
 import * as pulumi from '@pulumi/pulumi';
-import { Application } from '../../application';
+import { Application } from '@orangelab/application';
 
 /*
 Disable debug first when switching volumes

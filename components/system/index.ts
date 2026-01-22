@@ -1,5 +1,5 @@
 import * as pulumi from '@pulumi/pulumi';
-import { rootConfig } from '../root-config';
+import { rootConfig } from '@orangelab/root-config';
 import { AmdGPUOperator } from './amd-gpu-operator/amd-gpu-operator';
 import { CertManager } from './cert-manager/cert-manager';
 import { Debug } from './debug/debug';

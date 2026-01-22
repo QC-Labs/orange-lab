@@ -1,6 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
-import { Application } from '../../application';
-import { rootConfig } from '../../root-config';
+import { Application } from '@orangelab/application';
+import { rootConfig } from '@orangelab/root-config';
 
 export class CertManager extends pulumi.ComponentResource {
     constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {

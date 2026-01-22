@@ -1,6 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
-import { Application } from '../../application';
-import { Nodes } from '../../nodes';
+import { Application } from '@orangelab/application';
+import { Nodes } from '@orangelab/nodes';
 
 export class Prometheus extends pulumi.ComponentResource {
     public readonly alertmanagerEndpointUrl: string | undefined;

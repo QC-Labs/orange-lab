@@ -1,5 +1,5 @@
 import * as pulumi from '@pulumi/pulumi';
-import { rootConfig } from '../root-config';
+import { rootConfig } from '@orangelab/root-config';
 import { Nextcloud } from './nextcloud/nextcloud';
 
 export class OfficeModule extends pulumi.ComponentResource {

@@ -1,6 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
-import { Application } from '../../application';
-import { StorageType } from '../../types';
+import { Application } from '@orangelab/application';
+import { StorageType } from '@orangelab/types';
 
 export class Automatic1111 extends pulumi.ComponentResource {
     app: Application;

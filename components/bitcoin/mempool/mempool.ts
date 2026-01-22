@@ -1,7 +1,7 @@
 import * as pulumi from '@pulumi/pulumi';
-import { Application } from '../../application';
-import { rootConfig } from '../../root-config';
-import { DatabaseConfig } from '../../types';
+import { Application } from '@orangelab/application';
+import { rootConfig } from '@orangelab/root-config';
+import { DatabaseConfig } from '@orangelab/types';
 import { RpcUser } from '../utils/rpc-user';
 
 export interface MempoolArgs {

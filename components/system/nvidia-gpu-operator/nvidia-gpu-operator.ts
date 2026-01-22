@@ -1,6 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
-import { Application } from '../../application';
-import { rootConfig } from '../../root-config';
+import { Application } from '@orangelab/application';
+import { rootConfig } from '@orangelab/root-config';
 
 export class NvidiaGPUOperator extends pulumi.ComponentResource {
     private readonly app: Application;
