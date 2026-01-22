@@ -1,11 +1,12 @@
-import * as kubernetes from '@pulumi/kubernetes';
-import * as pulumi from '@pulumi/pulumi';
 import { Application } from '@orangelab/application';
 import { rootConfig } from '@orangelab/root-config';
+import * as kubernetes from '@pulumi/kubernetes';
+import * as pulumi from '@pulumi/pulumi';
+import assert from 'assert';
 
 export class Traefik extends pulumi.ComponentResource {
-    private readonly crdsChart: kubernetes.helm.v3.Release;
     private readonly app: Application;
+    private chart: kubernetes.helm.v3.Release | undefined;
 
     constructor(
         private name: string,
@@ -13,29 +14,13 @@ export class Traefik extends pulumi.ComponentResource {
         opts?: pulumi.ResourceOptions,
     ) {
         super('orangelab:system:Traefik', name, args, opts);
-
-        this.app = new Application(this, name);
-
-        this.crdsChart = this.createCRDs();
-        if (rootConfig.isEnabled('traefik')) {
-            this.createChart();
-            this.createDashboard();
-        }
-    }
-
-    private createCRDs(): kubernetes.helm.v3.Release {
-        return this.app.addHelmChart(
-            `${this.name}-crds`,
-            {
-                chart: 'traefik-crds',
-                repo: 'https://traefik.github.io/charts',
-                values: {
-                    gatewayAPI: true,
-                    deleteOnUninstall: true,
-                },
-            },
-            { deleteBeforeReplace: true },
+        assert(
+            rootConfig.customDomain,
+            'Traefik component requires a custom domain to be set',
         );
+        this.app = new Application(this, name);
+        this.chart = this.createChart();
+        this.createDashboard();
     }
 
     private createChart(): kubernetes.helm.v3.Release {
@@ -44,7 +29,6 @@ export class Traefik extends pulumi.ComponentResource {
             {
                 chart: 'traefik',
                 repo: 'https://traefik.github.io/charts',
-                skipCrds: true,
                 values: {
                     affinity: this.app.nodes.getAffinity(),
                     api: {
@@ -61,6 +45,10 @@ export class Traefik extends pulumi.ComponentResource {
                                 },
                             },
                         },
+                    },
+                    global: {
+                        checkNewVersion: false,
+                        sendAnonymousUsage: false,
                     },
                     ingressClass: {
                         enabled: true,
@@ -105,7 +93,7 @@ export class Traefik extends pulumi.ComponentResource {
                     ],
                 },
             },
-            { dependsOn: [this.crdsChart], deleteBeforeReplace: true },
+            { deleteBeforeReplace: true },
         );
     }
 
@@ -128,7 +116,7 @@ export class Traefik extends pulumi.ComponentResource {
                     },
                 },
             },
-            { parent: this },
+            { parent: this, dependsOn: this.chart },
         );
 
         new kubernetes.apiextensions.CustomResource(
@@ -156,7 +144,7 @@ export class Traefik extends pulumi.ComponentResource {
                     },
                 },
             },
-            { parent: this },
+            { parent: this, dependsOn: this.chart },
         );
     }
 }

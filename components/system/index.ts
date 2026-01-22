@@ -42,7 +42,7 @@ export class SystemModule extends pulumi.ComponentResource {
             );
         }
 
-        if (rootConfig.customDomain) {
+        if (rootConfig.isEnabled('traefik')) {
             new Traefik('traefik', {}, { parent: this });
         }
 

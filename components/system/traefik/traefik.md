@@ -13,8 +13,9 @@ Traefik is a cloud-native edge router that handles external HTTP/HTTPS traffic t
 ## Installation
 
 ```sh
-# Set it to your domain, this installs Traefik CRDs even is Traefik is disabled
+# customDomain is required
 pulumi config set orangelab:customDomain example.com
+pulumi config set traefik:enabled true
 
 # (Optional) Limit which nodes should run Traefik. By default all nodes
 pulumi config set traefik:requiredNodeLabel: kubernetes.io/hostname=<host>
@@ -22,14 +23,5 @@ pulumi config set traefik:requiredNodeLabel: kubernetes.io/hostname=<host>
 # (Optional) Change dashboard hostname
 pulumi config set traefik:hostname traefik
 
-pulumi up
-```
-
-## Uninstall
-
-Traefik CRDs left intact when `customDomain` set but the pods can be removed temporarily if needed.
-
-```sh
-pulumi config set traefik:enabled false
 pulumi up
 ```
