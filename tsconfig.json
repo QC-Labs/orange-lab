@@ -10,7 +10,7 @@
         "noImplicitReturns": true,
         "outDir": "bin",
         "paths": {
-            "@orangelab/*": ["components/*"]
+            "@orangelab/*": ["src/*"]
         },
         "pretty": true,
         "resolveJsonModule": true,
