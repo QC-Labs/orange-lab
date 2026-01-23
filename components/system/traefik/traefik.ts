@@ -57,11 +57,13 @@ export class Traefik extends pulumi.ComponentResource {
                     },
                     ports: {
                         web: {
-                            redirections: {
-                                entryPoint: {
-                                    permanent: true,
-                                    scheme: 'https',
-                                    to: 'websecure',
+                            http: {
+                                redirections: {
+                                    entryPoint: {
+                                        permanent: true,
+                                        scheme: 'https',
+                                        to: 'websecure',
+                                    },
                                 },
                             },
                         },
