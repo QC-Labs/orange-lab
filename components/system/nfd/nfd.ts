@@ -6,6 +6,7 @@ import { rootConfig } from '@orangelab/root-config';
 export class NodeFeatureDiscovery extends pulumi.ComponentResource {
     private readonly config: pulumi.Config;
     private readonly app: Application;
+    chart: kubernetes.helm.v3.Release;
 
     constructor(
         private readonly name: string,
@@ -16,7 +17,7 @@ export class NodeFeatureDiscovery extends pulumi.ComponentResource {
         this.config = new pulumi.Config(name);
         this.app = new Application(this, name);
 
-        this.createHelmChart();
+        this.chart = this.createHelmChart();
 
         if (this.config.getBoolean('gpu-autodetect')) {
             this.createAmdGpuRule();
@@ -84,7 +85,7 @@ export class NodeFeatureDiscovery extends pulumi.ComponentResource {
                     ],
                 },
             },
-            { parent: this },
+            { parent: this, dependsOn: [this.chart] },
         );
     }
 
@@ -126,7 +127,7 @@ export class NodeFeatureDiscovery extends pulumi.ComponentResource {
                     ],
                 },
             },
-            { parent: this },
+            { parent: this, dependsOn: [this.chart] },
         );
     }
 }
