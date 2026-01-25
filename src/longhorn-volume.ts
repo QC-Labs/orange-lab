@@ -42,7 +42,7 @@ interface LonghornVolumeArgs {
 const staleReplicaTimeout = (48 * 60).toString();
 
 export class LonghornVolume extends pulumi.ComponentResource {
-    volumeClaimName: string;
+    volumeClaimName: pulumi.Output<string>;
     storageClassName: pulumi.Output<string>;
     isDynamic: boolean;
     size: pulumi.Output<string>;
@@ -58,24 +58,20 @@ export class LonghornVolume extends pulumi.ComponentResource {
             'Cannot specify fromVolume when using custom storageClass',
         );
 
-        this.volumeClaimName = args.name;
         this.isDynamic = !args.fromVolume;
-        if (args.fromVolume) {
-            this.storageClassName = this.attachVolume();
-        } else {
-            this.storageClassName = this.createVolume();
-        }
+        const pvc = args.fromVolume ? this.attachVolume() : this.createVolume();
+        this.volumeClaimName = pvc.metadata.name;
+        this.storageClassName = pvc.spec.storageClassName;
         this.size = pulumi.output(args.size);
     }
 
     private createVolume() {
         assert(!this.args.fromVolume);
-        const pvc = this.createPVC({
-            name: this.volumeClaimName,
+        return this.createPVC({
+            name: this.args.name,
             storageClassName:
                 this.args.storageClass ?? rootConfig.getStorageClass(this.args.type),
         });
-        return pvc.spec.storageClassName;
     }
 
     private attachVolume() {
@@ -84,12 +80,11 @@ export class LonghornVolume extends pulumi.ComponentResource {
             name: this.args.name,
             volumeHandle: this.args.fromVolume,
         });
-        const pvc = this.createPVC({
-            name: this.volumeClaimName,
+        return this.createPVC({
+            name: this.args.name,
             storageClassName: existingVolume.spec.storageClassName,
             volumeName: existingVolume.metadata.name,
         });
-        return pvc.spec.storageClassName;
     }
 
     private createLonghornPV({

@@ -72,7 +72,7 @@ export class Storage extends pulumi.ComponentResource {
         });
     }
 
-    getClaimName(storageName?: string): string {
+    getClaimName(storageName?: string): pulumi.Output<string> {
         const volumeName = this.getVolumeName(storageName);
         const storage = this.longhornVolumes.get(volumeName);
         assert(storage, `Storage ${volumeName} not found`);

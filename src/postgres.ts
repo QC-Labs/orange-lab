@@ -13,7 +13,7 @@ export interface PostgresClusterArgs {
     storageSize: pulumi.Input<string>;
     storageClassName?: pulumi.Input<string>;
     enabled?: boolean;
-    fromPVC?: string;
+    fromPVC?: pulumi.Input<string>;
     instances?: number;
     password?: pulumi.Input<string>;
     imageVersion?: string;
