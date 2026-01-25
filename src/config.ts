@@ -34,11 +34,6 @@ class Config {
         return (this.configs[name] ??= new pulumi.Config(name));
     }
 
-    public longhorn = {
-        replicaCount: parseInt(this.require('longhorn', 'replicaCount')),
-        replicaAutoBalance: this.require('longhorn', 'replicaAutoBalance'),
-    };
-
     public helmHistoryLimit = 5;
     public storageClass = {
         Default: 'longhorn',
@@ -48,30 +43,21 @@ class Config {
     };
     public customDomain = this.get('orangelab', 'customDomain');
     public tailnetDomain = this.require('tailscale', 'tailnet');
-    public certManager = {
-        clusterIssuer: this.require('cert-manager', 'clusterIssuer'),
-    };
     public clusterCidr = this.require('k3s', 'clusterCidr');
     public serviceCidr = this.require('k3s', 'serviceCidr');
 
     public isEnabled(name: string): boolean {
-        return this.getConfig(name).getBoolean('enabled') ?? false;
+        return this.getBoolean(name, 'enabled') ?? false;
     }
 
     public isDebugEnabled(name: string): boolean {
-        return this.getConfig(name).getBoolean('debug') ?? false;
+        return this.getBoolean(name, 'debug') ?? false;
     }
 
     public isBackupEnabled(appName: string, volumeName?: string): boolean {
         const volumePrefix = volumeName ? `${volumeName}/` : '';
-        const appSetting = this.getConfig(appName).getBoolean(
-            `${volumePrefix}backupVolume`,
-        );
-        return (
-            appSetting ??
-            this.getConfig('longhorn').getBoolean('backupAllVolumes') ??
-            false
-        );
+        const appSetting = this.getBoolean(appName, `${volumePrefix}backupVolume`);
+        return appSetting ?? this.getBoolean('longhorn', 'backupAllVolumes') ?? false;
     }
 
     public getStorageClass(storageType?: StorageType): string {
@@ -88,9 +74,10 @@ class Config {
     }
 
     public enableMonitoring() {
-        const prometheusEnabled = this.getConfig('prometheus').requireBoolean('enabled');
+        const prometheusEnabled = this.requireBoolean('prometheus', 'enabled');
 
-        const componentsEnabled = this.getConfig('prometheus').requireBoolean(
+        const componentsEnabled = this.requireBoolean(
+            'prometheus',
             'enableComponentMonitoring',
         );
         return prometheusEnabled && componentsEnabled;

@@ -188,7 +188,7 @@ export class Network {
                 domain: config.customDomain,
                 annotations: {
                     'cert-manager.io/cluster-issuer': pulumi.output(
-                        config.certManager.clusterIssuer,
+                        config.require('cert-manager', 'clusterIssuer'),
                     ),
                 },
             };

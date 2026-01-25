@@ -81,7 +81,7 @@ export class Longhorn extends pulumi.ComponentResource {
                     autoCleanupSnapshotWhenDeleteBackup: 'true',
                     backupConcurrentLimit: '2',
                     defaultDataLocality: 'best-effort',
-                    defaultReplicaCount: config.longhorn.replicaCount.toString(),
+                    defaultReplicaCount: config.require('longhorn', 'replicaCount'),
                     deletingConfirmationFlag: 'false',
                     detachManuallyAttachedVolumesWhenCordoned: 'true',
                     fastReplicaRebuildEnabled: 'true',
@@ -91,7 +91,7 @@ export class Longhorn extends pulumi.ComponentResource {
                     offlineRelicaRebuilding: 'true',
                     orphanResourceAutoDeletion: 'replica-data;instance',
                     recurringJobMaxRetention: '20',
-                    replicaAutoBalance: config.longhorn.replicaAutoBalance,
+                    replicaAutoBalance: config.require('longhorn', 'replicaAutoBalance'),
                     replicaDiskSoftAntiAffinity: 'true',
                     replicaReplenishmentWaitInterval: '900',
                     replicaSoftAntiAffinity: 'true',
@@ -118,7 +118,10 @@ export class Longhorn extends pulumi.ComponentResource {
                     replicas: 1,
                 },
                 persistence: {
-                    defaultClassReplicaCount: config.longhorn.replicaCount,
+                    defaultClassReplicaCount: config.requireNumber(
+                        'longhorn',
+                        'replicaCount',
+                    ),
                     defaultDataLocality: 'best-effort',
                 },
                 ingress: {

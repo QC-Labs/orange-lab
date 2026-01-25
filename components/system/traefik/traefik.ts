@@ -113,7 +113,7 @@ export class Traefik extends pulumi.ComponentResource {
                     secretName: ingressInfo.tlsSecretName,
                     dnsNames: [ingressInfo.hostname],
                     issuerRef: {
-                        name: config.certManager.clusterIssuer,
+                        name: config.require('cert-manager', 'clusterIssuer'),
                         kind: 'ClusterIssuer',
                     },
                 },
