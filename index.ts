@@ -12,35 +12,37 @@ import { SystemModule } from './components/system';
 const systemModule = new SystemModule('system');
 export const system = systemModule.getExports();
 
-if (rootConfig.isModuleEnabled('data')) {
-    new DataModule('data', { dependsOn: systemModule });
-}
+const dataModule = rootConfig.isModuleEnabled('data')
+    ? new DataModule('data', { dependsOn: systemModule })
+    : undefined;
+
+const baseModules = [systemModule, ...(dataModule ? [dataModule] : [])];
 
 if (rootConfig.isModuleEnabled('monitoring')) {
     const monitoringModule = new MonitoringModule('monitoring', {
-        dependsOn: systemModule,
+        dependsOn: baseModules,
     });
     exports.monitoring = monitoringModule.getExports();
 }
 
 if (rootConfig.isModuleEnabled('iot')) {
     const iotModule = new IoTModule('iot', {
-        dependsOn: systemModule,
+        dependsOn: baseModules,
     });
     exports.iot = iotModule.getExports();
 }
 
 if (rootConfig.isModuleEnabled('ai')) {
-    const aiModule = new AIModule('ai', { dependsOn: systemModule });
+    const aiModule = new AIModule('ai', { dependsOn: baseModules });
     exports.ai = aiModule.getExports();
 }
 
 if (rootConfig.isModuleEnabled('bitcoin')) {
-    const bitcoinModule = new BitcoinModule('bitcoin', { dependsOn: systemModule });
+    const bitcoinModule = new BitcoinModule('bitcoin', { dependsOn: baseModules });
     exports.bitcoin = bitcoinModule.getExports();
 }
 
 if (rootConfig.isModuleEnabled('office')) {
-    const officeModule = new OfficeModule('office', { dependsOn: systemModule });
+    const officeModule = new OfficeModule('office', { dependsOn: baseModules });
     exports.office = officeModule.getExports();
 }
