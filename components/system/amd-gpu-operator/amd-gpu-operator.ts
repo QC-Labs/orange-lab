@@ -18,7 +18,9 @@ export class AmdGPUOperator extends pulumi.ComponentResource {
         super('orangelab:system:AmdGPUOperator', name, {}, opts);
 
         rootConfig.require(name, 'cert-manager');
-        rootConfig.require(name, 'nfd');
+        if (rootConfig.getBoolean('nfd', 'gpu-autodetect')) {
+            rootConfig.require(name, 'nfd');
+        }
 
         this.app = new Application(this, name);
 
