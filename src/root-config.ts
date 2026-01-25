@@ -24,8 +24,14 @@ export const moduleDependencies: Record<string, string[]> = {
 };
 
 class RootConfig {
+    private configs: Record<string, pulumi.Config> = {};
+
     constructor() {
         this.processDeprecated();
+    }
+
+    private getConfig(name: string): pulumi.Config {
+        return (this.configs[name] ??= new pulumi.Config(name));
     }
 
     public longhorn = {
@@ -49,22 +55,21 @@ class RootConfig {
     public serviceCidr = this.requireAppConfig('k3s', 'serviceCidr');
 
     public isEnabled(name: string): boolean {
-        const config = new pulumi.Config(name);
-        return config.getBoolean('enabled') ?? false;
+        return this.getConfig(name).getBoolean('enabled') ?? false;
     }
 
     public isDebugEnabled(name: string): boolean {
-        const config = new pulumi.Config(name);
-        return config.getBoolean('debug') ?? false;
+        return this.getConfig(name).getBoolean('debug') ?? false;
     }
 
     public isBackupEnabled(appName: string, volumeName?: string): boolean {
-        const config = new pulumi.Config(appName);
         const volumePrefix = volumeName ? `${volumeName}/` : '';
-        const appSetting = config.getBoolean(`${volumePrefix}backupVolume`);
+        const appSetting = this.getConfig(appName).getBoolean(
+            `${volumePrefix}backupVolume`,
+        );
         return (
             appSetting ??
-            new pulumi.Config('longhorn').getBoolean('backupAllVolumes') ??
+            this.getConfig('longhorn').getBoolean('backupAllVolumes') ??
             false
         );
     }
@@ -83,28 +88,30 @@ class RootConfig {
     }
 
     public enableMonitoring() {
-        const config = new pulumi.Config('prometheus');
-        const prometheusEnabled = config.requireBoolean('enabled');
+        const prometheusEnabled = this.getConfig('prometheus').requireBoolean('enabled');
 
-        const componentsEnabled = config.requireBoolean('enableComponentMonitoring');
+        const componentsEnabled = this.getConfig('prometheus').requireBoolean(
+            'enableComponentMonitoring',
+        );
         return prometheusEnabled && componentsEnabled;
     }
 
     public require(appName: string, dependencyName: string) {
-        const config = new pulumi.Config(dependencyName);
-        if (config.require('enabled') !== 'true') {
+        if (!this.isEnabled(dependencyName)) {
             throw new Error(`${appName}: missing dependency ${dependencyName}`);
         }
     }
 
+    public getBoolean(appName: string, key: string): boolean | undefined {
+        return this.getConfig(appName).getBoolean(key);
+    }
+
     private getAppConfig(appName: string, key: string): string | undefined {
-        const config = new pulumi.Config(appName);
-        return config.get(key);
+        return this.getConfig(appName).get(key);
     }
 
     private requireAppConfig(appName: string, key: string): string {
-        const config = new pulumi.Config(appName);
-        return config.require(key);
+        return this.getConfig(appName).require(key);
     }
 
     private processDeprecated() {
