@@ -1,5 +1,5 @@
 import * as pulumi from '@pulumi/pulumi';
-import { rootConfig } from '@orangelab/root-config';
+import { config } from '@orangelab/config';
 import { Automatic1111 } from './automatic1111/automatic1111';
 import { InvokeAi } from './invokeai/invokeai';
 import { KubeAi } from './kubeai/kubeai';
@@ -48,23 +48,23 @@ export class AIModule extends pulumi.ComponentResource {
     constructor(name: string, opts?: pulumi.ComponentResourceOptions) {
         super('orangelab:ai', name, {}, opts);
 
-        if (rootConfig.isEnabled('ollama')) {
+        if (config.isEnabled('ollama')) {
             this.ollama = new Ollama('ollama', { parent: this });
         }
 
-        if (rootConfig.isEnabled('automatic1111')) {
+        if (config.isEnabled('automatic1111')) {
             this.automatic1111 = new Automatic1111('automatic1111', { parent: this });
         }
 
-        if (rootConfig.isEnabled('sdnext')) {
+        if (config.isEnabled('sdnext')) {
             this.sdnext = new SDNext('sdnext', { parent: this });
         }
 
-        if (rootConfig.isEnabled('kubeai')) {
+        if (config.isEnabled('kubeai')) {
             this.kubeAI = new KubeAi('kubeai', { parent: this });
         }
 
-        if (rootConfig.isEnabled('open-webui')) {
+        if (config.isEnabled('open-webui')) {
             this.openWebUI = new OpenWebUI(
                 'open-webui',
                 {
@@ -83,11 +83,11 @@ export class AIModule extends pulumi.ComponentResource {
             );
         }
 
-        if (rootConfig.isEnabled('invokeai')) {
+        if (config.isEnabled('invokeai')) {
             this.invokeAi = new InvokeAi('invokeai', { parent: this });
         }
 
-        if (rootConfig.isEnabled('n8n')) {
+        if (config.isEnabled('n8n')) {
             this.n8n = new N8n(
                 'n8n',
                 { ollamaUrl: this.ollama?.serviceUrl },

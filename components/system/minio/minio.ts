@@ -1,4 +1,5 @@
 import { Application } from '@orangelab/application';
+import { config } from '@orangelab/config';
 import { S3Provisioner } from '@orangelab/s3-provisioner';
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
@@ -7,7 +8,6 @@ export class Minio extends pulumi.ComponentResource {
     public readonly users: Record<string, pulumi.Output<string>> = {};
     public readonly s3Provisioner: S3Provisioner;
     app: Application;
-    config: pulumi.Config;
     rootUser: string;
     hostname: string;
     hostnameApi: string;
@@ -18,11 +18,10 @@ export class Minio extends pulumi.ComponentResource {
     ) {
         super('orangelab:system:Minio', name, {}, opts);
 
-        this.config = new pulumi.Config(name);
-        this.hostname = this.config.require('hostname');
-        this.hostnameApi = this.config.require('hostname-api');
-        const dataPath = this.config.require('dataPath');
-        this.rootUser = this.config.require('rootUser');
+        this.hostname = config.require(name, 'hostname');
+        this.hostnameApi = config.require(name, 'hostname-api');
+        const dataPath = config.require(name, 'dataPath');
+        this.rootUser = config.require(name, 'rootUser');
         this.users = {
             [this.rootUser]: pulumi.output(this.createPassword()),
         };

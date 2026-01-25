@@ -2,7 +2,7 @@ import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '@orangelab/application';
 import { GrafanaDashboard } from '@orangelab/grafana-dashboard';
-import { rootConfig } from '@orangelab/root-config';
+import { config } from '@orangelab/config';
 import dashboardGpuJson from './amd-dashboard_gpu.json';
 import dashboardJobJson from './amd-dashboard_job.json';
 import dashboardNodeJson from './amd-dashboard_node.json';
@@ -17,9 +17,9 @@ export class AmdGPUOperator extends pulumi.ComponentResource {
     ) {
         super('orangelab:system:AmdGPUOperator', name, {}, opts);
 
-        rootConfig.require(name, 'cert-manager');
-        if (rootConfig.getBoolean('nfd', 'gpu-autodetect')) {
-            rootConfig.require(name, 'nfd');
+        config.requireEnabled(name, 'cert-manager');
+        if (config.getBoolean('nfd', 'gpu-autodetect')) {
+            config.requireEnabled(name, 'nfd');
         }
 
         this.app = new Application(this, name);
@@ -27,7 +27,7 @@ export class AmdGPUOperator extends pulumi.ComponentResource {
         const chart = this.createChart();
         this.createDeviceConfig(chart);
 
-        if (rootConfig.enableMonitoring()) {
+        if (config.enableMonitoring()) {
             this.createDashboards();
         }
     }
@@ -56,7 +56,7 @@ export class AmdGPUOperator extends pulumi.ComponentResource {
                 spec: {
                     driver: { enable: false },
                     devicePlugin: { enableNodeLabeller: true },
-                    metricsExporter: { enable: rootConfig.enableMonitoring() },
+                    metricsExporter: { enable: config.enableMonitoring() },
                     selector: { 'orangelab/gpu-amd': 'true' },
                     testRunner: { enable: false },
                 },

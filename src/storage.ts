@@ -3,10 +3,10 @@ import { ConfigMap } from '@pulumi/kubernetes/core/v1';
 import * as pulumi from '@pulumi/pulumi';
 import * as crypto from 'crypto';
 import assert from 'node:assert';
+import { config } from './config';
 import { LonghornVolume } from './longhorn-volume';
 import { Metadata } from './metadata';
 import { Nodes } from './nodes';
-import { rootConfig } from './root-config';
 import { ConfigVolume, LocalVolume, PersistentVolume } from './types';
 
 export class Storage extends pulumi.ComponentResource {
@@ -17,7 +17,6 @@ export class Storage extends pulumi.ComponentResource {
     constructor(
         private appName: string,
         private args: {
-            config: pulumi.Config;
             metadata: Metadata;
             nodes: Nodes;
         },
@@ -53,14 +52,15 @@ export class Storage extends pulumi.ComponentResource {
             {
                 affinity: this.args.nodes.getVolumeAffinity(),
                 annotations: volume?.annotations,
-                enableBackup: rootConfig.isBackupEnabled(this.appName, volume?.name),
+                enableBackup: config.isBackupEnabled(this.appName, volume?.name),
                 fromVolume:
-                    volume?.fromVolume ?? this.args.config.get(`${prefix}fromVolume`),
+                    volume?.fromVolume ?? config.get(this.appName, `${prefix}fromVolume`),
                 labels: { ...labels, ...volume?.labels },
                 name: volume?.overrideFullname ?? volumeName,
                 namespace: this.args.metadata.namespace,
-                size: volume?.size ?? this.args.config.require(`${prefix}storageSize`),
-                storageClass: this.args.config.get(`${prefix}storageClass`),
+                size:
+                    volume?.size ?? config.require(this.appName, `${prefix}storageSize`),
+                storageClass: config.get(this.appName, `${prefix}storageClass`),
                 type: volume?.type,
             },
             { parent: this },

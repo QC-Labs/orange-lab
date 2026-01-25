@@ -1,7 +1,7 @@
 import { Application } from '@orangelab/application';
 import { GrafanaDashboard } from '@orangelab/grafana-dashboard';
 import { IngressInfo } from '@orangelab/network';
-import { rootConfig } from '@orangelab/root-config';
+import { config } from '@orangelab/config';
 import { S3Provisioner } from '@orangelab/s3-provisioner';
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
@@ -15,7 +15,6 @@ export class Longhorn extends pulumi.ComponentResource {
     public readonly endpointUrl: string | undefined;
 
     private readonly app: Application;
-    private readonly config: pulumi.Config;
     private readonly chart: kubernetes.helm.v3.Release;
 
     constructor(
@@ -25,11 +24,9 @@ export class Longhorn extends pulumi.ComponentResource {
     ) {
         super('orangelab:system:Longhorn', name, args, opts);
 
-        this.config = new pulumi.Config('longhorn');
-
         this.app = new Application(this, name, { namespace: `${name}-system` });
-        const backupEnabled = this.config.getBoolean('backupEnabled') ?? false;
-        const bucketName = this.config.require('backupBucket');
+        const backupEnabled = config.getBoolean(name, 'backupEnabled') ?? false;
+        const bucketName = config.require(name, 'backupBucket');
         const backupSecret = this.createBackupSecret(backupEnabled, bucketName);
 
         const ingresInfo = this.app.network.getIngressInfo();
@@ -41,16 +38,16 @@ export class Longhorn extends pulumi.ComponentResource {
 
         this.createStorageClasses();
 
-        if (this.config.getBoolean('snapshotEnabled')) {
+        if (config.getBoolean(name, 'snapshotEnabled')) {
             this.createSnapshotJob();
         }
-        if (this.config.getBoolean('trimEnabled')) {
+        if (config.getBoolean(name, 'trimEnabled')) {
             this.createTrimJob();
         }
         if (backupEnabled) {
             this.createBackupJob();
         }
-        if (rootConfig.enableMonitoring()) {
+        if (config.enableMonitoring()) {
             new GrafanaDashboard(name, { configJson: dashboardJson }, { parent: this });
         }
 
@@ -84,7 +81,7 @@ export class Longhorn extends pulumi.ComponentResource {
                     autoCleanupSnapshotWhenDeleteBackup: 'true',
                     backupConcurrentLimit: '2',
                     defaultDataLocality: 'best-effort',
-                    defaultReplicaCount: rootConfig.longhorn.replicaCount.toString(),
+                    defaultReplicaCount: config.longhorn.replicaCount.toString(),
                     deletingConfirmationFlag: 'false',
                     detachManuallyAttachedVolumesWhenCordoned: 'true',
                     fastReplicaRebuildEnabled: 'true',
@@ -94,7 +91,7 @@ export class Longhorn extends pulumi.ComponentResource {
                     offlineRelicaRebuilding: 'true',
                     orphanResourceAutoDeletion: 'replica-data;instance',
                     recurringJobMaxRetention: '20',
-                    replicaAutoBalance: rootConfig.longhorn.replicaAutoBalance,
+                    replicaAutoBalance: config.longhorn.replicaAutoBalance,
                     replicaDiskSoftAntiAffinity: 'true',
                     replicaReplenishmentWaitInterval: '900',
                     replicaSoftAntiAffinity: 'true',
@@ -121,7 +118,7 @@ export class Longhorn extends pulumi.ComponentResource {
                     replicas: 1,
                 },
                 persistence: {
-                    defaultClassReplicaCount: rootConfig.longhorn.replicaCount,
+                    defaultClassReplicaCount: config.longhorn.replicaCount,
                     defaultDataLocality: 'best-effort',
                 },
                 ingress: {
@@ -131,7 +128,7 @@ export class Longhorn extends pulumi.ComponentResource {
                     tls: ingresInfo.tls,
                     annotations: ingresInfo.annotations,
                 },
-                metrics: rootConfig.enableMonitoring()
+                metrics: config.enableMonitoring()
                     ? { serviceMonitor: { enabled: true } }
                     : undefined,
             },
@@ -143,7 +140,7 @@ export class Longhorn extends pulumi.ComponentResource {
             `${this.name}-gpu-storage`,
             {
                 metadata: {
-                    name: rootConfig.storageClass.GPU,
+                    name: config.storageClass.GPU,
                     namespace: this.app.metadata.namespace,
                 },
                 allowVolumeExpansion: true,
@@ -167,7 +164,7 @@ export class Longhorn extends pulumi.ComponentResource {
             `${this.name}-large-storage`,
             {
                 metadata: {
-                    name: rootConfig.storageClass.Large,
+                    name: config.storageClass.Large,
                     namespace: this.app.metadata.namespace,
                 },
                 allowVolumeExpansion: true,
@@ -217,7 +214,7 @@ export class Longhorn extends pulumi.ComponentResource {
     }
 
     private createSnapshotJob() {
-        const cron = this.config.require('snapshotCron');
+        const cron = config.require(this.name, 'snapshotCron');
         new kubernetes.apiextensions.CustomResource(
             `${this.name}-snapshot-job`,
             {
@@ -242,7 +239,7 @@ export class Longhorn extends pulumi.ComponentResource {
     }
 
     private createBackupJob() {
-        const cron = this.config.require('backupCron');
+        const cron = config.require(this.name, 'backupCron');
         new kubernetes.apiextensions.CustomResource(
             `${this.name}-backup-job`,
             {
@@ -261,7 +258,10 @@ export class Longhorn extends pulumi.ComponentResource {
                     concurrency: 2,
                     labels: { cron },
                     parameters: {
-                        'full-backup-interval': this.config.require('backupFullInterval'),
+                        'full-backup-interval': config.require(
+                            this.name,
+                            'backupFullInterval',
+                        ),
                     },
                 },
             },
@@ -270,7 +270,7 @@ export class Longhorn extends pulumi.ComponentResource {
     }
 
     private createTrimJob() {
-        const cron = this.config.require('trimCron');
+        const cron = config.require(this.name, 'trimCron');
         new kubernetes.apiextensions.CustomResource(
             `${this.name}-trim-job`,
             {

@@ -1,5 +1,6 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
+import { config } from './config';
 import { Metadata } from './metadata';
 import { Nodes } from './nodes';
 import { Storage } from './storage';
@@ -19,7 +20,6 @@ export class Containers {
             serviceAccount: kubernetes.core.v1.ServiceAccount;
             storage?: Storage;
             nodes: Nodes;
-            config: pulumi.Config;
         },
         private opts?: pulumi.ComponentResourceOptions,
     ) {}
@@ -226,8 +226,8 @@ export class Containers {
     }
 
     private createEnv(specEnv?: Record<string, pulumi.Input<string> | undefined>) {
-        const gfxVersion = this.args.config.get('HSA_OVERRIDE_GFX_VERSION');
-        const amdTargets = this.args.config.get('HCC_AMDGPU_TARGETS');
+        const gfxVersion = config.get(this.appName, 'HSA_OVERRIDE_GFX_VERSION');
+        const amdTargets = config.get(this.appName, 'HCC_AMDGPU_TARGETS');
         const env = {
             ...specEnv,
             HSA_OVERRIDE_GFX_VERSION:

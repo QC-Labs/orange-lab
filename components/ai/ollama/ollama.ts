@@ -1,5 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '@orangelab/application';
+import { config } from '@orangelab/config';
 import { IngressInfo } from '@orangelab/network';
 import { StorageType } from '@orangelab/types';
 
@@ -8,7 +9,6 @@ export class Ollama extends pulumi.ComponentResource {
     public readonly serviceUrl?: string;
 
     private readonly app: Application;
-    private readonly config: pulumi.Config;
 
     constructor(
         private name: string,
@@ -16,8 +16,7 @@ export class Ollama extends pulumi.ComponentResource {
     ) {
         super('orangelab:ai:Ollama', name, {}, opts);
 
-        this.config = new pulumi.Config(name);
-        const hostname = this.config.require('hostname');
+        const hostname = config.require(name, 'hostname');
 
         this.app = new Application(this, name, { gpu: true }).addStorage({
             type: StorageType.GPU,
@@ -33,20 +32,20 @@ export class Ollama extends pulumi.ComponentResource {
     }
 
     private createHelmRelease(ingresInfo: IngressInfo) {
-        const amdGpu = this.config.requireBoolean('amd-gpu');
-        const gfxVersion = this.config.get('HSA_OVERRIDE_GFX_VERSION');
-        const amdTargets = this.config.get('HCC_AMDGPU_TARGETS');
-        const debug = this.config.getBoolean('debug') ?? false;
+        const amdGpu = config.requireBoolean(this.name, 'amd-gpu');
+        const gfxVersion = config.get(this.name, 'HSA_OVERRIDE_GFX_VERSION');
+        const amdTargets = config.get(this.name, 'HCC_AMDGPU_TARGETS');
+        const debug = config.getBoolean(this.name, 'debug') ?? false;
         const extraEnv = [
             { name: 'OLLAMA_DEBUG', value: debug ? 'true' : 'false' },
             {
                 name: 'OLLAMA_KEEP_ALIVE',
-                value: this.config.require('OLLAMA_KEEP_ALIVE'),
+                value: config.require(this.name, 'OLLAMA_KEEP_ALIVE'),
             },
             { name: 'OLLAMA_LOAD_TIMEOUT', value: '5m' },
             {
                 name: 'OLLAMA_CONTEXT_LENGTH',
-                value: this.config.require('OLLAMA_CONTEXT_LENGTH'),
+                value: config.require(this.name, 'OLLAMA_CONTEXT_LENGTH'),
             },
         ];
         if (amdGpu && gfxVersion) {
@@ -61,7 +60,7 @@ export class Ollama extends pulumi.ComponentResource {
                 value: amdTargets,
             });
         }
-        let imageTag = this.config.get('appVersion');
+        let imageTag = config.get(this.name, 'appVersion');
         if (amdGpu && imageTag) imageTag = imageTag.concat('-rocm');
         this.app.addHelmChart(
             this.name,
@@ -99,7 +98,7 @@ export class Ollama extends pulumi.ComponentResource {
                             number: 1,
                         },
                         models: {
-                            run: this.config.get('models')?.split(',') ?? [],
+                            run: config.get(this.name, 'models')?.split(',') ?? [],
                         },
                     },
                     ...(amdGpu

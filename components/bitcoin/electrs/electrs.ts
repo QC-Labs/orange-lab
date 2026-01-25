@@ -1,5 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '@orangelab/application';
+import { config } from '@orangelab/config';
 import { StorageType } from '@orangelab/types';
 import { RpcUser } from '../utils/rpc-user';
 
@@ -11,17 +12,15 @@ export interface ElectrsArgs {
 
 export class Electrs extends pulumi.ComponentResource {
     public readonly app: Application;
-    private readonly config: pulumi.Config;
 
     constructor(
-        name: string,
+        private readonly name: string,
         private args: ElectrsArgs,
         opts?: pulumi.ResourceOptions,
     ) {
         super('orangelab:bitcoin:Electrs', name, args, opts);
 
-        this.config = new pulumi.Config(name);
-        const debug = this.config.getBoolean('debug');
+        const debug = config.getBoolean(name, 'debug');
         const rpcHost = pulumi
             .output(this.args.bitcoinRpcUrl)
             .apply(url => new URL(`http://${url}`).host);
@@ -48,8 +47,8 @@ export class Electrs extends pulumi.ComponentResource {
 
     private createDeployment() {
         if (!this.args.bitcoinRpcUrl || !this.args.bitcoinP2pUrl) return;
-        const version = this.config.require('version');
-        const extraArgs = this.config.get('extraArgs') ?? '';
+        const version = config.require(this.name, 'version');
+        const extraArgs = config.get(this.name, 'extraArgs') ?? '';
 
         this.app.addDeployment({
             image: `getumbrel/electrs:${version}`,

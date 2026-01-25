@@ -1,7 +1,7 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '@orangelab/application';
 import { GrafanaDashboard } from '@orangelab/grafana-dashboard';
-import { rootConfig } from '@orangelab/root-config';
+import { config } from '@orangelab/config';
 import dashboardJson from './kubeai-dashboard-vllm.json';
 
 export class KubeAi extends pulumi.ComponentResource {
@@ -9,7 +9,6 @@ export class KubeAi extends pulumi.ComponentResource {
     public readonly serviceUrl: string | undefined;
 
     private readonly app: Application;
-    private readonly config: pulumi.Config;
 
     constructor(
         private name: string,
@@ -17,10 +16,9 @@ export class KubeAi extends pulumi.ComponentResource {
     ) {
         super('orangelab:ai:KubeAi', name, {}, opts);
 
-        this.config = new pulumi.Config(name);
-        const hostname = this.config.require('hostname');
-        const huggingfaceToken = this.config.getSecret('huggingfaceToken');
-        const models = this.config.get('models')?.split(',') ?? [];
+        const hostname = config.require(name, 'hostname');
+        const huggingfaceToken = config.getSecret(name, 'huggingfaceToken');
+        const models = config.get(name, 'models')?.split(',') ?? [];
 
         this.app = new Application(this, name, { gpu: true });
         const ingresInfo = this.app.network.getIngressInfo();
@@ -40,7 +38,7 @@ export class KubeAi extends pulumi.ComponentResource {
                     ],
                     tls: [{ hosts: [ingresInfo.hostname] }],
                 },
-                metrics: rootConfig.enableMonitoring()
+                metrics: config.enableMonitoring()
                     ? {
                           prometheusOperator: {
                               vLLMPodMonitor: {
@@ -91,7 +89,7 @@ export class KubeAi extends pulumi.ComponentResource {
             { dependsOn: [kubeAi] },
         );
 
-        if (rootConfig.enableMonitoring()) {
+        if (config.enableMonitoring()) {
             new GrafanaDashboard(name, { configJson: dashboardJson }, { parent: this });
         }
 
@@ -100,8 +98,8 @@ export class KubeAi extends pulumi.ComponentResource {
     }
 
     private createModelCatalog(models: string[]): Record<string, object> {
-        const gfxVersion = this.config.get('HSA_OVERRIDE_GFX_VERSION');
-        const amdTargets = this.config.get('HCC_AMDGPU_TARGETS');
+        const gfxVersion = config.get(this.name, 'HSA_OVERRIDE_GFX_VERSION');
+        const amdTargets = config.get(this.name, 'HCC_AMDGPU_TARGETS');
         const modelProfiles = new Map<string, object>();
         modelProfiles.set('amd', {
             enabled: true,

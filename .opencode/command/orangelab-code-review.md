@@ -35,7 +35,7 @@ Review staged code changes for quality, security, and adherence to OrangeLab's s
 ✅ Use conventional commits (`scope:` or `fix(scope):`)
 ✅ Prefer composition over inheritance
 ✅ Pass dependencies through args (providers, config, metadata)
-✅ `root-config` can be used to read common configuration settings
+✅ `config` can be used to read common configuration settings
 ✅ Use `Application` class for K8s resources
 ❌ Don't use "refactor:" for breaking changes
 ❌ Don't expose passwords in command line arguments

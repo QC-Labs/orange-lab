@@ -1,10 +1,10 @@
 import * as kubernetes from '@pulumi/kubernetes';
-import * as pulumi from '@pulumi/pulumi';
+import { config } from './config';
 
 type NodeSelectorTerm = kubernetes.types.input.core.v1.NodeSelectorTerm;
 
 export interface NodesArgs {
-    config: pulumi.Config;
+    appName: string;
     gpu?: boolean;
 }
 
@@ -17,7 +17,7 @@ export class Nodes {
 
     constructor(private args: NodesArgs) {
         if (args.gpu) {
-            const useAmdGpu = args.config.getBoolean('amd-gpu') ?? false;
+            const useAmdGpu = config.getBoolean(args.appName, 'amd-gpu') ?? false;
             this.gpu = useAmdGpu ? 'amd' : 'nvidia';
         }
     }
@@ -25,11 +25,11 @@ export class Nodes {
     getAffinity(component?: string): kubernetes.types.input.core.v1.Affinity | undefined {
         const prefix = component ? `${component}/` : '';
         const preferredNodeLabel =
-            this.args.config.get(`${prefix}preferredNodeLabel`) ??
-            this.args.config.get('preferredNodeLabel');
+            config.get(this.args.appName, `${prefix}preferredNodeLabel`) ??
+            config.get(this.args.appName, 'preferredNodeLabel');
         const requiredNodeLabel =
-            this.args.config.get(`${prefix}requiredNodeLabel`) ??
-            this.args.config.get('requiredNodeLabel');
+            config.get(this.args.appName, `${prefix}requiredNodeLabel`) ??
+            config.get(this.args.appName, 'requiredNodeLabel');
         const requiredTerms = this.getRequiredNodeSelectorTerms(requiredNodeLabel);
 
         if (requiredTerms.length === 0 && !preferredNodeLabel) return;

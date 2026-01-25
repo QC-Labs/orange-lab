@@ -1,5 +1,5 @@
 import * as pulumi from '@pulumi/pulumi';
-import { rootConfig } from '@orangelab/root-config';
+import { config } from '@orangelab/config';
 import { Beszel } from './beszel/beszel';
 import { Prometheus } from './prometheus/prometheus';
 
@@ -21,11 +21,11 @@ export class MonitoringModule extends pulumi.ComponentResource {
     constructor(name: string, opts?: pulumi.ComponentResourceOptions) {
         super('orangelab:monitoring', name, {}, opts);
 
-        if (rootConfig.isEnabled('prometheus')) {
+        if (config.isEnabled('prometheus')) {
             this.prometheus = new Prometheus('prometheus', { parent: this });
         }
 
-        if (rootConfig.isEnabled('beszel')) {
+        if (config.isEnabled('beszel')) {
             this.beszel = new Beszel('beszel', { parent: this });
         }
     }

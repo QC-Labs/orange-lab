@@ -1,25 +1,24 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '@orangelab/application';
 import { Nodes } from '@orangelab/nodes';
+import { config } from '@orangelab/config';
 
 export class Prometheus extends pulumi.ComponentResource {
     public readonly alertmanagerEndpointUrl: string | undefined;
     public readonly prometheusEndpointUrl: string | undefined;
     public readonly grafanaEndpointUrl: string | undefined;
 
-    private readonly config: pulumi.Config;
     private readonly nodes: Nodes;
     private readonly app: Application;
 
     constructor(name: string, opts?: pulumi.ResourceOptions) {
         super('orangelab:monitoring:Prometheus', name, {}, opts);
 
-        this.config = new pulumi.Config('prometheus');
-        this.nodes = new Nodes({ config: this.config });
-        const grafanaPassword = this.config.require('grafana/password');
-        const prometheusHostname = this.config.require('hostname');
-        const alertManagerHostname = this.config.require('alertmanager/hostname');
-        const grafanaHostname = this.config.require('grafana/hostname');
+        this.nodes = new Nodes({ appName: name });
+        const grafanaPassword = config.require(name, 'grafana/password');
+        const prometheusHostname = config.require(name, 'hostname');
+        const alertManagerHostname = config.require(name, 'alertmanager/hostname');
+        const grafanaHostname = config.require(name, 'grafana/hostname');
 
         this.app = new Application(this, name)
             .addStorage({

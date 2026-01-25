@@ -1,6 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '@orangelab/application';
-import { rootConfig } from '@orangelab/root-config';
+import { config } from '@orangelab/config';
 
 export class NvidiaGPUOperator extends pulumi.ComponentResource {
     private readonly app: Application;
@@ -8,8 +8,8 @@ export class NvidiaGPUOperator extends pulumi.ComponentResource {
     constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
         super('orangelab:system:NvidiaGPUOperator', name, args, opts);
 
-        if (rootConfig.getBoolean('nfd', 'gpu-autodetect')) {
-            rootConfig.require(name, 'nfd');
+        if (config.getBoolean('nfd', 'gpu-autodetect')) {
+            config.requireEnabled(name, 'nfd');
         }
 
         this.app = new Application(this, name);

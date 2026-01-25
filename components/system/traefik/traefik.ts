@@ -1,5 +1,5 @@
 import { Application } from '@orangelab/application';
-import { rootConfig } from '@orangelab/root-config';
+import { config } from '@orangelab/config';
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import assert from 'assert';
@@ -15,7 +15,7 @@ export class Traefik extends pulumi.ComponentResource {
     ) {
         super('orangelab:system:Traefik', name, args, opts);
         assert(
-            rootConfig.customDomain,
+            config.customDomain,
             'Traefik component requires a custom domain to be set',
         );
         this.app = new Application(this, name);
@@ -113,7 +113,7 @@ export class Traefik extends pulumi.ComponentResource {
                     secretName: ingressInfo.tlsSecretName,
                     dnsNames: [ingressInfo.hostname],
                     issuerRef: {
-                        name: rootConfig.certManager.clusterIssuer,
+                        name: config.certManager.clusterIssuer,
                         kind: 'ClusterIssuer',
                     },
                 },

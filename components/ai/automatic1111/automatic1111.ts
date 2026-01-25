@@ -1,5 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '@orangelab/application';
+import { config } from '@orangelab/config';
 import { StorageType } from '@orangelab/types';
 
 export class Automatic1111 extends pulumi.ComponentResource {
@@ -8,8 +9,7 @@ export class Automatic1111 extends pulumi.ComponentResource {
     constructor(name: string, opts?: pulumi.ResourceOptions) {
         super('orangelab:ai:Automatic1111', name, {}, opts);
 
-        const config = new pulumi.Config(name);
-        const cliArgs = config.require('cliArgs');
+        const cliArgs = config.require(name, 'cliArgs');
 
         this.app = new Application(this, name, { gpu: true })
             .addStorage({ type: StorageType.GPU })

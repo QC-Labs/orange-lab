@@ -1,5 +1,5 @@
 import * as pulumi from '@pulumi/pulumi';
-import { rootConfig } from '@orangelab/root-config';
+import { config } from '@orangelab/config';
 import { Nextcloud } from './nextcloud/nextcloud';
 
 export class OfficeModule extends pulumi.ComponentResource {
@@ -20,7 +20,7 @@ export class OfficeModule extends pulumi.ComponentResource {
     constructor(name: string, opts?: pulumi.ComponentResourceOptions) {
         super('orangelab:office', name, {}, opts);
 
-        if (rootConfig.isEnabled('nextcloud')) {
+        if (config.isEnabled('nextcloud')) {
             this.nextcloud = new Nextcloud('nextcloud', { parent: this });
         }
     }

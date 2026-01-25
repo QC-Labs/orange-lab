@@ -1,9 +1,9 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
+import { config } from './config';
 import { Metadata } from './metadata';
 import { Nodes } from './nodes';
-import { rootConfig } from './root-config';
 import { DatabaseConfig } from './types';
 
 export interface PostgresClusterArgs {
@@ -89,7 +89,7 @@ export class PostgresCluster extends pulumi.ComponentResource {
                             secret: { name: this.secret.metadata.name },
                         },
                     },
-                    monitoring: rootConfig.enableMonitoring()
+                    monitoring: config.enableMonitoring()
                         ? { enablePodMonitor: true }
                         : undefined,
                     storage: {

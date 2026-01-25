@@ -23,7 +23,7 @@ export const moduleDependencies: Record<string, string[]> = {
     ],
 };
 
-class RootConfig {
+class Config {
     private configs: Record<string, pulumi.Config> = {};
 
     constructor() {
@@ -35,8 +35,8 @@ class RootConfig {
     }
 
     public longhorn = {
-        replicaCount: parseInt(this.requireAppConfig('longhorn', 'replicaCount')),
-        replicaAutoBalance: this.requireAppConfig('longhorn', 'replicaAutoBalance'),
+        replicaCount: parseInt(this.require('longhorn', 'replicaCount')),
+        replicaAutoBalance: this.require('longhorn', 'replicaAutoBalance'),
     };
 
     public helmHistoryLimit = 5;
@@ -46,13 +46,13 @@ class RootConfig {
         Large: 'longhorn-large',
         Database: 'longhorn',
     };
-    public customDomain = this.getAppConfig('orangelab', 'customDomain');
-    public tailnetDomain = this.requireAppConfig('tailscale', 'tailnet');
+    public customDomain = this.get('orangelab', 'customDomain');
+    public tailnetDomain = this.require('tailscale', 'tailnet');
     public certManager = {
-        clusterIssuer: this.requireAppConfig('cert-manager', 'clusterIssuer'),
+        clusterIssuer: this.require('cert-manager', 'clusterIssuer'),
     };
-    public clusterCidr = this.requireAppConfig('k3s', 'clusterCidr');
-    public serviceCidr = this.requireAppConfig('k3s', 'serviceCidr');
+    public clusterCidr = this.require('k3s', 'clusterCidr');
+    public serviceCidr = this.require('k3s', 'serviceCidr');
 
     public isEnabled(name: string): boolean {
         return this.getConfig(name).getBoolean('enabled') ?? false;
@@ -96,79 +96,99 @@ class RootConfig {
         return prometheusEnabled && componentsEnabled;
     }
 
-    public require(appName: string, dependencyName: string) {
+    public requireEnabled(appName: string, dependencyName: string) {
         if (!this.isEnabled(dependencyName)) {
             throw new Error(`${appName}: missing dependency ${dependencyName}`);
         }
+    }
+
+    public get(appName: string, key: string): string | undefined {
+        return this.getConfig(appName).get(key);
+    }
+
+    public require(appName: string, key: string): string {
+        return this.getConfig(appName).require(key);
+    }
+
+    public getSecret(appName: string, key: string): pulumi.Output<string> | undefined {
+        return this.getConfig(appName).getSecret(key);
+    }
+
+    public requireSecret(appName: string, key: string): pulumi.Output<string> {
+        return this.getConfig(appName).requireSecret(key);
+    }
+
+    public getNumber(appName: string, key: string): number | undefined {
+        return this.getConfig(appName).getNumber(key);
+    }
+
+    public requireNumber(appName: string, key: string): number {
+        return this.getConfig(appName).requireNumber(key);
     }
 
     public getBoolean(appName: string, key: string): boolean | undefined {
         return this.getConfig(appName).getBoolean(key);
     }
 
-    private getAppConfig(appName: string, key: string): string | undefined {
-        return this.getConfig(appName).get(key);
-    }
-
-    private requireAppConfig(appName: string, key: string): string {
-        return this.getConfig(appName).require(key);
+    public requireBoolean(appName: string, key: string): boolean {
+        return this.getConfig(appName).requireBoolean(key);
     }
 
     private processDeprecated() {
-        if (this.getAppConfig('longhorn', 'backupAccessKeyId')) {
+        if (this.get('longhorn', 'backupAccessKeyId')) {
             console.warn('longhorn:backupAccessKeyId is deprecated.');
         }
-        if (this.getAppConfig('longhorn', 'backupAccessKeySecret')) {
+        if (this.get('longhorn', 'backupAccessKeySecret')) {
             console.warn('longhorn:backupAccessKeySecret is deprecated.');
         }
-        if (this.getAppConfig('longhorn', 'backupTarget')) {
+        if (this.get('longhorn', 'backupTarget')) {
             console.warn(
                 'longhorn:backupTarget is deprecated. Use longhorn:backupBucket instead.',
             );
         }
-        if (this.getAppConfig('longhorn', 'backupBucketCreate')) {
+        if (this.get('longhorn', 'backupBucketCreate')) {
             console.warn('longhorn:backupBucketCreate is deprecated.');
         }
-        if (this.getAppConfig('grafana', 'url')) {
+        if (this.get('grafana', 'url')) {
             console.warn('grafana:url is not used anymore');
         }
-        if (this.getAppConfig('grafana', 'auth')) {
+        if (this.get('grafana', 'auth')) {
             console.warn('grafana:auth is not used anymore');
         }
-        if (this.getAppConfig('orangelab', 'storageClass')) {
+        if (this.get('orangelab', 'storageClass')) {
             console.warn(
                 'orangelab:storageClass is deprecated. Use per-app <app>:storageClass if needed.',
             );
         }
-        if (this.getAppConfig('orangelab', 'storageClass-gpu')) {
+        if (this.get('orangelab', 'storageClass-gpu')) {
             console.warn(
                 'orangelab:storageClass-gpu is deprecated. Use per-app <app>:storageClass if needed.',
             );
         }
-        if (this.getAppConfig('orangelab', 'storageClass-large')) {
+        if (this.get('orangelab', 'storageClass-large')) {
             console.warn(
                 'orangelab:storageClass-large is deprecated. Use per-app <app>:storageClass if needed.',
             );
         }
-        if (this.getAppConfig('orangelab', 'storageClass-database')) {
+        if (this.get('orangelab', 'storageClass-database')) {
             console.warn(
                 'orangelab:storageClass-database is deprecated. Use per-app <app>:storageClass if needed.',
             );
         }
-        if (this.getAppConfig('mempool', 'db/maintenance')) {
+        if (this.get('mempool', 'db/maintenance')) {
             console.warn(
                 'mempool:db/maintenance is deprecated. Use mempool:db/disableAuth instead.',
             );
         }
-        if (this.getAppConfig('tailscale', 'apiKey')) {
+        if (this.get('tailscale', 'apiKey')) {
             console.warn('tailscale:apiKey is deprecated. Use tailscale OAuth instead.');
         }
-        if (this.getAppConfig('tailscale-operator', 'oauthClientId')) {
+        if (this.get('tailscale-operator', 'oauthClientId')) {
             console.warn(
                 'tailscale-operator:oauthClientId is deprecated. Use tailscale:oauthClientId.',
             );
         }
-        if (this.getAppConfig('tailscale-operator', 'oauthClientSecret')) {
+        if (this.get('tailscale-operator', 'oauthClientSecret')) {
             console.warn(
                 'tailscale-operator:oauthClientSecret is deprecated. Use tailscale:oauthClientSecret.',
             );
@@ -184,4 +204,4 @@ class RootConfig {
     }
 }
 
-export const rootConfig = new RootConfig();
+export const config = new Config();

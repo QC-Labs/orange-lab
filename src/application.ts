@@ -1,11 +1,11 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
+import { config } from './config';
 import { Databases } from './databases';
 import { Metadata } from './metadata';
 import { Network } from './network';
 import { Nodes } from './nodes';
-import { rootConfig } from './root-config';
 import { Services } from './services';
 import { Storage } from './storage';
 import { ConfigVolume, ContainerSpec, LocalVolume, PersistentVolume } from './types';
@@ -26,7 +26,6 @@ export class Application {
     databases?: Databases;
     storage?: Storage;
 
-    private readonly config: pulumi.Config;
     private services?: Services;
 
     constructor(
@@ -38,26 +37,23 @@ export class Application {
             gpu?: boolean;
         },
     ) {
-        this.config = new pulumi.Config(appName);
         this.processDeprecated();
-        this.storageOnly = this.config.getBoolean('storageOnly') ?? false;
+        this.storageOnly = config.getBoolean(appName, 'storageOnly') ?? false;
         this.metadata = new Metadata(
             appName,
             {
-                config: this.config,
                 namespace: args?.namespace,
                 existingNamespace: args?.existingNamespace,
             },
             { parent: this.scope },
         );
         this.nodes = new Nodes({
-            config: this.config,
+            appName,
             gpu: args?.gpu,
         });
         this.network = new Network(
             appName,
             {
-                config: this.config,
                 metadata: this.metadata,
             },
             { parent: this.scope },
@@ -66,11 +62,11 @@ export class Application {
 
     private processDeprecated() {
         assert(
-            !this.config.get('fromBackup'),
+            !config.get(this.appName, 'fromBackup'),
             `${this.appName}:fromBackup is not supported. Use fromVolume instead.`,
         );
         assert(
-            !this.config.get('cloneFromClaim'),
+            !config.get(this.appName, 'cloneFromClaim'),
             `${this.appName}:cloneFromClaim is not supported. Use fromVolume instead.`,
         );
     }
@@ -81,7 +77,6 @@ export class Application {
             new Storage(
                 this.appName,
                 {
-                    config: this.config,
                     metadata: this.metadata,
                     nodes: this.nodes,
                 },
@@ -96,7 +91,6 @@ export class Application {
             new Databases(
                 this.appName,
                 {
-                    config: this.config,
                     metadata: this.metadata,
                     nodes: this.nodes,
                     storage: this.getStorage(),
@@ -116,7 +110,6 @@ export class Application {
                     metadata: this.metadata,
                     storage: this.storage,
                     nodes: this.nodes,
-                    config: this.config,
                 },
                 { parent: this.scope },
             );
@@ -195,9 +188,9 @@ export class Application {
             {
                 chart: args.chart,
                 namespace: this.metadata.namespace,
-                version: this.config.get('version'),
+                version: config.get(this.appName, 'version'),
                 repositoryOpts: { repo: args.repo },
-                maxHistory: rootConfig.helmHistoryLimit,
+                maxHistory: config.helmHistoryLimit,
                 skipCrds: args.skipCrds,
                 values: args.values,
             },

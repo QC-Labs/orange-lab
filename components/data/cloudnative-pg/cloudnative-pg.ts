@@ -2,7 +2,7 @@ import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '@orangelab/application';
 import { GrafanaDashboard } from '@orangelab/grafana-dashboard';
-import { rootConfig } from '@orangelab/root-config';
+import { config } from '@orangelab/config';
 import grafanaDashboardJson from './grafana-dashboard.json';
 
 export class CloudNativePG extends pulumi.ComponentResource {
@@ -19,7 +19,7 @@ export class CloudNativePG extends pulumi.ComponentResource {
         });
 
         this.createChart();
-        if (rootConfig.enableMonitoring()) {
+        if (config.enableMonitoring()) {
             new GrafanaDashboard(
                 this.name,
                 {
@@ -38,9 +38,9 @@ export class CloudNativePG extends pulumi.ComponentResource {
             values: {
                 crds: { create: true },
                 monitoring: {
-                    podMonitorEnabled: rootConfig.enableMonitoring(),
+                    podMonitorEnabled: config.enableMonitoring(),
                     grafanaDashboard: {
-                        enabled: rootConfig.enableMonitoring(),
+                        enabled: config.enableMonitoring(),
                     },
                 },
                 config: {

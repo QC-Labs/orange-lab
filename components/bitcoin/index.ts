@@ -1,6 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import assert from 'assert';
-import { rootConfig } from '@orangelab/root-config';
+import { config } from '@orangelab/config';
 import { BitcoinCore } from './bitcoin-core/bitcoin-core';
 import { BitcoinKnots } from './bitcoin-knots/bitcoin-knots';
 import { Electrs } from './electrs/electrs';
@@ -45,9 +45,8 @@ export class BitcoinModule extends pulumi.ComponentResource {
     constructor(name: string, opts?: pulumi.ComponentResourceOptions) {
         super('orangelab:bitcoin', name, {}, opts);
 
-        const config = new pulumi.Config('bitcoin');
         const usernames = config
-            .require('rpcUsers')
+            .require('bitcoin', 'rpcUsers')
             .split(',')
             .map(u => u.trim());
         const rpcUsers: Record<string, RpcUser> = {};
@@ -56,7 +55,7 @@ export class BitcoinModule extends pulumi.ComponentResource {
             this.bitcoinUsers[username] = rpcUsers[username].password;
         });
 
-        if (rootConfig.isEnabled('bitcoin-knots')) {
+        if (config.isEnabled('bitcoin-knots')) {
             this.bitcoinKnots = new BitcoinKnots(
                 'bitcoin-knots',
                 { rpcUsers },
@@ -64,7 +63,7 @@ export class BitcoinModule extends pulumi.ComponentResource {
             );
         }
 
-        if (rootConfig.isEnabled('bitcoin-core')) {
+        if (config.isEnabled('bitcoin-core')) {
             this.bitcoinCore = new BitcoinCore(
                 'bitcoin-core',
                 { rpcUsers },
@@ -78,7 +77,7 @@ export class BitcoinModule extends pulumi.ComponentResource {
         const bitcoinP2pUrl =
             this.bitcoinKnots?.app.network.clusterEndpoints['bitcoin-knots-p2p'] ??
             this.bitcoinCore?.app.network.clusterEndpoints['bitcoin-core-p2p'];
-        if (rootConfig.isEnabled('electrs')) {
+        if (config.isEnabled('electrs')) {
             assert(
                 bitcoinRpcUrl && bitcoinP2pUrl,
                 'Bitcoin node must be enabled for Electrs',
@@ -94,7 +93,7 @@ export class BitcoinModule extends pulumi.ComponentResource {
             );
         }
 
-        if (rootConfig.isEnabled('mempool')) {
+        if (config.isEnabled('mempool')) {
             const electrsUrl = this.electrs?.app.network.clusterEndpoints['electrs-rpc'];
             assert(electrsUrl, 'Electrs must be enabled for Mempool');
             assert(bitcoinRpcUrl, 'Bitcoin RPC must be enabled for Mempool');

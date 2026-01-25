@@ -1,17 +1,15 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
+import { config } from './config';
 
 export class Metadata {
     public readonly namespace: pulumi.Output<string>;
 
-    private config: pulumi.Config;
-
     constructor(
         private appName: string,
-        args: { namespace?: string; existingNamespace?: string; config: pulumi.Config },
+        args: { namespace?: string; existingNamespace?: string },
         opts: pulumi.ComponentResourceOptions,
     ) {
-        this.config = args.config;
         const namespaceName = args.existingNamespace ?? args.namespace ?? appName;
         const namespaceResource = args.existingNamespace
             ? kubernetes.core.v1.Namespace.get(`${this.appName}-ns`, namespaceName, opts)
@@ -84,8 +82,8 @@ export class Metadata {
             'app.kubernetes.io/managed-by': 'OrangeLab',
             'app.kubernetes.io/component': args.componentName ?? 'default',
         };
-        const version = this.config.get('version');
-        const appVersion = this.config.get('appVersion');
+        const version = config.get(this.appName, 'version');
+        const appVersion = config.get(this.appName, 'appVersion');
         if (args.includeVersionLabel) {
             labels['app.kubernetes.io/version'] = appVersion ?? version;
         }

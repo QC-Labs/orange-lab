@@ -3,7 +3,7 @@ import { ClusterRole } from '@pulumi/kubernetes/rbac/v1';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '@orangelab/application';
 import { GrafanaDashboard } from '@orangelab/grafana-dashboard';
-import { rootConfig } from '@orangelab/root-config';
+import { config } from '@orangelab/config';
 import dashboardJson from './tailscale-dashboard.json';
 
 interface TailscaleOperatorArgs {
@@ -20,11 +20,10 @@ export class TailscaleOperator extends pulumi.ComponentResource {
     ) {
         super('orangelab:system:Tailscale', name, args, opts);
 
-        const config = new pulumi.Config(name);
-        const oauthClientId = config.require('oauthClientId');
-        const oauthClientSecret = config.requireSecret('oauthClientSecret');
-        const hostname = config.require('hostname');
-        const debug = rootConfig.isDebugEnabled(name);
+        const oauthClientId = config.require(name, 'oauthClientId');
+        const oauthClientSecret = config.requireSecret(name, 'oauthClientSecret');
+        const hostname = config.require(name, 'hostname');
+        const debug = config.isDebugEnabled(name);
 
         this.app = new Application(this, name, { namespace: args.namespace });
 
@@ -32,7 +31,7 @@ export class TailscaleOperator extends pulumi.ComponentResource {
         this.createUserRoleBinding(userRole, 'orangelab:users');
 
         let proxyClass;
-        if (rootConfig.enableMonitoring()) {
+        if (config.enableMonitoring()) {
             proxyClass = new kubernetes.apiextensions.CustomResource(
                 'proxyClass',
                 {

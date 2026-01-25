@@ -1,7 +1,7 @@
 import * as pulumi from '@pulumi/pulumi';
 import { CloudNativePG } from './cloudnative-pg/cloudnative-pg';
 import { MariaDBOperator } from './mariadb-operator/mariadb-operator';
-import { rootConfig } from '@orangelab/root-config';
+import { config } from '@orangelab/config';
 
 export class DataModule extends pulumi.ComponentResource {
     cloudNativePG?: CloudNativePG;
@@ -12,7 +12,7 @@ export class DataModule extends pulumi.ComponentResource {
 
         const systemAlias = pulumi.interpolate`urn:pulumi:${pulumi.getStack()}::${pulumi.getProject()}::orangelab:system::system`;
 
-        if (rootConfig.isEnabled('cloudnative-pg')) {
+        if (config.isEnabled('cloudnative-pg')) {
             this.cloudNativePG = new CloudNativePG('cloudnative-pg', {
                 parent: this,
                 aliases: [
@@ -21,7 +21,7 @@ export class DataModule extends pulumi.ComponentResource {
             });
         }
 
-        if (rootConfig.isEnabled('mariadb-operator')) {
+        if (config.isEnabled('mariadb-operator')) {
             this.mariaDBOperator = new MariaDBOperator('mariadb-operator', {
                 parent: this,
                 aliases: [

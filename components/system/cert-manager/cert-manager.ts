@@ -1,6 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '@orangelab/application';
-import { rootConfig } from '@orangelab/root-config';
+import { config } from '@orangelab/config';
 
 export class CertManager extends pulumi.ComponentResource {
     constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
@@ -17,7 +17,7 @@ export class CertManager extends pulumi.ComponentResource {
                     enabled: true,
                     keep: true,
                 },
-                prometheus: rootConfig.enableMonitoring()
+                prometheus: config.enableMonitoring()
                     ? {
                           servicemonitor: {
                               enabled: true,

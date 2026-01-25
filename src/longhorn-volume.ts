@@ -1,7 +1,7 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
-import { rootConfig } from './root-config';
+import { config } from './config';
 import { StorageType } from './types';
 
 interface LonghornVolumeArgs {
@@ -70,7 +70,7 @@ export class LonghornVolume extends pulumi.ComponentResource {
         return this.createPVC({
             name: this.args.name,
             storageClassName:
-                this.args.storageClass ?? rootConfig.getStorageClass(this.args.type),
+                this.args.storageClass ?? config.getStorageClass(this.args.type),
         });
     }
 

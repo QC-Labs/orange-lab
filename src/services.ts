@@ -18,7 +18,6 @@ export class Services {
             metadata: Metadata;
             storage?: Storage;
             nodes: Nodes;
-            config: pulumi.Config;
         },
         private opts?: pulumi.ComponentResourceOptions,
     ) {}
@@ -45,7 +44,6 @@ export class Services {
                 storage: this.args.storage,
                 serviceAccount,
                 nodes: this.args.nodes,
-                config: this.args.config,
             },
             this.opts,
         );
@@ -80,7 +78,6 @@ export class Services {
         const podSpec = new Containers(this.appName, {
             metadata: this.args.metadata,
             serviceAccount,
-            config: this.args.config,
             nodes: this.args.nodes,
             storage: this.args.storage,
         });
@@ -108,7 +105,6 @@ export class Services {
                 metadata: this.args.metadata,
                 storage: this.args.storage,
                 serviceAccount,
-                config: this.args.config,
                 nodes: this.args.nodes,
             },
             this.opts,

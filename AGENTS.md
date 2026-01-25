@@ -49,7 +49,7 @@
 - Prefer self-documenting code over comments
 - Use descriptive variable names and clear function signatures
 - Keep the code concise omitting default values unless useful to communicate intent
-- Pass dependencies through args (providers, config, metadata) rather than accessing globals (except `root-config.ts`)
+- Pass dependencies through args (providers, config, metadata) rather than accessing globals (except `config.ts`)
 
 ### Naming Conventions
 

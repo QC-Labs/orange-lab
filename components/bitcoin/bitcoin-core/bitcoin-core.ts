@@ -1,5 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '@orangelab/application';
+import { config } from '@orangelab/config';
 import { StorageType } from '@orangelab/types';
 import { BitcoinConf } from '../utils/bitcoin-conf';
 import { RpcUser } from '../utils/rpc-user';
@@ -10,7 +11,6 @@ export interface BitcoinCoreArgs {
 
 export class BitcoinCore extends pulumi.ComponentResource {
     public readonly app: Application;
-    private readonly config: pulumi.Config;
     private readonly prune: number;
 
     constructor(
@@ -20,9 +20,8 @@ export class BitcoinCore extends pulumi.ComponentResource {
     ) {
         super('orangelab:bitcoin:BitcoinCore', name, args, opts);
 
-        this.config = new pulumi.Config(name);
-        this.prune = this.config.requireNumber('prune');
-        const debug = this.config.getBoolean('debug');
+        this.prune = config.requireNumber(name, 'prune');
+        const debug = config.getBoolean(name, 'debug');
 
         this.app = new Application(this, name)
             .addStorage({ type: StorageType.Large })
@@ -38,8 +37,8 @@ export class BitcoinCore extends pulumi.ComponentResource {
     }
 
     private createDeployment() {
-        const extraArgs = this.config.get('extraArgs') ?? '';
-        const version = this.config.require('version');
+        const extraArgs = config.get(this.name, 'extraArgs') ?? '';
+        const version = config.require(this.name, 'version');
 
         this.app.addDeployment({
             resources: {

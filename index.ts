@@ -6,43 +6,43 @@ import { DataModule } from './components/data';
 import { IoTModule } from './components/iot';
 import { MonitoringModule } from './components/monitoring';
 import { OfficeModule } from './components/office';
-import { rootConfig } from '@orangelab/root-config';
+import { config } from '@orangelab/config';
 import { SystemModule } from './components/system';
 
 const systemModule = new SystemModule('system');
 export const system = systemModule.getExports();
 
-const dataModule = rootConfig.isModuleEnabled('data')
+const dataModule = config.isModuleEnabled('data')
     ? new DataModule('data', { dependsOn: systemModule })
     : undefined;
 
 const baseModules = [systemModule, ...(dataModule ? [dataModule] : [])];
 
-if (rootConfig.isModuleEnabled('monitoring')) {
+if (config.isModuleEnabled('monitoring')) {
     const monitoringModule = new MonitoringModule('monitoring', {
         dependsOn: baseModules,
     });
     exports.monitoring = monitoringModule.getExports();
 }
 
-if (rootConfig.isModuleEnabled('iot')) {
+if (config.isModuleEnabled('iot')) {
     const iotModule = new IoTModule('iot', {
         dependsOn: baseModules,
     });
     exports.iot = iotModule.getExports();
 }
 
-if (rootConfig.isModuleEnabled('ai')) {
+if (config.isModuleEnabled('ai')) {
     const aiModule = new AIModule('ai', { dependsOn: baseModules });
     exports.ai = aiModule.getExports();
 }
 
-if (rootConfig.isModuleEnabled('bitcoin')) {
+if (config.isModuleEnabled('bitcoin')) {
     const bitcoinModule = new BitcoinModule('bitcoin', { dependsOn: baseModules });
     exports.bitcoin = bitcoinModule.getExports();
 }
 
-if (rootConfig.isModuleEnabled('office')) {
+if (config.isModuleEnabled('office')) {
     const officeModule = new OfficeModule('office', { dependsOn: baseModules });
     exports.office = officeModule.getExports();
 }

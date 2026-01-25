@@ -1,5 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '@orangelab/application';
+import { config } from '@orangelab/config';
 
 /*
 Disable debug first when switching volumes
@@ -33,10 +34,9 @@ export class Debug extends pulumi.ComponentResource {
     ) {
         super('orangelab:system:Debug', name, args, opts);
 
-        const config = new pulumi.Config('debug');
-        const fromVolume = config.require('fromVolume');
-        this.namespace = config.require('namespace');
-        this.exportPath = config.require('exportPath');
+        const fromVolume = config.require(name, 'fromVolume');
+        this.namespace = config.require(name, 'namespace');
+        this.exportPath = config.require(name, 'exportPath');
 
         this.app = new Application(this, name, {
             existingNamespace: this.namespace,

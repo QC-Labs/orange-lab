@@ -1,6 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '@orangelab/application';
-import { rootConfig } from '@orangelab/root-config';
+import { config } from '@orangelab/config';
 import { DatabaseConfig } from '@orangelab/types';
 import { RpcUser } from '../utils/rpc-user';
 
@@ -13,18 +13,16 @@ export interface MempoolArgs {
 export class Mempool extends pulumi.ComponentResource {
     public readonly app: Application;
     public dbConfig?: DatabaseConfig;
-    private readonly config: pulumi.Config;
 
     constructor(
-        name: string,
+        private readonly name: string,
         private args: MempoolArgs,
         opts?: pulumi.ResourceOptions,
     ) {
         super('orangelab:bitcoin:Mempool', name, args, opts);
 
-        rootConfig.require(name, 'mariadb-operator');
+        config.requireEnabled(name, 'mariadb-operator');
 
-        this.config = new pulumi.Config(name);
         this.app = new Application(this, name).addMariaDB();
         this.dbConfig = this.app.databases?.getConfig();
         if (this.app.storageOnly) return;
@@ -32,8 +30,8 @@ export class Mempool extends pulumi.ComponentResource {
     }
 
     private createDeployment() {
-        const version = this.config.require('version');
-        const hostname = this.config.require('hostname');
+        const version = config.require(this.name, 'version');
+        const hostname = config.require(this.name, 'hostname');
         const rpcUrl = pulumi
             .output(this.args.bitcoinRpcUrl)
             .apply(url => new URL(`http://${url}`));

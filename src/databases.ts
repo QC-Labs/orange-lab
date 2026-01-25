@@ -1,9 +1,9 @@
 import * as pulumi from '@pulumi/pulumi';
+import { config } from './config';
 import { MariaDbCluster } from './mariadb';
 import { Metadata } from './metadata';
 import { Nodes } from './nodes';
 import { PostgresCluster } from './postgres';
-import { rootConfig } from './root-config';
 import { Storage } from './storage';
 import { DatabaseConfig, InitContainerSpec, StorageType } from './types';
 
@@ -13,7 +13,6 @@ export class Databases {
     constructor(
         private appName: string,
         private args: {
-            config: pulumi.Config;
             metadata: Metadata;
             nodes: Nodes;
             storage: Storage;
@@ -23,7 +22,7 @@ export class Databases {
     ) {}
 
     addMariaDB(name = 'db'): void {
-        rootConfig.require(this.appName, 'mariadb-operator');
+        config.requireEnabled(this.appName, 'mariadb-operator');
         if (this.databases[name]) {
             throw new Error(`Database ${this.appName}-${name} already exists.`);
         }
@@ -32,17 +31,20 @@ export class Databases {
             overrideFullname: `storage-${this.appName}-${name}-0`,
             type: StorageType.Database,
         });
-        const enabledDefault = this.args.config.getBoolean(`storageOnly`) ? false : true;
+        const enabledDefault = config.getBoolean(this.appName, `storageOnly`)
+            ? false
+            : true;
         const db = new MariaDbCluster(
             this.appName,
             {
                 affinity: this.args.nodes.getAffinity(name),
-                disableAuth: this.args.config.getBoolean(`${name}/disableAuth`),
-                enabled: this.args.config.getBoolean(`${name}/enabled`) ?? enabledDefault,
+                disableAuth: config.getBoolean(this.appName, `${name}/disableAuth`),
+                enabled:
+                    config.getBoolean(this.appName, `${name}/enabled`) ?? enabledDefault,
                 metadata: this.args.metadata,
                 name,
-                password: this.args.config.getSecret(`${name}/password`),
-                rootPassword: this.args.config.getSecret(`${name}/rootPassword`),
+                password: config.getSecret(this.appName, `${name}/password`),
+                rootPassword: config.getSecret(this.appName, `${name}/rootPassword`),
                 storageClassName: this.args.storage.getStorageClass(name),
                 storageOnly: this.args.storageOnly,
                 storageSize: this.args.storage.getStorageSize(name),
@@ -53,11 +55,11 @@ export class Databases {
     }
 
     addPostgres(name = 'db'): void {
-        rootConfig.require(this.appName, 'cloudnative-pg');
+        config.requireEnabled(this.appName, 'cloudnative-pg');
         if (this.databases[name]) {
             throw new Error(`Database ${this.appName}-${name} already exists.`);
         }
-        const existingVolume = this.args.config.get(`${name}/fromVolume`);
+        const existingVolume = config.get(this.appName, `${name}/fromVolume`);
         if (existingVolume) {
             this.args.storage.addPersistentVolume({
                 name,
@@ -76,24 +78,27 @@ export class Databases {
                 },
             });
         }
-        const enabledDefault = this.args.config.getBoolean(`storageOnly`) ? false : true;
+        const enabledDefault = config.getBoolean(this.appName, `storageOnly`)
+            ? false
+            : true;
         const db = new PostgresCluster(
             this.appName,
             {
-                enabled: this.args.config.getBoolean(`${name}/enabled`) ?? enabledDefault,
+                enabled:
+                    config.getBoolean(this.appName, `${name}/enabled`) ?? enabledDefault,
                 fromPVC: existingVolume
                     ? this.args.storage.getClaimName(name)
                     : undefined,
-                imageVersion: this.args.config.get(`${name}/imageVersion`),
-                instances: this.args.config.getNumber(`${name}/instances`),
+                imageVersion: config.get(this.appName, `${name}/imageVersion`),
+                instances: config.getNumber(this.appName, `${name}/instances`),
                 metadata: this.args.metadata,
                 name,
                 nodes: this.args.nodes,
-                password: this.args.config.getSecret(`${name}/password`),
+                password: config.getSecret(this.appName, `${name}/password`),
                 storageClassName: existingVolume
                     ? this.args.storage.getStorageClass(name)
-                    : rootConfig.storageClass.Database,
-                storageSize: this.args.config.require(`${name}/storageSize`),
+                    : config.storageClass.Database,
+                storageSize: config.require(this.appName, `${name}/storageSize`),
             },
             this.opts,
         );

@@ -1,10 +1,9 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '@orangelab/application';
-import { rootConfig } from '@orangelab/root-config';
+import { config } from '@orangelab/config';
 
 export class NodeFeatureDiscovery extends pulumi.ComponentResource {
-    private readonly config: pulumi.Config;
     private readonly app: Application;
     chart: kubernetes.helm.v3.Release;
 
@@ -14,12 +13,11 @@ export class NodeFeatureDiscovery extends pulumi.ComponentResource {
     ) {
         super('orangelab:system:NFD', name, {}, opts);
 
-        this.config = new pulumi.Config(name);
         this.app = new Application(this, name);
 
         this.chart = this.createHelmChart();
 
-        if (this.config.getBoolean('gpu-autodetect')) {
+        if (config.getBoolean(name, 'gpu-autodetect')) {
             this.createAmdGpuRule();
             this.createNvidiaGpuRule();
         }
@@ -30,7 +28,7 @@ export class NodeFeatureDiscovery extends pulumi.ComponentResource {
             chart: 'node-feature-discovery',
             repo: 'https://kubernetes-sigs.github.io/node-feature-discovery/charts',
             values: {
-                prometheus: { enable: rootConfig.enableMonitoring() },
+                prometheus: { enable: config.enableMonitoring() },
                 master: {
                     denyLabelNs: [],
                     extraLabelNs: ['node-role.kubernetes.io'],

@@ -1,10 +1,9 @@
 import { Application } from '@orangelab/application';
-import { rootConfig } from '@orangelab/root-config';
+import { config } from '@orangelab/config';
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 
 export class MariaDBOperator extends pulumi.ComponentResource {
-    private readonly config: pulumi.Config;
     private readonly app: Application;
     private readonly crdsChart: kubernetes.helm.v3.Release;
 
@@ -14,7 +13,6 @@ export class MariaDBOperator extends pulumi.ComponentResource {
     ) {
         super('orangelab:data:MariaDBOperator', name, {}, opts);
 
-        this.config = new pulumi.Config(name);
         this.app = new Application(this, name);
 
         this.crdsChart = this.createCRDs();
@@ -35,8 +33,8 @@ export class MariaDBOperator extends pulumi.ComponentResource {
     }
 
     private createChart(): kubernetes.helm.v3.Release {
-        const debug = this.config.getBoolean('debug');
-        const monitoring = rootConfig.enableMonitoring();
+        const debug = config.getBoolean(this.name, 'debug');
+        const monitoring = config.enableMonitoring();
         return this.app.addHelmChart(
             this.name,
             {

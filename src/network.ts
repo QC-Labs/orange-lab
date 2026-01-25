@@ -1,8 +1,8 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
+import { config } from './config';
 import { Metadata } from './metadata';
-import { rootConfig } from './root-config';
 import { ContainerSpec, ServicePort } from './types';
 
 export interface IngressInfo {
@@ -22,14 +22,13 @@ export class Network {
     constructor(
         private appName: string,
         private args: {
-            config: pulumi.Config;
             metadata: Metadata;
         },
         private opts?: pulumi.ComponentResourceOptions,
     ) {}
 
     createEndpoints(spec: ContainerSpec) {
-        const hostname = this.args.config.get('hostname');
+        const hostname = config.get(this.appName, 'hostname');
         if (!hostname) return;
         const metadata = this.args.metadata.get({ component: spec.name });
         assert(metadata.namespace, 'namespace is required');
@@ -49,7 +48,7 @@ export class Network {
 
     private createTcpEndpoints(tcpPorts: ServicePort[], component?: string) {
         if (tcpPorts.length === 0) return;
-        const hostname = this.args.config.require('hostname');
+        const hostname = config.require(this.appName, 'hostname');
         const service = this.createLoadBalancer({
             hostname,
             ports: tcpPorts,
@@ -81,12 +80,12 @@ export class Network {
     }
 
     private exportEndpoint(args: { component?: string; port: ServicePort }) {
-        const domainName = rootConfig.customDomain ?? rootConfig.tailnetDomain;
+        const domainName = config.customDomain ?? config.tailnetDomain;
         assert(
             domainName,
             'tailscale:tailnetDomain or orangelab:customDomain is required',
         );
-        const hostname = args.port.hostname ?? this.args.config.get('hostname');
+        const hostname = args.port.hostname ?? config.get(this.appName, 'hostname');
         const url = args.port.tcp
             ? pulumi.interpolate`${hostname}:${args.port.port}`
             : pulumi.interpolate`https://${hostname}.${domainName}`;
@@ -169,27 +168,27 @@ export class Network {
     }
 
     public getIngressInfo(
-        hostname: string = this.args.config.require('hostname'),
+        hostname: string = config.require(this.appName, 'hostname'),
     ): IngressInfo {
-        if (!rootConfig.customDomain) {
+        if (!config.customDomain) {
             return {
                 className: 'tailscale',
                 hostname,
-                url: `https://${hostname}.${rootConfig.tailnetDomain}`,
+                url: `https://${hostname}.${config.tailnetDomain}`,
                 tls: true,
-                domain: rootConfig.tailnetDomain,
+                domain: config.tailnetDomain,
             };
         } else {
             return {
                 className: 'traefik',
-                hostname: `${hostname}.${rootConfig.customDomain}`,
-                url: `https://${hostname}.${rootConfig.customDomain}`,
+                hostname: `${hostname}.${config.customDomain}`,
+                url: `https://${hostname}.${config.customDomain}`,
                 tls: true,
                 tlsSecretName: `${hostname}-tls-secret`,
-                domain: rootConfig.customDomain,
+                domain: config.customDomain,
                 annotations: {
                     'cert-manager.io/cluster-issuer': pulumi.output(
-                        rootConfig.certManager.clusterIssuer,
+                        config.certManager.clusterIssuer,
                     ),
                 },
             };

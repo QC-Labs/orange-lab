@@ -1,4 +1,4 @@
-import { rootConfig } from '@orangelab/root-config';
+import { config } from '@orangelab/config';
 import * as pulumi from '@pulumi/pulumi';
 import { AmdGPUOperator } from './amd-gpu-operator/amd-gpu-operator';
 import { CertManager } from './cert-manager/cert-manager';
@@ -24,14 +24,14 @@ export class SystemModule extends pulumi.ComponentResource {
                 ...this.minio?.app.network.clusterEndpoints,
             },
             minioUsers: this.minio?.users,
-            tailscaleDomain: rootConfig.tailnetDomain,
+            tailscaleDomain: config.tailnetDomain,
         };
     }
 
     constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
         super('orangelab:system', name, args, opts);
 
-        if (rootConfig.isEnabled('tailscale')) {
+        if (config.isEnabled('tailscale')) {
             new TailscaleOperator(
                 'tailscale',
                 {},
@@ -42,21 +42,21 @@ export class SystemModule extends pulumi.ComponentResource {
             );
         }
 
-        if (rootConfig.isEnabled('traefik')) {
+        if (config.isEnabled('traefik')) {
             new Traefik('traefik', {}, { parent: this });
         }
 
         let nfd: NodeFeatureDiscovery | undefined;
-        if (rootConfig.isEnabled('nfd')) {
+        if (config.isEnabled('nfd')) {
             nfd = new NodeFeatureDiscovery('nfd', { parent: this });
         }
 
         let certManager: CertManager | undefined;
-        if (rootConfig.isEnabled('cert-manager')) {
+        if (config.isEnabled('cert-manager')) {
             certManager = new CertManager('cert-manager', {}, { parent: this });
         }
 
-        if (rootConfig.isEnabled('nvidia-gpu-operator')) {
+        if (config.isEnabled('nvidia-gpu-operator')) {
             new NvidiaGPUOperator(
                 'nvidia-gpu-operator',
                 {},
@@ -64,18 +64,18 @@ export class SystemModule extends pulumi.ComponentResource {
             );
         }
 
-        if (rootConfig.isEnabled('amd-gpu-operator')) {
+        if (config.isEnabled('amd-gpu-operator')) {
             new AmdGPUOperator('amd-gpu-operator', {
                 parent: this,
                 dependsOn: [...(certManager ? [certManager] : []), ...(nfd ? [nfd] : [])],
             });
         }
 
-        if (rootConfig.isEnabled('minio')) {
+        if (config.isEnabled('minio')) {
             this.minio = new Minio('minio', { parent: this });
         }
 
-        if (rootConfig.isEnabled('longhorn')) {
+        if (config.isEnabled('longhorn')) {
             this.longhorn = new Longhorn(
                 'longhorn',
                 { s3Provisioner: this.minio?.s3Provisioner },
@@ -83,7 +83,7 @@ export class SystemModule extends pulumi.ComponentResource {
             );
         }
 
-        if (rootConfig.isEnabled('debug')) {
+        if (config.isEnabled('debug')) {
             new Debug('debug', {}, { parent: this });
         }
     }

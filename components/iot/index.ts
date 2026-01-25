@@ -1,5 +1,5 @@
 import * as pulumi from '@pulumi/pulumi';
-import { rootConfig } from '@orangelab/root-config';
+import { config } from '@orangelab/config';
 import { HomeAssistant } from './home-assistant/home-assistant';
 
 export class IoTModule extends pulumi.ComponentResource {
@@ -16,13 +16,13 @@ export class IoTModule extends pulumi.ComponentResource {
     constructor(name: string, opts?: pulumi.ComponentResourceOptions) {
         super('orangelab:iot', name, {}, opts);
 
-        if (rootConfig.isEnabled('home-assistant')) {
+        if (config.isEnabled('home-assistant')) {
             this.homeAssistant = new HomeAssistant(
                 'home-assistant',
                 {
                     trustedProxies: [
-                        rootConfig.clusterCidr,
-                        rootConfig.serviceCidr,
+                        config.clusterCidr,
+                        config.serviceCidr,
                         '127.0.0.0/8',
                     ],
                 },

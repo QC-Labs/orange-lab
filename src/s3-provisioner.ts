@@ -32,11 +32,11 @@ export class S3Provisioner extends pulumi.ComponentResource {
 
         const job = this.createJob(args.username, password, args.bucket);
 
-        return job.urn.apply(() => ({
+        return {
             s3EndpointUrl: pulumi.output(this.args.s3EndpointUrl),
-            accessKey: args.username,
-            secretKey: password,
-        }));
+            accessKey: job.urn.apply(() => args.username),
+            secretKey: pulumi.all([job.urn, password]).apply(([_, p]) => p),
+        };
     }
 
     private createJob(

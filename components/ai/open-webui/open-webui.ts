@@ -1,6 +1,7 @@
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
 import { Application } from '@orangelab/application';
+import { config } from '@orangelab/config';
 import { StorageType } from '@orangelab/types';
 
 export interface OpenWebUIArgs {
@@ -19,13 +20,12 @@ export class OpenWebUI extends pulumi.ComponentResource {
     ) {
         super('orangelab:ai:OpenWebUI', name, args, opts);
 
-        const config = new pulumi.Config(name);
-        const hostname = config.require('hostname');
-        const appVersion = config.get('appVersion');
-        const amdGpu = config.get('amd-gpu');
-        const debug = config.get('debug');
-        const DEFAULT_MODELS = config.get('DEFAULT_MODELS') ?? '';
-        const DEFAULT_USER_ROLE = config.require('DEFAULT_USER_ROLE');
+        const hostname = config.require(name, 'hostname');
+        const appVersion = config.get(name, 'appVersion');
+        const amdGpu = config.get(name, 'amd-gpu');
+        const debug = config.get(name, 'debug');
+        const DEFAULT_MODELS = config.get(name, 'DEFAULT_MODELS') ?? '';
+        const DEFAULT_USER_ROLE = config.require(name, 'DEFAULT_USER_ROLE');
 
         const app = new Application(this, name).addStorage({ type: StorageType.GPU });
 

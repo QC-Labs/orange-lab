@@ -1,5 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '@orangelab/application';
+import { config } from '@orangelab/config';
 import { StorageType } from '@orangelab/types';
 
 export class InvokeAi extends pulumi.ComponentResource {
@@ -8,10 +9,9 @@ export class InvokeAi extends pulumi.ComponentResource {
     constructor(name: string, opts?: pulumi.ResourceOptions) {
         super('orangelab:ai:InvokeAi', name, {}, opts);
 
-        const config = new pulumi.Config(name);
-        const debug = config.getBoolean('debug') ?? false;
-        const huggingfaceToken = config.getSecret('huggingfaceToken');
-        const imageTag = config.get('amd-gpu') ? 'main-rocm' : 'latest';
+        const debug = config.getBoolean(name, 'debug') ?? false;
+        const huggingfaceToken = config.getSecret(name, 'huggingfaceToken');
+        const imageTag = config.get(name, 'amd-gpu') ? 'main-rocm' : 'latest';
 
         this.app = new Application(this, name, { gpu: true })
             .addStorage({ type: StorageType.GPU })

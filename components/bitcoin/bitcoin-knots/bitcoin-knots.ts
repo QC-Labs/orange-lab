@@ -1,5 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '@orangelab/application';
+import { config } from '@orangelab/config';
 import { StorageType } from '@orangelab/types';
 import { BitcoinConf } from '../utils/bitcoin-conf';
 import { RpcUser } from '../utils/rpc-user';
@@ -10,18 +11,16 @@ export interface BitcoinKnotsArgs {
 
 export class BitcoinKnots extends pulumi.ComponentResource {
     public readonly app: Application;
-    private readonly config: pulumi.Config;
 
     constructor(
-        name: string,
+        private readonly name: string,
         private args: BitcoinKnotsArgs,
         opts?: pulumi.ResourceOptions,
     ) {
         super('orangelab:bitcoin:BitcoinKnots', name, args, opts);
 
-        this.config = new pulumi.Config(name);
-        const prune = this.config.requireNumber('prune');
-        const debug = this.config.getBoolean('debug');
+        const prune = config.requireNumber(name, 'prune');
+        const debug = config.getBoolean(name, 'debug');
 
         this.app = new Application(this, name)
             .addStorage({ type: StorageType.Large })
@@ -37,8 +36,8 @@ export class BitcoinKnots extends pulumi.ComponentResource {
     }
 
     private createDeployment() {
-        const extraArgs = this.config.get('extraArgs') ?? '';
-        const version = this.config.require('version');
+        const extraArgs = config.get(this.name, 'extraArgs') ?? '';
+        const version = config.require(this.name, 'version');
 
         this.app.addDeployment({
             resources: {

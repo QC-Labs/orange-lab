@@ -3,7 +3,7 @@ import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
 import { Application } from '@orangelab/application';
 import { IngressInfo } from '@orangelab/network';
-import { rootConfig } from '@orangelab/root-config';
+import { config } from '@orangelab/config';
 import { DatabaseConfig } from '@orangelab/types';
 
 export class Nextcloud extends pulumi.ComponentResource {
@@ -12,15 +12,11 @@ export class Nextcloud extends pulumi.ComponentResource {
     public readonly users: Record<string, pulumi.Output<string>> = {};
     public readonly dbConfig?: DatabaseConfig;
 
-    private readonly config: pulumi.Config;
-
     constructor(
         private appName: string,
         opts?: pulumi.ComponentResourceOptions,
     ) {
         super('orangelab:office:Nextcloud', appName, {}, opts);
-
-        this.config = new pulumi.Config(appName);
 
         this.app = new Application(this, appName).addStorage().addMariaDB();
         if (this.app.storageOnly) return;
@@ -28,7 +24,8 @@ export class Nextcloud extends pulumi.ComponentResource {
         this.dbConfig = this.app.databases?.getConfig();
         if (!this.dbConfig) throw new Error('Database not found');
         const adminPassword =
-            this.config.getSecret('adminPassword') ?? this.createPassword('admin');
+            config.getSecret(appName, 'adminPassword') ??
+            this.createPassword('admin');
         const adminSecret = this.createAdminSecret(adminPassword);
         const ingressInfo = this.app.network.getIngressInfo();
         this.users = { admin: adminPassword };
@@ -42,7 +39,7 @@ export class Nextcloud extends pulumi.ComponentResource {
         dbConfig: DatabaseConfig;
     }) {
         const waitForDb = this.app.databases?.getWaitContainer();
-        const debug = this.config.getBoolean('debug') ?? false;
+        const debug = config.getBoolean(this.appName, 'debug') ?? false;
         return this.app.addHelmChart(
             this.appName,
             {
@@ -102,8 +99,8 @@ $CONFIG = array (
                             passwordKey: 'password',
                         },
                         trustedDomains: [
-                            rootConfig.tailnetDomain,
-                            rootConfig.customDomain,
+                            config.tailnetDomain,
+                            config.customDomain,
                             args.ingressInfo.hostname,
                         ],
                     },

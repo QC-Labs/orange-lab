@@ -1,5 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '@orangelab/application';
+import { config } from '@orangelab/config';
 
 export class Beszel extends pulumi.ComponentResource {
     public readonly app: Application;
@@ -7,9 +8,8 @@ export class Beszel extends pulumi.ComponentResource {
     constructor(name: string, opts?: pulumi.ResourceOptions) {
         super('orangelab:monitoring:Beszel', name, {}, opts);
 
-        const config = new pulumi.Config(name);
-        const hubKey = config.get('hubKey');
-        const token = config.getSecret('TOKEN');
+        const hubKey = config.get(name, 'hubKey');
+        const token = config.getSecret(name, 'TOKEN');
         this.app = new Application(this, name).addStorage();
         const ingressInfo = this.app.network.getIngressInfo();
 

@@ -1,5 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '@orangelab/application';
+import { config } from '@orangelab/config';
 import { StorageType } from '@orangelab/types';
 
 export class SDNext extends pulumi.ComponentResource {
@@ -8,10 +9,9 @@ export class SDNext extends pulumi.ComponentResource {
     constructor(name: string, opts?: pulumi.ResourceOptions) {
         super('orangelab:ai:SDNext', name, {}, opts);
 
-        const config = new pulumi.Config(name);
-        const cliArgs = config.require('cliArgs');
-        const amdGpu = config.get('amd-gpu');
-        const debug = config.getBoolean('debug') ?? false;
+        const cliArgs = config.require(name, 'cliArgs');
+        const amdGpu = config.get(name, 'amd-gpu');
+        const debug = config.getBoolean(name, 'debug') ?? false;
 
         this.app = new Application(this, name, { gpu: true })
             .addStorage({ type: StorageType.GPU })
