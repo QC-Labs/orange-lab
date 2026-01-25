@@ -1,16 +1,14 @@
-import * as kubernetes from '@pulumi/kubernetes';
-import * as pulumi from '@pulumi/pulumi';
 import { Application } from '@orangelab/application';
 import { GrafanaDashboard } from '@orangelab/grafana-dashboard';
 import { IngressInfo } from '@orangelab/network';
 import { rootConfig } from '@orangelab/root-config';
-import { MinioS3Bucket } from '../minio/minio-s3-bucket';
-import { MinioS3User } from '../minio/minio-s3-user';
+import { S3Provisioner } from '@orangelab/s3-provisioner';
+import * as kubernetes from '@pulumi/kubernetes';
+import * as pulumi from '@pulumi/pulumi';
 import dashboardJson from './longhorn-dashboard.json';
 
 export interface LonghornArgs {
-    s3EndpointUrl?: pulumi.Input<string>;
-    minioProvider?: pulumi.ProviderResource;
+    s3Provisioner?: S3Provisioner;
 }
 
 export class Longhorn extends pulumi.ComponentResource {
@@ -30,22 +28,17 @@ export class Longhorn extends pulumi.ComponentResource {
         this.config = new pulumi.Config('longhorn');
 
         this.app = new Application(this, name, { namespace: `${name}-system` });
-        const backupEnabled =
-            this.config.getBoolean('backupEnabled') &&
-            args.s3EndpointUrl &&
-            args.minioProvider;
-        let backupSecret: kubernetes.core.v1.Secret | undefined;
-        if (backupEnabled) {
-            const s3User = this.createBackupUser();
-            backupSecret = this.createBackupSecret(s3User);
-            this.createBackupBucket(s3User);
-        }
+        const backupEnabled = this.config.getBoolean('backupEnabled') ?? false;
+        const bucketName = this.config.require('backupBucket');
+        const backupSecret = this.createBackupSecret(backupEnabled, bucketName);
+
         const ingresInfo = this.app.network.getIngressInfo();
         this.chart = this.createHelmRelease({
             backupSecretName: backupSecret?.metadata.name,
-            backupTarget: `s3://${this.config.require('backupBucket')}@lab/`,
+            backupTarget: backupEnabled ? `s3://${bucketName}@lab/` : undefined,
             ingresInfo,
         });
+
         this.createStorageClasses();
 
         if (this.config.getBoolean('snapshotEnabled')) {
@@ -196,8 +189,14 @@ export class Longhorn extends pulumi.ComponentResource {
         );
     }
 
-    private createBackupSecret(s3User: MinioS3User) {
-        if (!this.args.s3EndpointUrl) return;
+    private createBackupSecret(enabled: boolean, bucketName: string) {
+        if (!enabled || !this.args.s3Provisioner) return;
+
+        const { s3EndpointUrl, accessKey, secretKey } = this.args.s3Provisioner.create({
+            username: this.name,
+            bucket: bucketName,
+        });
+
         const secretName = `${this.name}-backup`;
         return new kubernetes.core.v1.Secret(
             `${secretName}-secret`,
@@ -207,33 +206,14 @@ export class Longhorn extends pulumi.ComponentResource {
                     namespace: this.app.metadata.namespace,
                 },
                 stringData: {
-                    AWS_ACCESS_KEY_ID: s3User.accessKey,
-                    AWS_SECRET_ACCESS_KEY: s3User.secretKey,
-                    AWS_ENDPOINTS: this.args.s3EndpointUrl,
+                    AWS_ACCESS_KEY_ID: accessKey,
+                    AWS_SECRET_ACCESS_KEY: secretKey,
+                    AWS_ENDPOINTS: s3EndpointUrl,
                     VIRTUAL_HOSTED_STYLE: 'false',
                 },
             },
             { parent: this },
         );
-    }
-
-    private createBackupUser() {
-        return new MinioS3User(
-            `${this.name}-minio-user`,
-            { username: this.name },
-            { parent: this, provider: this.args.minioProvider },
-        );
-    }
-
-    private createBackupBucket(s3User: MinioS3User) {
-        const bucketName = this.config.require('backupBucket');
-        const createBucket = this.config.requireBoolean('backupBucketCreate');
-        const bucket = new MinioS3Bucket(
-            `${this.name}-minio-backup-bucket`,
-            { bucketName, createBucket },
-            { parent: this, provider: this.args.minioProvider },
-        );
-        bucket.grantReadWrite(s3User);
     }
 
     private createSnapshotJob() {

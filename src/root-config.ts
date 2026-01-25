@@ -119,6 +119,9 @@ class RootConfig {
                 'longhorn:backupTarget is deprecated. Use longhorn:backupBucket instead.',
             );
         }
+        if (this.getAppConfig('longhorn', 'backupBucketCreate')) {
+            console.warn('longhorn:backupBucketCreate is deprecated.');
+        }
         if (this.getAppConfig('grafana', 'url')) {
             console.warn('grafana:url is not used anymore');
         }

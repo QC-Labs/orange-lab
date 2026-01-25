@@ -20,10 +20,6 @@ Make sure MinIO is installed and functioning before enabling backups. See [MinIO
 # S3 bucket that will be used for backups. Default: backup-longhorn
 pulumi config set longhorn:backupBucket backup-longhorn
 
-# If bucket already created, set to false so Pulumi imports it
-# Set to true to create the bucket
-pulumi config set longhorn:backupBucketCreate false
-
 # Enable backup functionality in Longhorn. MinIO has to be running.
 pulumi config set longhorn:backupEnabled true
 ```

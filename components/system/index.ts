@@ -1,5 +1,5 @@
-import * as pulumi from '@pulumi/pulumi';
 import { rootConfig } from '@orangelab/root-config';
+import * as pulumi from '@pulumi/pulumi';
 import { AmdGPUOperator } from './amd-gpu-operator/amd-gpu-operator';
 import { CertManager } from './cert-manager/cert-manager';
 import { Debug } from './debug/debug';
@@ -78,10 +78,7 @@ export class SystemModule extends pulumi.ComponentResource {
         if (rootConfig.isEnabled('longhorn')) {
             this.longhorn = new Longhorn(
                 'longhorn',
-                {
-                    s3EndpointUrl: this.minio?.app.network.clusterEndpoints['minio-api'],
-                    minioProvider: this.minio?.minioProvider,
-                },
+                { s3Provisioner: this.minio?.s3Provisioner },
                 { parent: this },
             );
         }

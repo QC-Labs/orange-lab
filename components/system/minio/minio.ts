@@ -1,11 +1,11 @@
-import * as minio from '@pulumi/minio';
+import { Application } from '@orangelab/application';
+import { S3Provisioner } from '@orangelab/s3-provisioner';
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
-import { Application } from '@orangelab/application';
 
 export class Minio extends pulumi.ComponentResource {
-    public readonly minioProvider: minio.Provider;
     public readonly users: Record<string, pulumi.Output<string>> = {};
+    public readonly s3Provisioner: S3Provisioner;
     app: Application;
     config: pulumi.Config;
     rootUser: string;
@@ -32,14 +32,13 @@ export class Minio extends pulumi.ComponentResource {
             hostPath: dataPath,
         });
         this.createDeployment();
-        const apiIngress = this.app.network.getIngressInfo(this.hostnameApi);
-        this.minioProvider = new minio.Provider(
-            `${name}-provider`,
+        this.s3Provisioner = new S3Provisioner(
+            `${name}-admin`,
             {
-                minioServer: apiIngress.hostname,
-                minioUser: this.rootUser,
-                minioPassword: this.users[this.rootUser],
-                minioSsl: true,
+                metadata: this.app.metadata,
+                rootUser: this.rootUser,
+                rootPassword: this.users[this.rootUser],
+                s3EndpointUrl: this.app.network.clusterEndpoints[this.hostnameApi],
             },
             { parent: this },
         );
