@@ -15,18 +15,18 @@
     },
     "dependencies": {
         "@pulumi/kubernetes": "4.25.0",
-        "@pulumi/pulumi": "3.216.0",
+        "@pulumi/pulumi": "3.217.0",
         "@pulumi/random": "4.19.0",
         "@pulumi/tailscale": "0.24.0"
     },
     "devDependencies": {
         "@eslint/js": "9.39.2",
         "@pulumi/eslint-plugin": "0.3.1",
-        "@types/node": "25.0.9",
+        "@types/node": "25.0.10",
         "eslint": "9.39.2",
-        "prettier": "3.8.0",
+        "prettier": "3.8.1",
         "tsconfig-paths": "4.2.0",
         "typescript": "5.9.3",
-        "typescript-eslint": "8.53.0"
+        "typescript-eslint": "8.53.1"
     }
 }
