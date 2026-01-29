@@ -4,6 +4,28 @@ description: Upgrade OrangeLab to latest version
 
 Guided upgrade process for OrangeLab. Fetches breaking changes from GitHub releases and walks through migration steps interactively.
 
+## Mode of Operation
+
+**You are operating in PLAN MODE as a guide.** You will:
+
+- **ANALYZE** the current state using read-only commands (`pulumi config`, `pulumi preview`, `git status`, etc.)
+- **EXPLAIN** each step clearly so the user understands what needs to be done
+- **SHOW** the exact commands the user should run in their terminal
+- **VERIFY** the user completed each step correctly before proceeding
+
+**You must NEVER:**
+
+- Execute commands that modify state (`pulumi up`, `pulumi config set`, `git pull`, etc.)
+- Use `--show-secrets` flag - secrets must not be sent to external models
+- Make any changes to files or infrastructure directly
+
+**When showing commands for the user to run**, format them clearly:
+
+```
+👉 Run this command in your terminal:
+   <command>
+```
+
 ## Context
 
 - **Current version**: Read from `package.json` (version field)
@@ -14,7 +36,7 @@ Guided upgrade process for OrangeLab. Fetches breaking changes from GitHub relea
 
 ## Overview
 
-This command helps users upgrade their OrangeLab installation safely by:
+This command guides users through upgrading their OrangeLab installation safely by:
 
 1. Checking current version and fetching breaking changes from GitHub releases
 2. Ensuring storage safety with static volumes (`fromVolume` configuration)
@@ -25,10 +47,11 @@ This command helps users upgrade their OrangeLab installation safely by:
 ## Important Rules
 
 - Before each step: Explain what will be done so the user understands the process
-- After each step: Summarize what happened and confirm everything is on track
+- After each step: Ask the user to share the output, then verify everything is correct
 - Ask for confirmation before proceeding to the next step
 - If issues occur: Summarize them, suggest potential resolutions, and ask for direction
 - Never proceed automatically if errors are detected
+- **NEVER use `--show-secrets`** - this would expose secrets to external models
 
 ## Steps
 
@@ -36,7 +59,7 @@ This command helps users upgrade their OrangeLab installation safely by:
 
 **Explain**: "I'll check your current OrangeLab version and fetch the latest release information to identify breaking changes that affect your upgrade."
 
-**Actions**:
+**You (LLM) should run these read-only commands**:
 
 - Read `package.json` to get current version
 - Run `git fetch origin` to get latest remote state
@@ -51,7 +74,7 @@ This command helps users upgrade their OrangeLab installation safely by:
 
 **Explain**: "Before making any changes, I'll verify your storage configuration. Apps using static volumes (`fromVolume`) can be safely disabled and re-enabled without losing data - the Longhorn volume just gets detached and can be reattached. Apps using dynamic volumes will lose their storage if disabled."
 
-**Actions**:
+**You (LLM) should run these read-only commands**:
 
 - Read Pulumi stack config: `pulumi config`
 - For each enabled app, check if `<app>:fromVolume` is configured
@@ -70,89 +93,73 @@ Storage Safety Check:
 **Summary**: If any apps are missing `fromVolume` and have breaking changes:
 
 1. Explain the risk: "This app uses a dynamic volume. If we disable it, the PersistentVolume and its data will be deleted."
-2. Recommend converting to static volume before proceeding:
+2. Show the user commands to convert to static volume:
 
-    ```bash
-    # Set storageOnly to keep volume while disabling app resources
-    pulumi config set <app>:storageOnly true
-    pulumi up
+    ```
+    👉 Run these commands in your terminal to convert to static volume:
 
-    # Then clone volume in Longhorn UI with descriptive name (e.g., app name)
-    # Finally, attach the static volume:
-    pulumi config set <app>:fromVolume <volume-name>
-    pulumi config delete <app>:storageOnly
+       # Set storageOnly to keep volume while disabling app resources
+       pulumi config set <app>:storageOnly true
+       pulumi up
+
+       # Then clone volume in Longhorn UI with descriptive name (e.g., app name)
+       # Finally, attach the static volume:
+       pulumi config set <app>:fromVolume <volume-name>
+       pulumi config delete <app>:storageOnly
     ```
 
 3. Ask user to confirm they've set up static volumes or accepted the risk before proceeding
 
 ### Step 3: Extract and Save Secrets
 
-**Explain**: "Before disabling apps, I need to save encryption keys and database passwords to your Pulumi config. These are available from Pulumi stack outputs. This ensures the same credentials are used when re-enabling apps, which is critical for accessing encrypted data and databases restored from backups."
+**Explain**: "Before disabling apps, you need to save encryption keys and database passwords to your Pulumi config. This ensures the same credentials are used when re-enabling apps, which is critical for accessing encrypted data and databases restored from backups."
 
-**Actions**:
+**IMPORTANT: You (LLM) must NOT run any `--show-secrets` commands.** The user must handle secrets directly in their terminal.
 
-- For apps with breaking changes, check if they have:
-    - Encryption keys (e.g., n8n has `encryptionKey`)
-    - Database passwords (PostgreSQL or MariaDB)
-- Get current values from Pulumi outputs and save to config
+**Tell the user which apps need secrets saved** based on breaking changes identified in Step 1:
 
-**Get secrets from Pulumi outputs**:
+- Apps with encryption keys (e.g., n8n has `encryptionKey`)
+- Apps with database passwords (PostgreSQL or MariaDB)
 
-```bash
-# View all outputs with secrets
-pulumi stack output --show-secrets --json
+**Show the user commands to extract and save secrets**:
 
-# Get specific module outputs
-pulumi stack output ai --show-secrets --json
-pulumi stack output bitcoin --show-secrets --json
-pulumi stack output office --show-secrets --json
+```
+👉 Run these commands in your terminal to extract and save secrets:
+
+   # For apps with encryption keys (e.g., n8n):
+   pulumi stack output ai --show-secrets --json | jq -r '.n8n.encryptionKey'
+   # Then save it:
+   pulumi config set n8n:N8N_ENCRYPTION_KEY "<key-from-above>" --secret
+
+   # For apps with PostgreSQL databases (e.g., n8n, open-webui):
+   pulumi stack output ai --show-secrets --json | jq -r '.n8n.db.password'
+   # Then save it:
+   pulumi config set <app>:db/password "<password-from-above>" --secret
+
+   # For apps with MariaDB databases (e.g., nextcloud, mempool):
+   pulumi stack output office --show-secrets --json | jq -r '.nextcloud.db.password'
+   # Then save it:
+   pulumi config set <app>:db/rootPassword "<password-from-above>" --secret
 ```
 
-**For apps with encryption keys** (e.g., n8n):
+**After user completes**, verify by running (read-only, no secrets shown):
 
 ```bash
-# Get n8n encryption key from output
-pulumi stack output ai --show-secrets --json | jq -r '.n8n.encryptionKey'
-
-# Save to Pulumi config
-pulumi config set n8n:N8N_ENCRYPTION_KEY "<key>" --secret
+pulumi config
 ```
 
-**For apps with PostgreSQL databases** (CloudNative-PG):
+Check that the required secret keys are present (values will show as `[secret]`).
 
-```bash
-# Get database password from output (e.g., n8n, open-webui)
-pulumi stack output ai --show-secrets --json | jq -r '.n8n.db.password'
-
-# Save to Pulumi config
-pulumi config set <app>:db/password "<password>" --secret
-```
-
-**For apps with MariaDB databases** (e.g., nextcloud, mempool):
-
-```bash
-# Get database password from output
-pulumi stack output office --show-secrets --json | jq -r '.nextcloud.db.password'
-pulumi stack output bitcoin --show-secrets --json | jq -r '.mempool.db.password'
-
-# Save to Pulumi config
-pulumi config set <app>:db/rootPassword "<password>" --secret
-```
-
-**Expected output**:
+**Expected verification output**:
 
 ```
 Secrets Check:
-  n8n:
-    - N8N_ENCRYPTION_KEY: saved to config
-    - db/password: saved to config
-  nextcloud:
-    - db/rootPassword: saved to config
-  open-webui:
-    - db/password: already in config
+  n8n:N8N_ENCRYPTION_KEY: [secret] present
+  n8n:db/password: [secret] present
+  nextcloud:db/rootPassword: [secret] present
 ```
 
-**Summary**: List all secrets that were extracted and saved. Warn if any secrets could not be retrieved (app might not be deployed yet). Ask for confirmation before proceeding.
+**Summary**: Confirm all required secrets are saved in config. Ask user to confirm before proceeding.
 
 **Why this matters**:
 
@@ -166,62 +173,89 @@ Secrets Check:
 
 ### Step 4: Update K3s Nodes
 
-**Explain**: "It's recommended to update K3s on your all cluster nodes. This also ensures any configuration changes are applied."
+**Explain**: "It's recommended to update K3s on all your cluster nodes. This also ensures any configuration changes are applied."
 
-**Actions**:
+**You (LLM) should run these read-only commands** to generate the scripts:
 
 - Generate server update script: `./scripts/k3s-server.sh`
 - Generate agent update script: `./scripts/k3s-agent.sh`
-- Display the scripts and explain what they do
-- Instruct user to run these on their nodes manually
 
-**Expected instructions**:
+**Then show the user what to do**:
 
-```sh
-K3s agent update required. Run this on each agent node:
-  1. SSH to agent: ssh root@<agent-node>
-  2. Execute the generated script (shown above)
-  3. Verify: systemctl status k3s-agent.service and check node status with `kubectl get nodes -o wide`
+```
+👉 Run these steps on your nodes:
 
-K3s server update required. Run this on your server node:
-  1. SSH to server: ssh root@<server-node>
-  2. Execute the generated script (shown above)
-  3. Verify: `systemctl status k3s.service` and check node status with `kubectl get nodes -o wide`
+   K3s agent update (run on each agent node):
+     1. SSH to agent: ssh root@<agent-node>
+     2. Execute the generated script (shown above)
+     3. Verify: systemctl status k3s-agent.service
+
+   K3s server update (run on your server node):
+     1. SSH to server: ssh root@<server-node>
+     2. Execute the generated script (shown above)
+     3. Verify: systemctl status k3s.service
 ```
 
-**Check node labels** (required for some components):
+**You (LLM) can verify node status** by running:
 
 ```bash
-# View current node labels
+kubectl get nodes -o wide
+```
+
+**Check node labels** (you can run this read-only command):
+
+```bash
 kubectl get nodes --show-labels
+```
 
-# Longhorn storage nodes need this label (at least one node required)
-kubectl label nodes <node-name> node-role.kubernetes.io/longhorn=true
+**If node labels need updating**, show the user:
 
-# Zone labels for location-aware scheduling (e.g., home-assistant)
-kubectl label nodes <node-name> topology.kubernetes.io/zone=home
+```
+👉 Run these commands in your terminal to set node labels:
+
+   # Longhorn storage nodes need this label (at least one node required)
+   kubectl label nodes <node-name> node-role.kubernetes.io/longhorn=true
+
+   # Zone labels for location-aware scheduling (e.g., home-assistant)
+   kubectl label nodes <node-name> topology.kubernetes.io/zone=home
 ```
 
 > Note: GPU nodes are automatically detected and labeled by Node Feature Discovery (NFD).
 
-**Summary**: Wait for user to confirm nodes are updated before proceeding.
+**Summary**: Verify nodes are updated and healthy before proceeding. Ask user to confirm.
 
 ### Step 5: Disable Apps with Breaking Changes
 
-**Explain**: "I'll disable apps that have breaking changes. Since we verified static volumes are configured, the Longhorn volumes will just be detached (not deleted) and can be reattached after the upgrade."
+**Explain**: "We need to disable apps that have breaking changes. Since we verified static volumes are configured, the Longhorn volumes will just be detached (not deleted) and can be reattached after the upgrade."
 
-**Actions**:
+**Show the user the commands to disable apps**:
 
-- Identify apps from breaking changes that need to be disabled
-- For each app:
-    ```bash
-    pulumi config set <app>:enabled false
-    ```
-- Run `pulumi preview --diff` to show what will be removed
-- Verify that PersistentVolumes show as being removed but explain this is expected - the underlying Longhorn volume persists
-- Confirm with user before running `pulumi up --yes`
+```
+👉 Run these commands in your terminal to disable apps with breaking changes:
 
-**Summary**: List apps that were disabled. Confirm:
+   pulumi config set <app>:enabled false
+   # Repeat for each app that needs to be disabled
+```
+
+**After user disables apps, you (LLM) can preview** by running:
+
+```bash
+pulumi preview --diff
+```
+
+**Explain to the user**: PersistentVolumes showing as being removed is expected - the underlying Longhorn volume persists and will show as "Detached" in the Longhorn UI.
+
+**Then show the user the apply command**:
+
+```
+👉 Review the preview above. If it looks correct, run:
+
+   pulumi up --yes
+```
+
+**After user applies**, verify by asking them to share the output.
+
+**Summary**: Confirm with user:
 
 - Application resources (Deployment, Service, Ingress) were removed
 - PersistentVolume/PersistentVolumeClaim were removed (but Longhorn volume persists, they should show up in Longhorn UI as "Detached")
@@ -229,98 +263,148 @@ kubectl label nodes <node-name> topology.kubernetes.io/zone=home
 
 ### Step 6: Pull Latest Changes
 
-**Explain**: "I'll now pull the latest code changes using git rebase to keep your history clean."
+**Explain**: "Now we need to pull the latest code changes using git rebase to keep your history clean."
 
-**Actions**:
+**You (LLM) can check for uncommitted changes** by running:
 
-- Check for uncommitted changes: `git status`
-- If there are uncommitted changes, ask user how to proceed (stash, commit, or abort)
-- Run `git pull --rebase origin main`
-- Run `npm install` to update dependencies
-- Run `npm test` to verify code compiles
+```bash
+git status
+```
 
-**Summary**: Report if pull was successful and if there were any merge conflicts to resolve.
+**If there are uncommitted changes**, ask user how to proceed (stash, commit, or abort).
+
+**Show the user commands to pull and update**:
+
+```
+👉 Run these commands in your terminal:
+
+   git pull --rebase origin main
+   npm install
+   npm test
+```
+
+**After user completes**, you (LLM) can verify by running:
+
+```bash
+git log --oneline -5
+npm test
+```
+
+**Summary**: Verify pull was successful and tests pass. If there were merge conflicts, help user resolve them.
 
 ### Step 7: Preview Infrastructure Changes
 
 **Explain**: "I'll run a Pulumi preview to check for any unexpected infrastructure changes before applying."
 
-**Actions**:
+**You (LLM) should run this read-only command**:
 
-- Run `pulumi preview --diff`
-- Analyze the output for:
-    - Expected changes (from breaking changes we know about)
-    - Unexpected changes (investigate and explain)
-    - Potential issues (resource replacements, deletions)
+```bash
+pulumi preview --diff
+```
 
-**Summary**: Present the preview results:
+**Analyze the output for**:
+
+- Expected changes (from breaking changes we know about)
+- Unexpected changes (investigate and explain)
+- Potential issues (resource replacements, deletions)
+
+**Summary**: Present the preview results to the user:
 
 - If only expected changes: "Preview shows expected changes based on the breaking changes we identified."
 - If unexpected changes: "Found unexpected changes that need investigation:" (list them)
-- Ask for confirmation before applying
+- Ask for confirmation before user applies
 
 ### Step 8: Apply Infrastructure Changes
 
-**Explain**: "I'll now apply the infrastructure changes to upgrade your cluster."
+**Explain**: "Now we'll apply the infrastructure changes to upgrade your cluster."
 
-**Actions**:
+**Show the user the apply command**:
 
-- Run `pulumi up --yes`
-- Monitor for errors during deployment
-- If errors occur:
-    - Summarize the error
-    - Suggest potential resolutions based on common issues:
-        - Resource conflicts: Try disabling and re-enabling the app
-        - Permission issues: Check node labels and taints
-        - Storage issues: Verify volumes exist and `fromVolume` is correct
-        - Network issues: Check Tailscale connectivity
-    - Ask user for direction before proceeding
+```
+👉 Run this command in your terminal:
 
-**Summary**: Report deployment status and any issues that occurred.
+   pulumi up --yes
+```
+
+**After user applies**, ask them to share the output so you can verify.
+
+**If errors occur**, provide troubleshooting guidance:
+
+- Resource conflicts: Try disabling and re-enabling the app
+- Permission issues: Check node labels and taints
+- Storage issues: Verify volumes exist and `fromVolume` is correct
+- Network issues: Check Tailscale connectivity
+
+**Summary**: Verify deployment was successful based on user's output.
 
 ### Step 9: Re-enable Previously Disabled Apps
 
-**Explain**: "I'll re-enable the apps that were disabled for the upgrade."
+**Explain**: "Now we'll re-enable the apps that were disabled for the upgrade."
 
-**Actions**:
+**Show the user commands to re-enable apps**:
 
-- For each app that was disabled in Step 5:
-    ```bash
-    pulumi config set <app>:enabled true
-    ```
-- Run `pulumi preview --diff` to show what will be created
+```
+👉 Run these commands in your terminal to re-enable apps:
 
-**Summary**: Show preview of apps being re-enabled and ask for confirmation.
+   pulumi config set <app>:enabled true
+   # Repeat for each app that was disabled in Step 5
+```
+
+**After user re-enables apps, you (LLM) can preview** by running:
+
+```bash
+pulumi preview --diff
+```
+
+**Summary**: Show preview of apps being re-enabled and ask for confirmation before user applies.
 
 ### Step 10: Deploy Re-enabled Apps
 
-**Explain**: "I'll deploy the re-enabled apps with their new configuration."
+**Explain**: "Now we'll deploy the re-enabled apps with their new configuration."
 
-**Actions**:
+**Show the user the apply command**:
 
-- Run `pulumi up --yes`
-- Monitor for errors
-- If errors occur, provide troubleshooting guidance and ask for direction
+```
+👉 Run this command in your terminal:
 
-**Summary**: Report deployment status for each re-enabled app.
+   pulumi up --yes
+```
+
+**After user applies**, ask them to share the output so you can verify.
+
+**If errors occur**, provide troubleshooting guidance and ask user for direction.
+
+**Summary**: Verify deployment status for each re-enabled app based on user's output.
 
 ### Step 11: Validate Upgrade
 
 **Explain**: "I'll verify that your services are running correctly by checking ingress endpoints and pod health."
 
-**Actions**:
+**You (LLM) should run these read-only commands**:
 
-- Check if custom domain is configured: `pulumi config get customDomain 2>/dev/null`
-- Get list of deployed apps from Pulumi outputs: `pulumi stack output --json`
-- For apps with endpoints, test connectivity:
-    ```bash
-    # For each endpoint URL
-    curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 <url>
-    ```
-- Check pod status: `kubectl get pods -A | grep -v Running | grep -v Completed`
-- Check for any crashlooping pods: `kubectl get pods -A --field-selector=status.phase!=Running,status.phase!=Succeeded`
+```bash
+# Check if custom domain is configured
+pulumi config get customDomain 2>/dev/null
 
-**Ingress controller check** (depends on configuration):
+# Get list of deployed apps (no secrets)
+pulumi stack output --json
+
+# Check pod status
+kubectl get pods -A | grep -v Running | grep -v Completed
+
+# Check for crashlooping pods
+kubectl get pods -A --field-selector=status.phase!=Running,status.phase!=Succeeded
+```
+
+**For endpoint health checks**, show the user:
+
+```
+👉 You can test your endpoints with:
+
+   curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 <url>
+```
+
+**Ingress controller check** - you (LLM) can run these read-only commands:
 
 ```bash
 # If customDomain is set - check Traefik
@@ -389,30 +473,34 @@ If issues occur at any step, provide context-aware guidance:
     - For PostgreSQL, use `pg-restore.sh` script to restore from dump, or reset password manually
 4. **Encryption key mismatch**: App cannot decrypt data because key changed
     - This happens if you forgot to save the encryption key before disabling the app
-    - If app is still running, extract from Pulumi output: `pulumi stack output ai --show-secrets --json | jq -r '.n8n.encryptionKey'`
+    - If app is still running, user can extract from Pulumi output in their terminal: `pulumi stack output ai --show-secrets --json | jq -r '.n8n.encryptionKey'`
     - If app was already removed, data encrypted with old key is unrecoverable
 5. **Ingress not responding**:
     - With custom domain: Check Traefik pods `kubectl get pods -n traefik` and cert-manager `kubectl get certificates -A`
     - Tailscale routes: Check operator `kubectl get pods -n tailscale` and services `kubectl get svc -n tailscale`
 6. **Pod crashlooping**: Check logs with `kubectl logs -n <namespace> <pod>`
 7. **Pulumi state conflict**: May need `pulumi refresh` to sync state
-8. **App stuck deploying**: Try `storageOnly` mode to keep storage while removing app resources:
+8. **App stuck deploying**: Guide user to try `storageOnly` mode to keep storage while removing app resources:
 
-    ```bash
-    pulumi config set <app>:enabled true
-    pulumi config set <app>:storageOnly true
-    pulumi up
+    ```
+    👉 Run these commands in your terminal:
 
-    pulumi config delete <app>:storageOnly
-    pulumi up
+       pulumi config set <app>:enabled true
+       pulumi config set <app>:storageOnly true
+       pulumi up
+
+       pulumi config delete <app>:storageOnly
+       pulumi up
     ```
 
 ### Recovery Options
 
+Guide user with these commands if needed:
+
 - **Rollback code**: `git checkout <previous-commit>`
 - **Rollback infrastructure**: Pulumi maintains state history, but app data may be affected
-- **Skip problematic app**: Disable app and continue with rest of upgrade
-- **Restore from backup**: Use Longhorn UI to restore volume from backup, then set `fromVolume`
+- **Skip problematic app**: `pulumi config set <app>:enabled false` and continue with rest of upgrade
+- **Restore from backup**: Use Longhorn UI to restore volume from backup, then `pulumi config set <app>:fromVolume <volume-name>`
 
 ## Expected Output Format
 
@@ -424,12 +512,38 @@ For each step, use this format:
 ### What we're doing
 <Explanation of the step>
 
-### Actions taken
-<Commands run and their output>
+### Analysis (read-only commands I ran)
+<Commands you ran and their output>
 
-### Result
-<Summary of what happened>
+### Commands for you to run
+<Show commands the user needs to execute in their terminal>
+
+### Verification
+<After user runs commands, verify the results>
 
 ### Next steps
 <What will happen next, or ask for confirmation>
 ```
+
+## Summary of Read-Only vs User Commands
+
+**You (LLM) can safely run**:
+
+- `pulumi config` (without `--show-secrets`)
+- `pulumi preview --diff`
+- `pulumi stack output --json` (without `--show-secrets`)
+- `git status`, `git log`, `git fetch`, `git diff`
+- `kubectl get ...` (any read operations)
+- `gh release list`, `gh release view`
+- `npm test`
+
+**User must run in their terminal**:
+
+- `pulumi up`, `pulumi up --yes`
+- `pulumi config set ...`
+- `pulumi config delete ...`
+- `git pull`, `git checkout`, `git stash`
+- `npm install`
+- `kubectl label ...`
+- Any command with `--show-secrets`
+- SSH commands to nodes
