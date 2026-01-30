@@ -300,30 +300,11 @@ Apps with breaking changes that are disabled (no action needed):
 
 **IMPORTANT: You (LLM) must NOT run any `--show-secrets` commands.** The user must handle secrets directly.
 
-**Static reference table - Apps that need secrets saved**:
+**Apps with secrets**: `n8n` (encryption key + PostgreSQL), `nextcloud` (MariaDB), `mempool` (MariaDB)
 
-```
-ENCRYPTION KEYS:
-  App        Config Key              Module   Output Path
-  ─────────────────────────────────────────────────────────
-  n8n        n8n:N8N_ENCRYPTION_KEY  ai       .n8n.encryptionKey
+**Tell user**: "Check which apps from Steps 1-2 are ENABLED and need secrets saved. Look up the config key names in `components/<category>/<app>/<app>.ts` and output paths in `pulumi stack output --json`."
 
-POSTGRESQL DATABASES (CloudNative-PG):
-  App        Config Key              Module   Output Path
-  ─────────────────────────────────────────────────────────
-  n8n        n8n:db/password         ai       .n8n.db.password
-  open-webui open-webui:db/password  ai       .open-webui.db.password
-
-MARIADB DATABASES:
-  App        Config Key                  Module   Output Path
-  ─────────────────────────────────────────────────────────────
-  nextcloud  nextcloud:db/rootPassword   office   .nextcloud.db.password
-  mempool    mempool:db/rootPassword     bitcoin  .mempool.db.password
-```
-
-**Tell user**: "Check which apps from Steps 1-2 are ENABLED and need secrets saved. Run the commands below ONLY for those apps."
-
-**Show user commands to run in their terminal** (only for ENABLED apps with breaking changes):
+**Show user commands to run in their terminal**:
 
 ```
 👉 Run in your terminal (NOT in OpenCode - secrets should stay local):
@@ -331,23 +312,9 @@ MARIADB DATABASES:
    # View all outputs to find your app's secrets
    pulumi stack output --show-secrets --json
 
-   # For ENCRYPTION KEYS (if n8n is enabled):
-   pulumi stack output ai --show-secrets --json | jq -r '.n8n.encryptionKey'
-   pulumi config set n8n:N8N_ENCRYPTION_KEY "<key>" --secret
-
-   # For POSTGRESQL (if n8n/open-webui enabled):
-   pulumi stack output ai --show-secrets --json | jq -r '.n8n.db.password'
-   pulumi config set n8n:db/password "<password>" --secret
-
-   pulumi stack output ai --show-secrets --json | jq -r '.["open-webui"].db.password'
-   pulumi config set open-webui:db/password "<password>" --secret
-
-   # For MARIADB (if nextcloud/mempool enabled):
-   pulumi stack output office --show-secrets --json | jq -r '.nextcloud.db.password'
-   pulumi config set nextcloud:db/rootPassword "<password>" --secret
-
-   pulumi stack output bitcoin --show-secrets --json | jq -r '.mempool.db.password'
-   pulumi config set mempool:db/rootPassword "<password>" --secret
+   # Get secret value and save to config
+   pulumi stack output <module> --show-secrets --json | jq -r '.<app>.<path>'
+   pulumi config set <app>:<config-key> "<value>" --secret
 ```
 
 **Tell user**: "Run the relevant commands for your ENABLED apps. Don't share the output with me. Type 'done' when complete."
@@ -358,18 +325,7 @@ MARIADB DATABASES:
 pulumi config
 ```
 
-**Verify these configs are present** (only for enabled apps from Steps 1-2):
-
-```
-Secrets verification:
-  n8n:N8N_ENCRYPTION_KEY  - [set/not set]
-  n8n:db/password         - [set/not set]
-  open-webui:db/password  - [set/not set]
-  nextcloud:db/rootPassword - [set/not set]
-  mempool:db/rootPassword   - [set/not set]
-```
-
-**If any secrets are missing**: Tell user which are missing and ask them to run the commands again.
+**Verify** the relevant secret configs are present for the apps being disabled. If any are missing, ask user to run the commands again.
 
 **Why this matters**:
 

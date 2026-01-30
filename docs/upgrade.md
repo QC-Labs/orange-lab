@@ -40,9 +40,23 @@ pulumi config set <app>:enabled true
 pulumi up
 ```
 
+### Saving Secrets Before Disabling Apps
+
+Before disabling apps with databases or encryption, save their secrets to Pulumi config to ensure the same credentials are used when re-enabling.
+
+Apps with secrets: `n8n` (encryption key + PostgreSQL), `nextcloud` (MariaDB), `mempool` (MariaDB)
+
+```sh
+# Get secret value from stack output (find <module> and <path> in pulumi stack output --json)
+pulumi stack output <module> --show-secrets --json | jq -r '.<app>.<path>'
+
+# Save to config (check <app>.ts for config key names)
+pulumi config set <app>:<config-key> "<value>" --secret
+```
+
 ### Upgrade Procedure
 
-Once you created the new static volume, disable the app completely and then enable it again. Only the related `PersistentVolume` and it's claim will be removed but the volume will just be detached in Longhorn and can be reused.
+Once you have static volumes configured and secrets saved, disable the app and enable it again. Only the related `PersistentVolume` and its claim will be removed but the volume will just be detached in Longhorn and can be reused.
 
 Do this for all affected applications:
 
