@@ -3,15 +3,23 @@
     "permission": {
         "bash": {
             "*": "ask",
-            "git status *": "allow",
+            "cat *": "allow",
+            "curl *": "allow",
+            "gh release *": "ask",
             "git diff *": "allow",
+            "git fetch *": "allow",
             "git log *": "allow",
             "git show *": "allow",
+            "git status *": "allow",
+            "kubectl get *": "ask",
             "ls *": "allow",
-            "pwd": "allow",
             "npm run lint": "allow",
+            "npm run test": "allow",
             "npm test": "allow",
-            "npm run test": "allow"
+            "pulumi config": "allow",
+            "pulumi preview *": "ask",
+            "pulumi * --show-secrets *": "ask",
+            "pwd": "allow"
         },
         "read": {
             "Pulumi.*.yaml": "deny"
