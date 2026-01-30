@@ -2,6 +2,19 @@
 
 This guide explains the process for upgrading your Orange Lab installation.
 
+You can use AI to guide you through the migration process or follow manual instructions below.
+
+```sh
+opencode
+
+# switch to PLAN mode
+
+# ctrl-x m to select AI model
+
+# run command
+/orangelab-upgrade
+```
+
 ## Standard Upgrades
 
 ```sh
