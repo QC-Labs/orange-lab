@@ -38,6 +38,7 @@ export class BitcoinKnots extends pulumi.ComponentResource {
     private createDeployment() {
         const commandArgs = config.get(this.name, 'commandArgs') ?? '';
         const image = config.require(this.name, 'image');
+        const volumePath = config.require(this.name, 'volumePath');
 
         this.app.addDeployment({
             resources: {
@@ -57,7 +58,7 @@ export class BitcoinKnots extends pulumi.ComponentResource {
                 ].join('\n'),
             },
             volumeMounts: [
-                { mountPath: '/data' },
+                { mountPath: volumePath },
                 { name: 'config', mountPath: '/conf' },
             ],
         });

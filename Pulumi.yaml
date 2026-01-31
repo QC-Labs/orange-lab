@@ -175,16 +175,18 @@ config:
     bitcoin-core:storageSize: 1000Gi
     bitcoin-core:prune: 0
     bitcoin-core:image: btcpayserver/bitcoin:29.0
-    # electrs:requiredNodeLabel: kubernetes.io/hostname=<hostname>
     bitcoin-core:commandArgs: bitcoind
+    bitcoin-core:volumePath: /data
+    # bitcoin-core:requiredNodeLabel: kubernetes.io/hostname=<hostname>
 
     bitcoin-knots:enabled: false
     bitcoin-knots:hostname: bitcoin
     bitcoin-knots:storageSize: 1000Gi
     bitcoin-knots:prune: 0
     bitcoin-knots:image: btcpayserver/bitcoinknots:29.2.knots20251110
-    # electrs:requiredNodeLabel: kubernetes.io/hostname=<hostname>
     bitcoin-knots:commandArgs: bitcoind
+    bitcoin-knots:volumePath: /data
+    # bitcoin-knots:requiredNodeLabel: kubernetes.io/hostname=<hostname>
 
     electrs:enabled: false
     electrs:storageSize: 200Gi
