@@ -17,7 +17,10 @@ pulumi config set bitcoin-core:version 29.0
 
 # Optional configuration
 pulumi config set bitcoin-core:prune 1000  # Prune mode (MB), 0 for full node with txindex
-pulumi config set bitcoin-core:extraArgs "-maxuploadtarget=500"  # Additional bitcoind args
+pulumi config set bitcoin-core:commandArgs "bitcoind -maxuploadtarget=500"
+
+# Force rebuilding chain state
+pulumi config set bitcoin-core:commandArgs "bitcoind -reindex-chainstate"
 
 pulumi up
 ```

@@ -36,7 +36,7 @@ export class BitcoinKnots extends pulumi.ComponentResource {
     }
 
     private createDeployment() {
-        const extraArgs = config.get(this.name, 'extraArgs') ?? '';
+        const commandArgs = config.get(this.name, 'commandArgs') ?? '';
         const image = config.require(this.name, 'image');
 
         this.app.addDeployment({
@@ -49,7 +49,7 @@ export class BitcoinKnots extends pulumi.ComponentResource {
                 { name: 'rpc', port: 8332, tcp: true },
                 { name: 'p2p', port: 8333, tcp: true },
             ],
-            commandArgs: ['bitcoind', extraArgs],
+            commandArgs: commandArgs.split(' '),
             env: {
                 BITCOIN_EXTRA_ARGS: [
                     'includeconf=/conf/bitcoin.conf',

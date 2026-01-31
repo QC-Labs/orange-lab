@@ -17,7 +17,10 @@ pulumi config set bitcoin-knots:version 28.1
 
 # Optional configuration
 pulumi config set bitcoin-knots:prune 1000  # Prune mode (MB), 0 for full node with txindex
-pulumi config set bitcoin-knots:extraArgs "--maxconnections=25"  # Additional bitcoind args
+pulumi config set bitcoin-knots:commandArgs "bitcoind -maxconnections=25"
+
+# Force rebuilding chain state
+pulumi config set bitcoin-knots:commandArgs "bitcoind -reindex-chainstate"
 
 pulumi up
 ```
