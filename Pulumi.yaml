@@ -174,7 +174,7 @@ config:
     bitcoin-core:hostname: bitcoin
     bitcoin-core:storageSize: 1000Gi
     bitcoin-core:prune: 0
-    bitcoin-core:version: '29.0'
+    bitcoin-core:image: btcpayserver/bitcoin:29.0
     # electrs:requiredNodeLabel: kubernetes.io/hostname=<hostname>
     # bitcoin-core:extraArgs: -maxuploadtarget=500
 
@@ -182,7 +182,7 @@ config:
     bitcoin-knots:hostname: bitcoin
     bitcoin-knots:storageSize: 1000Gi
     bitcoin-knots:prune: 0
-    bitcoin-knots:version: '28.1'
+    bitcoin-knots:image: btcpayserver/bitcoinknots:28.1
     # electrs:requiredNodeLabel: kubernetes.io/hostname=<hostname>
     # bitcoin-knots:extraArgs: -reindex-chainstate
 

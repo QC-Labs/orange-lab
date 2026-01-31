@@ -38,14 +38,14 @@ export class BitcoinCore extends pulumi.ComponentResource {
 
     private createDeployment() {
         const extraArgs = config.get(this.name, 'extraArgs') ?? '';
-        const version = config.require(this.name, 'version');
+        const image = config.require(this.name, 'image');
 
         this.app.addDeployment({
             resources: {
                 requests: { cpu: '100m', memory: '2Gi' },
                 limits: { cpu: '2000m', memory: '8Gi' },
             },
-            image: `btcpayserver/bitcoin:${version}`,
+            image,
             ports: [
                 { name: 'rpc', port: 8332, tcp: true },
                 { name: 'p2p', port: 8333, tcp: true },
