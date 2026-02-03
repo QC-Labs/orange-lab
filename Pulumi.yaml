@@ -54,8 +54,9 @@ config:
     minio:enabled: false
     minio:hostname: minio
     minio:hostname-api: minio-api
-    minio:dataPath: /var/srv/minio-data
+    # minio:dataPath: /mnt/usb-drive/minio-data
     minio:rootUser: minioadmin
+    # minio:requiredNodeLabel: kubernetes.io/hostname=<hostname>
 
     cert-manager:enabled: false
     cert-manager:clusterIssuer: letsencrypt-issuer

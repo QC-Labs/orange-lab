@@ -54,7 +54,7 @@ pulumi config set bitcoin-knots:commandArgs: ''
 pulumi config set bitcoin-knots:debug: 'true'
 ```
 
-You can find sha256 hash for example with:
+You can find sha256 hash with:
 
 ```sh
 skopeo inspect docker://ghcr.io/retropex/bitcoin:29.2.knots20251110-bip110-v0.1 | jq .Digest

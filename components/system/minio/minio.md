@@ -25,10 +25,6 @@ pulumi config set minio:requiredNodeLabel kubernetes.io/hostname=my-server
 # (Optional) Modify filesystem folder for data
 pulumi config set minio:dataPath /mnt/my-drive/minio-data
 
-# (Recommended) Change root user credentials
-pulumi config set minio:rootUser admin --secret
-pulumi config set minio:rootPassword abcdef12345 --secret
-
 pulumi up
 ```
 
@@ -42,7 +38,7 @@ brew install minio-mc
 export ACCESS_KEY=minioadmin
 export SECRET_KEY=$(pulumi stack output system --show-secrets | jq .minioUsers.minioadmin -r)
 
-mc alias set lab https://minio-api.serengeti-dragon.ts.net $ACCESS_KEY $SECRET_KEY
+mc alias set lab https://minio-api.<domain> $ACCESS_KEY $SECRET_KEY
 
 # Test connection
 mc admin info lab

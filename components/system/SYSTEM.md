@@ -46,13 +46,23 @@ By default Tailscale domain (`*.ts.net`) is used for all services.
 
 You can also setup your custom domain.
 
-Note that Tailscale authentication does not work on custom domains.
+Note that Tailscale authentication does not work on custom domains. It is still however required for TCP routes (bitcoin, electrs).
 
 You need to:
 
 - add A record to your DNS pointing `*` (or each subdomain separately) to one of your Tailscale node IPs
 - configure `cert-manager` to use `ClusterIssuer` to provision Let's Encrypt SSL certificates
-- set `orangelab:customDomain` to the name of your domain
+
+```sh
+pulumi config set orangelab:customDomain example.com
+# create ClusterIssuer after installation
+pulumi config set cert-manager:enabled true
+pulumi up
+
+# Enable traefik, it will use cert-manager for HTTPS certificates
+pulumi config set traefik:enabled true
+pulumi up
+```
 
 ServiceLB creates an endpoint on port 80/443 on each node in the cluster.
 
@@ -62,31 +72,14 @@ This could create issues if the ports are already used outside of OrangeLab. If 
 kubectl label node <node> svccontroller.k3s.cattle.io/enablelb=true
 ```
 
-**Note:** When switching from Tailscale to a custom domain, you **must** disable `longhorn:backupEnabled` first. The MinIO Pulumi provider connection will break during the transition because the API endpoint hostname changes.
-
-```sh
-# Disable backups
-# This will keep the S3 bucket contents intact
-pulumi config set longhorn:backupEnabled false
-pulumi up
-
-# Enable custom domain, this will also install Traefik
-pulumi config set orangelab:customDomain example.com
-pulumi up
-
-# Re-enable backups
-pulumi config set longhorn:backupEnabled true
-pulumi up
-```
-
 ## Components
 
 - [Tailscale Operator](./tailscale/tailscale.md) - Manages cluster ingress endpoints and Kubernetes API access.
-- [Traefik](./traefik/traefik.md) - Edge router and ingress controller for custom domain traffic.
+- [Traefik](./traefik/traefik.md) - Ingress controller for custom domain traffic.
 - [Longhorn](./longhorn/longhorn.md) - Replicated block storage for Kubernetes workloads.
 - [Minio](./minio/minio.md) - S3-compatible object storage for backups and data.
 - [Cert-manager](./cert-manager/cert-manager.md) - Automated certificate management for custom domains.
-- [NFD](./nfd/nfd.md) - Node Feature Discovery for hardware-aware scheduling.
-- [NVIDIA GPU Operator](./nvidia-gpu-operator/nvidia-gpu-operator.md) - Enables NVIDIA GPU support for containerized workloads.
-- [AMD GPU Operator](./amd-gpu-operator/amd-gpu-operator.md) - Enables AMD GPU support for ROCm workloads.
-- [Debug](./debug/debug.md) - Troubleshooting utilities and volume access tools.
+- [NFD](./nfd/nfd.md) - Node Feature Discovery for hardware-aware scheduling and GPU auto-detection.
+- [NVIDIA GPU Operator](./nvidia-gpu-operator/nvidia-gpu-operator.md) - (Optional) Enables NVIDIA GPU support for containerized workloads.
+- [AMD GPU Operator](./amd-gpu-operator/amd-gpu-operator.md) - (Optional) Enables AMD GPU support for ROCm workloads.
+- [Debug](./debug/debug.md) - (Optional, Troubleshooting only) Troubleshooting utilities and volume access tools.
