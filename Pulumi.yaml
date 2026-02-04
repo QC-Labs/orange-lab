@@ -192,7 +192,7 @@ config:
     electrs:enabled: false
     electrs:storageSize: 200Gi
     electrs:hostname: electrs
-    electrs:version: 'v0.10.9'
+    electrs:version: 'v0.11.0'
     # electrs:requiredNodeLabel: kubernetes.io/hostname=<hostname>
 
     mempool:enabled: false
