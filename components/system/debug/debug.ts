@@ -25,7 +25,8 @@ debug:exportPath: /run/media/user/usb-1/orangelab-export
 export class Debug extends pulumi.ComponentResource {
     app: Application;
     namespace: string;
-    exportPath: string;
+    exportPath?: string;
+    fromVolume?: string;
 
     constructor(
         private name: string,
@@ -34,15 +35,19 @@ export class Debug extends pulumi.ComponentResource {
     ) {
         super('orangelab:system:Debug', name, args, opts);
 
-        const fromVolume = config.require(name, 'fromVolume');
         this.namespace = config.require(name, 'namespace');
-        this.exportPath = config.require(name, 'exportPath');
+        this.fromVolume = config.get(name, 'fromVolume');
+        this.exportPath = config.get(name, 'exportPath');
 
         this.app = new Application(this, name, {
             existingNamespace: this.namespace,
-        })
-            .addLocalStorage({ name: 'local', hostPath: this.exportPath })
-            .addStorage({ fromVolume });
+        });
+        if (this.fromVolume) {
+            this.app.addStorage({ fromVolume: this.fromVolume });
+        }
+        if (this.exportPath) {
+            this.app.addLocalStorage({ name: 'local', hostPath: this.exportPath });
+        }
 
         // Comment out one method
         this.createDeployment();
@@ -54,9 +59,13 @@ export class Debug extends pulumi.ComponentResource {
             image: 'alpine',
             commandArgs: ['sleep', '3600'],
             volumeMounts: [
-                { mountPath: '/data' },
-                { name: 'local', mountPath: '/data-export' },
-            ],
+                this.fromVolume
+                    ? { name: this.fromVolume, mountPath: '/data' }
+                    : undefined,
+                this.exportPath
+                    ? { name: 'local', mountPath: '/data-export' }
+                    : undefined,
+            ].filter((vm): vm is NonNullable<typeof vm> => vm !== undefined),
         });
     }
 
