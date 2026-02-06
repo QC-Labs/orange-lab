@@ -154,3 +154,15 @@ export interface DatabaseConfig {
     password: pulumi.Input<string>;
     port: pulumi.Input<number>;
 }
+
+/**
+ * Interface for S3 provisioner implementations (MinIO, RustFS, etc.)
+ */
+export interface S3Provisioner {
+    create: (args: { username: string; bucket: string }) => {
+        s3EndpointUrl: pulumi.Output<string>;
+        accessKey: pulumi.Output<string>;
+        secretKey: pulumi.Output<string>;
+    };
+    instanceName: string;
+}

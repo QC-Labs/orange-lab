@@ -1,22 +1,26 @@
 import { Metadata } from '@orangelab/metadata';
+import { S3Provisioner } from '@orangelab/types';
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
 
-export interface S3ProvisionerArgs {
+export interface MinioProvisionerArgs {
     metadata: Metadata;
     rootUser: pulumi.Input<string>;
     rootPassword: pulumi.Input<string>;
     s3EndpointUrl: pulumi.Input<string>;
 }
 
-export class S3Provisioner extends pulumi.ComponentResource {
+export class MinioProvisioner extends pulumi.ComponentResource implements S3Provisioner {
+    instanceName: string;
+
     constructor(
         private name: string,
-        private args: S3ProvisionerArgs,
+        private args: MinioProvisionerArgs,
         opts?: pulumi.ResourceOptions,
     ) {
-        super('orangelab:S3Provisioner', name, args, opts);
+        super('orangelab:MinioProvisioner', name, args, opts);
+        this.instanceName = args.metadata.get().name;
     }
 
     public create(args: { username: string; bucket: string }): {

@@ -1,12 +1,12 @@
 import { Application } from '@orangelab/application';
 import { config } from '@orangelab/config';
-import { S3Provisioner } from '@orangelab/s3-provisioner';
+import { MinioProvisioner } from './minio-provisioner';
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
 
 export class Minio extends pulumi.ComponentResource {
     public readonly users: Record<string, pulumi.Output<string>> = {};
-    public readonly s3Provisioner: S3Provisioner;
+    public readonly s3Provisioner: MinioProvisioner;
     app: Application;
     rootUser: string;
     hostname: string;
@@ -31,7 +31,7 @@ export class Minio extends pulumi.ComponentResource {
             hostPath: dataPath,
         });
         this.createDeployment();
-        this.s3Provisioner = new S3Provisioner(
+        this.s3Provisioner = new MinioProvisioner(
             `${name}-admin`,
             {
                 metadata: this.app.metadata,

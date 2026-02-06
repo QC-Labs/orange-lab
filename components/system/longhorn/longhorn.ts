@@ -1,8 +1,8 @@
 import { Application } from '@orangelab/application';
+import { config } from '@orangelab/config';
 import { GrafanaDashboard } from '@orangelab/grafana-dashboard';
 import { IngressInfo } from '@orangelab/network';
-import { config } from '@orangelab/config';
-import { S3Provisioner } from '@orangelab/s3-provisioner';
+import { S3Provisioner } from '@orangelab/types';
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import dashboardJson from './longhorn-dashboard.json';
@@ -25,15 +25,22 @@ export class Longhorn extends pulumi.ComponentResource {
         super('orangelab:system:Longhorn', name, args, opts);
 
         this.app = new Application(this, name, { namespace: `${name}-system` });
-        const backupEnabled = config.getBoolean(name, 'backupEnabled') ?? false;
-        const bucketName = config.require(name, 'backupBucket');
-        const backupSecret = this.createBackupSecret(backupEnabled, bucketName);
-
         const ingresInfo = this.app.network.getIngressInfo();
+
+        const backupEnabled = config.getBoolean(name, 'backupEnabled') ?? false;
+        let backupTarget: string | undefined = undefined;
+        let backupTargetCredentialSecret: pulumi.Output<string> | undefined = undefined;
+        if (backupEnabled && args.s3Provisioner) {
+            const bucketName = config.require(name, 'backupBucket');
+            backupTarget = `s3://${bucketName}@lab/`;
+            const backupSecret = this.createBackupSecret(bucketName, args.s3Provisioner);
+            backupTargetCredentialSecret = backupSecret.metadata.name;
+        }
+
         this.chart = this.createHelmRelease({
-            backupSecretName: backupSecret?.metadata.name,
-            backupTarget: backupEnabled ? `s3://${bucketName}@lab/` : undefined,
             ingresInfo,
+            backupTarget,
+            backupTargetCredentialSecret,
         });
 
         this.createStorageClasses();
@@ -55,24 +62,21 @@ export class Longhorn extends pulumi.ComponentResource {
     }
 
     private createHelmRelease({
-        backupSecretName,
-        backupTarget,
         ingresInfo,
+        backupTarget,
+        backupTargetCredentialSecret,
     }: {
-        backupSecretName?: pulumi.Output<string>;
-        backupTarget?: string;
         ingresInfo: IngressInfo;
+        backupTarget?: string;
+        backupTargetCredentialSecret?: pulumi.Output<string>;
     }) {
         return this.app.addHelmChart(this.name, {
             chart: 'longhorn',
             repo: 'https://charts.longhorn.io',
             values: {
-                defaultBackupStore: backupSecretName
-                    ? {
-                          backupTarget,
-                          backupTargetCredentialSecret: backupSecretName,
-                      }
-                    : undefined,
+                defaultBackupStore: backupTarget
+                    ? { backupTarget, backupTargetCredentialSecret }
+                    : { backupTarget: '', backupTargetCredentialSecret: '' },
                 defaultSettings: {
                     allowEmptyDiskSelectorVolume: 'false',
                     allowEmptyNodeSelectorVolume: 'true',
@@ -189,15 +193,12 @@ export class Longhorn extends pulumi.ComponentResource {
         );
     }
 
-    private createBackupSecret(enabled: boolean, bucketName: string) {
-        if (!enabled || !this.args.s3Provisioner) return;
-
-        const { s3EndpointUrl, accessKey, secretKey } = this.args.s3Provisioner.create({
+    private createBackupSecret(bucketName: string, s3Provisioner: S3Provisioner) {
+        const { s3EndpointUrl, accessKey, secretKey } = s3Provisioner.create({
             username: this.name,
             bucket: bucketName,
         });
-
-        const secretName = `${this.name}-backup`;
+        const secretName = `${this.name}-${s3Provisioner.instanceName}-backup`;
         return new kubernetes.core.v1.Secret(
             `${secretName}-secret`,
             {
