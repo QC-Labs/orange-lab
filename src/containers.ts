@@ -172,12 +172,11 @@ export class Containers {
         volumeMounts?: VolumeMount[],
     ): kubernetes.types.input.core.v1.Volume[] | undefined {
         if (this.args.nodes.gpu === 'amd') {
-            this.args.storage?.addLocalVolume({
+            this.args.storage?.addDeviceMount({
                 name: 'dev-kfd',
                 hostPath: '/dev/kfd',
-                type: 'CharDevice',
             });
-            this.args.storage?.addLocalVolume({
+            this.args.storage?.addDeviceMount({
                 name: 'dev-dri',
                 hostPath: '/dev/dri',
                 type: 'Directory',

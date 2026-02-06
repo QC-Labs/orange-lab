@@ -7,11 +7,12 @@ import { config } from './config';
 import { LonghornVolume } from './longhorn-volume';
 import { Metadata } from './metadata';
 import { Nodes } from './nodes';
-import { ConfigVolume, LocalVolume, PersistentVolume } from './types';
+import { ConfigVolume, DeviceMount, LocalVolume, PersistentVolume } from './types';
 
 export class Storage extends pulumi.ComponentResource {
     private longhornVolumes = new Map<string, LonghornVolume>();
     private volumes = new Map<string, kubernetes.types.input.core.v1.Volume>();
+    private deviceMounts = new Map<string, DeviceMount>();
     public configFilesHash?: pulumi.Output<string>;
 
     constructor(
@@ -38,6 +39,15 @@ export class Storage extends pulumi.ComponentResource {
         this.volumes.set(volumeName, {
             name: volumeName,
             hostPath: { path: volume.hostPath, type: volume.type },
+        });
+    }
+
+    addDeviceMount(volume: DeviceMount) {
+        const volumeName = volume.name;
+        this.deviceMounts.set(volumeName, volume);
+        this.volumes.set(volumeName, {
+            name: volumeName,
+            hostPath: { path: volume.hostPath, type: volume.type ?? 'CharDevice' },
         });
     }
 
@@ -94,7 +104,14 @@ export class Storage extends pulumi.ComponentResource {
     }
 
     hasLocal(): boolean {
-        return this.getVolumes().some(volume => volume.hostPath !== undefined);
+        return (
+            this.getVolumes().some(volume => volume.hostPath !== undefined) ||
+            this.hasDeviceMounts()
+        );
+    }
+
+    hasDeviceMounts(): boolean {
+        return this.deviceMounts.size > 0;
     }
 
     hasVolumes(): boolean {

@@ -81,6 +81,16 @@ export interface LocalVolume {
 }
 
 /**
+ * Represents a device mount (e.g., /dev/kfd, /dev/dri).
+ * Used for GPU device access and similar hardware.
+ */
+export interface DeviceMount {
+    name: string;
+    hostPath: string;
+    type?: 'CharDevice' | 'Directory';
+}
+
+/**
  * Represents a persistent volume configuration for Longhorn.
  */
 
