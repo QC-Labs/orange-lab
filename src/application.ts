@@ -8,7 +8,12 @@ import { Network } from './network';
 import { Nodes } from './nodes';
 import { Services } from './services';
 import { Storage } from './storage';
-import { ConfigVolume, ContainerSpec, LocalVolume, PersistentVolume } from './types';
+import {
+    ConfigVolumeSpec,
+    ContainerSpec,
+    LocalVolumeSpec,
+    PersistentVolumeSpec,
+} from './types';
 
 /**
  * Application class provides DSL (Domain Specific Language) to simplify creation of Kubernetes manifests.
@@ -134,12 +139,12 @@ export class Application {
         return this;
     }
 
-    addStorage(volume?: PersistentVolume) {
+    addStorage(volume?: PersistentVolumeSpec) {
         this.getStorage().addPersistentVolume(volume);
         return this;
     }
 
-    addLocalStorage(volume: LocalVolume) {
+    addLocalStorage(volume: LocalVolumeSpec) {
         this.getStorage().addLocalVolume(volume);
         return this;
     }
@@ -148,7 +153,7 @@ export class Application {
      * Adds a config volume that contains multiple configuration files mounted in the same folder.
      * @param configVolume The config volume definition (name and files)
      */
-    addConfigVolume(configVolume: ConfigVolume) {
+    addConfigVolume(configVolume: ConfigVolumeSpec) {
         if (this.storageOnly) return this;
         this.getStorage().addConfigVolume(configVolume);
         return this;

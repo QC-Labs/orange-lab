@@ -9,17 +9,17 @@ import { LonghornVolume } from './longhorn-volume';
 import { Metadata } from './metadata';
 import { Nodes } from './nodes';
 import {
-    ConfigVolume,
-    DeviceMount,
-    LocalVolume as LocalVolumeSpec,
-    PersistentVolume,
+    ConfigVolumeSpec,
+    DeviceMountSpec,
+    LocalVolumeSpec,
+    PersistentVolumeSpec,
 } from './types';
 
 export class Storage extends pulumi.ComponentResource {
     private localVolumes = new Map<string, LocalVolume>();
     private longhornVolumes = new Map<string, LonghornVolume>();
     private volumes = new Map<string, kubernetes.types.input.core.v1.Volume>();
-    private deviceMounts = new Map<string, DeviceMount>();
+    private deviceMounts = new Map<string, DeviceMountSpec>();
     public configFilesHash?: pulumi.Output<string>;
 
     constructor(
@@ -62,7 +62,7 @@ export class Storage extends pulumi.ComponentResource {
         });
     }
 
-    addDeviceMount(volume: DeviceMount) {
+    addDeviceMount(volume: DeviceMountSpec) {
         const volumeName = volume.name;
         this.deviceMounts.set(volumeName, volume);
         this.volumes.set(volumeName, {
@@ -71,7 +71,7 @@ export class Storage extends pulumi.ComponentResource {
         });
     }
 
-    addPersistentVolume(volume?: PersistentVolume) {
+    addPersistentVolume(volume?: PersistentVolumeSpec) {
         const volumeName = this.getVolumeName(volume?.name);
         const prefix = volume?.name ? `${volume.name}/` : '';
         const labels = volume?.name
@@ -146,8 +146,8 @@ export class Storage extends pulumi.ComponentResource {
      * Adds a config volume that contains multiple configuration files mounted in the same folder.
      * @param configVolume The config volume definition (name and files)
      */
-    addConfigVolume(configVolume: ConfigVolume) {
-        if (this.configFilesHash) throw new Error('Only one ConfigVolume supported');
+    addConfigVolume(configVolume: ConfigVolumeSpec) {
+        if (this.configFilesHash) throw new Error('Only one ConfigVolumeSpec supported');
         this.configFilesHash = this.getConfigHash(configVolume);
         const volumeName = configVolume.name ?? 'config';
         new ConfigMap(
@@ -172,7 +172,7 @@ export class Storage extends pulumi.ComponentResource {
      * Adds a checksum/config annotation based on the given config volume's files.
      * This ensures deployments are restarted when config file contents change.
      */
-    private getConfigHash(configVolume: ConfigVolume) {
+    private getConfigHash(configVolume: ConfigVolumeSpec) {
         // Sort keys for deterministic hash
         const sortedFiles = Object.keys(configVolume.files)
             .sort()

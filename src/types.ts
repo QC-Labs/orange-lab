@@ -74,7 +74,7 @@ export interface ContainerSpec {
 /**
  * Represents a local volume using local-path provisioner.
  */
-export interface LocalVolume {
+export interface LocalVolumeSpec {
     name: string;
     hostPath: string;
     size: string;
@@ -85,7 +85,7 @@ export interface LocalVolume {
  * Represents a device mount (e.g., /dev/kfd, /dev/dri).
  * Used for GPU device access and similar hardware.
  */
-export interface DeviceMount {
+export interface DeviceMountSpec {
     name: string;
     hostPath: string;
     type?: 'CharDevice' | 'Directory';
@@ -95,7 +95,7 @@ export interface DeviceMount {
  * Represents a persistent volume configuration for Longhorn.
  */
 
-export interface PersistentVolume {
+export interface PersistentVolumeSpec {
     /**
      * The optional name suffix for the volume.
      * If provided, the full volume name will be `${appName}-${name}`.
@@ -142,7 +142,7 @@ export interface PersistentVolume {
 /**
  * Represents a volume that contains configuration files mounted in the same folder.
  */
-export interface ConfigVolume {
+export interface ConfigVolumeSpec {
     /**
      * The name of the config volume.
      * If not provided, defaults to 'config'.
