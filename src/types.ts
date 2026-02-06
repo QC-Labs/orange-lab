@@ -77,6 +77,7 @@ export interface ContainerSpec {
 export interface LocalVolume {
     name: string;
     hostPath: string;
+    size: string;
     type?: 'Directory' | 'DirectoryOrCreate' | 'FileOrCreate' | 'CharDevice';
 }
 

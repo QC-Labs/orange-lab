@@ -21,6 +21,7 @@ export class Minio extends pulumi.ComponentResource {
         this.hostname = config.require(name, 'hostname');
         this.hostnameApi = config.require(name, 'hostname-api');
         const dataPath = config.require(name, 'dataPath');
+        const storageSize = config.require(name, 'storageSize');
         this.rootUser = config.require(name, 'rootUser');
         this.users = {
             [this.rootUser]: pulumi.output(this.createPassword()),
@@ -29,6 +30,7 @@ export class Minio extends pulumi.ComponentResource {
         this.app = new Application(this, name).addLocalStorage({
             name: 'data',
             hostPath: dataPath,
+            size: storageSize,
         });
         this.createDeployment();
         this.s3Provisioner = new MinioProvisioner(

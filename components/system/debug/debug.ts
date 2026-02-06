@@ -46,7 +46,11 @@ export class Debug extends pulumi.ComponentResource {
             this.app.addStorage({ fromVolume: this.fromVolume });
         }
         if (this.exportPath) {
-            this.app.addLocalStorage({ name: 'local', hostPath: this.exportPath });
+            this.app.addLocalStorage({
+                name: 'local',
+                hostPath: this.exportPath,
+                size: '100Gi',
+            });
         }
 
         // Comment out one method

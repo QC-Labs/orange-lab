@@ -54,7 +54,8 @@ config:
     minio:enabled: false
     minio:hostname: minio
     minio:hostname-api: minio-api
-    # minio:dataPath: /mnt/usb-drive/minio-data
+    # minio:dataPath: /mnt/my-drive/minio-data
+    minio:storageSize: 2000Gi
     minio:rootUser: minioadmin
     # minio:requiredNodeLabel: kubernetes.io/hostname=<hostname>
 
@@ -76,7 +77,6 @@ config:
     debug:enabled: false
     # debug:namespace: bitcoin
     # debug:fromVolume: bitcoin
-    # debug:storageSize: 1000Gi
     # debug:requiredNodeLabel: orangelab/bitcoin
     # debug:exportPath: /orange-lab/export
 

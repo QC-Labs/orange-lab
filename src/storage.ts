@@ -4,12 +4,19 @@ import * as pulumi from '@pulumi/pulumi';
 import * as crypto from 'crypto';
 import assert from 'node:assert';
 import { config } from './config';
+import { LocalVolume } from './local-volume';
 import { LonghornVolume } from './longhorn-volume';
 import { Metadata } from './metadata';
 import { Nodes } from './nodes';
-import { ConfigVolume, DeviceMount, LocalVolume, PersistentVolume } from './types';
+import {
+    ConfigVolume,
+    DeviceMount,
+    LocalVolume as LocalVolumeSpec,
+    PersistentVolume,
+} from './types';
 
 export class Storage extends pulumi.ComponentResource {
+    private localVolumes = new Map<string, LocalVolume>();
     private longhornVolumes = new Map<string, LonghornVolume>();
     private volumes = new Map<string, kubernetes.types.input.core.v1.Volume>();
     private deviceMounts = new Map<string, DeviceMount>();
@@ -34,11 +41,24 @@ export class Storage extends pulumi.ComponentResource {
         return this.getVolumes().filter(v => v.hostPath !== undefined);
     }
 
-    addLocalVolume(volume: LocalVolume) {
-        const volumeName = volume.name;
-        this.volumes.set(volumeName, {
-            name: volumeName,
-            hostPath: { path: volume.hostPath, type: volume.type },
+    addLocalVolume(spec: LocalVolumeSpec) {
+        const fullName = `${this.appName}-${spec.name}`;
+        const volume = new LocalVolume(
+            `${fullName}-storage`,
+            {
+                name: fullName,
+                hostPath: spec.hostPath,
+                size: spec.size,
+                namespace: this.args.metadata.namespace,
+                labels: this.args.metadata.get({ component: spec.name }).labels,
+                affinity: this.args.nodes.getLocalVolumeAffinity(),
+            },
+            { parent: this },
+        );
+        this.localVolumes.set(spec.name, volume);
+        this.volumes.set(spec.name, {
+            name: spec.name,
+            persistentVolumeClaim: { claimName: volume.volumeClaimName },
         });
     }
 

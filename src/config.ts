@@ -2,7 +2,7 @@
 import * as pulumi from '@pulumi/pulumi';
 import { StorageType } from './types';
 
-export const moduleDependencies: Record<string, string[]> = {
+const moduleDependencies: Record<string, string[]> = {
     ai: ['automatic1111', 'invokeai', 'kubeai', 'n8n', 'ollama', 'open-webui', 'sdnext'],
     bitcoin: ['bitcoin-core', 'bitcoin-knots', 'electrs', 'mempool'],
     data: ['cloudnative-pg', 'mariadb-operator'],

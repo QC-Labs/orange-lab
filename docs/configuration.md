@@ -120,8 +120,10 @@ pulumi up
 pulumi config set ollama:storageOnly true
 pulumi up
 
-# Expand storage size to 100GB (not supported when using existing volumes)
-pulumi config set ollama:storageSize 100Gi
+# Expand storage size to 200GB
+# Live expansion not supported when using existing volumes, need to detach first
+# For local volumes it's not enforced by Kubernetes (used for scheduling only)
+pulumi config set ollama:storageSize 200Gi
 
 # Attach existing Longhorn volume to an application.
 # Volumes can be cloned or restored from a backup using Longhorn UI.

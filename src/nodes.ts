@@ -64,6 +64,15 @@ export class Nodes {
             : undefined;
     }
 
+    getLocalVolumeAffinity(): kubernetes.types.input.core.v1.VolumeNodeAffinity {
+        const requiredNodeLabel = config.require(this.args.appName, 'requiredNodeLabel');
+        return {
+            required: {
+                nodeSelectorTerms: [this.getNodeSelectorTerm(requiredNodeLabel)],
+            },
+        };
+    }
+
     private getRequiredNodeSelectorTerms(requiredNodeLabel?: string): NodeSelectorTerm[] {
         const terms: NodeSelectorTerm[] = [];
 
