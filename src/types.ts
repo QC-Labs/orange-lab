@@ -68,6 +68,7 @@ export interface ContainerSpec {
     healthChecks?: boolean;
     resources?: ContainerResources;
     runAsUser?: number;
+    fixVolumePermissionsFor?: number;
     restartPolicy?: string;
 }
 

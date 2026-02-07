@@ -90,9 +90,12 @@ export class Containers {
         const initContainers = spec.initContainers ?? [];
 
         const mountPaths = this.getLocalVolumeMounts(spec.volumeMounts);
-        if (spec.runAsUser && mountPaths.length > 0) {
+        if (spec.fixVolumePermissionsFor && mountPaths.length > 0) {
             initContainers.push(
-                this.createPermissionsInitContainer(spec.runAsUser, mountPaths),
+                this.createPermissionsInitContainer(
+                    spec.fixVolumePermissionsFor,
+                    mountPaths,
+                ),
             );
         }
         return this.createInitContainers(initContainers, spec.volumeMounts);
