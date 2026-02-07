@@ -140,7 +140,10 @@ export class Containers {
         const context: kubernetes.types.input.core.v1.SecurityContext = {};
         if (this.args.nodes.gpu === 'amd') {
             context.seccompProfile = { type: 'Unconfined' };
-        } else if (this.args.nodes.gpu === 'nvidia' || this.args.storage?.hasLocal()) {
+        } else if (
+            this.args.nodes.gpu === 'nvidia' ||
+            this.args.storage?.hasDeviceMounts()
+        ) {
             context.privileged = true;
         }
         if (runAsUser) {
