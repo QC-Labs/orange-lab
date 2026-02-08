@@ -38,18 +38,18 @@ export class Storage extends pulumi.ComponentResource {
     }
 
     getLocalVolumes(): kubernetes.types.input.core.v1.Volume[] {
-        return Array.from(this.localVolumes.entries()).map(([name, volume]) => ({
-            name,
-            persistentVolumeClaim: { claimName: volume.volumeClaimName },
-        }));
+        return Array.from(this.localVolumes.values()).map(volume =>
+            volume.getVolumeDefinition(),
+        );
     }
 
     addLocalVolume(spec: LocalVolumeSpec) {
-        const fullName = `${this.appName}-${spec.name}`;
         const volume = new LocalVolume(
-            `${fullName}-storage`,
+            `${this.appName}-storage-${spec.name}`,
             {
-                name: fullName,
+                appName: this.appName,
+                volumeName: spec.name,
+                localPath: spec.localPath,
                 hostPath: spec.hostPath,
                 size: spec.size,
                 namespace: this.args.metadata.namespace,
@@ -59,10 +59,7 @@ export class Storage extends pulumi.ComponentResource {
             { parent: this },
         );
         this.localVolumes.set(spec.name, volume);
-        this.volumes.set(spec.name, {
-            name: spec.name,
-            persistentVolumeClaim: { claimName: volume.volumeClaimName },
-        });
+        this.volumes.set(spec.name, volume.getVolumeDefinition());
     }
 
     addDeviceMount(volume: DeviceMountSpec) {

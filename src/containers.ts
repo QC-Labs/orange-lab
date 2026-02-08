@@ -39,6 +39,9 @@ export class Containers {
             spec: {
                 affinity: this.args.nodes.getAffinity(),
                 hostNetwork: spec.hostNetwork,
+                securityContext: this.args.storage?.hasLocal()
+                    ? { seLinuxOptions: { type: 'spc_t' } }
+                    : undefined,
                 containers: [
                     {
                         args: spec.commandArgs
@@ -145,7 +148,8 @@ export class Containers {
             context.seccompProfile = { type: 'Unconfined' };
         } else if (
             this.args.nodes.gpu === 'nvidia' ||
-            this.args.storage?.hasDeviceMounts()
+            this.args.storage?.hasDeviceMounts() ||
+            this.args.storage?.hasLocal()
         ) {
             context.privileged = true;
         }

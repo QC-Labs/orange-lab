@@ -22,7 +22,7 @@ pulumi config set minio:enabled true
 # Run MinIO on a specific node
 pulumi config set minio:requiredNodeLabel kubernetes.io/hostname=my-server
 
-# (Optional) Modify filesystem folder for data
+# Specify host directory for data storage
 pulumi config set minio:dataPath /mnt/my-drive/minio-data
 
 pulumi up

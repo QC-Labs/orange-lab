@@ -73,11 +73,13 @@ export interface ContainerSpec {
 }
 
 /**
- * Represents a local volume using local-path provisioner.
+ * Represents a local volume using local-path provisioner or direct hostPath.
+ * Use localPath for PV/PVC mode, or hostPath for direct hostPath mode.
  */
 export interface LocalVolumeSpec {
     name: string;
-    hostPath: string;
+    localPath?: string;
+    hostPath?: string;
     size: string;
     type?: 'Directory' | 'DirectoryOrCreate' | 'FileOrCreate' | 'CharDevice';
 }
