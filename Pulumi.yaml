@@ -125,7 +125,7 @@ config:
     # "-1" = keep models loaded indefinitely, "30m" unload after 30 minutes of inactivity
     ollama:OLLAMA_KEEP_ALIVE: '-1'
     # LLM parameter tuning
-    ollama:OLLAMA_CONTEXT_LENGTH: '32768'
+    ollama:OLLAMA_CONTEXT_LENGTH: '16536'
 
     automatic1111:enabled: false
     automatic1111:hostname: 'automatic1111'
