@@ -74,6 +74,7 @@ export class MinioProvisioner extends pulumi.ComponentResource implements S3Prov
                 },
                 spec: {
                     backoffLimit: 0,
+                    activeDeadlineSeconds: 600,
                     template: {
                         spec: {
                             containers: [
@@ -105,19 +106,25 @@ export class MinioProvisioner extends pulumi.ComponentResource implements S3Prov
     }
 
     private createScript(username: string, bucket: string) {
+        const connectCmd = pulumi.interpolate`mc alias set ${this.name} "${this.args.s3EndpointUrl}" "${this.args.rootUser}" "$ROOT_PASSWORD" --insecure`;
         const commands = [
-            pulumi.interpolate`mc alias set ${this.name} "${this.args.s3EndpointUrl}" "${this.args.rootUser}" "$ROOT_PASSWORD" --insecure`,
             `mc admin user add ${this.name} ${username} "$USER_PASSWORD"`,
             `mc mb ${this.name}/${bucket} --ignore-existing`,
             `mc admin policy attach ${this.name} readwrite --user ${username}`,
         ];
 
         const script = pulumi
-            .all(commands)
-            .apply(cmds =>
+            .all([connectCmd, ...commands])
+            .apply(([connect, ...cmds]) =>
                 [
                     '#!/bin/sh',
                     'set -e',
+                    '',
+                    `echo 'Waiting for Minio to be ready...'`,
+                    `until ${connect}; do`,
+                    `  echo 'Minio not ready, retrying in 10 seconds...'`,
+                    '  sleep 10',
+                    `done`,
                     ...cmds.flatMap(cmd => ['', `echo '${cmd}'`, cmd]),
                 ].join('\n'),
             );
