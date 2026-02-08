@@ -74,6 +74,12 @@ export class Longhorn extends pulumi.ComponentResource {
             chart: 'longhorn',
             repo: 'https://charts.longhorn.io',
             values: {
+                csi: {
+                    attacherReplicaCount: 1,
+                    provisionerReplicaCount: 1,
+                    resizerReplicaCount: 1,
+                    snapshotterReplicaCount: 1,
+                },
                 defaultBackupStore: backupTarget
                     ? { backupTarget, backupTargetCredentialSecret }
                     : { backupTarget: '', backupTargetCredentialSecret: '' },
@@ -114,31 +120,16 @@ export class Longhorn extends pulumi.ComponentResource {
                         'node-role.kubernetes.io/longhorn': 'true',
                     },
                 },
-                csi: {
-                    attacherReplicaCount: 1,
-                    provisionerReplicaCount: 1,
-                    resizerReplicaCount: 1,
-                    snapshotterReplicaCount: 1,
-                },
-                longhornUI: {
-                    replicas: 1,
-                },
                 // Hotfix for v1.11.0 - see https://github.com/longhorn/longhorn/releases/tag/v1.11.0
-                upgradeVersionCheck: false,
                 image: {
-                    longhornManager: {
-                        tag: 'v1.11.0-hotfix-1',
+                    longhorn: {
+                        manager: {
+                            tag: 'v1.11.0-hotfix-1',
+                        },
+                        instanceManager: {
+                            tag: 'v1.11.0-hotfix-1',
+                        },
                     },
-                    longhornInstanceManager: {
-                        tag: 'v1.11.0-hotfix-1',
-                    },
-                },
-                persistence: {
-                    defaultClassReplicaCount: config.requireNumber(
-                        'longhorn',
-                        'replicaCount',
-                    ),
-                    defaultDataLocality: 'best-effort',
                 },
                 ingress: {
                     enabled: true,
@@ -147,9 +138,23 @@ export class Longhorn extends pulumi.ComponentResource {
                     tls: ingresInfo.tls,
                     annotations: ingresInfo.annotations,
                 },
+                longhornUI: {
+                    replicas: 1,
+                },
                 metrics: config.enableMonitoring()
                     ? { serviceMonitor: { enabled: true } }
                     : undefined,
+                persistence: {
+                    defaultClassReplicaCount: config.requireNumber(
+                        'longhorn',
+                        'replicaCount',
+                    ),
+                    defaultDataLocality: 'best-effort',
+                },
+                // Hotfix for v1.11.0 - see https://github.com/longhorn/longhorn/releases/tag/v1.11.0
+                preUpgradeChecker: {
+                    upgradeVersionCheck: false,
+                },
             },
         });
     }
