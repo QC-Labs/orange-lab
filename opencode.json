@@ -11,15 +11,21 @@
             "git log *": "allow",
             "git show *": "allow",
             "git status *": "allow",
-            "kubectl get *": "ask",
+            "grep *": "allow",
+            "kubectl get secret *": "ask",
+            "kubectl get secrets *": "ask",
+            "kubectl get *": "allow",
+            "kubectl logs *": "allow",
             "ls *": "allow",
             "npm run lint": "allow",
             "npm run test": "allow",
             "npm test": "allow",
+            "pulumi * --show-secrets *": "ask",
             "pulumi config": "allow",
             "pulumi preview *": "ask",
-            "pulumi * --show-secrets *": "ask",
-            "pwd": "allow"
+            "pwd": "allow",
+            "sleep *": "allow",
+            "tail *": "allow"
         },
         "read": {
             "Pulumi.*.yaml": "deny"
