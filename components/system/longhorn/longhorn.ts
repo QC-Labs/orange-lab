@@ -123,6 +123,16 @@ export class Longhorn extends pulumi.ComponentResource {
                 longhornUI: {
                     replicas: 1,
                 },
+                // Hotfix for v1.11.0 - see https://github.com/longhorn/longhorn/releases/tag/v1.11.0
+                upgradeVersionCheck: false,
+                image: {
+                    longhornManager: {
+                        tag: 'v1.11.0-hotfix-1',
+                    },
+                    longhornInstanceManager: {
+                        tag: 'v1.11.0-hotfix-1',
+                    },
+                },
                 persistence: {
                     defaultClassReplicaCount: config.requireNumber(
                         'longhorn',
