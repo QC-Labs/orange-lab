@@ -12,6 +12,7 @@
 - **You aren't gonna need it (YAGNI):** Only implement features and functionality that are required now. Avoid building for hypothetical future scenarios.
 - **Loose Coupling:** Strive to keep components independent. Avoid creating circular dependencies.
 - **Single Responsibility:** Each class has one clear purpose: Metadata for labels/annotations, Network for ingress/services, Storage for volumes, etc.
+- **Encapsulation of Complexity:** Complex logic should be encapsulated within classes. Expose clean interfaces rather than leaking implementation details.
 
 ## Working Conventions
 
@@ -21,6 +22,12 @@
 - Ask questions about trade-offs if multiple paths exist
 - Work incrementally on one task at a time
 - Ask for confirmation before moving to next phase
+
+### Architecture Planning
+
+- Present the architecture plan before implementing multi-file changes
+- Validate the approach with user before writing code to avoid rework
+- Focus on interfaces and data flow rather than implementation details
 
 ### Asking for Confirmation
 
