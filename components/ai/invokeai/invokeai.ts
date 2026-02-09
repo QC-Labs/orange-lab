@@ -11,26 +11,27 @@ export class InvokeAi extends pulumi.ComponentResource {
 
         const debug = config.getBoolean(name, 'debug') ?? false;
         const huggingfaceToken = config.getSecret(name, 'huggingfaceToken');
-        const imageTag = config.get(name, 'amd-gpu') ? 'main-rocm' : 'latest';
 
-        this.app = new Application(this, name, { gpu: true })
-            .addStorage({ type: StorageType.GPU })
-            .addDeployment({
-                image: `ghcr.io/invoke-ai/invokeai:${imageTag}`,
-                port: 9090,
-                env: {
-                    INVOKEAI_ROOT: '/invokeai',
-                    INVOKEAI_HOST: '0.0.0.0',
-                    INVOKEAI_PORT: '9090',
-                    INVOKEAI_ENABLE_PARTIAL_LOADING: 'true',
-                    INVOKEAI_LOG_LEVEL: debug ? 'debug' : 'info',
-                    INVOKEAI_REMOTE_API_TOKENS: huggingfaceToken
-                        ? `[{"url_regex":"huggingface.co", "token": "${huggingfaceToken.get()}"}]`
-                        : undefined,
-                },
-                healthChecks: true,
-                volumeMounts: [{ mountPath: '/invokeai' }],
-                resources: { requests: { cpu: '50m', memory: '1.5Gi' } },
-            });
+        this.app = new Application(this, name).addStorage({ type: StorageType.GPU });
+
+        const imageTag = this.app.gpu === 'amd' ? 'main-rocm' : 'latest';
+
+        this.app.addDeployment({
+            image: `ghcr.io/invoke-ai/invokeai:${imageTag}`,
+            port: 9090,
+            env: {
+                INVOKEAI_ROOT: '/invokeai',
+                INVOKEAI_HOST: '0.0.0.0',
+                INVOKEAI_PORT: '9090',
+                INVOKEAI_ENABLE_PARTIAL_LOADING: 'true',
+                INVOKEAI_LOG_LEVEL: debug ? 'debug' : 'info',
+                INVOKEAI_REMOTE_API_TOKENS: huggingfaceToken
+                    ? `[{"url_regex":"huggingface.co", "token": "${huggingfaceToken.get()}"}]`
+                    : undefined,
+            },
+            healthChecks: true,
+            volumeMounts: [{ mountPath: '/invokeai' }],
+            resources: { requests: { cpu: '50m', memory: '1.5Gi' } },
+        });
     }
 }

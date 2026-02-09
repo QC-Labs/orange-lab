@@ -1,25 +1,22 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import { config } from './config';
+import { GpuType } from './types';
 
 type NodeSelectorTerm = kubernetes.types.input.core.v1.NodeSelectorTerm;
 
 export interface NodesArgs {
     appName: string;
-    gpu?: boolean;
+    gpu?: GpuType;
 }
 
 export class Nodes {
     /**
      * Optional GPU type, if specified, will set node affinity for the specified GPU type.
-     * If `gpu` is true, it will default to 'nvidia' unless 'amd-gpu' config is set to true.
      */
-    public readonly gpu?: 'nvidia' | 'amd';
+    public readonly gpu?: GpuType;
 
     constructor(private args: NodesArgs) {
-        if (args.gpu) {
-            const useAmdGpu = config.getBoolean(args.appName, 'amd-gpu') ?? false;
-            this.gpu = useAmdGpu ? 'amd' : 'nvidia';
-        }
+        this.gpu = args.gpu;
     }
 
     getAffinity(component?: string): kubernetes.types.input.core.v1.Affinity | undefined {
@@ -53,7 +50,7 @@ export class Nodes {
     }
 
     getVolumeAffinity(): kubernetes.types.input.core.v1.VolumeNodeAffinity | undefined {
-        return this.args.gpu
+        return this.gpu
             ? {
                   required: {
                       nodeSelectorTerms: [

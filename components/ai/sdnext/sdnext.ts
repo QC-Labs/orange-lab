@@ -10,30 +10,29 @@ export class SDNext extends pulumi.ComponentResource {
         super('orangelab:ai:SDNext', name, {}, opts);
 
         const cliArgs = config.require(name, 'cliArgs');
-        const amdGpu = config.get(name, 'amd-gpu');
         const debug = config.getBoolean(name, 'debug') ?? false;
 
-        this.app = new Application(this, name, { gpu: true })
-            .addStorage({ type: StorageType.GPU })
-            .addDeployment({
-                image: 'saladtechnologies/sdnext:base',
-                port: 7860,
-                commandArgs: [
-                    '--listen',
-                    '--docs',
-                    '--skip-requirements',
-                    '--skip-extensions',
-                    '--skip-git',
-                    '--skip-torch',
-                    '--quick',
-                    cliArgs,
-                ],
-                env: {
-                    SD_DEBUG: debug ? 'true' : 'false',
-                    SD_USEROCM: amdGpu ? 'True' : undefined,
-                },
-                volumeMounts: [{ mountPath: '/webui/data' }],
-                resources: { requests: { cpu: '50m', memory: '2.5Gi' } },
-            });
+        this.app = new Application(this, name).addStorage({ type: StorageType.GPU });
+
+        this.app.addDeployment({
+            image: 'saladtechnologies/sdnext:base',
+            port: 7860,
+            commandArgs: [
+                '--listen',
+                '--docs',
+                '--skip-requirements',
+                '--skip-extensions',
+                '--skip-git',
+                '--skip-torch',
+                '--quick',
+                cliArgs,
+            ],
+            env: {
+                SD_DEBUG: debug ? 'true' : 'false',
+                SD_USEROCM: this.app.gpu === 'amd' ? 'True' : undefined,
+            },
+            volumeMounts: [{ mountPath: '/webui/data' }],
+            resources: { requests: { cpu: '50m', memory: '2.5Gi' } },
+        });
     }
 }

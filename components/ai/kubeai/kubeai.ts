@@ -20,7 +20,7 @@ export class KubeAi extends pulumi.ComponentResource {
         const huggingfaceToken = config.getSecret(name, 'huggingfaceToken');
         const models = config.get(name, 'models')?.split(',') ?? [];
 
-        this.app = new Application(this, name, { gpu: true });
+        this.app = new Application(this, name);
         const ingresInfo = this.app.network.getIngressInfo();
         const kubeAi = this.app.addHelmChart(name, {
             chart: 'kubeai',

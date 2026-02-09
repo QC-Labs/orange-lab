@@ -22,7 +22,6 @@ export class OpenWebUI extends pulumi.ComponentResource {
 
         const hostname = config.require(name, 'hostname');
         const appVersion = config.get(name, 'appVersion');
-        const amdGpu = config.get(name, 'amd-gpu');
         const debug = config.get(name, 'debug');
         const DEFAULT_MODELS = config.get(name, 'DEFAULT_MODELS') ?? '';
         const DEFAULT_USER_ROLE = config.require(name, 'DEFAULT_USER_ROLE');
@@ -41,7 +40,8 @@ export class OpenWebUI extends pulumi.ComponentResource {
                 repo: 'https://helm.openwebui.com/',
                 values: {
                     affinity: app.nodes.getAffinity(),
-                    containerSecurityContext: amdGpu ? undefined : { privileged: true },
+                    containerSecurityContext:
+                        app.gpu === 'nvidia' ? { privileged: true } : undefined,
                     extraEnvVars: [
                         { name: 'AUTOMATIC1111_BASE_URL', value: args.automatic1111Url },
                         { name: 'BYPASS_MODEL_ACCESS_CONTROL', value: 'True' },
@@ -63,7 +63,10 @@ export class OpenWebUI extends pulumi.ComponentResource {
                         { name: 'ENABLE_VERSION_UPDATE_CHECK', value: 'False' },
                         { name: 'ENABLE_WEB_SEARCH', value: 'True' },
                         { name: 'IMAGE_GENERATION_ENGINE', value: 'automatic1111' },
-                        { name: 'USE_CUDA_DOCKER', value: amdGpu ? 'False' : 'True' },
+                        {
+                            name: 'USE_CUDA_DOCKER',
+                            value: app.gpu === 'nvidia' ? 'True' : 'False',
+                        },
                         { name: 'USE_OLLAMA_DOCKER', value: 'False' },
                         {
                             name: 'USER_PERMISSIONS_FEATURES_DIRECT_TOOL_SERVERS',
@@ -119,7 +122,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
                         existingClaim: app.storage?.getClaimName(),
                     },
                     pipelines: { enabled: false },
-                    runtimeClassName: amdGpu ? undefined : 'nvidia',
+                    runtimeClassName: app.gpu === 'nvidia' ? 'nvidia' : undefined,
                     websocket: {
                         redis: {
                             affinity: app.nodes.getAffinity(),

@@ -11,6 +11,7 @@ import { Storage } from './storage';
 import {
     ConfigVolumeSpec,
     ContainerSpec,
+    GpuType,
     LocalVolumeSpec,
     PersistentVolumeSpec,
 } from './types';
@@ -28,6 +29,7 @@ export class Application {
     readonly metadata: Metadata;
     readonly nodes: Nodes;
     readonly network: Network;
+    readonly gpu?: GpuType;
     databases?: Databases;
     storage?: Storage;
 
@@ -39,11 +41,11 @@ export class Application {
         args?: {
             namespace?: string;
             existingNamespace?: string;
-            gpu?: boolean;
         },
     ) {
         this.processDeprecated();
         this.storageOnly = config.getBoolean(appName, 'storageOnly') ?? false;
+        this.gpu = config.get(appName, 'gpu') as GpuType | undefined;
         this.metadata = new Metadata(
             appName,
             {
@@ -54,7 +56,7 @@ export class Application {
         );
         this.nodes = new Nodes({
             appName,
-            gpu: args?.gpu,
+            gpu: this.gpu,
         });
         this.network = new Network(
             appName,
@@ -73,6 +75,10 @@ export class Application {
         assert(
             !config.get(this.appName, 'cloneFromClaim'),
             `${this.appName}:cloneFromClaim is not supported. Use fromVolume instead.`,
+        );
+        assert(
+            !config.get(this.appName, 'amd-gpu'),
+            `${this.appName}:amd-gpu is deprecated. Use ${this.appName}:gpu instead (amd|nvidia).`,
         );
     }
 

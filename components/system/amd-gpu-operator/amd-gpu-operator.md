@@ -36,7 +36,7 @@ pulumi up
 ```sh
 pulumi config set ollama:enabled true
 # Switch to ROCm image
-pulumi config set ollama:amd-gpu true
+pulumi config set ollama:gpu amd
 pulumi up
 ```
 

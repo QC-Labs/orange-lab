@@ -1,5 +1,7 @@
 import * as pulumi from '@pulumi/pulumi';
 
+export type GpuType = 'amd' | 'nvidia';
+
 export enum StorageType {
     Default,
     GPU,

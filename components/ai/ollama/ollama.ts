@@ -18,7 +18,7 @@ export class Ollama extends pulumi.ComponentResource {
 
         const hostname = config.require(name, 'hostname');
 
-        this.app = new Application(this, name, { gpu: true }).addStorage({
+        this.app = new Application(this, name).addStorage({
             type: StorageType.GPU,
         });
 
@@ -32,7 +32,7 @@ export class Ollama extends pulumi.ComponentResource {
     }
 
     private createHelmRelease(ingresInfo: IngressInfo) {
-        const amdGpu = config.requireBoolean(this.name, 'amd-gpu');
+        const amdGpu = this.app.gpu === 'amd';
         const gfxVersion = config.get(this.name, 'HSA_OVERRIDE_GFX_VERSION');
         const amdTargets = config.get(this.name, 'HCC_AMDGPU_TARGETS');
         const debug = config.getBoolean(this.name, 'debug') ?? false;
@@ -124,7 +124,7 @@ export class Ollama extends pulumi.ComponentResource {
                         existingClaim: this.app.storage?.getClaimName(),
                     },
                     replicaCount: 1,
-                    runtimeClassName: amdGpu ? undefined : 'nvidia',
+                    runtimeClassName: this.app.gpu === 'nvidia' ? 'nvidia' : undefined,
                     securityContext: { privileged: true },
                 },
             },

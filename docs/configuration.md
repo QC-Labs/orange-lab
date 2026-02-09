@@ -104,7 +104,7 @@ GPU node labeling is automatic with Node Feature Discovery (NFD) enabled.
 Switch to ROCm image if needed:
 
 ```sh
-pulumi config set ollama:amd-gpu true
+pulumi config set ollama:gpu amd
 ```
 
 More details at [/components/system/amd-gpu-operator/amd-gpu-operator.md](/components/system/amd-gpu-operator/amd-gpu-operator.md)
