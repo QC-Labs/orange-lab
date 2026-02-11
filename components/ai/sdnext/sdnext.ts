@@ -10,7 +10,6 @@ export class SDNext extends pulumi.ComponentResource {
         super('orangelab:ai:SDNext', name, {}, opts);
 
         const cliArgs = config.require(name, 'cliArgs');
-        const debug = config.getBoolean(name, 'debug') ?? false;
 
         this.app = new Application(this, name).addStorage({ type: StorageType.GPU });
 
@@ -28,7 +27,7 @@ export class SDNext extends pulumi.ComponentResource {
                 cliArgs,
             ],
             env: {
-                SD_DEBUG: debug ? 'true' : 'false',
+                SD_DEBUG: this.app.debug ? 'true' : 'false',
                 SD_USEROCM: this.app.gpu === 'amd' ? 'True' : undefined,
             },
             volumeMounts: [{ mountPath: '/webui/data' }],

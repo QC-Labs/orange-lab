@@ -20,17 +20,19 @@ export class BitcoinKnots extends pulumi.ComponentResource {
         super('orangelab:bitcoin:BitcoinKnots', name, args, opts);
 
         const prune = config.requireNumber(name, 'prune');
-        const debug = config.getBoolean(name, 'debug');
 
-        this.app = new Application(this, name)
-            .addStorage({ type: StorageType.Large })
-            .addConfigVolume({
-                name: 'config',
-                files: {
-                    'bitcoin.conf': BitcoinConf.create({ prune, debug }),
-                    'rpc.conf': BitcoinConf.createRpc(this.args.rpcUsers),
-                },
-            });
+        this.app = new Application(this, name);
+
+        this.app.addStorage({ type: StorageType.Large }).addConfigVolume({
+            name: 'config',
+            files: {
+                'bitcoin.conf': BitcoinConf.create({
+                    prune,
+                    debug: this.app.debug,
+                }),
+                'rpc.conf': BitcoinConf.createRpc(this.args.rpcUsers),
+            },
+        });
 
         this.createDeployment();
     }

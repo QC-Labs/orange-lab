@@ -33,7 +33,6 @@ export class MariaDBOperator extends pulumi.ComponentResource {
     }
 
     private createChart(): kubernetes.helm.v3.Release {
-        const debug = config.getBoolean(this.name, 'debug');
         const monitoring = config.enableMonitoring();
         return this.app.addHelmChart(
             this.name,
@@ -43,7 +42,7 @@ export class MariaDBOperator extends pulumi.ComponentResource {
                 values: {
                     affinity: this.app.nodes.getAffinity(),
                     crds: { enabled: false },
-                    logLevel: debug ? 'DEBUG' : 'INFO',
+                    logLevel: this.app.debug ? 'DEBUG' : 'INFO',
                     metrics: {
                         enabled: monitoring,
                         serviceMonitor: {

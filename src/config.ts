@@ -50,10 +50,6 @@ class Config {
         return this.getBoolean(name, 'enabled') ?? false;
     }
 
-    public isDebugEnabled(name: string): boolean {
-        return this.getBoolean(name, 'debug') ?? false;
-    }
-
     public isBackupEnabled(appName: string, volumeName?: string): boolean {
         const volumePrefix = volumeName ? `${volumeName}/` : '';
         const appSetting = this.getBoolean(appName, `${volumePrefix}backupVolume`);

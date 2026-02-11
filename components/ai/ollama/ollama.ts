@@ -35,9 +35,8 @@ export class Ollama extends pulumi.ComponentResource {
         const amdGpu = this.app.gpu === 'amd';
         const gfxVersion = config.get(this.name, 'HSA_OVERRIDE_GFX_VERSION');
         const amdTargets = config.get(this.name, 'HCC_AMDGPU_TARGETS');
-        const debug = config.getBoolean(this.name, 'debug') ?? false;
         const extraEnv = [
-            { name: 'OLLAMA_DEBUG', value: debug ? 'true' : 'false' },
+            { name: 'OLLAMA_DEBUG', value: this.app.debug ? 'true' : 'false' },
             {
                 name: 'OLLAMA_KEEP_ALIVE',
                 value: config.require(this.name, 'OLLAMA_KEEP_ALIVE'),

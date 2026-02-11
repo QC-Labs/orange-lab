@@ -29,6 +29,7 @@ export class Application {
     readonly metadata: Metadata;
     readonly nodes: Nodes;
     readonly network: Network;
+    readonly debug: boolean;
     readonly gpu?: GpuType;
     databases?: Databases;
     storage?: Storage;
@@ -45,6 +46,7 @@ export class Application {
     ) {
         this.processDeprecated();
         this.storageOnly = config.getBoolean(appName, 'storageOnly') ?? false;
+        this.debug = config.getBoolean(appName, 'debug') ?? false;
         this.gpu = config.get(appName, 'gpu') as GpuType | undefined;
         this.metadata = new Metadata(
             appName,

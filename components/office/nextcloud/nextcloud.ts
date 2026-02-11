@@ -24,8 +24,7 @@ export class Nextcloud extends pulumi.ComponentResource {
         this.dbConfig = this.app.databases?.getConfig();
         if (!this.dbConfig) throw new Error('Database not found');
         const adminPassword =
-            config.getSecret(appName, 'adminPassword') ??
-            this.createPassword('admin');
+            config.getSecret(appName, 'adminPassword') ?? this.createPassword('admin');
         const adminSecret = this.createAdminSecret(adminPassword);
         const ingressInfo = this.app.network.getIngressInfo();
         this.users = { admin: adminPassword };
@@ -39,7 +38,6 @@ export class Nextcloud extends pulumi.ComponentResource {
         dbConfig: DatabaseConfig;
     }) {
         const waitForDb = this.app.databases?.getWaitContainer();
-        const debug = config.getBoolean(this.appName, 'debug') ?? false;
         return this.app.addHelmChart(
             this.appName,
             {
@@ -81,7 +79,7 @@ export class Nextcloud extends pulumi.ComponentResource {
 $CONFIG = array (
     'skeletondirectory' => '',
 );`,
-                            ...(debug
+                            ...(this.app.debug
                                 ? {
                                       'logging.config.php': `<?php
 $CONFIG = array (

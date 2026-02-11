@@ -20,17 +20,16 @@ export class Electrs extends pulumi.ComponentResource {
     ) {
         super('orangelab:bitcoin:Electrs', name, args, opts);
 
-        const debug = config.getBoolean(name, 'debug');
         const rpcHost = pulumi
             .output(this.args.bitcoinRpcUrl)
             .apply(url => new URL(`http://${url}`).host);
 
-        this.app = new Application(this, name)
-            .addStorage({ type: StorageType.Large })
-            .addConfigVolume({
-                name: 'config',
-                files: {
-                    'electrs.toml': pulumi.interpolate`
+        this.app = new Application(this, name);
+
+        this.app.addStorage({ type: StorageType.Large }).addConfigVolume({
+            name: 'config',
+            files: {
+                'electrs.toml': pulumi.interpolate`
                         auth = "${this.args.rpcUser.username}:${
                             this.args.rpcUser.password
                         }"
@@ -38,10 +37,10 @@ export class Electrs extends pulumi.ComponentResource {
                         daemon_p2p_addr = "${this.args.bitcoinP2pUrl}"
                         db_dir = "/data"
                         electrum_rpc_addr = "0.0.0.0:50001"
-                        log_filters = ${debug ? '"DEBUG"' : '"INFO"'}
+                        log_filters = ${this.app.debug ? '"DEBUG"' : '"INFO"'}
                     `,
-                },
-            });
+            },
+        });
         this.createDeployment();
     }
 

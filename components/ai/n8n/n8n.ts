@@ -45,7 +45,7 @@ export class N8n extends pulumi.ComponentResource {
                 N8N_ENCRYPTION_KEY: this.encryptionKey,
                 N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: 'true',
                 N8N_HOST: this.app.network.getIngressInfo().hostname,
-                N8N_LOG_LEVEL: config.isDebugEnabled(name) ? 'debug' : undefined,
+                N8N_LOG_LEVEL: this.app.debug ? 'debug' : undefined,
                 N8N_METRICS: config.enableMonitoring() ? 'true' : 'false',
                 N8N_PORT: '5678',
                 N8N_PROTOCOL: 'http',

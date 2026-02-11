@@ -23,7 +23,6 @@ export class TailscaleOperator extends pulumi.ComponentResource {
         const oauthClientId = config.require(name, 'oauthClientId');
         const oauthClientSecret = config.requireSecret(name, 'oauthClientSecret');
         const hostname = config.require(name, 'hostname');
-        const debug = config.isDebugEnabled(name);
 
         this.app = new Application(this, name, { namespace: args.namespace });
 
@@ -68,7 +67,7 @@ export class TailscaleOperator extends pulumi.ComponentResource {
                     affinity: this.app.nodes.getAffinity(),
                     defaultTags: ['tag:orangelab'],
                     hostname,
-                    logging: debug ? 'debug' : 'info', // info, debug, dev
+                    logging: this.app.debug ? 'debug' : 'info', // info, debug, dev
                 },
                 proxyConfig: {
                     defaultTags: 'tag:orangelab',
