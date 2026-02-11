@@ -20,5 +20,8 @@ pulumi up
 - [SD.Next](./sdnext/sdnext.md) - Advanced Stable Diffusion web interface with extended features.
 - [Open-WebUI](./open-webui/open-webui.md) - User-friendly web interface for LLMs with RAG support.
 - [InvokeAI](./invokeai/invokeai.md) - Professional-grade generative AI toolkit for image creation.
-- [KubeAI](./kubeai/kubeai.md) - Private AI SDK for Kubernetes with OpenAI-compatible API.
 - [N8n](./n8n/n8n.md) - Workflow automation tool with native AI integration.
+
+### Experimental
+
+- [KubeAI](./kubeai/kubeai.md) - Private AI SDK for Kubernetes with OpenAI-compatible API.
