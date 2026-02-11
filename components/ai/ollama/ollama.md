@@ -7,13 +7,18 @@
 | Endpoints             | `https://ollama.<tsnet>.ts.net/`                               |
 | Environment variables | https://github.com/ollama/ollama/blob/main/envconfig/config.go |
 
-Ollama requires to be run on GPU nodes. You need to install NVidia or AMD operator first.
+Ollama defaults to NVIDIA GPU support. To run on CPU only, explicitly disable GPU.
 
 ```sh
-# Enable NVidia integration
-pulumi config set nvidia-gpu-operator:enabled true
-# or AMD
-pulumi config set amd-gpu-operator:enabled true
+# Optional: Disable GPU support for CPU-only mode
+pulumi config set ollama:gpu ""
+
+# Or enable specific GPU support (requires installing the appropriate operator first)
+# pulumi config set nvidia-gpu-operator:enabled true
+# pulumi config set ollama:gpu nvidia
+# or
+# pulumi config set amd-gpu-operator:enabled true
+# pulumi config set ollama:gpu amd
 
 # Increase volume size if needed for bigger models (50 by default, can be expanded later)
 pulumi config set ollama:storageSize "100Gi"

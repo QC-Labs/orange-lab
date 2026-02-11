@@ -118,10 +118,12 @@ config:
     ollama:storageSize: 50Gi
     ollama:storageOnly: false
     # ollama:fromVolume: ollama
+    # Set to 'nvidia' or 'amd' to enable GPU support, Use '' for CPU-only mode
     ollama:gpu: nvidia
     # Override GPU version for AMD ROCm compatibility (ollama:gpu=amd)
     # ollama:HSA_OVERRIDE_GFX_VERSION: "11.0.2"
     # ollama:HCC_AMDGPU_TARGETS: "gfx1103"
+    # ollama:models: qwen2.5-coder:1.5b,glm-4.7-flash
     # "-1" = keep models loaded indefinitely, "30m" unload after 30 minutes of inactivity
     ollama:OLLAMA_KEEP_ALIVE: '-1'
     # LLM parameter tuning

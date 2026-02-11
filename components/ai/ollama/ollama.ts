@@ -90,10 +90,11 @@ export class Ollama extends pulumi.ComponentResource {
                     },
                     ollama: {
                         gpu: {
-                            // AMD does not support time slicing so ignore resource requests and use device volumes instead
-                            // appVersion has to be set to determine imageTag (Helm chart limitation)
-                            enabled: !imageTag?.includes('-rocm'),
-                            type: amdGpu ? 'amd' : 'nvidia',
+                            // CPU-only mode: no GPU resources requested
+                            // AMD: device volumes used instead of resource requests
+                            // NVIDIA: standard GPU resource requests
+                            enabled: this.app.gpu ? true : false,
+                            type: this.app.gpu ?? undefined,
                             number: 1,
                         },
                         models: {
