@@ -12,6 +12,7 @@
             "git show *": "allow",
             "git status *": "allow",
             "grep *": "allow",
+            "head *": "allow",
             "kubectl describe *": "allow",
             "kubectl get secret *": "ask",
             "kubectl get secrets *": "ask",
