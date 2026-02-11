@@ -31,9 +31,19 @@
 
 ### Asking for Confirmation
 
-- Before implementing significant changes, discuss the proposed approach and alternatives first
-- When working through multiple files, show a brief diff/context before asking to proceed
-- Keep descriptions concise and focused on the specific change
+Stop and ask when you encounter:
+
+- **Comments indicating multiple values**: e.g., `// info, debug, dev` suggests more complexity than a boolean
+- **Inconsistent patterns**: same concept handled differently in different files
+- **Configuration that maps to multiple levels**: debug might be true/false in one place but have granular levels elsewhere
+- **Deprecation markers**: comments about future changes or TODOs
+- **Type mismatches**: a value used as boolean in one place but string/enum in another
+
+Even if the change seems straightforward, these signals may indicate the current pattern is intentionally simplified (YAGNI) or needs expansion.
+
+### Initialization Order
+
+When a value from `Application` (like `this.app.debug`) is needed during chained initialization, create the Application instance first: `this.app = new Application(...);`, then continue with chained methods: `this.app.addStorage().addConfigVolume(...)`.
 
 ### Commit Messages
 
