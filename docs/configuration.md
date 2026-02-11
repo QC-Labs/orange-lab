@@ -50,18 +50,19 @@ pulumi up
 
 The following settings are supported by most applications in OrangeLab:
 
-| Setting              | Description                                                                                  |
-| -------------------- | -------------------------------------------------------------------------------------------- |
-| `enabled`            | Enable or disable the application                                                            |
-| `hostname`           | Hostname for the HTTPS endpoint, used with Tailscale for access                              |
-| `version`            | Lock Helm chart version to a specific release (uses latest if not specified)                 |
-| `storageOnly`        | Disable application but retain storage (useful for temporarily disabling while keeping data) |
-| `storageSize`        | Expand default storage size if needed (e.g., for large models)                               |
-| `fromVolume`         | Attach existing Longhorn volume instead of creating new one                                  |
-| `storageClass`       | Force specific storage class used by the application                                         |
-| `preferredNodeLabel` | Deploy to node with specified label if exists (soft constraint)                              |
-| `requiredNodeLabel`  | Deploy only to node with specified label (hard constraint)                                   |
-| `backupVolume`       | Enable volume backups to S3-compatible storage                                               |
+| Setting               | Description                                                                                  |
+| --------------------- | -------------------------------------------------------------------------------------------- |
+| `enabled`             | Enable or disable the application                                                            |
+| `hostname`            | Hostname for the HTTPS endpoint, used with Tailscale for access                              |
+| `version`             | Lock Helm chart version to a specific release (uses latest if not specified)                 |
+| `storageOnly`         | Disable application but retain storage (useful for temporarily disabling while keeping data) |
+| `storageSize`         | Expand default storage size if needed (e.g., for large models)                               |
+| `fromVolume`          | Attach existing Longhorn volume instead of creating new one                                  |
+| `storageClass`        | Force specific storage class used by the application                                         |
+| `preferredNodeLabel`  | Deploy to node with specified label if exists (soft constraint)                              |
+| `requiredNodeLabel`   | Deploy only to node with specified label (hard constraint)                                   |
+| `requiredVolumeLabel` | Pin volume to specific node(s). Immutable - requires app redeploy to change                  |
+| `backupVolume`        | Enable volume backups to S3-compatible storage                                               |
 
 ### Custom Hostnames
 
@@ -95,6 +96,20 @@ pulumi config set ollama:preferredNodeLabel orangelab/ollama
 
 # Hard constraint - only run on these nodes
 pulumi config set prometheus:requiredNodeLabel orangelab/prometheus=true
+```
+
+### Volume Affinity
+
+By default, Longhorn automatically manages volume placement across nodes. Use `requiredVolumeLabel` only when you need to pin volumes to specific nodes (e.g., NAS available on local network).
+
+**Important:** Volume affinity is immutable - once set, the field cannot be changed without recreating the volume. This requires redeploying the application.
+
+```sh
+# Pin main app volume to node with NAS
+pulumi config set <app>:requiredVolumeLabel kubernetes.io/hostname=nas
+
+# Pin database volume specifically (does not affect app volume)
+pulumi config set <app>:db/requiredVolumeLabel kubernetes.io/hostname=nas
 ```
 
 ### AMD GPU

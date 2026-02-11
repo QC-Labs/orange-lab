@@ -49,13 +49,17 @@ export class Nodes {
         };
     }
 
-    getVolumeAffinity(): kubernetes.types.input.core.v1.VolumeNodeAffinity | undefined {
-        return this.gpu
+    getVolumeAffinity(
+        component?: string,
+    ): kubernetes.types.input.core.v1.VolumeNodeAffinity | undefined {
+        const requiredVolumeLabel = config.get(
+            this.args.appName,
+            `${component ? `${component}/` : ''}requiredVolumeLabel`,
+        );
+        return requiredVolumeLabel
             ? {
                   required: {
-                      nodeSelectorTerms: [
-                          this.getNodeSelectorTerm('node-role.kubernetes.io/gpu=true'),
-                      ],
+                      nodeSelectorTerms: [this.getNodeSelectorTerm(requiredVolumeLabel)],
                   },
               }
             : undefined;

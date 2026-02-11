@@ -80,7 +80,7 @@ export class Storage extends pulumi.ComponentResource {
         const storage = new LonghornVolume(
             `${volumeName}-storage`,
             {
-                affinity: this.args.nodes.getVolumeAffinity(),
+                affinity: this.args.nodes.getVolumeAffinity(volume?.name),
                 annotations: volume?.annotations,
                 enableBackup: config.isBackupEnabled(this.appName, volume?.name),
                 fromVolume:
