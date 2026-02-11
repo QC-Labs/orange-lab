@@ -119,7 +119,7 @@ config:
     ollama:storageOnly: false
     # ollama:fromVolume: ollama
     ollama:gpu: nvidia
-    # Override GPU version for AMD ROCm compatibility
+    # Override GPU version for AMD ROCm compatibility (ollama:gpu=amd)
     # ollama:HSA_OVERRIDE_GFX_VERSION: "11.0.2"
     # ollama:HCC_AMDGPU_TARGETS: "gfx1103"
     # "-1" = keep models loaded indefinitely, "30m" unload after 30 minutes of inactivity
@@ -146,6 +146,8 @@ config:
     open-webui:hostname: webui
     open-webui:storageSize: 5Gi
     open-webui:DEFAULT_USER_ROLE: admin
+    # local Whisper speech recognition (nvidia only)
+    # open-webui:gpu: nvidia
 
     kubeai:enabled: false
     kubeai:hostname: kubeai

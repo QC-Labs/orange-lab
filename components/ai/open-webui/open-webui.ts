@@ -1,8 +1,7 @@
-import * as pulumi from '@pulumi/pulumi';
-import * as random from '@pulumi/random';
 import { Application } from '@orangelab/application';
 import { config } from '@orangelab/config';
-import { StorageType } from '@orangelab/types';
+import * as pulumi from '@pulumi/pulumi';
+import * as random from '@pulumi/random';
 
 export interface OpenWebUIArgs {
     ollamaUrl?: string;
@@ -26,7 +25,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
         const DEFAULT_MODELS = config.get(name, 'DEFAULT_MODELS') ?? '';
         const DEFAULT_USER_ROLE = config.require(name, 'DEFAULT_USER_ROLE');
 
-        const app = new Application(this, name).addStorage({ type: StorageType.GPU });
+        const app = new Application(this, name).addStorage();
 
         if (app.storageOnly) return;
 
