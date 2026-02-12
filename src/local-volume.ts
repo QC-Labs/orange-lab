@@ -115,7 +115,7 @@ export class LocalVolume extends pulumi.ComponentResource {
                     name: `${this.args.appName}-${this.args.volumeName}`,
                 },
                 provisioner: 'kubernetes.io/no-provisioner',
-                volumeBindingMode: 'Immediate',
+                volumeBindingMode: 'WaitForFirstConsumer',
                 reclaimPolicy: 'Retain',
             },
             { parent: this },

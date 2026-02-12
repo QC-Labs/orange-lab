@@ -93,12 +93,9 @@ export class Containers {
         const initContainers = spec.initContainers ?? [];
 
         const mountPaths = this.getLocalVolumeMounts(spec.volumeMounts);
-        if (spec.fixVolumePermissionsFor && mountPaths.length > 0) {
+        if (spec.volumeOwnerUserId && mountPaths.length > 0) {
             initContainers.push(
-                this.createPermissionsInitContainer(
-                    spec.fixVolumePermissionsFor,
-                    mountPaths,
-                ),
+                this.createPermissionsInitContainer(spec.volumeOwnerUserId, mountPaths),
             );
         }
         return this.createInitContainers(initContainers, spec.volumeMounts);
@@ -128,7 +125,7 @@ export class Containers {
         const paths = mountPaths.join(' ');
         return {
             name: 'fix-volume-permissions',
-            command: ['sh', '-c', `chown -R ${userId}:${userId} ${paths}`],
+            command: ['sh', '-c', `chown ${userId}:${userId} ${paths}`],
         };
     }
 
@@ -148,8 +145,7 @@ export class Containers {
             context.seccompProfile = { type: 'Unconfined' };
         } else if (
             this.args.nodes.gpu === 'nvidia' ||
-            this.args.storage?.hasDeviceMounts() ||
-            this.args.storage?.hasLocal()
+            this.args.storage?.hasDeviceMounts()
         ) {
             context.privileged = true;
         }
