@@ -8,7 +8,7 @@ The first time you configure the cluster, it's best to run `pulumi up` after eac
 
 **Longhorn** required for storage nodes but only runs on Linux. You can use local storage when using MacOS, Windows or when running [single node](/docs/single-node.md) only.
 
-**MinIO** is used by Longhorn and required for automatic backups.
+**MinIO** or **RustFS** is used by Longhorn and required for automatic backups.
 
 To run GPU workloads, either **NVidia or AMD operator** has to be installed.
 
@@ -77,9 +77,13 @@ kubectl label node <node> svccontroller.k3s.cattle.io/enablelb=true
 - [Tailscale Operator](./tailscale/tailscale.md) - Manages cluster ingress endpoints and Kubernetes API access.
 - [Traefik](./traefik/traefik.md) - Ingress controller for custom domain traffic.
 - [Longhorn](./longhorn/longhorn.md) - Replicated block storage for Kubernetes workloads.
-- [Minio](./minio/minio.md) - S3-compatible object storage for backups and data.
+- [Minio](./minio/minio.md) - S3-compatible object storage.
 - [Cert-manager](./cert-manager/cert-manager.md) - Automated certificate management for custom domains.
 - [NFD](./nfd/nfd.md) - Node Feature Discovery for hardware-aware scheduling and GPU auto-detection.
 - [NVIDIA GPU Operator](./nvidia-gpu-operator/nvidia-gpu-operator.md) - (Optional) Enables NVIDIA GPU support for containerized workloads.
 - [AMD GPU Operator](./amd-gpu-operator/amd-gpu-operator.md) - (Optional) Enables AMD GPU support for ROCm workloads.
 - [Debug](./debug/debug.md) - (Optional, Troubleshooting only) Troubleshooting utilities and volume access tools.
+
+### Experimental
+
+- [Rustfs](./rustfs/rustfs.md) - S3-compatible object storage for backups and data.

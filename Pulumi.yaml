@@ -59,6 +59,15 @@ config:
     minio:rootUser: minioadmin
     # minio:requiredNodeLabel: kubernetes.io/hostname=<hostname>
 
+    rustfs:enabled: false
+    rustfs:hostname: rustfs
+    rustfs:hostname-api: rustfs-api
+    # rustfs:dataPath: /mnt/my-drive/rustfs-data
+    rustfs:storageSize: 2000Gi
+    # rustfs:requiredNodeLabel: kubernetes.io/hostname=<hostname>
+    rustfs:rootUser: admin
+    rustfs:appVersion: 1.0.0-alpha.83
+
     cert-manager:enabled: false
     cert-manager:clusterIssuer: letsencrypt-issuer
 
