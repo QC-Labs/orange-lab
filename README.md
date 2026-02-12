@@ -36,6 +36,7 @@ Private infrastructure for cloud natives.
 - [`longhorn`](./components/system/longhorn/longhorn.md) - replicated storage
 - [`minio`](./components/system/minio/minio.md) - S3-compatible storage (used as Longhorn backup target)
 - [`nfd`](./components/system/nfd/nfd.md) - Node Feature Discovery (GPU autodetection)
+- [`rustfs`](./components/system/rustfs/rustfs.md) - S3-compatible storage
 - [`nvidia-gpu-operator`](./components/system/nvidia-gpu-operator/nvidia-gpu-operator.md) - NVidia GPU support
 - [`tailscale-operator`](./components/system/tailscale/tailscale.md) - ingress support with Tailscale authentication
 - [`traefik`](./components/system/traefik/traefik.md) - reverse proxy for custom domain support
