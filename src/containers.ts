@@ -1,18 +1,15 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { config } from './config';
+import { InitContainers } from './containers-init';
 import { Metadata } from './metadata';
 import { Nodes } from './nodes';
 import { Storage } from './storage';
-import {
-    ContainerResources,
-    ContainerSpec,
-    InitContainerSpec,
-    ServicePort,
-    VolumeMount,
-} from './types';
+import { ContainerResources, ContainerSpec, ServicePort, VolumeMount } from './types';
 
 export class Containers {
+    private initContainers: InitContainers;
+
     constructor(
         private appName: string,
         private args: {
@@ -22,7 +19,9 @@ export class Containers {
             nodes: Nodes;
         },
         private opts?: pulumi.ComponentResourceOptions,
-    ) {}
+    ) {
+        this.initContainers = new InitContainers(appName, args, opts);
+    }
 
     public createPodTemplateSpec(
         spec: ContainerSpec,
@@ -78,63 +77,13 @@ export class Containers {
                         volumeMounts: this.createVolumeMounts(spec.volumeMounts),
                     },
                 ],
-                initContainers: this.createAllInitContainers(spec),
+                initContainers: this.initContainers.create(spec),
                 restartPolicy: spec.restartPolicy,
                 serviceAccountName: this.args.serviceAccount.metadata.name,
                 runtimeClassName: this.args.nodes.gpu === 'nvidia' ? 'nvidia' : undefined,
                 volumes: this.createVolumes(spec.volumeMounts),
             },
         };
-    }
-
-    private createAllInitContainers(
-        spec: ContainerSpec,
-    ): pulumi.Input<pulumi.Input<kubernetes.types.input.core.v1.Container>[]> {
-        const initContainers = spec.initContainers ?? [];
-
-        const mountPaths = this.getLocalVolumeMounts(spec.volumeMounts);
-        if (spec.volumeOwnerUserId && mountPaths.length > 0) {
-            initContainers.push(
-                this.createPermissionsInitContainer(spec.volumeOwnerUserId, mountPaths),
-            );
-        }
-        return this.createInitContainers(initContainers, spec.volumeMounts);
-    }
-
-    private createInitContainers(
-        initContainerSpec: InitContainerSpec[],
-        defaultVolumeMounts?: VolumeMount[],
-    ): pulumi.Input<pulumi.Input<kubernetes.types.input.core.v1.Container>[]> {
-        return initContainerSpec.map(initContainer => ({
-            name: initContainer.name,
-            image: initContainer.image ?? 'busybox:latest',
-            command: initContainer.command,
-            imagePullPolicy: 'IfNotPresent',
-            securityContext: this.createInitContainerSecurityContext(),
-            volumeMounts: this.createVolumeMounts(
-                initContainer.volumeMounts ?? defaultVolumeMounts,
-            ),
-        }));
-    }
-
-    private createPermissionsInitContainer(
-        runAsUser: number,
-        mountPaths: string[],
-    ): InitContainerSpec {
-        const userId = String(runAsUser);
-        const paths = mountPaths.join(' ');
-        return {
-            name: 'fix-volume-permissions',
-            command: ['sh', '-c', `chown ${userId}:${userId} ${paths}`],
-        };
-    }
-
-    private getLocalVolumeMounts(volumeMounts?: VolumeMount[]): string[] {
-        const localVolumeNames =
-            this.args.storage?.getLocalVolumes().map(v => v.name) ?? [];
-        return (volumeMounts ?? [])
-            .filter(mount => localVolumeNames.includes(mount.name ?? this.appName))
-            .map(mount => mount.mountPath);
     }
 
     private createContainerSecurityContext(
@@ -154,12 +103,6 @@ export class Containers {
             context.runAsGroup = runAsUser;
         }
         return Object.keys(context).length ? context : undefined;
-    }
-
-    private createInitContainerSecurityContext():
-        | kubernetes.types.input.core.v1.SecurityContext
-        | undefined {
-        return this.args.storage?.hasLocal() ? { privileged: true } : undefined;
     }
 
     private createPorts(args: { port?: number; ports?: ServicePort[] }) {
