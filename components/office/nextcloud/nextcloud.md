@@ -5,7 +5,7 @@
 | Homepage      | https://nextcloud.com/                                                   |
 | Helm chart    | https://github.com/nextcloud/helm                                        |
 | Helm values   | https://github.com/nextcloud/helm/blob/main/charts/nextcloud/values.yaml |
-| Endpoints     | `https://nextcloud.<tsnet>.ts.net/`                                      |
+| Endpoints     | `https://nextcloud.<domain>/`                                            |
 | Documentation | https://docs.nextcloud.com/                                              |
 
 Nextcloud is a self-hosted productivity platform that lets you store files, collaborate, and run office apps in your own private cloud.

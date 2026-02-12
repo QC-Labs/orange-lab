@@ -6,7 +6,7 @@
 | Documentation         | https://docs.n8n.io/                                 |
 | Source code           | https://github.com/n8n-io/n8n                        |
 | Environment variables | https://docs.n8n.io/reference/environment-variables/ |
-| Endpoints             | `https://n8n.<tsnet>.ts.net/`                        |
+| Endpoints             | `https://n8n.<domain>/`                              |
 
 N8n is a visual workflow automation platform that allows you to connect different apps and services to automate tasks.
 

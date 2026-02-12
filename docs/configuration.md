@@ -22,7 +22,7 @@ pulumi up
 pulumi up -r # --refresh Pulumi state if out of sync
 
 # Make request to provision HTTP certificate and activate endpoint
-curl https://<app>.<tsnet>.ts.net/
+curl https://<app>.<domain>/
 ```
 
 ## Enable/Disable Applications
@@ -72,7 +72,7 @@ Set a custom hostname for the HTTPS endpoint:
 pulumi config set ollama:hostname ollama-api
 ```
 
-The application will be available at `https://ollama-api.<tsnet>.ts.net/`.
+The application will be available at `https://ollama-api.<domain>/`.
 
 ### Version Pinning
 

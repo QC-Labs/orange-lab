@@ -4,7 +4,7 @@
 | ---------- | ------------------------------------------------------------- |
 | Homepage   | https://www.home-assistant.io/                                |
 | Helm chart | https://artifacthub.io/packages/helm/helm-hass/home-assistant |
-| Endpoints  | `https://home-assistant.<tsnet>.ts.net/`                      |
+| Endpoints  | `https://home-assistant.<domain>/`                            |
 
 Using zone is optional, but helps with making sure the application is deployed on same network as the sensors.
 

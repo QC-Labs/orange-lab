@@ -6,7 +6,7 @@
 | Source code           | https://github.com/invoke-ai/InvokeAI               |
 | Environment variables | https://invoke-ai.github.io/InvokeAI/configuration/ |
 | Tutorials             | https://www.youtube.com/@invokeai                   |
-| Endpoints             | `https://invokeai.<tsnet>.ts.net/`                  |
+| Endpoints             | `https://invokeai.<domain>/`                        |
 
 Generative AI platform with a clean user interface.
 

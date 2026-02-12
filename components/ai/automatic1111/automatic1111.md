@@ -6,7 +6,7 @@
 | Docker image          | https://hub.docker.com/r/universonic/stable-diffusion-webui                                      |
 | Dockerfile            | https://github.com/universonic/docker-stable-diffusion-webui                                     |
 | Environment variables | https://github.com/AUTOMATIC1111/stable-diffusion-webui/wiki/Command-Line-Arguments-and-Settings |
-| Endpoints             | `https://automatic1111.<tsnet>.ts.net/`                                                          |
+| Endpoints             | `https://automatic1111.<domain>/`                                                                |
 
 ```sh
 pulumi config set automatic1111:enabled true

@@ -1,10 +1,10 @@
 # Beszel
 
-|           |                                    |
-| --------- | ---------------------------------- |
-| Homepage  | https://beszel.dev/                |
-| Endpoints | `https://beszel.<tsnet>.ts.net/`   |
-|           | `https://beszel.<tsnet>.ts.net/_/` |
+|           |                              |
+| --------- | ---------------------------- |
+| Homepage  | https://beszel.dev/          |
+| Endpoints | `https://beszel.<domain>/`   |
+|           | `https://beszel.<domain>/_/` |
 
 A lightweight alternative to Prometheus.
 
@@ -15,7 +15,7 @@ pulumi config set beszel:enabled true
 pulumi up
 ```
 
-Once the hub is deployed, go to `beszel.<tsnet>.ts.net` endpoint and create an admin account.
+Once the hub is deployed, go to `beszel.<domain>` endpoint and create an admin account.
 
 To deploy agents you need to find the generated public key. Click `Add system`, then copy the `Public key` field. Close the popup and do not add any systems yet.
 

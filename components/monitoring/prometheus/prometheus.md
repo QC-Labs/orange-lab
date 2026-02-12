@@ -4,9 +4,9 @@
 | ---------- | ------------------------------------------------------------------------------------------ |
 | Homepage   | https://prometheus.io/                                                                     |
 | Helm chart | https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack |
-| Endpoints  | `https://grafana.<tsnet>.ts.net/`                                                          |
-|            | `https://prometheus.<tsnet>.ts.net/`                                                       |
-|            | `https://alertmanager.<tsnet>.ts.net/`                                                     |
+| Endpoints  | `https://grafana.<domain>/`                                                                |
+|            | `https://prometheus.<domain>/`                                                             |
+|            | `https://alertmanager.<domain>/`                                                           |
 
 Prometheus provides much more detailed monitoring of the cluster. Many tools (like Headlamp) integrate with it to show metrics for Kubernetes resources.
 

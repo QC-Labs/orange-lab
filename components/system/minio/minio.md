@@ -5,7 +5,7 @@
 | Homepage     | https://min.io/                                         |
 | Helm chart   | https://github.com/minio/minio/tree/master/chart        |
 | MinIO client | https://min.io/docs/minio/linux/reference/minio-mc.html |
-| Endpoints    | `https://minio.<tsnet>.ts.net/`                         |
+| Endpoints    | `https://minio.<domain>/`                               |
 
 Minio is a distributed object storage system compatible with Amazon S3.
 

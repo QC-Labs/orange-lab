@@ -4,7 +4,7 @@
 | --------------------- | -------------------------------------------------------------- |
 | Homepage              | https://ollama.com/                                            |
 | Helm chart            | https://artifacthub.io/packages/helm/ollama-helm/ollama        |
-| Endpoints             | `https://ollama.<tsnet>.ts.net/`                               |
+| Endpoints             | `https://ollama.<domain>/`                                     |
 | Environment variables | https://github.com/ollama/ollama/blob/main/envconfig/config.go |
 
 Ollama defaults to NVIDIA GPU support. To run on CPU only, explicitly disable GPU.

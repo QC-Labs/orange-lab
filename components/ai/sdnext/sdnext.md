@@ -7,8 +7,8 @@
 | Docker image  | https://hub.docker.com/r/saladtechnologies/sdnext                        |
 | Dockerfile    | https://github.com/SaladTechnologies/sdnext-dynamic/blob/main/Dockerfile |
 | CLI arguments | https://vladmandic.github.io/sdnext-docs/CLI-Arguments/                  |
-| Endpoints     | `https://sdnext.<tsnet>.ts.net/`                                         |
-|               | `https://sdnext.<tsnet>.ts.net/docs`                                     |
+| Endpoints     | `https://sdnext.<domain>/`                                               |
+|               | `https://sdnext.<domain>/docs`                                           |
 
 ```sh
 pulumi config set sdnext:enabled true
