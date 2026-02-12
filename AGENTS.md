@@ -11,7 +11,7 @@
 - **Simplicity Over Complexity (KISS):** Prioritize simple, straightforward solutions. Avoid over-engineering or introducing complex patterns without consultation.
 - **You aren't gonna need it (YAGNI):** Only implement features and functionality that are required now. Avoid building for hypothetical future scenarios.
 - **Loose Coupling:** Strive to keep components independent. Avoid creating circular dependencies.
-- **Single Responsibility:** Each class has one clear purpose: Metadata for labels/annotations, Network for ingress/services, Storage for volumes, etc.
+- **Single Responsibility:** Each class has one clear purpose: Metadata for labels/annotations, Network for ingress/services, Storage for volumes, etc. Extract functionality into separate files/classes when components have distinct responsibilities, even if they seem related (e.g., init containers handle volume preparation while runtime containers handle GPU workloads).
 - **Encapsulation of Complexity:** Complex logic should be encapsulated within classes. Expose clean interfaces rather than leaking implementation details.
 
 ## Working Conventions
@@ -48,6 +48,7 @@ When a value from `Application` (like `this.app.debug`) is needed during chained
 ### Commit Messages
 
 - Use conventional commits: `scope:` or `fix(scope):` for normal changes and bug fixes, `scope!: BREAKING CHANGE` for breaking changes
+- One line is usually sufficient; add detailed description only for breaking changes explaining how to migrate
 - Include why the change matters (e.g., "shows up in Headlamp in Cluster/Nodes")
 - Don't use "refactor:" for breaking changes
 
@@ -84,6 +85,12 @@ When a value from `Application` (like `this.app.debug`) is needed during chained
 - Use assert for validations that should never fail
 - Prefer TypeScript's strict null checking
 - Use optional chaining (?.) for potentially undefined values
+
+### Method Size
+
+- Keep methods around 20 lines or less
+- Simple operations (single `.map()`, `.filter()`) should be inlined rather than extracted into private methods
+- Outliers exist for orchestration methods that coordinate multiple steps
 
 ### Type Safety
 
