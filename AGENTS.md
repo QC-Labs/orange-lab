@@ -11,7 +11,7 @@
 - **Simplicity Over Complexity (KISS):** Prioritize simple, straightforward solutions. Avoid over-engineering or introducing complex patterns without consultation.
 - **You aren't gonna need it (YAGNI):** Only implement features and functionality that are required now. Avoid building for hypothetical future scenarios.
 - **Loose Coupling:** Strive to keep components independent. Avoid creating circular dependencies.
-- **Single Responsibility:** Each class has one clear purpose: Metadata for labels/annotations, Network for ingress/services, Storage for volumes, etc. Extract functionality into separate files/classes when components have distinct responsibilities, even if they seem related (e.g., init containers handle volume preparation while runtime containers handle GPU workloads).
+- **Single Responsibility:** Each class has one clear purpose: Metadata for labels/annotations, Network for ingress/services, Storage for volumes, etc. Extract functionality into separate files/classes when components have distinct responsibilities, even if they seem related (e.g., init containers handle volume preparation while runtime containers handle main workloads with GPU support).
 - **Encapsulation of Complexity:** Complex logic should be encapsulated within classes. Expose clean interfaces rather than leaking implementation details.
 
 ## Working Conventions
@@ -117,3 +117,33 @@ When a value from `Application` (like `this.app.debug`) is needed during chained
 - Prefer composition over inheritance for component relationships
 - Only export fields when needed for external use; keep sensitive values like auth keys internal when not required
 - Share provider instances across components (pass via args) rather than creating duplicates
+
+### Documentation
+
+#### Module Documentation (`<module>/MODULE.md`)
+
+1. Short description and important things user needs to know before installing
+2. TLDR section with code block containing only settings user must set or is very likely to change
+    - Single-line comments: `# (Optional) ...`, `# (Recommended) ...`
+    - Omit defaults (e.g., storageSize if using default)
+3. List of existing components with links to component docs
+4. "Experimental" and "Obsolete" sections only if components exist in those categories
+
+#### Component Documentation (`<component>/<component>.md`)
+
+1. **Links table**: Homepage, Source code, Documentation, Helm chart/values (if used), Endpoints
+2. **Short description** followed by code section with:
+    - Required settings to get it running
+    - Optional/likely settings with single-line comments
+    - Comments only when command needs explanation
+3. **Additional sections** only for complex topics needing more than a code comment
+4. **Uninstall section** only when manual cleanup required (CRDs, etc.)
+
+#### Auto-generated Secrets
+
+When a component generates secrets/tokens automatically (e.g., encryption keys), provide instructions in the component docs for:
+
+1. Retrieving the secret from stack outputs after first deployment
+2. Saving it to config with `--secret` flag for backup restoration
+
+Example: n8n, vaultwarden
