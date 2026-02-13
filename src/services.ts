@@ -61,7 +61,7 @@ export class Services {
                         matchLabels: this.args.metadata.getSelectorLabels(spec.name),
                     },
                     template: podSpec.createPodTemplateSpec(spec),
-                    strategy: { type: 'Recreate', rollingUpdate: undefined },
+                    strategy: { type: 'RollingUpdate', rollingUpdate: { maxSurge: 0, maxUnavailable: 1 } },
                 },
             },
             {
