@@ -106,7 +106,8 @@ If you lose the admin password, you can reset it. This is also helpful after res
 2.  Once inside the container's shell, run the `occ` command to reset the password for the `admin` user. Replace `YourNewPassword` with a strong password.
 
     ```sh
-    ./occ user:resetpassword admin YourNewPassword
+    ./occ user:resetpassword admin
+    YourNewPassword
     ```
 
 3.  Exit the container shell.
