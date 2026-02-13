@@ -3,6 +3,7 @@
     "permission": {
         "bash": {
             "*": "ask",
+            "*Pulumi.*.yaml*": "ask",
             "cat *": "allow",
             "curl *": "allow",
             "gh release *": "ask",
@@ -13,10 +14,11 @@
             "git status *": "allow",
             "grep *": "allow",
             "head *": "allow",
+            "jq *": "allow",
             "kubectl describe *": "allow",
+            "kubectl get *": "allow",
             "kubectl get secret *": "ask",
             "kubectl get secrets *": "ask",
-            "kubectl get *": "allow",
             "kubectl logs *": "allow",
             "ls *": "allow",
             "npm run lint": "allow",
