@@ -25,4 +25,4 @@ if [ -z "$pod" ]; then
   exit 1
 fi
 
-kubectl exec -it $pod -n $namespace -- /bin/bash
+kubectl exec -it $pod -n $namespace -- /bin/sh
