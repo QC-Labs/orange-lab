@@ -6,6 +6,7 @@ import { DataModule } from './components/data';
 import { IoTModule } from './components/iot';
 import { MonitoringModule } from './components/monitoring';
 import { OfficeModule } from './components/office';
+import { SecurityModule } from './components/security';
 import { config } from '@orangelab/config';
 import { SystemModule } from './components/system';
 
@@ -45,4 +46,9 @@ if (config.isModuleEnabled('bitcoin')) {
 if (config.isModuleEnabled('office')) {
     const officeModule = new OfficeModule('office', { dependsOn: baseModules });
     exports.office = officeModule.getExports();
+}
+
+if (config.isModuleEnabled('security')) {
+    const securityModule = new SecurityModule('security', { dependsOn: baseModules });
+    exports.security = securityModule.getExports();
 }

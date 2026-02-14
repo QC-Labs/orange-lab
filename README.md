@@ -76,6 +76,10 @@ Private infrastructure for cloud natives.
 
 - [`nextcloud`](./components/office/nextcloud/nextcloud.md) - File sharing and collaboration suite
 
+[Security module](./components/security/SECURITY.md):
+
+- [`vaultwarden`](./components/security/vaultwarden/vaultwarden.md) - Bitwarden-compatible password manager
+
 # Platforms and limitations
 
 Installation instructions assume your machines are running Bluefin (Developer edition, https://projectbluefin.io/) based on Fedora Silverblue unless otherwise noted.

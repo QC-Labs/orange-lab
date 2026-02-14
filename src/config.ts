@@ -9,6 +9,7 @@ const moduleDependencies: Record<string, string[]> = {
     iot: ['home-assistant'],
     monitoring: ['beszel', 'prometheus'],
     office: ['nextcloud'],
+    security: ['vaultwarden'],
     system: [
         'amd-gpu-operator',
         'cert-manager',
@@ -17,6 +18,7 @@ const moduleDependencies: Record<string, string[]> = {
         'minio',
         'nfd',
         'nvidia-gpu-operator',
+        'rustfs',
         'tailscale',
         'tailscale-operator',
         'traefik',
