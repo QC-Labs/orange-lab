@@ -63,9 +63,7 @@ export class Debug extends pulumi.ComponentResource {
             image: 'alpine',
             commandArgs: ['sleep', '3600'],
             volumeMounts: [
-                this.fromVolume
-                    ? { name: this.fromVolume, mountPath: '/data' }
-                    : undefined,
+                this.fromVolume ? { name: 'debug', mountPath: '/data' } : undefined,
                 this.exportPath
                     ? { name: 'local', mountPath: '/data-export' }
                     : undefined,

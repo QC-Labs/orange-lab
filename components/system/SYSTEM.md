@@ -82,8 +82,8 @@ kubectl label node <node> svccontroller.k3s.cattle.io/enablelb=true
 - [NFD](./nfd/nfd.md) - Node Feature Discovery for hardware-aware scheduling and GPU auto-detection.
 - [NVIDIA GPU Operator](./nvidia-gpu-operator/nvidia-gpu-operator.md) - (Optional) Enables NVIDIA GPU support for containerized workloads.
 - [AMD GPU Operator](./amd-gpu-operator/amd-gpu-operator.md) - (Optional) Enables AMD GPU support for ROCm workloads.
-- [Debug](./debug/debug.md) - (Optional, Troubleshooting only) Troubleshooting utilities and volume access tools.
 
 ### Experimental
 
 - [Rustfs](./rustfs/rustfs.md) - S3-compatible object storage for backups and data.
+- [Debug](./debug/debug.md) - (Optional, Troubleshooting only) Troubleshooting utilities and volume access tools.
