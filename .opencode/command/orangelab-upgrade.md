@@ -51,10 +51,12 @@ When showing commands for the user to run, format them clearly:
 This command guides users through upgrading their OrangeLab installation safely.
 
 **Quick Upgrade** (no breaking changes):
+
 - Step 0: Check for uncommitted changes and pending infrastructure updates
 - Step 1: Analyze incoming changes, if no breaking changes → `git pull --rebase && pulumi up`
 
 **Full Upgrade** (breaking changes detected):
+
 - Steps 2-11: Verify storage safety, save secrets, update K3s, disable/re-enable affected apps
 
 ## Important Rules
@@ -241,38 +243,42 @@ Apps requiring action:
 **Tell user**: "Before making any changes, I'll verify your storage configuration. Apps using static volumes (`fromVolume`) can be safely disabled and re-enabled without losing data - the Longhorn volume just gets detached and can be reattached. Apps using dynamic volumes will lose their storage if disabled."
 
 **IMPORTANT**: Never include Longhorn or cert-manager in the list of apps to disable. These are core infrastructure:
+
 - **Longhorn** - Storage backend that manages all volumes; it doesn't use volumes itself
 - **cert-manager** - Stores certificates in CRDs that would be lost if disabled
 
-**Run this read-only command**:
+**Run this read-only command** to get a categorized list of all enabled apps by volume type:
 
 ```bash
-pulumi config
+./scripts/list-volumes.sh
 ```
 
-**Analyze the output** focusing ONLY on apps with breaking changes from Step 1:
+The script outputs two sections:
 
-1. Check which of those apps have `enabled: true`
-2. For each enabled app, check if `<app>:fromVolume` is configured
-3. Identify apps with persistent storage but NO `fromVolume` set
+- **Static volumes (fromVolume)**: Apps with static volumes, safe to disable/re-enable
+- **Dynamic volumes**: Apps without `fromVolume`, data loss risk if disabled
+
+**Cross-reference** the script output with apps affected by breaking changes from Step 1:
+
+- Apps listed under "Static volumes" are safe to disable
+- Apps listed under "Dynamic volumes" need attention before disabling
 
 **Report to user**:
 
 ```
 Storage Safety Check (only for apps with breaking changes):
 
-Apps with breaking changes that are enabled:
-  [list apps from Step 1 that have enabled: true]
+Safe to disable (static volumes):
+  [apps from breaking changes list that appear under "Static volumes"]
 
-Storage configuration:
-  app-name: enabled=true, fromVolume=x (static, safe to disable)
-  app-name: enabled=true, NO fromVolume (WARNING - dynamic volume, data loss risk)
+WARNING - dynamic volumes (data loss risk if disabled):
+  [apps from breaking changes list that appear under "Dynamic volumes"]
 
-Apps with breaking changes that are disabled (no action needed):
-  [list disabled apps]
+Not affected (disabled or no breaking changes):
+  [remaining apps]
 ```
 
-**If any ENABLED apps with breaking changes are missing `fromVolume`**:
+**If any apps with breaking changes appear under "Dynamic volumes"**:
 
 1. **WARNING**: Tell user: "This app uses a dynamic volume. If we disable it, the PersistentVolume and its data will be deleted."
 2. **Show user commands** to convert to static volume:
@@ -406,6 +412,7 @@ kubectl get nodes --show-labels
 **NEVER disable**: Longhorn, cert-manager (see Step 1). For these, apply config migrations directly.
 
 **Apps with manual uninstall steps** (check `components/<category>/<app>/<app>.md` "Uninstall" section if disabling):
+
 - `tailscale` - Remove leftover machines with `tag:orangelab` at https://login.tailscale.com/admin/machines, delete CRDs
 - `cloudnative-pg` - Delete CRDs (required before reinstalling)
 - `prometheus` - Disable component monitoring first, then delete CRDs
