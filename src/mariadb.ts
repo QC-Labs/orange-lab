@@ -65,10 +65,7 @@ export class MariaDbCluster extends pulumi.ComponentResource {
     }
 
     private createCluster(): kubernetes.apiextensions.CustomResource {
-        const metadata = this.args.metadata.get({
-            component: this.args.name,
-            includeVersionLabel: true,
-        });
+        const metadata = this.args.metadata.get({ component: this.args.name });
         const myCnf = pulumi.interpolate`
         [mariadb]
         skip-name-resolve
