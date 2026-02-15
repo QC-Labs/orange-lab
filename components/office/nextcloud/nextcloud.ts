@@ -45,6 +45,9 @@ export class Nextcloud extends pulumi.ComponentResource {
                 repo: 'https://nextcloud.github.io/helm/',
                 values: {
                     affinity: this.app.nodes.getAffinity(),
+                    cronjob: {
+                        enabled: true,
+                    },
                     externalDatabase: {
                         enabled: true,
                         type: 'mysql',
