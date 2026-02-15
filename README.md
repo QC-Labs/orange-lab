@@ -34,9 +34,8 @@ Private infrastructure for cloud natives.
 - [`amd-gpu-operator`](./components/system/amd-gpu-operator/amd-gpu-operator.md) - AMD GPU support
 - [`cert-manager`](./components/system/cert-manager/cert-manager.md) - certificate management
 - [`longhorn`](./components/system/longhorn/longhorn.md) - replicated storage
-- [`minio`](./components/system/minio/minio.md) - S3-compatible storage (used as Longhorn backup target)
+- [`rustfs`](./components/system/rustfs/rustfs.md) - S3-compatible storage (Longhorn backup target)
 - [`nfd`](./components/system/nfd/nfd.md) - Node Feature Discovery (GPU autodetection)
-- [`rustfs`](./components/system/rustfs/rustfs.md) - S3-compatible storage
 - [`nvidia-gpu-operator`](./components/system/nvidia-gpu-operator/nvidia-gpu-operator.md) - NVidia GPU support
 - [`tailscale-operator`](./components/system/tailscale/tailscale.md) - ingress support with Tailscale authentication
 - [`traefik`](./components/system/traefik/traefik.md) - reverse proxy for custom domain support
@@ -57,13 +56,11 @@ Private infrastructure for cloud natives.
 
 [AI module](./components/ai/AI.md):
 
-- [`automatic1111`](./components/ai/automatic1111/automatic1111.md) - Automatic1111 Stable Diffusion WebUI
 - [`kubeai`](./components/ai/kubeai/kubeai.md) - Ollama and vLLM models over OpenAI-compatible API
 - [`invokeai`](./components/ai/invokeai/invokeai.md) - generative AI plaform, community edition
 - [`n8n`](./components/ai/n8n/n8n.md) - AI workflow automation
 - [`ollama`](./components/ai/ollama/ollama.md) - local large language models
 - [`open-webui`](./components/ai/open-webui/open-webui.md) - Open WebUI frontend
-- [`sdnext`](./components/ai/sdnext/sdnext.md) - SD.Next Stable Diffusion WebUI
 
 [Bitcoin module](./components/bitcoin/BITCOIN.md):
 

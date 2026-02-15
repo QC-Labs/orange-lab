@@ -77,7 +77,7 @@ kubectl label node <node> svccontroller.k3s.cattle.io/enablelb=true
 - [Tailscale Operator](./tailscale/tailscale.md) - Manages cluster ingress endpoints and Kubernetes API access.
 - [Traefik](./traefik/traefik.md) - Ingress controller for custom domain traffic.
 - [Longhorn](./longhorn/longhorn.md) - Replicated block storage for Kubernetes workloads.
-- [Minio](./minio/minio.md) - S3-compatible object storage.
+- [Rustfs](./rustfs/rustfs.md) - S3-compatible object storage for Longhorn backups.
 - [Cert-manager](./cert-manager/cert-manager.md) - Automated certificate management for custom domains.
 - [NFD](./nfd/nfd.md) - Node Feature Discovery for hardware-aware scheduling and GPU auto-detection.
 - [NVIDIA GPU Operator](./nvidia-gpu-operator/nvidia-gpu-operator.md) - (Optional) Enables NVIDIA GPU support for containerized workloads.
@@ -85,5 +85,8 @@ kubectl label node <node> svccontroller.k3s.cattle.io/enablelb=true
 
 ### Experimental
 
-- [Rustfs](./rustfs/rustfs.md) - S3-compatible object storage for backups and data.
 - [Debug](./debug/debug.md) - (Optional, Troubleshooting only) Troubleshooting utilities and volume access tools.
+
+### Deprecated
+
+- [Minio](./minio/minio.md) - S3-compatible object storage. Replaced by Rustfs. MinIO stopped publishing images to quay.io in Oct 2025.
