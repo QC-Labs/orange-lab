@@ -1,3 +1,4 @@
+import { config } from '@orangelab/config';
 import { Metadata } from '@orangelab/metadata';
 import { S3Provisioner } from '@orangelab/types';
 import * as kubernetes from '@pulumi/kubernetes';
@@ -5,6 +6,7 @@ import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
 
 export interface MinioProvisionerArgs {
+    appName: string;
     metadata: Metadata;
     rootUser: pulumi.Input<string>;
     rootPassword: pulumi.Input<string>;
@@ -65,6 +67,7 @@ export class MinioProvisioner extends pulumi.ComponentResource implements S3Prov
 
         const configMap = this.createScript(username, bucket);
 
+        const image = config.require(this.args.appName, 'provisioner/image');
         return new kubernetes.batch.v1.Job(
             `${this.name}-${username}`,
             {
@@ -80,7 +83,7 @@ export class MinioProvisioner extends pulumi.ComponentResource implements S3Prov
                             containers: [
                                 {
                                     name: 'mc',
-                                    image: 'minio/mc',
+                                    image,
                                     command: ['sh', '/config/script.sh'],
                                     envFrom: [
                                         { secretRef: { name: secret.metadata.name } },

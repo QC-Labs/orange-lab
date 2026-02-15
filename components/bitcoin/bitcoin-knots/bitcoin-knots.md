@@ -9,11 +9,10 @@
 Bitcoin Knots is a conservative fork of Bitcoin Core with a focus on stability and conservative improvements. The node uses persistent volume storage mounted at `/data`.
 
 ```sh
-# Required configuration
 pulumi config set bitcoin-knots:enabled true
 
-# Lock version (recommended)
-pulumi config set bitcoin-knots:version 28.1
+# (Recommended) Lock version
+pulumi config set bitcoin-knots:image btcpayserver/bitcoinknots:28.1
 
 # Optional configuration
 pulumi config set bitcoin-knots:prune 1000  # Prune mode (MB), 0 for full node with txindex

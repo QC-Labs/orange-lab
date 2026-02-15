@@ -5,7 +5,10 @@ import { config } from '@orangelab/config';
 export class Beszel extends pulumi.ComponentResource {
     public readonly app: Application;
 
-    constructor(name: string, opts?: pulumi.ResourceOptions) {
+    constructor(
+        private readonly name: string,
+        opts?: pulumi.ResourceOptions,
+    ) {
         super('orangelab:monitoring:Beszel', name, {}, opts);
 
         const hubKey = config.get(name, 'hubKey');
@@ -14,7 +17,6 @@ export class Beszel extends pulumi.ComponentResource {
         const ingressInfo = this.app.network.getIngressInfo();
 
         this.app.addDeployment({
-            image: 'henrygd/beszel:latest',
             port: 8090,
             env: {
                 USER_CREATION: 'true',
@@ -30,7 +32,7 @@ export class Beszel extends pulumi.ComponentResource {
         if (hubKey) {
             this.app.addDaemonSet({
                 name: 'agent',
-                image: `henrygd/beszel-agent`,
+                image: config.require(this.name, 'agent/image'),
                 hostNetwork: true,
                 env: {
                     LISTEN: '45876',

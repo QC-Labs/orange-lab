@@ -89,7 +89,7 @@ export class Databases {
                 fromPVC: existingVolume
                     ? this.args.storage.getClaimName(name)
                     : undefined,
-                imageVersion: config.get(this.appName, `${name}/imageVersion`),
+                imageName: config.get(this.appName, `${name}/image`),
                 instances: config.getNumber(this.appName, `${name}/instances`),
                 metadata: this.args.metadata,
                 name,

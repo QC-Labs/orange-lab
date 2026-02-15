@@ -30,7 +30,6 @@ export class Mempool extends pulumi.ComponentResource {
     }
 
     private createDeployment() {
-        const version = config.require(this.name, 'version');
         const hostname = config.require(this.name, 'hostname');
         const rpcUrl = pulumi
             .output(this.args.bitcoinRpcUrl)
@@ -44,7 +43,7 @@ export class Mempool extends pulumi.ComponentResource {
         this.app
             .addDeployment({
                 name: 'backend',
-                image: `mempool/backend:${version}`,
+                image: config.require(this.name, 'backend/image'),
                 ports: [{ name: 'http', port: 8999, hostname: `${hostname}-backend` }],
                 env: {
                     CORE_RPC_HOST: rpcUrl.hostname,
@@ -71,7 +70,7 @@ export class Mempool extends pulumi.ComponentResource {
             })
             .addDeployment({
                 name: 'frontend',
-                image: `mempool/frontend:${version}`,
+                image: config.require(this.name, 'frontend/image'),
                 ports: [{ name: 'http', port: 8080, hostname }],
                 env: {
                     FRONTEND_HTTP_PORT: '8080',

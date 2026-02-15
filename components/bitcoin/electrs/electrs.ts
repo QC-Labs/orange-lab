@@ -46,11 +46,8 @@ export class Electrs extends pulumi.ComponentResource {
 
     private createDeployment() {
         if (!this.args.bitcoinRpcUrl || !this.args.bitcoinP2pUrl) return;
-        const version = config.require(this.name, 'version');
         const extraArgs = config.get(this.name, 'extraArgs') ?? '';
-
         this.app.addDeployment({
-            image: `getumbrel/electrs:${version}`,
             ports: [{ name: 'rpc', port: 50001, tcp: true }],
             runAsUser: 1000,
             commandArgs: ['--conf=/conf/electrs.toml', extraArgs],

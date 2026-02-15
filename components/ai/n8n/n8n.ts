@@ -28,7 +28,6 @@ export class N8n extends pulumi.ComponentResource {
         this.postgresConfig = this.app.databases?.getConfig();
         const initContainer = this.app.databases?.getWaitContainer();
         this.app.addDeployment({
-            image: 'docker.n8n.io/n8nio/n8n',
             port: 5678,
             volumeMounts: [{ mountPath: '/home/node/.n8n' }],
             runAsUser: 1000,

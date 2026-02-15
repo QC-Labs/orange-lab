@@ -9,11 +9,10 @@
 Bitcoin Core is the reference implementation of the Bitcoin protocol. The node uses persistent volume storage mounted at `/data`.
 
 ```sh
-# Required configuration
 pulumi config set bitcoin-core:enabled true
 
-# Lock version (recommended)
-pulumi config set bitcoin-core:version 29.0
+# (Recommended) Lock version
+pulumi config set bitcoin-core:image btcpayserver/bitcoin:29.0
 
 # Optional configuration
 pulumi config set bitcoin-core:prune 1000  # Prune mode (MB), 0 for full node with txindex

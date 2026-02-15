@@ -57,7 +57,11 @@ export interface ContainerResources {
  */
 export interface ContainerSpec {
     name?: string;
-    image: string;
+    /**
+     * Docker image (e.g., "nginx:latest").
+     * If not provided, defaults to reading from config key `<app>:image`.
+     */
+    image?: string;
     port?: number;
     ports?: ServicePort[];
     command?: pulumi.Input<string[]>;

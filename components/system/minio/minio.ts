@@ -36,6 +36,7 @@ export class Minio extends pulumi.ComponentResource {
         this.s3Provisioner = new MinioProvisioner(
             `${name}-admin`,
             {
+                appName: name,
                 metadata: this.app.metadata,
                 rootUser: this.rootUser,
                 rootPassword: this.users[this.rootUser],
@@ -47,7 +48,6 @@ export class Minio extends pulumi.ComponentResource {
 
     private createDeployment() {
         this.app.addDeployment({
-            image: 'quay.io/minio/minio',
             ports: [
                 { name: 'console', port: 9001, hostname: this.hostname },
                 { name: 'api', port: 9000, hostname: this.hostnameApi },

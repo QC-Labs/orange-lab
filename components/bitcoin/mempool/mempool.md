@@ -14,11 +14,12 @@ Mempool provides a visualization of the Bitcoin blockchain and acts as a block e
 pulumi config set mariadb-operator:enabled true
 pulumi up
 
-# Set the required configuration
+# Enable component
 pulumi config set mempool:enabled true
 
 # Optional configuration
-pulumi config set mempool:version v3.2.1 # lock version
+pulumi config set mempool:backend/image mempool/backend:v3.2.1
+pulumi config set mempool:frontend/image mempool/frontend:v3.2.1
 pulumi config set mempool:hostname explorer # override hostname
 
 pulumi up

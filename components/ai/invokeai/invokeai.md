@@ -16,7 +16,11 @@ Note: Unlike _automatic1111_ and _sdnext_, it doesn't integrate with WebUI.
 
 ```sh
 pulumi config set invokeai:enable true
-# optional, gives access to gated models
+
+# (Optional) override image for AMD GPU
+# pulumi config set invokeai:image ghcr.io/invoke-ai/invokeai:main-rocm
+
+# (Optional) set token to access gated models
 pulumi config set invokeai:huggingfaceToken <TOKEN> --secret
 pulumi up
 ```

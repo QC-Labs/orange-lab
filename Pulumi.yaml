@@ -57,6 +57,8 @@ config:
     # minio:dataPath: /mnt/my-drive/minio-data
     minio:storageSize: 2000Gi
     minio:rootUser: minioadmin
+    minio:image: quay.io/minio/minio:latest
+    minio:provisioner/image: minio/mc:latest
     # minio:requiredNodeLabel: kubernetes.io/hostname=<hostname>
 
     rustfs:enabled: false
@@ -66,7 +68,8 @@ config:
     rustfs:storageSize: 2000Gi
     # rustfs:requiredNodeLabel: kubernetes.io/hostname=<hostname>
     rustfs:rootUser: admin
-    rustfs:appVersion: 1.0.0-alpha.83
+    rustfs:image: rustfs/rustfs:1.0.0-alpha.83
+    rustfs:provisioner/image: rustfs/rc:latest
 
     cert-manager:enabled: false
     cert-manager:clusterIssuer: letsencrypt-issuer
@@ -108,6 +111,8 @@ config:
     beszel:enabled: false
     # beszel:hubKey: BESZEL_KEY
     beszel:hostname: beszel
+    beszel:image: henrygd/beszel:latest
+    beszel:agent/image: henrygd/beszel-agent:latest
     beszel:storageSize: 5Gi
     beszel:storageOnly: false
 
@@ -140,6 +145,7 @@ config:
 
     automatic1111:enabled: false
     automatic1111:hostname: 'automatic1111'
+    automatic1111:image: universonic/stable-diffusion-webui:full
     automatic1111:cliArgs: '--lowvram'
     automatic1111:storageSize: 20Gi
     automatic1111:storageOnly: false
@@ -147,6 +153,7 @@ config:
 
     sdnext:enabled: false
     sdnext:hostname: 'sdnext'
+    sdnext:image: saladtechnologies/sdnext:base
     sdnext:cliArgs: '--lowvram'
     sdnext:storageSize: 20Gi
     sdnext:storageOnly: false
@@ -171,12 +178,15 @@ config:
 
     invokeai:enabled: false
     invokeai:hostname: 'invokeai'
+    invokeai:image: ghcr.io/invoke-ai/invokeai:latest
+    # invokeai:image: ghcr.io/invoke-ai/invokeai:main-rocm  # AMD ROCm
     invokeai:storageSize: 20Gi
     invokeai:gpu: nvidia
     # invokeai:huggingfaceToken: TOKEN
 
     n8n:enabled: false
     n8n:hostname: n8n
+    n8n:image: docker.n8n.io/n8nio/n8n:latest
     # n8n:N8N_ENCRYPTION_KEY: ''
     n8n:storageSize: 1Gi
     n8n:db/storageSize: 1Gi
@@ -208,12 +218,13 @@ config:
     electrs:enabled: false
     electrs:storageSize: 200Gi
     electrs:hostname: electrs
-    electrs:version: 'v0.11.0'
+    electrs:image: getumbrel/electrs:v0.11.0
     # electrs:requiredNodeLabel: kubernetes.io/hostname=<hostname>
 
     mempool:enabled: false
     mempool:hostname: mempool
-    mempool:version: 'v3.2.1'
+    mempool:backend/image: mempool/backend:v3.2.1
+    mempool:frontend/image: mempool/frontend:v3.2.1
     mempool:db/storageSize: 1Gi
 
     ### Office ###

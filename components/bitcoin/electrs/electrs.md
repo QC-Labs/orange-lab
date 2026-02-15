@@ -9,11 +9,10 @@
 Electrs is an implementation of the Electrum Server, which provides efficient querying of blockchain data and is used by wallet software to interact with the blockchain. It requires a full Bitcoin node (Core or Knots) to operate. Electrs uses persistent volume storage mounted at `/data`.
 
 ```sh
-# Required configuration
 pulumi config set electrs:enabled true
 
-# Optional configuration
-pulumi config set electrs:version v0.10.9
+# (Optional) lock version
+pulumi config set electrs:image getumbrel/electrs:v0.11.0
 
 pulumi up
 ```

@@ -47,10 +47,7 @@ export class Services {
             },
             this.opts,
         );
-        const metadata = this.args.metadata.get({
-            component: spec.name,
-            includeVersionLabel: true,
-        });
+        const metadata = this.args.metadata.get({ component: spec.name });
         return new kubernetes.apps.v1.Deployment(
             `${metadata.name}-deployment`,
             {
@@ -61,7 +58,10 @@ export class Services {
                         matchLabels: this.args.metadata.getSelectorLabels(spec.name),
                     },
                     template: podSpec.createPodTemplateSpec(spec),
-                    strategy: { type: 'RollingUpdate', rollingUpdate: { maxSurge: 0, maxUnavailable: 1 } },
+                    strategy: {
+                        type: 'RollingUpdate',
+                        rollingUpdate: { maxSurge: 0, maxUnavailable: 1 },
+                    },
                 },
             },
             {

@@ -16,7 +16,7 @@ export interface PostgresClusterArgs {
     fromPVC?: pulumi.Input<string>;
     instances?: number;
     password?: pulumi.Input<string>;
-    imageVersion?: string;
+    imageName?: string;
 }
 
 export class PostgresCluster extends pulumi.ComponentResource {
@@ -78,9 +78,7 @@ export class PostgresCluster extends pulumi.ComponentResource {
                     affinity: this.args.nodes.getAffinity(this.args.name),
                     enablePDB: instances > 1,
                     instances,
-                    imageName: this.args.imageVersion
-                        ? `ghcr.io/cloudnative-pg/postgresql:${this.args.imageVersion}`
-                        : undefined,
+                    imageName: this.args.imageName,
                     inheritedMetadata: { labels: metadata.labels },
                     bootstrap: {
                         initdb: {

@@ -13,10 +13,7 @@ export class InvokeAi extends pulumi.ComponentResource {
 
         this.app = new Application(this, name).addStorage({ type: StorageType.GPU });
 
-        const imageTag = this.app.gpu === 'amd' ? 'main-rocm' : 'latest';
-
         this.app.addDeployment({
-            image: `ghcr.io/invoke-ai/invokeai:${imageTag}`,
             port: 9090,
             env: {
                 INVOKEAI_ROOT: '/invokeai',

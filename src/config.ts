@@ -178,15 +178,25 @@ class Config {
                 'tailscale-operator:oauthClientSecret is deprecated. Use tailscale:oauthClientSecret.',
             );
         }
-        if (this.get('bitcoin-core', 'version')) {
-            console.warn(
-                'bitcoin-core:version is deprecated. Use bitcoin-core:image instead.',
-            );
+        for (const app of [
+            'bitcoin-core',
+            'bitcoin-knots',
+            'electrs',
+            'mempool',
+            'n8n',
+            'sdnext',
+            'automatic1111',
+            'minio',
+            'rustfs',
+            'beszel',
+            'invokeai',
+        ]) {
+            if (this.get(app, 'version')) {
+                console.warn(`${app}:version is deprecated. Use ${app}:image instead.`);
+            }
         }
-        if (this.get('bitcoin-knots', 'version')) {
-            console.warn(
-                'bitcoin-knots:version is deprecated. Use bitcoin-knots:image instead.',
-            );
+        if (this.get('n8n', 'db/imageVersion')) {
+            console.warn('n8n:db/imageVersion is deprecated. Use n8n:db/image instead.');
         }
     }
 

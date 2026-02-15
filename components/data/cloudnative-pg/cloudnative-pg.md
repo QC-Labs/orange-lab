@@ -53,6 +53,15 @@ For manual database operations, use the provided scripts in the `scripts/` direc
 # Requires: n8n.dump file to exist
 ```
 
+## Database image override
+
+Each app using PostgreSQL can override the container image:
+
+```sh
+# Full image override (e.g., specific version or variant)
+pulumi config set <app>:db/image ghcr.io/cloudnative-pg/postgresql:17-bookworm
+```
+
 ## Database upgrade
 
 Generally database upgrades are handled automatically by CloudNative-PG.
@@ -65,14 +74,14 @@ In that case you need to deploy with downgraded Postgres first, then upgrade.
 pulumi config set <app>:enabled true
 # Bookworm variant required for 17 to fix libssl error during upgrade
 # https://github.com/cloudnative-pg/cloudnative-pg/issues/7580
-pulumi config set <app>:db/imageVersion 17-bookworm
+pulumi config set <app>:db/image ghcr.io/cloudnative-pg/postgresql:17-bookworm
 pulumi up
 
 # upgrade to 18
-pulumi config set <app>:db/imageVersion 18
+pulumi config set <app>:db/image ghcr.io/cloudnative-pg/postgresql:18
 
 # upgrade to latest
-pulumi config rm <app>:db/imageVersion
+pulumi config rm <app>:db/image
 
 pulumi up
 ```

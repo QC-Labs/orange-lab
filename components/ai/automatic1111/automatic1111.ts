@@ -14,7 +14,6 @@ export class Automatic1111 extends pulumi.ComponentResource {
         this.app = new Application(this, name)
             .addStorage({ type: StorageType.GPU })
             .addDeployment({
-                image: 'universonic/stable-diffusion-webui:full',
                 commandArgs: ['--listen', '--api', '--skip-torch-cuda-test'],
                 env: {
                     COMMANDLINE_ARGS: cliArgs,

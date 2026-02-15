@@ -31,7 +31,6 @@ export class Containers {
             annotations: this.args.storage?.configFilesHash
                 ? { 'checksum/config': this.args.storage.configFilesHash }
                 : undefined,
-            includeVersionLabel: true,
         });
         return {
             metadata,
@@ -54,7 +53,7 @@ export class Containers {
                             containerName: spec.name,
                             secretData: spec.envSecret,
                         }),
-                        image: spec.image,
+                        image: spec.image ?? config.require(this.appName, 'image'),
                         livenessProbe: this.createProbe({
                             healthChecks: spec.healthChecks,
                         }),

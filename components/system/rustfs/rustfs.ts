@@ -37,6 +37,7 @@ export class Rustfs extends pulumi.ComponentResource {
         this.s3Provisioner = new RustfsProvisioner(
             `${name}-admin`,
             {
+                appName: name,
                 metadata: this.app.metadata,
                 rootUser: this.rootUser,
                 rootPassword: this.users[this.rootUser],
@@ -47,9 +48,7 @@ export class Rustfs extends pulumi.ComponentResource {
     }
 
     private createDeployment() {
-        const appVersion = config.require(this.name, 'appVersion');
         this.app.addDeployment({
-            image: `rustfs/rustfs:${appVersion}`,
             volumeOwnerUserId: 10001,
             ports: [
                 { name: 'console', port: 9001, hostname: this.hostname },

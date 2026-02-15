@@ -9,7 +9,7 @@ Recommended setup/tldr:
 
 # Start node using the volume
 pulumi config set bitcoin-knots:enabled true
-pulumi config set bitcoin-knots:version 28.1
+pulumi config set bitcoin-knots:image btcpayserver/bitcoinknots:28.1
 pulumi config set bitcoin-knots:fromVolume bitcoin
 
 pulumi up
