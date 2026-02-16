@@ -7,7 +7,7 @@ It's easiest to use _Headlamp_ or _k9s_ to connect to cluster. Below are some us
 ./scripts/logs.sh <app> [namespace]
 
 # Watch cluster events
-kubectl events -A -w
+./scripts/events.sh
 
 # See all application resources
 kubectl get all -n <namespace>
@@ -27,7 +27,7 @@ kubectl get svc -n <app>
 
 # Test connection or use browser (note services do not use HTTPS, only Ingress)
 curl http://<ip>:<port>/
-telnet <ip> <port>
+nc -zv <ip> <port>
 ```
 
 If that works, then Tailscale Ingress needs to be looked at. Try stopping the `ts-*` proxy pod, it will be recreated. Remember that first time you access an endpoint, the HTTPS certificate is provisioned and that can take up to a minute.
