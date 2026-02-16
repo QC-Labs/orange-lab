@@ -184,13 +184,8 @@ export class Network {
                 hostname: `${hostname}.${config.customDomain}`,
                 url: `https://${hostname}.${config.customDomain}`,
                 tls: true,
-                tlsSecretName: `${hostname}-tls-secret`,
+                tlsSecretName: `${config.customDomain}-tls`,
                 domain: config.customDomain,
-                annotations: {
-                    'cert-manager.io/cluster-issuer': pulumi.output(
-                        config.require('cert-manager', 'clusterIssuer'),
-                    ),
-                },
             };
         }
     }
