@@ -140,7 +140,7 @@ export class Traefik extends pulumi.ComponentResource {
     }
 
     private createDashboard() {
-        const ingressInfo = this.app.network.getIngressInfo();
+        const httpEndpointInfo = this.app.network.getHttpEndpointInfo();
         const metadata = this.app.metadata.get({ component: 'dashboard' });
 
         new kubernetes.apiextensions.CustomResource(
@@ -153,7 +153,7 @@ export class Traefik extends pulumi.ComponentResource {
                     entryPoints: ['websecure'],
                     routes: [
                         {
-                            match: `Host(\`${ingressInfo.hostname}\`)`,
+                            match: `Host(\`${httpEndpointInfo.hostname}\`)`,
                             kind: 'Rule',
                             services: [{ name: 'api@internal', kind: 'TraefikService' }],
                         },

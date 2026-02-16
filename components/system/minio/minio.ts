@@ -55,7 +55,7 @@ export class Minio extends pulumi.ComponentResource {
             env: {
                 MINIO_CONSOLE_TLS_ENABLE: 'off',
                 MINIO_ROOT_USER: this.rootUser,
-                MINIO_BROWSER_REDIRECT_URL: this.app.network.getIngressInfo().url,
+                MINIO_BROWSER_REDIRECT_URL: this.app.network.getHttpEndpointInfo().url,
             },
             envSecret: {
                 MINIO_ROOT_PASSWORD: this.users[this.rootUser],

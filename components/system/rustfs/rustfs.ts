@@ -57,7 +57,7 @@ export class Rustfs extends pulumi.ComponentResource {
             env: {
                 RUSTFS_ACCESS_KEY: this.rootUser,
                 RUSTFS_CONSOLE_ENABLE: 'true',
-                RUSTFS_SERVER_DOMAINS: this.app.network.getIngressInfo().hostname,
+                RUSTFS_SERVER_DOMAINS: this.app.network.getHttpEndpointInfo().hostname,
             },
             envSecret: {
                 RUSTFS_SECRET_KEY: this.users[this.rootUser],

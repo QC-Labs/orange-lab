@@ -1,7 +1,7 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '@orangelab/application';
 import { config } from '@orangelab/config';
-import { IngressInfo } from '@orangelab/network';
+import { HttpEndpointInfo } from '@orangelab/network';
 import { StorageType } from '@orangelab/types';
 
 export class Ollama extends pulumi.ComponentResource {
@@ -24,14 +24,14 @@ export class Ollama extends pulumi.ComponentResource {
 
         if (this.app.storageOnly) return;
 
-        const ingresInfo = this.app.network.getIngressInfo();
-        this.createHelmRelease(ingresInfo);
+        const httpEndpointInfo = this.app.network.getHttpEndpointInfo();
+        this.createHelmRelease(httpEndpointInfo);
 
-        this.endpointUrl = ingresInfo.url;
+        this.endpointUrl = httpEndpointInfo.url;
         this.serviceUrl = `http://${hostname}.ollama:11434`;
     }
 
-    private createHelmRelease(ingresInfo: IngressInfo) {
+    private createHelmRelease(httpEndpointInfo: HttpEndpointInfo) {
         const amdGpu = this.app.gpu === 'amd';
         const gfxVersion = config.get(this.name, 'HSA_OVERRIDE_GFX_VERSION');
         const amdTargets = config.get(this.name, 'HCC_AMDGPU_TARGETS');
@@ -73,20 +73,20 @@ export class Ollama extends pulumi.ComponentResource {
                     image: { tag: imageTag },
                     ingress: {
                         enabled: true,
-                        className: ingresInfo.className,
+                        className: httpEndpointInfo.className,
                         hosts: [
                             {
-                                host: ingresInfo.hostname,
+                                host: httpEndpointInfo.hostname,
                                 paths: [{ path: '/', pathType: 'Prefix' }],
                             },
                         ],
                         tls: [
                             {
-                                hosts: [ingresInfo.hostname],
-                                secretName: ingresInfo.tlsSecretName,
+                                hosts: [httpEndpointInfo.hostname],
+                                secretName: httpEndpointInfo.tlsSecretName,
                             },
                         ],
-                        annotations: ingresInfo.annotations,
+                        annotations: httpEndpointInfo.annotations,
                     },
                     ollama: {
                         gpu: {

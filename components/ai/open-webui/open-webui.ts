@@ -29,9 +29,9 @@ export class OpenWebUI extends pulumi.ComponentResource {
 
         if (app.storageOnly) return;
 
-        const ingresInfo = app.network.getIngressInfo(hostname);
-        const isTailscale = ingresInfo.className === 'tailscale';
-        this.endpointUrl = ingresInfo.url;
+        const httpEndpointInfo = app.network.getHttpEndpointInfo(hostname);
+        const isTailscale = httpEndpointInfo.className === 'tailscale';
+        this.endpointUrl = httpEndpointInfo.url;
         app.addHelmChart(
             name,
             {
@@ -102,15 +102,15 @@ export class OpenWebUI extends pulumi.ComponentResource {
                               ]
                             : []),
                         { name: 'WEBUI_SECRET_KEY', value: this.createSecretKey() },
-                        { name: 'WEBUI_URL', value: ingresInfo.url },
+                        { name: 'WEBUI_URL', value: httpEndpointInfo.url },
                     ],
                     image: { tag: appVersion },
                     ingress: {
                         enabled: true,
-                        class: ingresInfo.className,
-                        host: ingresInfo.hostname,
-                        tls: ingresInfo.tls,
-                        annotations: ingresInfo.annotations,
+                        class: httpEndpointInfo.className,
+                        host: httpEndpointInfo.hostname,
+                        tls: httpEndpointInfo.tls,
+                        annotations: httpEndpointInfo.annotations,
                     },
                     logging: { level: debug ? 'debug' : 'info' },
                     ollama: { enabled: false },

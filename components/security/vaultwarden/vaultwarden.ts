@@ -1,6 +1,6 @@
 import { Application } from '@orangelab/application';
 import { config } from '@orangelab/config';
-import { IngressInfo } from '@orangelab/network';
+import { HttpEndpointInfo } from '@orangelab/network';
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { VaultwardenToken } from './vaultwarden-token';
@@ -24,18 +24,18 @@ export class Vaultwarden extends pulumi.ComponentResource {
             this.app.metadata,
             { parent: this },
         );
-        const ingressInfo = this.app.network.getIngressInfo();
-        this.createHelmChart({ ingressInfo, adminTokenSecret: secretResource });
+        const httpEndpointInfo = this.app.network.getHttpEndpointInfo();
+        this.createHelmChart({ httpEndpointInfo, adminTokenSecret: secretResource });
 
         this.adminToken = plainToken;
-        this.serviceUrl = ingressInfo.url;
+        this.serviceUrl = httpEndpointInfo.url;
     }
 
     private createHelmChart({
-        ingressInfo,
+        httpEndpointInfo,
         adminTokenSecret,
     }: {
-        ingressInfo: IngressInfo;
+        httpEndpointInfo: HttpEndpointInfo;
         adminTokenSecret: kubernetes.core.v1.Secret;
     }) {
         const smtpHost = config.get(this.appName, 'smtp/host');
@@ -59,14 +59,14 @@ export class Vaultwarden extends pulumi.ComponentResource {
                         existingSecretKey: 'ADMIN_TOKEN_HASH',
                     },
                     affinity: this.app.nodes.getAffinity(),
-                    domain: ingressInfo.url,
+                    domain: httpEndpointInfo.url,
                     ingress: {
                         enabled: true,
-                        class: ingressInfo.className,
-                        hostname: ingressInfo.hostname,
-                        tls: ingressInfo.tls,
-                        tlsSecret: ingressInfo.tlsSecretName,
-                        additionalAnnotations: ingressInfo.annotations,
+                        class: httpEndpointInfo.className,
+                        hostname: httpEndpointInfo.hostname,
+                        tls: httpEndpointInfo.tls,
+                        tlsSecret: httpEndpointInfo.tlsSecretName,
+                        additionalAnnotations: httpEndpointInfo.annotations,
                     },
                     invitationsAllowed: true,
                     resourceType: 'Deployment',

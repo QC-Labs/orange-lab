@@ -1,7 +1,7 @@
 import { Application } from '@orangelab/application';
 import { config } from '@orangelab/config';
 import { GrafanaDashboard } from '@orangelab/grafana-dashboard';
-import { IngressInfo } from '@orangelab/network';
+import { HttpEndpointInfo } from '@orangelab/network';
 import { S3Provisioner } from '@orangelab/types';
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
@@ -25,7 +25,7 @@ export class Longhorn extends pulumi.ComponentResource {
         super('orangelab:system:Longhorn', name, args, opts);
 
         this.app = new Application(this, name, { namespace: `${name}-system` });
-        const ingresInfo = this.app.network.getIngressInfo();
+        const httpEndpointInfo = this.app.network.getHttpEndpointInfo();
 
         const backupEnabled = config.getBoolean(name, 'backupEnabled') ?? false;
         let backupTarget: string | undefined = undefined;
@@ -38,7 +38,7 @@ export class Longhorn extends pulumi.ComponentResource {
         }
 
         this.chart = this.createHelmRelease({
-            ingresInfo,
+            httpEndpointInfo,
             backupTarget,
             backupTargetCredentialSecret,
         });
@@ -58,15 +58,15 @@ export class Longhorn extends pulumi.ComponentResource {
             new GrafanaDashboard(name, { configJson: dashboardJson }, { parent: this });
         }
 
-        this.endpointUrl = ingresInfo.url;
+        this.endpointUrl = httpEndpointInfo.url;
     }
 
     private createHelmRelease({
-        ingresInfo,
+        httpEndpointInfo,
         backupTarget,
         backupTargetCredentialSecret,
     }: {
-        ingresInfo: IngressInfo;
+        httpEndpointInfo: HttpEndpointInfo;
         backupTarget?: string;
         backupTargetCredentialSecret?: pulumi.Output<string>;
     }) {
@@ -133,10 +133,10 @@ export class Longhorn extends pulumi.ComponentResource {
                 },
                 ingress: {
                     enabled: true,
-                    host: ingresInfo.hostname,
-                    ingressClassName: ingresInfo.className,
-                    tls: ingresInfo.tls,
-                    annotations: ingresInfo.annotations,
+                    host: httpEndpointInfo.hostname,
+                    ingressClassName: httpEndpointInfo.className,
+                    tls: httpEndpointInfo.tls,
+                    annotations: httpEndpointInfo.annotations,
                 },
                 longhornUI: {
                     replicas: 1,

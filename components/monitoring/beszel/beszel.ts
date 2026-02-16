@@ -14,13 +14,13 @@ export class Beszel extends pulumi.ComponentResource {
         const hubKey = config.get(name, 'hubKey');
         const token = config.getSecret(name, 'TOKEN');
         this.app = new Application(this, name).addStorage();
-        const ingressInfo = this.app.network.getIngressInfo();
+        const httpEndpointInfo = this.app.network.getHttpEndpointInfo();
 
         this.app.addDeployment({
             port: 8090,
             env: {
                 USER_CREATION: 'true',
-                APP_URL: ingressInfo.url,
+                APP_URL: httpEndpointInfo.url,
             },
             volumeMounts: [{ mountPath: '/beszel_data' }],
             resources: {
@@ -36,7 +36,7 @@ export class Beszel extends pulumi.ComponentResource {
                 hostNetwork: true,
                 env: {
                     LISTEN: '45876',
-                    HUB_URL: ingressInfo.url,
+                    HUB_URL: httpEndpointInfo.url,
                 },
                 envSecret: {
                     KEY: hubKey,

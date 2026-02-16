@@ -2,7 +2,7 @@ import * as k8s from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
 import { Application } from '@orangelab/application';
-import { IngressInfo } from '@orangelab/network';
+import { HttpEndpointInfo } from '@orangelab/network';
 import { config } from '@orangelab/config';
 import { DatabaseConfig } from '@orangelab/types';
 
@@ -26,14 +26,14 @@ export class Nextcloud extends pulumi.ComponentResource {
         const adminPassword =
             config.getSecret(appName, 'adminPassword') ?? this.createPassword('admin');
         const adminSecret = this.createAdminSecret(adminPassword);
-        const ingressInfo = this.app.network.getIngressInfo();
+        const httpEndpointInfo = this.app.network.getHttpEndpointInfo();
         this.users = { admin: adminPassword };
-        this.createHelmChart({ ingressInfo, adminSecret, dbConfig: this.dbConfig });
-        this.serviceUrl = ingressInfo.url;
+        this.createHelmChart({ httpEndpointInfo, adminSecret, dbConfig: this.dbConfig });
+        this.serviceUrl = httpEndpointInfo.url;
     }
 
     private createHelmChart(args: {
-        ingressInfo: IngressInfo;
+        httpEndpointInfo: HttpEndpointInfo;
         adminSecret: k8s.core.v1.Secret;
         dbConfig: DatabaseConfig;
     }) {
@@ -58,20 +58,20 @@ export class Nextcloud extends pulumi.ComponentResource {
                     },
                     ingress: {
                         enabled: true,
-                        className: args.ingressInfo.className,
+                        className: args.httpEndpointInfo.className,
                         hosts: [
                             {
-                                host: args.ingressInfo.hostname,
+                                host: args.httpEndpointInfo.hostname,
                                 paths: [{ path: '/', pathType: 'Prefix' }],
                             },
                         ],
                         tls: [
                             {
-                                hosts: [args.ingressInfo.hostname],
-                                secretName: args.ingressInfo.tlsSecretName,
+                                hosts: [args.httpEndpointInfo.hostname],
+                                secretName: args.httpEndpointInfo.tlsSecretName,
                             },
                         ],
-                        annotations: args.ingressInfo.annotations,
+                        annotations: args.httpEndpointInfo.annotations,
                     },
                     internalDatabase: { enabled: false },
                     livenessProbe: { enabled: true },
@@ -92,7 +92,7 @@ $CONFIG = array (
                                 : {}),
                         },
                         extraInitContainers: [waitForDb],
-                        host: args.ingressInfo.hostname,
+                        host: args.httpEndpointInfo.hostname,
                         existingSecret: {
                             enabled: true,
                             secretName: args.adminSecret.metadata.name,
@@ -102,7 +102,7 @@ $CONFIG = array (
                         trustedDomains: [
                             config.tailnetDomain,
                             config.customDomain,
-                            args.ingressInfo.hostname,
+                            args.httpEndpointInfo.hostname,
                         ],
                     },
                     persistence: {
@@ -110,8 +110,8 @@ $CONFIG = array (
                         existingClaim: this.app.storage?.getClaimName(),
                     },
                     phpClientHttpsFix: {
-                        enabled: args.ingressInfo.tls,
-                        protocol: args.ingressInfo.tls ? 'https' : 'http',
+                        enabled: args.httpEndpointInfo.tls,
+                        protocol: args.httpEndpointInfo.tls ? 'https' : 'http',
                     },
                     readinessProbe: { enabled: true },
                     replicaCount: 1,

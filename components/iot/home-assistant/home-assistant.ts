@@ -16,7 +16,7 @@ export class HomeAssistant extends pulumi.ComponentResource {
         });
 
         if (app.storageOnly) return;
-        const ingressInfo = app.network.getIngressInfo();
+        const httpEndpointInfo = app.network.getHttpEndpointInfo();
         app.addHelmChart(
             name,
             {
@@ -41,20 +41,20 @@ export class HomeAssistant extends pulumi.ComponentResource {
                     hostNetwork: true,
                     ingress: {
                         enabled: true,
-                        className: ingressInfo.className,
+                        className: httpEndpointInfo.className,
                         hosts: [
                             {
-                                host: ingressInfo.hostname,
+                                host: httpEndpointInfo.hostname,
                                 paths: [{ path: '/', pathType: 'Prefix' }],
                             },
                         ],
                         tls: [
                             {
-                                hosts: [ingressInfo.hostname],
-                                secretName: ingressInfo.tlsSecretName,
+                                hosts: [httpEndpointInfo.hostname],
+                                secretName: httpEndpointInfo.tlsSecretName,
                             },
                         ],
-                        annotations: ingressInfo.annotations,
+                        annotations: httpEndpointInfo.annotations,
                     },
                     persistence: {
                         enabled: true,
@@ -77,6 +77,6 @@ export class HomeAssistant extends pulumi.ComponentResource {
             { dependsOn: app.storage },
         );
 
-        this.endpointUrl = ingressInfo.url;
+        this.endpointUrl = httpEndpointInfo.url;
     }
 }

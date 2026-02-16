@@ -5,7 +5,7 @@ import { config } from './config';
 import { Metadata } from './metadata';
 import { ContainerSpec, ServicePort } from './types';
 
-export interface IngressInfo {
+export interface HttpEndpointInfo {
     className: string;
     hostname: string;
     url: string;
@@ -67,12 +67,12 @@ export class Network {
             ports: httpPorts,
         });
         httpPorts.forEach(port => {
-            const ingressInfo = this.getIngressInfo(port.hostname);
+            const httpEndpointInfo = this.getHttpEndpointInfo(port.hostname);
             this.createIngress({
                 serviceName: service.metadata.name,
                 port,
                 component: spec.name,
-                ingressInfo,
+                httpEndpointInfo,
             });
             this.exportEndpoint({ component: spec.name, port });
             this.exportClusterEndpoint({ component: spec.name, port, service });
@@ -167,9 +167,9 @@ export class Network {
         );
     }
 
-    public getIngressInfo(
+    public getHttpEndpointInfo(
         hostname: string = config.require(this.appName, 'hostname'),
-    ): IngressInfo {
+    ): HttpEndpointInfo {
         if (!config.customDomain) {
             return {
                 className: 'tailscale',
@@ -194,29 +194,29 @@ export class Network {
         serviceName: pulumi.Input<string>;
         port: ServicePort;
         component?: string;
-        ingressInfo: IngressInfo;
+        httpEndpointInfo: HttpEndpointInfo;
     }): kubernetes.networking.v1.Ingress {
         const metadata = this.args.metadata.get({
             component: args.component
                 ? `${args.component}-${args.port.name}`
                 : args.port.name,
-            annotations: args.ingressInfo.annotations,
+            annotations: args.httpEndpointInfo.annotations,
         });
         return new kubernetes.networking.v1.Ingress(
             `${metadata.name}-ingress`,
             {
                 metadata,
                 spec: {
-                    ingressClassName: args.ingressInfo.className,
+                    ingressClassName: args.httpEndpointInfo.className,
                     tls: [
                         {
-                            hosts: [args.ingressInfo.hostname],
-                            secretName: args.ingressInfo.tlsSecretName,
+                            hosts: [args.httpEndpointInfo.hostname],
+                            secretName: args.httpEndpointInfo.tlsSecretName,
                         },
                     ],
                     rules: [
                         {
-                            host: args.ingressInfo.hostname,
+                            host: args.httpEndpointInfo.hostname,
                             http: {
                                 paths: [
                                     {

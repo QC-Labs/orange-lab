@@ -21,7 +21,7 @@ export class KubeAi extends pulumi.ComponentResource {
         const models = config.get(name, 'models')?.split(',') ?? [];
 
         this.app = new Application(this, name);
-        const ingresInfo = this.app.network.getIngressInfo();
+        const httpEndpointInfo = this.app.network.getHttpEndpointInfo();
         const kubeAi = this.app.addHelmChart(name, {
             chart: 'kubeai',
             repo: 'https://www.kubeai.org',
@@ -29,14 +29,14 @@ export class KubeAi extends pulumi.ComponentResource {
                 affinity: this.app.nodes.getAffinity(),
                 ingress: {
                     enabled: true,
-                    className: ingresInfo.className,
+                    className: httpEndpointInfo.className,
                     rules: [
                         {
-                            host: ingresInfo.hostname,
+                            host: httpEndpointInfo.hostname,
                             paths: [{ path: '/', pathType: 'ImplementationSpecific' }],
                         },
                     ],
-                    tls: [{ hosts: [ingresInfo.hostname] }],
+                    tls: [{ hosts: [httpEndpointInfo.hostname] }],
                 },
                 metrics: config.enableMonitoring()
                     ? {
@@ -93,7 +93,7 @@ export class KubeAi extends pulumi.ComponentResource {
             new GrafanaDashboard(name, { configJson: dashboardJson }, { parent: this });
         }
 
-        this.endpointUrl = ingresInfo.url;
+        this.endpointUrl = httpEndpointInfo.url;
         this.serviceUrl = `http://${hostname}.kubeai/openai/v1`;
     }
 
