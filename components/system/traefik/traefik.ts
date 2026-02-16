@@ -22,12 +22,21 @@ export class Traefik extends pulumi.ComponentResource {
         config.requireEnabled(name, 'cert-manager');
         this.domain = config.customDomain;
         this.app = new Application(this, name);
-        this.chart = this.createChart();
+        const crds = this.createGatewayAPICRDs();
+        this.chart = this.createChart(crds);
         this.createCertificate();
         this.createDashboard();
     }
 
-    private createChart(): kubernetes.helm.v3.Release {
+    private createGatewayAPICRDs(): kubernetes.yaml.ConfigFile {
+        return new kubernetes.yaml.ConfigFile(
+            `${this.name}-gateway-api-crds`,
+            { file: config.require(this.name, 'gatewayApiCrdUrl') },
+            { parent: this },
+        );
+    }
+
+    private createChart(crds: kubernetes.yaml.ConfigFile): kubernetes.helm.v3.Release {
         return this.app.addHelmChart(
             this.name,
             {
@@ -83,6 +92,7 @@ export class Traefik extends pulumi.ComponentResource {
                     providers: {
                         kubernetesGateway: {
                             enabled: true,
+                            experimentalChannel: true,
                         },
                     },
                     service: {
@@ -106,7 +116,7 @@ export class Traefik extends pulumi.ComponentResource {
                     ],
                 },
             },
-            { deleteBeforeReplace: true },
+            { deleteBeforeReplace: true, dependsOn: crds },
         );
     }
 

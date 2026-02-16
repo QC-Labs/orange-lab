@@ -29,9 +29,9 @@ config:
     # Note: add A record for "*" pointing to one of your Tailscale IPs
     # orangelab:customDomain: 'example.com'
 
-    # TraefikCRDs are installed when customDomain is set. Also install Traefik by default
-    traefik:enabled: true
+    traefik:enabled: false
     traefik:hostname: traefik
+    traefik:gatewayApiCrdUrl: 'https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/experimental-install.yaml'
 
     longhorn:enabled: false
     longhorn:version: 1.11.0
