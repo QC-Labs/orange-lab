@@ -68,12 +68,21 @@ export class Network {
         });
         httpPorts.forEach(port => {
             const httpEndpointInfo = this.getHttpEndpointInfo(port.hostname);
-            this.createIngress({
-                serviceName: service.metadata.name,
-                port,
-                component: spec.name,
-                httpEndpointInfo,
-            });
+            if (httpEndpointInfo.className === 'traefik') {
+                this.createHttpRoute({
+                    serviceName: service.metadata.name,
+                    port,
+                    component: spec.name,
+                    httpEndpointInfo,
+                });
+            } else {
+                this.createIngress({
+                    serviceName: service.metadata.name,
+                    port,
+                    component: spec.name,
+                    httpEndpointInfo,
+                });
+            }
             this.exportEndpoint({ component: spec.name, port });
             this.exportClusterEndpoint({ component: spec.name, port, service });
         });
@@ -242,6 +251,49 @@ export class Network {
                     { name: `${metadata.name}-traefik-ingress` },
                 ],
             },
+        );
+    }
+
+    private createHttpRoute(args: {
+        serviceName: pulumi.Input<string>;
+        port: ServicePort;
+        component?: string;
+        httpEndpointInfo: HttpEndpointInfo;
+    }): kubernetes.apiextensions.CustomResource {
+        const metadata = this.args.metadata.get({
+            component: args.component
+                ? `${args.component}-${args.port.name}`
+                : args.port.name,
+            annotations: args.httpEndpointInfo.annotations,
+        });
+        return new kubernetes.apiextensions.CustomResource(
+            `${metadata.name}-httproute`,
+            {
+                apiVersion: 'gateway.networking.k8s.io/v1',
+                kind: 'HTTPRoute',
+                metadata,
+                spec: {
+                    parentRefs: [
+                        {
+                            name: 'traefik-gateway',
+                            namespace: 'traefik',
+                            sectionName: 'websecure',
+                        },
+                    ],
+                    hostnames: [args.httpEndpointInfo.hostname],
+                    rules: [
+                        {
+                            backendRefs: [
+                                {
+                                    name: args.serviceName,
+                                    port: args.port.port,
+                                },
+                            ],
+                        },
+                    ],
+                },
+            },
+            this.opts,
         );
     }
 }
