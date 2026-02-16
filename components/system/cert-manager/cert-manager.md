@@ -27,7 +27,9 @@ You can find supported providers at https://cert-manager.io/docs/configuration/a
 
 ### CloudFlare
 
-For example, to use CloudFlare you need to create an API token (https://dash.cloudflare.com/profile/api-tokens) then create a `ClusterIssuer` using this token and DNS solver.
+For example, to use CloudFlare you need to create an API token (https://dash.cloudflare.com/profile/api-tokens) then create `ClusterIssuer` resources using this token and DNS solver.
+
+Create both staging and production issuers at once (staging first for testing, production for actual use):
 
 ```sh
 apiVersion: v1
@@ -38,7 +40,27 @@ metadata:
 type: Opaque
 stringData:
     api-token: <cloudflare_api_token>
-
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+    name: letsencrypt-staging-issuer # referenced in Pulumi.yaml, you can override it with cert-manager:clusterIssuer
+    namespace: cert-manager
+spec:
+    acme:
+        server: https://acme-staging-v02.api.letsencrypt.org/directory
+        email: <valid_email>
+        privateKeySecretRef:
+            name: letsencrypt-account-key
+        solvers:
+            - dns01:
+                  cloudflare:
+                      apiTokenSecretRef:
+                          name: cloudflare-api-secret
+                          key: api-token
+              selector:
+                  dnsZones:
+                      - <your_custom_domain_name>
 ---
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
@@ -47,8 +69,7 @@ metadata:
     namespace: cert-manager
 spec:
     acme:
-        server: https://acme-staging-v02.api.letsencrypt.org/directory
-        # server: https://acme-v02.api.letsencrypt.org/directory
+        server: https://acme-v02.api.letsencrypt.org/directory
         email: <valid_email>
         privateKeySecretRef:
             name: letsencrypt-account-key
@@ -66,6 +87,19 @@ spec:
 Save this as `cloudflare.yml` replacing `cloudflare_api_token`, `valid_email` and `your_custom_domain_name`.
 
 Use `kubectl apply -f cloudflare.yml` to create the issuer.
+
+**Verify the issuers are ready:**
+
+```sh
+kubectl get clusterissuer
+```
+
+Both should show `Ready: True`. If not, check with:
+
+```sh
+kubectl describe clusterissuer letsencrypt-staging-issuer
+kubectl describe clusterissuer letsencrypt-issuer
+```
 
 It's recommended to start with `acme-staging-v02` server to make sure everything works as expected, then switch to production `acme-v02` server to generate valid certificates. This helps to avoid getting throttled when configuration is incorrect.
 

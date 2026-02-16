@@ -1,6 +1,5 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
-import { config } from './config';
 
 export class Metadata {
     public readonly namespace: pulumi.Output<string>;

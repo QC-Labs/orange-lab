@@ -6,7 +6,8 @@ import assert from 'assert';
 
 export class Traefik extends pulumi.ComponentResource {
     private readonly app: Application;
-    private chart: kubernetes.helm.v3.Release | undefined;
+    private chart: kubernetes.helm.v3.Release;
+    private readonly domain: string;
 
     constructor(
         private name: string,
@@ -18,8 +19,11 @@ export class Traefik extends pulumi.ComponentResource {
             config.customDomain,
             'Traefik component requires a custom domain to be set',
         );
+        config.requireEnabled(name, 'cert-manager');
+        this.domain = config.customDomain;
         this.app = new Application(this, name);
         this.chart = this.createChart();
+        this.createCertificate();
         this.createDashboard();
     }
 
@@ -31,18 +35,25 @@ export class Traefik extends pulumi.ComponentResource {
                 repo: 'https://traefik.github.io/charts',
                 values: {
                     affinity: this.app.nodes.getAffinity(),
-                    api: {
-                        dashboard: true,
-                    },
-                    deployment: {
-                        kind: 'DaemonSet',
-                    },
+                    api: { dashboard: true },
+                    deployment: { kind: 'DaemonSet' },
                     gateway: {
                         listeners: {
                             web: {
-                                namespacePolicy: {
-                                    from: 'All',
-                                },
+                                namespacePolicy: { from: 'All' },
+                            },
+                            websecure: {
+                                port: 8443,
+                                protocol: 'HTTPS',
+                                namespacePolicy: { from: 'All' },
+                                mode: 'Terminate',
+                                certificateRefs: [
+                                    {
+                                        kind: 'Secret',
+                                        group: '',
+                                        name: `${this.domain}-tls`,
+                                    },
+                                ],
                             },
                         },
                     },
@@ -99,27 +110,38 @@ export class Traefik extends pulumi.ComponentResource {
         );
     }
 
-    private createDashboard() {
-        const ingressInfo = this.app.network.getIngressInfo();
-        const metadata = this.app.metadata.get({ component: 'dashboard' });
+    private createCertificate() {
+        if (!this.domain) return;
+
+        const clusterIssuer = config.get('cert-manager', 'clusterIssuer');
+        if (!clusterIssuer) {
+            throw new Error(
+                'cert-manager: clusterIssuer is required for wildcard certificate',
+            );
+        }
 
         new kubernetes.apiextensions.CustomResource(
-            `${metadata.name}-certificate`,
+            `${this.name}-certificate`,
             {
                 apiVersion: 'cert-manager.io/v1',
                 kind: 'Certificate',
-                metadata,
+                metadata: {
+                    name: `${this.domain}-cert`,
+                    namespace: this.app.metadata.namespace,
+                },
                 spec: {
-                    secretName: ingressInfo.tlsSecretName,
-                    dnsNames: [ingressInfo.hostname],
-                    issuerRef: {
-                        name: config.require('cert-manager', 'clusterIssuer'),
-                        kind: 'ClusterIssuer',
-                    },
+                    secretName: `${this.domain}-tls`,
+                    dnsNames: [`*.${this.domain}`, this.domain],
+                    issuerRef: { name: clusterIssuer, kind: 'ClusterIssuer' },
                 },
             },
             { parent: this, dependsOn: this.chart },
         );
+    }
+
+    private createDashboard() {
+        const ingressInfo = this.app.network.getIngressInfo();
+        const metadata = this.app.metadata.get({ component: 'dashboard' });
 
         new kubernetes.apiextensions.CustomResource(
             `${metadata.name}-ingressroute`,
@@ -133,17 +155,10 @@ export class Traefik extends pulumi.ComponentResource {
                         {
                             match: `Host(\`${ingressInfo.hostname}\`)`,
                             kind: 'Rule',
-                            services: [
-                                {
-                                    name: 'api@internal',
-                                    kind: 'TraefikService',
-                                },
-                            ],
+                            services: [{ name: 'api@internal', kind: 'TraefikService' }],
                         },
                     ],
-                    tls: {
-                        secretName: ingressInfo.tlsSecretName,
-                    },
+                    tls: { secretName: `${this.domain}-tls` },
                 },
             },
             { parent: this, dependsOn: this.chart },

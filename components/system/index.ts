@@ -47,18 +47,18 @@ export class SystemModule extends pulumi.ComponentResource {
             );
         }
 
+        let certManager: CertManager | undefined;
+        if (config.isEnabled('cert-manager')) {
+            certManager = new CertManager('cert-manager', {}, { parent: this });
+        }
+
         if (config.isEnabled('traefik')) {
-            new Traefik('traefik', {}, { parent: this });
+            new Traefik('traefik', {}, { parent: this, dependsOn: certManager });
         }
 
         let nfd: NodeFeatureDiscovery | undefined;
         if (config.isEnabled('nfd')) {
             nfd = new NodeFeatureDiscovery('nfd', { parent: this });
-        }
-
-        let certManager: CertManager | undefined;
-        if (config.isEnabled('cert-manager')) {
-            certManager = new CertManager('cert-manager', {}, { parent: this });
         }
 
         if (config.isEnabled('nvidia-gpu-operator')) {
