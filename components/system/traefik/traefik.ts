@@ -64,6 +64,19 @@ export class Traefik extends pulumi.ComponentResource {
                                     },
                                 ],
                             },
+                            tls: {
+                                port: 3443,
+                                protocol: 'TLS',
+                                namespacePolicy: { from: 'All' },
+                                mode: 'Terminate',
+                                certificateRefs: [
+                                    {
+                                        kind: 'Secret',
+                                        group: '',
+                                        name: `${this.domain}-tls`,
+                                    },
+                                ],
+                            },
                         },
                     },
                     global: {
@@ -86,6 +99,13 @@ export class Traefik extends pulumi.ComponentResource {
                                     },
                                 },
                             },
+                        },
+                        tls: {
+                            port: 3443,
+                            expose: {
+                                default: true,
+                            },
+                            exposedPort: 3443,
                         },
                     },
                     priorityClassName: 'system-cluster-critical',

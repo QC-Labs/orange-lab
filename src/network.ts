@@ -42,8 +42,33 @@ export class Network {
         const httpPorts = ports.filter(p => !p.tcp);
         this.createHttpEndpoints(httpPorts, spec);
 
-        const tcpPorts = ports.filter(p => p.tcp);
-        this.createTcpEndpoints(tcpPorts, spec.name);
+        if (config.customDomain) {
+            const tcpPorts = ports.filter(p => p.tcp && !p.tls);
+            this.createTcpEndpoints(tcpPorts, spec.name);
+            const tlsPorts = ports.filter(p => p.tcp && p.tls);
+            this.createTlsEndpoints(tlsPorts, spec.name);
+        } else {
+            const tcpPorts = ports.filter(p => p.tcp);
+            this.createTcpEndpoints(tcpPorts, spec.name);
+        }
+    }
+
+    private createTlsEndpoints(ports: ServicePort[], component?: string) {
+        if (ports.length === 0 || !config.customDomain) return;
+        const service = this.createService({ component, ports });
+        ports.forEach(port => {
+            if (config.customDomain) {
+                this.createTlsRoute({
+                    component,
+                    port,
+                    serviceName: service.metadata.name,
+                });
+            }
+        });
+        ports.forEach(port => {
+            this.exportEndpoint({ component, port });
+            this.exportClusterEndpoint({ component, port, service });
+        });
     }
 
     private createTcpEndpoints(tcpPorts: ServicePort[], component?: string) {
@@ -60,9 +85,79 @@ export class Network {
         });
     }
 
+    private createService(args: {
+        component?: string;
+        ports: ServicePort[];
+    }): kubernetes.core.v1.Service {
+        const metadata = this.args.metadata.get({ component: args.component });
+        return new kubernetes.core.v1.Service(
+            `${metadata.name}-svc`,
+            {
+                metadata: { ...metadata, name: metadata.name },
+                spec: {
+                    type: 'ClusterIP',
+                    ports: args.ports.map(p => ({
+                        name: p.name,
+                        protocol: 'TCP',
+                        port: p.port,
+                        targetPort: p.port,
+                    })),
+                    selector: this.args.metadata.getSelectorLabels(args.component),
+                },
+            },
+            this.opts,
+        );
+    }
+
+    private createTlsRoute(args: {
+        component?: string;
+        port: ServicePort;
+        serviceName: pulumi.Input<string>;
+    }): void {
+        const hostname = args.port.hostname ?? config.get(this.appName, 'hostname');
+        if (!hostname || !config.customDomain) return;
+
+        const fullHostname = `${hostname}.${config.customDomain}`;
+        const metadata = this.args.metadata.get({
+            component: args.component
+                ? `${args.component}-${args.port.name}`
+                : args.port.name,
+        });
+
+        new kubernetes.apiextensions.CustomResource(
+            `${metadata.name}-tlsroute`,
+            {
+                apiVersion: 'gateway.networking.k8s.io/v1alpha2',
+                kind: 'TLSRoute',
+                metadata,
+                spec: {
+                    parentRefs: [
+                        {
+                            name: 'traefik-gateway',
+                            namespace: 'traefik',
+                            sectionName: 'tls',
+                        },
+                    ],
+                    hostnames: [fullHostname],
+                    rules: [
+                        {
+                            backendRefs: [
+                                {
+                                    name: args.serviceName,
+                                    port: args.port.port,
+                                },
+                            ],
+                        },
+                    ],
+                },
+            },
+            { parent: this.opts?.parent },
+        );
+    }
+
     private createHttpEndpoints(httpPorts: ServicePort[], spec: ContainerSpec) {
         if (httpPorts.length === 0) return;
-        const service = this.createService({
+        const service = this.createHttpService({
             component: spec.name,
             ports: httpPorts,
         });
@@ -95,11 +190,16 @@ export class Network {
             'tailscale:tailnetDomain or orangelab:customDomain is required',
         );
         const hostname = args.port.hostname ?? config.get(this.appName, 'hostname');
-        const url = args.port.tcp
-            ? pulumi.interpolate`${hostname}:${args.port.port}`
-            : pulumi.interpolate`https://${hostname}.${domainName}`;
         const key = this.getFullPortName({ component: args.component, port: args.port });
-        this.endpoints[key] = url;
+        if (args.port.tcp && args.port.tls) {
+            const tlsUrl = pulumi.interpolate`${hostname}.${domainName}:3443`;
+            this.endpoints[`${key}-tls`] = tlsUrl;
+        } else {
+            const url = args.port.tcp
+                ? pulumi.interpolate`${hostname}:${args.port.port}`
+                : pulumi.interpolate`https://${hostname}.${domainName}`;
+            this.endpoints[key] = url;
+        }
     }
 
     private exportClusterEndpoint(args: {
@@ -123,7 +223,7 @@ export class Network {
         return key;
     }
 
-    private createService(args: {
+    private createHttpService(args: {
         component?: string;
         ports: ServicePort[];
     }): kubernetes.core.v1.Service {
