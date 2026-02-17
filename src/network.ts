@@ -43,19 +43,35 @@ export class Network {
         this.createHttpEndpoints(httpPorts, spec);
 
         if (config.customDomain) {
-            const tcpPorts = ports.filter(p => p.tcp && !p.tls);
-            this.createTcpEndpoints(tcpPorts, spec.name);
-            const tlsPorts = ports.filter(p => p.tcp && p.tls);
-            this.createTlsEndpoints(tlsPorts, spec.name);
+            const tcpPorts = ports.filter(p => p.tcp);
+            if (tcpPorts.length > 0) {
+                const clusterService = this.createService({
+                    component: spec.name,
+                    ports: tcpPorts,
+                });
+                const tlsPorts = ports.filter(p => p.tcp && p.tls);
+                this.createTlsEndpoints(tlsPorts, clusterService, spec.name);
+                this.createServiceLB({
+                    component: spec.name,
+                    ports: tcpPorts,
+                });
+                tcpPorts.forEach(port => {
+                    this.exportEndpoint({ component: spec.name, port });
+                    this.exportClusterEndpoint({ component: spec.name, port, service: clusterService });
+                });
+            }
         } else {
             const tcpPorts = ports.filter(p => p.tcp);
             this.createTcpEndpoints(tcpPorts, spec.name);
         }
     }
 
-    private createTlsEndpoints(ports: ServicePort[], component?: string) {
+    private createTlsEndpoints(
+        ports: ServicePort[],
+        service: kubernetes.core.v1.Service,
+        component?: string,
+    ) {
         if (ports.length === 0 || !config.customDomain) return;
-        const service = this.createService({ component, ports });
         ports.forEach(port => {
             if (config.customDomain) {
                 this.createTlsRoute({
@@ -194,6 +210,9 @@ export class Network {
         if (args.port.tcp && args.port.tls) {
             const tlsUrl = pulumi.interpolate`${hostname}.${domainName}:3443`;
             this.endpoints[`${key}-tls`] = tlsUrl;
+        } else if (args.port.tcp && config.customDomain) {
+            const url = pulumi.interpolate`${hostname}.${domainName}:${args.port.port}`;
+            this.endpoints[key] = url;
         } else {
             const url = args.port.tcp
                 ? pulumi.interpolate`${hostname}:${args.port.port}`
@@ -254,10 +273,11 @@ export class Network {
     }): kubernetes.core.v1.Service {
         const metadata = this.args.metadata.get({ component: args.component });
         return new kubernetes.core.v1.Service(
-            `${metadata.name}-lb`,
+            `${metadata.name}-ts-lb`,
             {
                 metadata: {
                     ...metadata,
+                    name: `${metadata.name}-ts-lb`,
                     annotations: { 'tailscale.com/hostname': args.hostname },
                 },
                 spec: {
@@ -270,6 +290,36 @@ export class Network {
                         targetPort: p.port,
                     })),
                     selector: this.args.metadata.getSelectorLabels(),
+                },
+            },
+            {
+                ...this.opts,
+                aliases: [{ name: `${metadata.name}-lb` }],
+            },
+        );
+    }
+
+    private createServiceLB(args: {
+        ports: ServicePort[];
+        component?: string;
+    }): kubernetes.core.v1.Service {
+        const metadata = this.args.metadata.get({ component: args.component });
+        return new kubernetes.core.v1.Service(
+            `${metadata.name}-lb`,
+            {
+                metadata: {
+                    ...metadata,
+                    name: `${metadata.name}-lb`,
+                },
+                spec: {
+                    type: 'LoadBalancer',
+                    ports: args.ports.map(p => ({
+                        name: p.name,
+                        protocol: 'TCP',
+                        port: p.port,
+                        targetPort: p.port,
+                    })),
+                    selector: this.args.metadata.getSelectorLabels(args.component),
                 },
             },
             this.opts,
