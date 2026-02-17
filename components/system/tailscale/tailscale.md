@@ -9,6 +9,13 @@
 
 The operator manages cluster ingress endpoints on Tailnet as well as adds Tailscale authenticated Kubernetes API endpoint.
 
+## When to Use
+
+- **Use Tailscale** when you don't have a custom domain or public IP, and want secure access via Tailscale mesh VPN
+- **Optional** when using [Traefik](../traefik/traefik.md) with a custom domain - TCP services will use k3s ServiceLB instead
+
+When custom domain is configured, Traefik replaces Tailscale for application endpoints.
+
 ## Installation
 
 ### DNS/HTTPS
