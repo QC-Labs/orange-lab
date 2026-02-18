@@ -187,3 +187,29 @@ export interface S3Provisioner {
     };
     instanceName: string;
 }
+
+/**
+ * Represents HTTP endpoint information for network routing.
+ */
+export interface HttpEndpointInfo {
+    className: string;
+    hostname: string;
+    url: string;
+    tls: boolean;
+    tlsSecretName?: string;
+    domain: string;
+    annotations?: Record<string, pulumi.Input<string>>;
+}
+
+/**
+ * Represents a routing provider that creates HTTP endpoints.
+ */
+export interface RoutingProvider {
+    getHttpEndpointInfo: (hostname: string) => HttpEndpointInfo;
+    createHttpEndpoint: (args: {
+        serviceName: pulumi.Input<string>;
+        port: ServicePort;
+        component?: string;
+        hostname: string;
+    }) => pulumi.Resource;
+}

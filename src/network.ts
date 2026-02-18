@@ -3,21 +3,15 @@ import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
 import { config } from './config';
 import { Metadata } from './metadata';
-import { ContainerSpec, ServicePort } from './types';
-
-export interface HttpEndpointInfo {
-    className: string;
-    hostname: string;
-    url: string;
-    tls: boolean;
-    tlsSecretName?: string;
-    domain: string;
-    annotations?: Record<string, pulumi.Input<string>>;
-}
+import { TraefikNetwork } from './network-traefik';
+import { TailscaleNetwork } from './network-tailscale';
+import { ContainerSpec, HttpEndpointInfo, ServicePort } from './types';
 
 export class Network {
     endpoints: Record<string, pulumi.Input<string>> = {};
     clusterEndpoints: Record<string, pulumi.Input<string>> = {};
+    private tailscale: TailscaleNetwork;
+    private traefik: TraefikNetwork;
 
     constructor(
         private appName: string,
@@ -25,7 +19,10 @@ export class Network {
             metadata: Metadata;
         },
         private opts?: pulumi.ComponentResourceOptions,
-    ) {}
+    ) {
+        this.tailscale = new TailscaleNetwork(appName, args, opts);
+        this.traefik = new TraefikNetwork(appName, args, opts);
+    }
 
     createEndpoints(spec: ContainerSpec) {
         const hostname = config.get(this.appName, 'hostname');
@@ -57,7 +54,11 @@ export class Network {
                 });
                 tcpPorts.forEach(port => {
                     this.exportEndpoint({ component: spec.name, port });
-                    this.exportClusterEndpoint({ component: spec.name, port, service: clusterService });
+                    this.exportClusterEndpoint({
+                        component: spec.name,
+                        port,
+                        service: clusterService,
+                    });
                 });
             }
         } else {
@@ -178,20 +179,19 @@ export class Network {
             ports: httpPorts,
         });
         httpPorts.forEach(port => {
-            const httpEndpointInfo = this.getHttpEndpointInfo(port.hostname);
-            if (httpEndpointInfo.className === 'traefik') {
-                this.createHttpRoute({
+            if (config.customDomain) {
+                this.traefik.createHttpEndpoint({
                     serviceName: service.metadata.name,
                     port,
                     component: spec.name,
-                    httpEndpointInfo,
+                    hostname: port.hostname ?? config.require(this.appName, 'hostname'),
                 });
             } else {
-                this.createIngress({
+                this.tailscale.createHttpEndpoint({
                     serviceName: service.metadata.name,
                     port,
                     component: spec.name,
-                    httpEndpointInfo,
+                    hostname: port.hostname ?? config.require(this.appName, 'hostname'),
                 });
             }
             this.exportEndpoint({ component: spec.name, port });
@@ -329,121 +329,8 @@ export class Network {
     public getHttpEndpointInfo(
         hostname: string = config.require(this.appName, 'hostname'),
     ): HttpEndpointInfo {
-        if (!config.customDomain) {
-            return {
-                className: 'tailscale',
-                hostname,
-                url: `https://${hostname}.${config.tailnetDomain}`,
-                tls: true,
-                domain: config.tailnetDomain,
-            };
-        } else {
-            return {
-                className: 'traefik',
-                hostname: `${hostname}.${config.customDomain}`,
-                url: `https://${hostname}.${config.customDomain}`,
-                tls: true,
-                tlsSecretName: `${config.customDomain}-tls`,
-                domain: config.customDomain,
-            };
-        }
-    }
-
-    private createIngress(args: {
-        serviceName: pulumi.Input<string>;
-        port: ServicePort;
-        component?: string;
-        httpEndpointInfo: HttpEndpointInfo;
-    }): kubernetes.networking.v1.Ingress {
-        const metadata = this.args.metadata.get({
-            component: args.component
-                ? `${args.component}-${args.port.name}`
-                : args.port.name,
-            annotations: args.httpEndpointInfo.annotations,
-        });
-        return new kubernetes.networking.v1.Ingress(
-            `${metadata.name}-ingress`,
-            {
-                metadata,
-                spec: {
-                    ingressClassName: args.httpEndpointInfo.className,
-                    tls: [
-                        {
-                            hosts: [args.httpEndpointInfo.hostname],
-                            secretName: args.httpEndpointInfo.tlsSecretName,
-                        },
-                    ],
-                    rules: [
-                        {
-                            host: args.httpEndpointInfo.hostname,
-                            http: {
-                                paths: [
-                                    {
-                                        path: '/',
-                                        pathType: 'Prefix',
-                                        backend: {
-                                            service: {
-                                                name: args.serviceName,
-                                                port: { number: args.port.port },
-                                            },
-                                        },
-                                    },
-                                ],
-                            },
-                        },
-                    ],
-                },
-            },
-            {
-                ...this.opts,
-                aliases: [
-                    { name: `${metadata.name}-ingress` },
-                    { name: `${metadata.name}-traefik-ingress` },
-                ],
-            },
-        );
-    }
-
-    private createHttpRoute(args: {
-        serviceName: pulumi.Input<string>;
-        port: ServicePort;
-        component?: string;
-        httpEndpointInfo: HttpEndpointInfo;
-    }): kubernetes.apiextensions.CustomResource {
-        const metadata = this.args.metadata.get({
-            component: args.component
-                ? `${args.component}-${args.port.name}`
-                : args.port.name,
-            annotations: args.httpEndpointInfo.annotations,
-        });
-        return new kubernetes.apiextensions.CustomResource(
-            `${metadata.name}-httproute`,
-            {
-                apiVersion: 'gateway.networking.k8s.io/v1',
-                kind: 'HTTPRoute',
-                metadata,
-                spec: {
-                    parentRefs: [
-                        {
-                            name: 'traefik-gateway',
-                            namespace: 'traefik',
-                            sectionName: 'websecure',
-                        },
-                    ],
-                    hostnames: [args.httpEndpointInfo.hostname],
-                    rules: [
-                        {
-                            backendRefs: [
-                                {
-                                    name: args.serviceName,
-                                    port: args.port.port,
-                                },
-                            ],
-                        },
-                    ],
-                },
-            },
-            this.opts,
-        );
+        return config.customDomain
+            ? this.traefik.getHttpEndpointInfo(hostname)
+            : this.tailscale.getHttpEndpointInfo(hostname);
     }
 }

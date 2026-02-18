@@ -2,9 +2,8 @@ import * as k8s from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
 import { Application } from '@orangelab/application';
-import { HttpEndpointInfo } from '@orangelab/network';
 import { config } from '@orangelab/config';
-import { DatabaseConfig } from '@orangelab/types';
+import { DatabaseConfig, HttpEndpointInfo } from '@orangelab/types';
 
 export class Nextcloud extends pulumi.ComponentResource {
     public readonly serviceUrl?: string;
