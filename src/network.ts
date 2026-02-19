@@ -1,175 +1,48 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
-import assert from 'node:assert';
 import { config } from './config';
 import { Metadata } from './metadata';
-import { TraefikNetwork } from './network-traefik';
 import { TailscaleNetwork } from './network-tailscale';
+import { TraefikNetwork } from './network-traefik';
 import { ContainerSpec, HttpEndpointInfo, ServicePort } from './types';
 
 export class Network {
     endpoints: Record<string, pulumi.Input<string>> = {};
     clusterEndpoints: Record<string, pulumi.Input<string>> = {};
-    private tailscale: TailscaleNetwork;
-    private traefik: TraefikNetwork;
+    private provider: TailscaleNetwork | TraefikNetwork;
 
     constructor(
         private appName: string,
-        private args: {
-            metadata: Metadata;
-        },
+        private args: { metadata: Metadata },
         private opts?: pulumi.ComponentResourceOptions,
     ) {
-        this.tailscale = new TailscaleNetwork(appName, args, opts);
-        this.traefik = new TraefikNetwork(appName, args, opts);
+        this.provider = config.customDomain
+            ? new TraefikNetwork(appName, args, opts)
+            : new TailscaleNetwork(appName, args, opts);
+    }
+
+    public getHttpEndpointInfo(
+        hostname: string = config.require(this.appName, 'hostname'),
+    ): HttpEndpointInfo {
+        return this.provider.getHttpEndpointInfo(hostname);
     }
 
     createEndpoints(spec: ContainerSpec) {
-        const hostname = config.get(this.appName, 'hostname');
-        if (!hostname) return;
-        const metadata = this.args.metadata.get({ component: spec.name });
-        assert(metadata.namespace, 'namespace is required');
-
+        const hostname = config.require(this.appName, 'hostname');
         const ports: ServicePort[] = [
             ...(spec.port ? [{ name: 'http', port: spec.port, hostname }] : []),
             ...(spec.ports ?? []),
         ];
-        if (ports.length === 0) return;
-
         const httpPorts = ports.filter(p => !p.tcp);
         this.createHttpEndpoints(httpPorts, spec);
-
-        if (config.customDomain) {
-            const tcpPorts = ports.filter(p => p.tcp);
-            if (tcpPorts.length > 0) {
-                const clusterService = this.createService({
-                    component: spec.name,
-                    ports: tcpPorts,
-                });
-                const tlsPorts = ports.filter(p => p.tcp && p.tls);
-                this.createTlsEndpoints(tlsPorts, clusterService, spec.name);
-                this.createServiceLB({
-                    component: spec.name,
-                    ports: tcpPorts,
-                });
-                tcpPorts.forEach(port => {
-                    this.exportEndpoint({ component: spec.name, port });
-                    this.exportClusterEndpoint({
-                        component: spec.name,
-                        port,
-                        service: clusterService,
-                    });
-                });
-            }
-        } else {
-            const tcpPorts = ports.filter(p => p.tcp);
-            this.createTcpEndpoints(tcpPorts, spec.name);
-        }
-    }
-
-    private createTlsEndpoints(
-        ports: ServicePort[],
-        service: kubernetes.core.v1.Service,
-        component?: string,
-    ) {
-        if (ports.length === 0 || !config.customDomain) return;
-        ports.forEach(port => {
-            if (config.customDomain) {
-                this.createTlsRoute({
-                    component,
-                    port,
-                    serviceName: service.metadata.name,
-                });
-            }
-        });
-        ports.forEach(port => {
-            this.exportEndpoint({ component, port });
-            this.exportClusterEndpoint({ component, port, service });
-        });
-    }
-
-    private createTcpEndpoints(tcpPorts: ServicePort[], component?: string) {
-        if (tcpPorts.length === 0) return;
-        const hostname = config.require(this.appName, 'hostname');
-        const service = this.createLoadBalancer({
-            hostname,
+        const tcpPorts = ports.filter(p => p.tcp);
+        this.provider.createTcpEndpoints({
             ports: tcpPorts,
-            component,
+            component: spec.name,
+            hostname,
         });
-        tcpPorts.forEach(port => {
-            this.exportEndpoint({ component, port });
-            this.exportClusterEndpoint({ component, port, service });
-        });
-    }
-
-    private createService(args: {
-        component?: string;
-        ports: ServicePort[];
-    }): kubernetes.core.v1.Service {
-        const metadata = this.args.metadata.get({ component: args.component });
-        return new kubernetes.core.v1.Service(
-            `${metadata.name}-svc`,
-            {
-                metadata: { ...metadata, name: metadata.name },
-                spec: {
-                    type: 'ClusterIP',
-                    ports: args.ports.map(p => ({
-                        name: p.name,
-                        protocol: 'TCP',
-                        port: p.port,
-                        targetPort: p.port,
-                    })),
-                    selector: this.args.metadata.getSelectorLabels(args.component),
-                },
-            },
-            this.opts,
-        );
-    }
-
-    private createTlsRoute(args: {
-        component?: string;
-        port: ServicePort;
-        serviceName: pulumi.Input<string>;
-    }): void {
-        const hostname = args.port.hostname ?? config.get(this.appName, 'hostname');
-        if (!hostname || !config.customDomain) return;
-
-        const fullHostname = `${hostname}.${config.customDomain}`;
-        const metadata = this.args.metadata.get({
-            component: args.component
-                ? `${args.component}-${args.port.name}`
-                : args.port.name,
-        });
-
-        new kubernetes.apiextensions.CustomResource(
-            `${metadata.name}-tlsroute`,
-            {
-                apiVersion: 'gateway.networking.k8s.io/v1alpha2',
-                kind: 'TLSRoute',
-                metadata,
-                spec: {
-                    parentRefs: [
-                        {
-                            name: 'traefik-gateway',
-                            namespace: 'traefik',
-                            sectionName: 'tls',
-                        },
-                    ],
-                    hostnames: [fullHostname],
-                    rules: [
-                        {
-                            backendRefs: [
-                                {
-                                    name: args.serviceName,
-                                    port: args.port.port,
-                                },
-                            ],
-                        },
-                    ],
-                },
-            },
-            { parent: this.opts?.parent },
-        );
+        Object.assign(this.endpoints, this.provider.endpoints);
+        Object.assign(this.clusterEndpoints, this.provider.clusterEndpoints);
     }
 
     private createHttpEndpoints(httpPorts: ServicePort[], spec: ContainerSpec) {
@@ -178,68 +51,12 @@ export class Network {
             component: spec.name,
             ports: httpPorts,
         });
-        httpPorts.forEach(port => {
-            if (config.customDomain) {
-                this.traefik.createHttpEndpoint({
-                    serviceName: service.metadata.name,
-                    port,
-                    component: spec.name,
-                    hostname: port.hostname ?? config.require(this.appName, 'hostname'),
-                });
-            } else {
-                this.tailscale.createHttpEndpoint({
-                    serviceName: service.metadata.name,
-                    port,
-                    component: spec.name,
-                    hostname: port.hostname ?? config.require(this.appName, 'hostname'),
-                });
-            }
-            this.exportEndpoint({ component: spec.name, port });
-            this.exportClusterEndpoint({ component: spec.name, port, service });
+        this.provider.createHttpEndpoints({
+            serviceName: service.metadata.name,
+            ports: httpPorts,
+            component: spec.name,
+            hostname: config.require(this.appName, 'hostname'),
         });
-    }
-
-    private exportEndpoint(args: { component?: string; port: ServicePort }) {
-        const domainName = config.customDomain ?? config.tailnetDomain;
-        assert(
-            domainName,
-            'tailscale:tailnetDomain or orangelab:customDomain is required',
-        );
-        const hostname = args.port.hostname ?? config.get(this.appName, 'hostname');
-        const key = this.getFullPortName({ component: args.component, port: args.port });
-        if (args.port.tcp && args.port.tls) {
-            const tlsUrl = pulumi.interpolate`${hostname}.${domainName}:3443`;
-            this.endpoints[`${key}-tls`] = tlsUrl;
-        } else if (args.port.tcp && config.customDomain) {
-            const url = pulumi.interpolate`${hostname}.${domainName}:${args.port.port}`;
-            this.endpoints[key] = url;
-        } else {
-            const url = args.port.tcp
-                ? pulumi.interpolate`${hostname}:${args.port.port}`
-                : pulumi.interpolate`https://${hostname}.${domainName}`;
-            this.endpoints[key] = url;
-        }
-    }
-
-    private exportClusterEndpoint(args: {
-        component?: string;
-        port: ServicePort;
-        service: kubernetes.core.v1.Service;
-    }) {
-        const key = this.getFullPortName({ component: args.component, port: args.port });
-        const url = pulumi.interpolate`${args.service.metadata.name}.${args.service.metadata.namespace}:${args.port.port}`;
-        this.clusterEndpoints[key] = args.port.tcp ? url : pulumi.concat('http://', url);
-    }
-
-    private getFullPortName(args: { component?: string; port: ServicePort }): string {
-        const key = [
-            this.appName,
-            args.component,
-            args.port.name === 'http' ? undefined : args.port.name,
-        ]
-            .filter(Boolean)
-            .join('-');
-        return key;
     }
 
     private createHttpService(args: {
@@ -264,73 +81,5 @@ export class Network {
             },
             this.opts,
         );
-    }
-
-    private createLoadBalancer(args: {
-        hostname: string;
-        ports: ServicePort[];
-        component?: string;
-    }): kubernetes.core.v1.Service {
-        const metadata = this.args.metadata.get({ component: args.component });
-        return new kubernetes.core.v1.Service(
-            `${metadata.name}-ts-lb`,
-            {
-                metadata: {
-                    ...metadata,
-                    name: `${metadata.name}-ts-lb`,
-                    annotations: { 'tailscale.com/hostname': args.hostname },
-                },
-                spec: {
-                    type: 'LoadBalancer',
-                    loadBalancerClass: 'tailscale',
-                    ports: args.ports.map(p => ({
-                        name: p.name,
-                        protocol: 'TCP',
-                        port: p.port,
-                        targetPort: p.port,
-                    })),
-                    selector: this.args.metadata.getSelectorLabels(),
-                },
-            },
-            {
-                ...this.opts,
-                aliases: [{ name: `${metadata.name}-lb` }],
-            },
-        );
-    }
-
-    private createServiceLB(args: {
-        ports: ServicePort[];
-        component?: string;
-    }): kubernetes.core.v1.Service {
-        const metadata = this.args.metadata.get({ component: args.component });
-        return new kubernetes.core.v1.Service(
-            `${metadata.name}-lb`,
-            {
-                metadata: {
-                    ...metadata,
-                    name: `${metadata.name}-lb`,
-                },
-                spec: {
-                    type: 'LoadBalancer',
-                    ports: args.ports.map(p => ({
-                        name: p.name,
-                        protocol: 'TCP',
-                        port: p.port,
-                        targetPort: p.port,
-                    })),
-                    selector: this.args.metadata.getSelectorLabels(args.component),
-                },
-            },
-            this.opts,
-        );
-    }
-
-    public getHttpEndpointInfo(
-        hostname: string = config.require(this.appName, 'hostname'),
-    ): HttpEndpointInfo {
-        return config.customDomain
-            ? this.traefik.getHttpEndpointInfo(hostname)
-            : this.tailscale.getHttpEndpointInfo(hostname);
     }
 }

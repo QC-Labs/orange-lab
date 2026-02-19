@@ -56,15 +56,10 @@ export class Application {
             },
             { parent: this.scope },
         );
-        this.nodes = new Nodes({
-            appName,
-            gpu: this.gpu,
-        });
+        this.nodes = new Nodes({ appName, gpu: this.gpu });
         this.network = new Network(
             appName,
-            {
-                metadata: this.metadata,
-            },
+            { metadata: this.metadata },
             { parent: this.scope },
         );
     }

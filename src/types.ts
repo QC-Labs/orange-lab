@@ -202,14 +202,21 @@ export interface HttpEndpointInfo {
 }
 
 /**
- * Represents a routing provider that creates HTTP endpoints.
+ * Represents a routing provider that creates HTTP and TCP endpoints.
  */
 export interface RoutingProvider {
+    endpoints: Record<string, pulumi.Input<string>>;
+    clusterEndpoints: Record<string, pulumi.Input<string>>;
     getHttpEndpointInfo: (hostname: string) => HttpEndpointInfo;
-    createHttpEndpoint: (args: {
+    createHttpEndpoints: (args: {
         serviceName: pulumi.Input<string>;
-        port: ServicePort;
+        ports: ServicePort[];
         component?: string;
         hostname: string;
-    }) => pulumi.Resource;
+    }) => void;
+    createTcpEndpoints: (args: {
+        ports: ServicePort[];
+        component?: string;
+        hostname: string;
+    }) => void;
 }
