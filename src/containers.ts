@@ -58,10 +58,7 @@ export class Containers {
                             healthChecks: spec.healthChecks,
                         }),
                         name: metadata.name,
-                        ports: this.createPorts({
-                            port: spec.port,
-                            ports: spec.ports,
-                        }),
+                        ports: this.createPorts(spec.ports),
                         readinessProbe: this.createProbe({
                             healthChecks: spec.healthChecks,
                         }),
@@ -104,11 +101,7 @@ export class Containers {
         return Object.keys(context).length ? context : undefined;
     }
 
-    private createPorts(args: { port?: number; ports?: ServicePort[] }) {
-        const ports = [
-            ...(args.port ? [{ name: 'http', port: args.port }] : []),
-            ...(args.ports ?? []),
-        ];
+    private createPorts(ports: ServicePort[] = []) {
         return ports.map(port => ({
             name: port.name,
             containerPort: port.port,

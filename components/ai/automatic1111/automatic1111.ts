@@ -18,7 +18,7 @@ export class Automatic1111 extends pulumi.ComponentResource {
                 env: {
                     COMMANDLINE_ARGS: cliArgs,
                 },
-                port: 8080,
+                ports: [{ name: 'http', port: 8080 }],
                 runAsUser: 1000,
                 volumeMounts: [
                     {

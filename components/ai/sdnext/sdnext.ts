@@ -14,7 +14,7 @@ export class SDNext extends pulumi.ComponentResource {
         this.app = new Application(this, name).addStorage({ type: StorageType.GPU });
 
         this.app.addDeployment({
-            port: 7860,
+            ports: [{ name: 'http', port: 7860 }],
             commandArgs: [
                 '--listen',
                 '--docs',

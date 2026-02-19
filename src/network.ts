@@ -29,10 +29,7 @@ export class Network {
 
     createEndpoints(spec: ContainerSpec) {
         const hostname = config.require(this.appName, 'hostname');
-        const ports: ServicePort[] = [
-            ...(spec.port ? [{ name: 'http', port: spec.port, hostname }] : []),
-            ...(spec.ports ?? []),
-        ];
+        const ports = spec.ports ?? [];
         const httpPorts = ports.filter(p => !p.tcp);
         this.createHttpEndpoints(httpPorts, spec);
         const tcpPorts = ports.filter(p => p.tcp);

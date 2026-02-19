@@ -17,7 +17,7 @@ export class Beszel extends pulumi.ComponentResource {
         const httpEndpointInfo = this.app.network.getHttpEndpointInfo();
 
         this.app.addDeployment({
-            port: 8090,
+            ports: [{ name: 'http', port: 8090 }],
             env: {
                 USER_CREATION: 'true',
                 APP_URL: httpEndpointInfo.url,

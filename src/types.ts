@@ -10,6 +10,11 @@ export enum StorageType {
 }
 
 export interface ServicePort {
+    /**
+     * The name of the port. Used to generate endpoint keys and URLs.
+     * Use 'http' for the primary HTTP port to get clean URLs (e.g., https://app.tailnet)
+     * instead of https://app-http.tailnet. Also required for health checks.
+     */
     name: string;
     port: number;
     hostname?: string;
@@ -63,7 +68,6 @@ export interface ContainerSpec {
      * If not provided, defaults to reading from config key `<app>:image`.
      */
     image?: string;
-    port?: number;
     ports?: ServicePort[];
     command?: pulumi.Input<string[]>;
     commandArgs?: pulumi.Input<string[]>;

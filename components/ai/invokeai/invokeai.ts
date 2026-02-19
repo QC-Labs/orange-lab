@@ -14,7 +14,7 @@ export class InvokeAi extends pulumi.ComponentResource {
         this.app = new Application(this, name).addStorage({ type: StorageType.GPU });
 
         this.app.addDeployment({
-            port: 9090,
+            ports: [{ name: 'http', port: 9090 }],
             env: {
                 INVOKEAI_ROOT: '/invokeai',
                 INVOKEAI_HOST: '0.0.0.0',
