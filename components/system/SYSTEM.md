@@ -40,29 +40,27 @@ pulumi config set amd-gpu-operator:enabled true
 pulumi up
 ```
 
-## Custom domains
+## Routing Provider
 
-By default Tailscale domain (`*.ts.net`) is used for all services.
+Select how external traffic reaches your services:
 
-You can also setup your custom domain.
-
-Note that Tailscale authentication does not work on custom domains. It is still however required for TCP routes (bitcoin, electrs).
-
-You need to:
-
-- add A record to your DNS pointing `*` (or each subdomain separately) to one of your Tailscale node IPs
-- configure `cert-manager` to use `ClusterIssuer` to provision Let's Encrypt SSL certificates
+- **tailscale** (default): Uses Tailscale's `.ts.net` domain with built-in HTTPS
+- **traefik**: Uses your custom domain with automatic TLS certificates
 
 ```sh
-pulumi config set orangelab:customDomain example.com
-# create ClusterIssuer after installation
-pulumi config set cert-manager:enabled true
-pulumi up
+# For Tailscale (default)
+pulumi config set orangelab:routingProvider tailscale
+pulumi config set tailscale:tailnet <tailnet>.ts.net
+pulumi config set tailscale:enabled true
 
-# Enable traefik, it will use cert-manager for HTTPS certificates
+# For custom domain
+pulumi config set orangelab:routingProvider traefik
+pulumi config set orangelab:customDomain example.com
+pulumi config set cert-manager:enabled true
 pulumi config set traefik:enabled true
-pulumi up
 ```
+
+Note that Tailscale authentication does not work on custom domains. TCP routes (bitcoin, electrs) use k3s ServiceLB instead of Tailscale LoadBalancer when using Traefik.
 
 ServiceLB creates an endpoint on port 80/443 on each node in the cluster.
 

@@ -43,6 +43,7 @@ class Config {
         Large: 'longhorn-large',
         Database: 'longhorn',
     };
+    public routingProvider = this.require('orangelab', 'routingProvider');
     public customDomain = this.get('orangelab', 'customDomain');
     public tailnetDomain = this.require('tailscale', 'tailnet');
     public clusterCidr = this.require('k3s', 'clusterCidr');

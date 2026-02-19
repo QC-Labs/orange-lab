@@ -13,7 +13,12 @@ export class TraefikNetwork implements RoutingProvider {
         private appName: string,
         private args: { metadata: Metadata },
         private opts?: pulumi.ComponentResourceOptions,
-    ) {}
+    ) {
+        assert(
+            config.customDomain,
+            'orangelab:routingProvider=traefik requires orangelab:customDomain to be set',
+        );
+    }
 
     getHttpEndpointInfo(hostname: string): HttpEndpointInfo {
         assert(

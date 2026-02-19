@@ -4,21 +4,30 @@ import { config } from './config';
 import { Metadata } from './metadata';
 import { TailscaleNetwork } from './network-tailscale';
 import { TraefikNetwork } from './network-traefik';
-import { ContainerSpec, HttpEndpointInfo, ServicePort } from './types';
+import { ContainerSpec, HttpEndpointInfo, RoutingProvider, ServicePort } from './types';
 
 export class Network {
     endpoints: Record<string, pulumi.Input<string>> = {};
     clusterEndpoints: Record<string, pulumi.Input<string>> = {};
-    private provider: TailscaleNetwork | TraefikNetwork;
+    private provider: RoutingProvider;
 
     constructor(
         private appName: string,
         private args: { metadata: Metadata },
         private opts?: pulumi.ComponentResourceOptions,
     ) {
-        this.provider = config.customDomain
-            ? new TraefikNetwork(appName, args, opts)
-            : new TailscaleNetwork(appName, args, opts);
+        switch (config.routingProvider) {
+            case 'traefik':
+                this.provider = new TraefikNetwork(appName, args, opts);
+                break;
+            case 'tailscale':
+                this.provider = new TailscaleNetwork(appName, args, opts);
+                break;
+            default:
+                throw new Error(
+                    `Unknown routingProvider: ${config.routingProvider}. Must be 'traefik' or 'tailscale'.`,
+                );
+        }
     }
 
     public getHttpEndpointInfo(

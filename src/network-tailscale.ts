@@ -1,5 +1,6 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
+import assert from 'node:assert';
 import { config } from './config';
 import { Metadata } from './metadata';
 import { HttpEndpointInfo, RoutingProvider, ServicePort } from './types';
@@ -12,7 +13,12 @@ export class TailscaleNetwork implements RoutingProvider {
         private appName: string,
         private args: { metadata: Metadata },
         private opts?: pulumi.ComponentResourceOptions,
-    ) {}
+    ) {
+        assert(
+            config.tailnetDomain,
+            'orangelab:routingProvider=tailscale requires tailscale:tailnet to be set',
+        );
+    }
 
     getHttpEndpointInfo(hostname: string): HttpEndpointInfo {
         return {

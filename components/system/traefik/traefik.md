@@ -8,17 +8,15 @@
 | Documentation | https://doc.traefik.io/traefik/                                               |
 | Dashboard     | https://traefik.<domain>/                                                     |
 
-Traefik is a cloud-native edge router that handles external HTTP/HTTPS traffic to cluster. It requires both `customDomain` and `traefik:enabled: true` to be configured, and serves as an ingress controller for custom domain services.
+Traefik is a cloud-native edge router that handles external HTTP/HTTPS traffic to cluster.
 
-## When to Use
-
-- **Use Traefik** when you have a custom domain and want custom domain access with automatic TLS certificates
-- **Alternative to Tailscale** - Traefik replaces [Tailscale](../tailscale/tailscale.md) when custom domain is configured; TCP services use k3s ServiceLB instead of Tailscale LoadBalancer
+This provider is an alternative to [Tailscale](../tailscale/tailscale.md) and supports custom domains.
 
 ## Installation
 
 ```sh
-# Both settings are required
+# Required settings
+pulumi config set orangelab:routingProvider traefik
 pulumi config set orangelab:customDomain example.com
 pulumi config set traefik:enabled true
 

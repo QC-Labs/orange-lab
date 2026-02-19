@@ -44,11 +44,10 @@ Assign `orangelab` tag as well.
 
 <img src="./tailscale-oauth-devices.png" alt="New Tailscale OAuth devices permission" style="width:50%;border:1px solid orange;margin-bottom:1em;" />
 
-Add the token values to `Pulumi.<stack>.yaml`.
-
 You can find Tailnet DNS name at https://login.tailscale.com/admin/dns
 
 ```sh
+pulumi config set orangelab:routingProvider tailscale
 pulumi config set tailscale:tailnet <*.ts.net*>
 pulumi config set tailscale:oauthClientId <OAUTH_CLIENT_ID>
 pulumi config set tailscale:oauthClientSecret <OAUTH_CLIENT_SECRET> --secret
