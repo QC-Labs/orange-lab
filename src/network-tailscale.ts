@@ -24,96 +24,136 @@ export class TailscaleNetwork implements RoutingProvider {
         };
     }
 
-    createHttpEndpoints(args: {
+    createHttpEndpoints(params: {
         serviceName: pulumi.Input<string>;
-        ports: ServicePort[];
+        httpPorts: ServicePort[];
         component?: string;
         hostname: string;
     }): void {
-        args.ports.forEach(port => {
+        params.httpPorts.forEach(httpPort => {
             const httpEndpointInfo = this.getHttpEndpointInfo(
-                port.hostname ?? args.hostname,
+                httpPort.hostname ?? params.hostname,
             );
-            const metadata = this.args.metadata.get({
-                component: [args.component, port.name].filter(Boolean).join('-'),
-            });
-            new kubernetes.networking.v1.Ingress(
-                `${metadata.name}-ingress`,
-                {
-                    metadata,
-                    spec: {
-                        ingressClassName: httpEndpointInfo.className,
-                        tls: [
-                            {
-                                hosts: [httpEndpointInfo.hostname],
-                                secretName: httpEndpointInfo.tlsSecretName,
-                            },
-                        ],
-                        rules: [
-                            {
-                                host: httpEndpointInfo.hostname,
-                                http: {
-                                    paths: [
-                                        {
-                                            path: '/',
-                                            pathType: 'Prefix',
-                                            backend: {
-                                                service: {
-                                                    name: args.serviceName,
-                                                    port: { number: port.port },
-                                                },
-                                            },
-                                        },
-                                    ],
-                                },
-                            },
-                        ],
-                    },
-                },
-                {
-                    ...this.opts,
-                    aliases: [
-                        { name: `${metadata.name}-ingress` },
-                        { name: `${metadata.name}-traefik-ingress` },
-                    ],
-                },
-            );
+            const componentName = [params.component, httpPort.name]
+                .filter(Boolean)
+                .join('-');
 
-            const key = this.getFullPortName({ component: args.component, port });
+            this.createIngress({
+                componentName,
+                httpEndpointInfo,
+                serviceName: params.serviceName,
+                servicePort: httpPort,
+            });
+
+            const key = this.getEndpointKey({
+                component: params.component,
+                portName: httpPort.name,
+            });
             this.endpoints[key] =
                 pulumi.interpolate`https://${httpEndpointInfo.hostname}`;
-            this.clusterEndpoints[key] = pulumi.concat(
-                'http://',
-                pulumi.interpolate`${args.serviceName}.${metadata.namespace}:${port.port}`,
-            );
+            this.clusterEndpoints[key] =
+                pulumi.interpolate`http://${params.serviceName}.${this.args.metadata.namespace}:${httpPort.port}`;
         });
     }
 
-    createTcpEndpoints(args: {
-        ports: ServicePort[];
+    private createIngress(params: {
+        componentName: string;
+        httpEndpointInfo: HttpEndpointInfo;
+        serviceName: pulumi.Input<string>;
+        servicePort: ServicePort;
+    }): void {
+        const metadata = this.args.metadata.get({ component: params.componentName });
+        new kubernetes.networking.v1.Ingress(
+            `${metadata.name}-ingress`,
+            {
+                metadata,
+                spec: {
+                    ingressClassName: params.httpEndpointInfo.className,
+                    tls: [
+                        {
+                            hosts: [params.httpEndpointInfo.hostname],
+                            secretName: params.httpEndpointInfo.tlsSecretName,
+                        },
+                    ],
+                    rules: [
+                        {
+                            host: params.httpEndpointInfo.hostname,
+                            http: {
+                                paths: [
+                                    {
+                                        path: '/',
+                                        pathType: 'Prefix',
+                                        backend: {
+                                            service: {
+                                                name: params.serviceName,
+                                                port: { number: params.servicePort.port },
+                                            },
+                                        },
+                                    },
+                                ],
+                            },
+                        },
+                    ],
+                },
+            },
+            {
+                ...this.opts,
+                aliases: [
+                    { name: `${metadata.name}-ingress` },
+                    { name: `${metadata.name}-traefik-ingress` },
+                ],
+            },
+        );
+    }
+
+    createTcpEndpoints(params: {
+        tcpPorts: ServicePort[];
         component?: string;
         hostname: string;
     }): void {
-        if (args.ports.length === 0) return;
-        const metadata = this.args.metadata.get({ component: args.component });
-        const service = new kubernetes.core.v1.Service(
+        if (params.tcpPorts.length === 0) return;
+
+        const service = this.createTcpLoadBalancer({
+            component: params.component,
+            tcpPorts: params.tcpPorts,
+            hostname: params.hostname,
+        });
+
+        params.tcpPorts.forEach(port => {
+            const key = this.getEndpointKey({
+                component: params.component,
+                portName: port.name,
+            });
+            this.endpoints[key] = pulumi.interpolate`${params.hostname}:${port.port}`;
+            this.clusterEndpoints[key] =
+                pulumi.interpolate`${service.metadata.name}.${service.metadata.namespace}:${port.port}`;
+        });
+    }
+
+    private createTcpLoadBalancer(params: {
+        component: string | undefined;
+        tcpPorts: ServicePort[];
+        hostname: string;
+    }): kubernetes.core.v1.Service {
+        const metadata = this.args.metadata.get({ component: params.component });
+        return new kubernetes.core.v1.Service(
             `${metadata.name}-ts-lb`,
             {
                 metadata: {
                     ...metadata,
                     name: `${metadata.name}-ts-lb`,
-                    annotations: { 'tailscale.com/hostname': args.hostname },
+                    annotations: { 'tailscale.com/hostname': params.hostname },
                 },
                 spec: {
                     type: 'LoadBalancer',
                     loadBalancerClass: 'tailscale',
-                    ports: args.ports.map(p => ({
+                    ports: params.tcpPorts.map(p => ({
                         name: p.name,
                         protocol: 'TCP',
                         port: p.port,
                         targetPort: p.port,
                     })),
-                    selector: this.args.metadata.getSelectorLabels(args.component),
+                    selector: this.args.metadata.getSelectorLabels(params.component),
                 },
             },
             {
@@ -121,20 +161,16 @@ export class TailscaleNetwork implements RoutingProvider {
                 aliases: [{ name: `${metadata.name}-lb` }],
             },
         );
-
-        args.ports.forEach(port => {
-            const key = this.getFullPortName({ component: args.component, port });
-            this.endpoints[key] = pulumi.interpolate`${args.hostname}:${port.port}`;
-            this.clusterEndpoints[key] =
-                pulumi.interpolate`${service.metadata.name}.${service.metadata.namespace}:${port.port}`;
-        });
     }
 
-    private getFullPortName(args: { component?: string; port: ServicePort }): string {
+    private getEndpointKey(params: {
+        component: string | undefined;
+        portName: string;
+    }): string {
         return [
             this.appName,
-            args.component,
-            args.port.name === 'http' ? undefined : args.port.name,
+            params.component,
+            params.portName === 'http' ? undefined : params.portName,
         ]
             .filter(Boolean)
             .join('-');

@@ -31,168 +31,223 @@ export class TraefikNetwork implements RoutingProvider {
         };
     }
 
-    createHttpEndpoints(args: {
+    createHttpEndpoints(params: {
         serviceName: pulumi.Input<string>;
-        ports: ServicePort[];
+        httpPorts: ServicePort[];
         component?: string;
         hostname: string;
     }): void {
-        args.ports.forEach(port => {
-            const portHostname = port.hostname ?? args.hostname;
+        params.httpPorts.forEach(portSpec => {
+            const portHostname = portSpec.hostname ?? params.hostname;
             const httpEndpointInfo = this.getHttpEndpointInfo(portHostname);
-            const metadata = this.args.metadata.get({
-                component: [args.component, port.name].filter(Boolean).join('-'),
-            });
-            new kubernetes.apiextensions.CustomResource(
-                `${metadata.name}-httproute`,
-                {
-                    apiVersion: 'gateway.networking.k8s.io/v1',
-                    kind: 'HTTPRoute',
-                    metadata,
-                    spec: {
-                        parentRefs: [
-                            {
-                                name: 'traefik-gateway',
-                                namespace: 'traefik',
-                                sectionName: 'websecure',
-                            },
-                        ],
-                        hostnames: [httpEndpointInfo.hostname],
-                        rules: [
-                            {
-                                backendRefs: [
-                                    {
-                                        name: args.serviceName,
-                                        port: port.port,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                },
-                this.opts,
-            );
+            const portComponentName = [params.component, portSpec.name]
+                .filter(Boolean)
+                .join('-');
 
-            const key = this.getFullPortName({ component: args.component, port });
+            this.createHttpRoute({
+                hostname: httpEndpointInfo.hostname,
+                componentName: portComponentName,
+                serviceName: params.serviceName,
+                servicePort: portSpec.port,
+            });
+
+            const key = this.getEndpointKey({
+                component: params.component,
+                portName: portSpec.name,
+            });
             this.endpoints[key] =
                 pulumi.interpolate`https://${httpEndpointInfo.hostname}`;
-            this.clusterEndpoints[key] = pulumi.concat(
-                'http://',
-                pulumi.interpolate`${args.serviceName}.${this.args.metadata.get({ component: args.component }).namespace}:${port.port}`,
-            );
+            this.clusterEndpoints[key] =
+                pulumi.interpolate`http://${params.serviceName}.${this.args.metadata.namespace}:${portSpec.port}`;
         });
     }
 
-    createTcpEndpoints(args: {
-        ports: ServicePort[];
+    private createHttpRoute(params: {
+        hostname: string;
+        componentName: string;
+        serviceName: pulumi.Input<string>;
+        servicePort: number;
+    }): void {
+        const metadata = this.args.metadata.get({ component: params.componentName });
+        new kubernetes.apiextensions.CustomResource(
+            `${metadata.name}-httproute`,
+            {
+                apiVersion: 'gateway.networking.k8s.io/v1',
+                kind: 'HTTPRoute',
+                metadata,
+                spec: {
+                    parentRefs: [
+                        {
+                            name: 'traefik-gateway',
+                            namespace: 'traefik',
+                            sectionName: 'websecure',
+                        },
+                    ],
+                    hostnames: [params.hostname],
+                    rules: [
+                        {
+                            backendRefs: [
+                                {
+                                    name: params.serviceName,
+                                    port: params.servicePort,
+                                },
+                            ],
+                        },
+                    ],
+                },
+            },
+            this.opts,
+        );
+    }
+
+    createTcpEndpoints(params: {
+        tcpPorts: ServicePort[];
         component?: string;
         hostname: string;
     }): void {
-        if (args.ports.length === 0) return;
+        if (params.tcpPorts.length === 0) return;
         assert(
             config.customDomain,
             'orangelab:customDomain is required for Traefik TCP endpoints',
         );
-        const fullHostname = `${args.hostname}.${config.customDomain}`;
-        const metadata = this.args.metadata.get({ component: args.component });
 
-        const clusterService = new kubernetes.core.v1.Service(
+        const service = this.createTcpService({
+            component: params.component,
+            servicePorts: params.tcpPorts,
+        });
+        const fullHostname = `${params.hostname}.${config.customDomain}`;
+        this.createTlsRoutes({
+            component: params.component,
+            tlsPorts: params.tcpPorts,
+            service,
+            fullHostname,
+        });
+        this.createInternalLoadBalancer({
+            component: params.component,
+            servicePorts: params.tcpPorts,
+        });
+
+        params.tcpPorts.forEach(port => {
+            const key = this.getEndpointKey({
+                component: params.component,
+                portName: port.name,
+            });
+            this.endpoints[key] = port.tls
+                ? pulumi.interpolate`${fullHostname}:3443`
+                : pulumi.interpolate`${fullHostname}:${port.port}`;
+            this.clusterEndpoints[key] =
+                pulumi.interpolate`${service.metadata.name}.${service.metadata.namespace}:${port.port}`;
+        });
+    }
+
+    private createTcpService(params: {
+        component?: string;
+        servicePorts: ServicePort[];
+    }): kubernetes.core.v1.Service {
+        const metadata = this.args.metadata.get({ component: params.component });
+        return new kubernetes.core.v1.Service(
             `${metadata.name}-svc`,
             {
-                metadata: { ...metadata, name: metadata.name },
+                metadata,
                 spec: {
                     type: 'ClusterIP',
-                    ports: args.ports.map(p => ({
+                    ports: params.servicePorts.map(p => ({
                         name: p.name,
                         protocol: 'TCP',
                         port: p.port,
                         targetPort: p.port,
                     })),
-                    selector: this.args.metadata.getSelectorLabels(args.component),
+                    selector: this.args.metadata.getSelectorLabels(params.component),
                 },
             },
             this.opts,
         );
-
-        const tlsPorts = args.ports.filter(p => p.tls);
-        const plainPorts = args.ports.filter(p => !p.tls);
-
-        tlsPorts.forEach(port => {
-            new kubernetes.apiextensions.CustomResource(
-                `${metadata.name}-${port.name}-tlsroute`,
-                {
-                    apiVersion: 'gateway.networking.k8s.io/v1alpha2',
-                    kind: 'TLSRoute',
-                    metadata: this.args.metadata.get({
-                        component: args.component
-                            ? `${args.component}-${port.name}`
-                            : port.name,
-                    }),
-                    spec: {
-                        parentRefs: [
-                            {
-                                name: 'traefik-gateway',
-                                namespace: 'traefik',
-                                sectionName: 'tls',
-                            },
-                        ],
-                        hostnames: [fullHostname],
-                        rules: [
-                            {
-                                backendRefs: [
-                                    {
-                                        name: clusterService.metadata.name,
-                                        port: port.port,
-                                    },
-                                ],
-                            },
-                        ],
-                    },
-                },
-                { parent: this.opts?.parent },
-            );
-        });
-
-        if (plainPorts.length > 0) {
-            new kubernetes.core.v1.Service(
-                `${metadata.name}-lb`,
-                {
-                    metadata: {
-                        ...metadata,
-                        name: `${metadata.name}-lb`,
-                    },
-                    spec: {
-                        type: 'LoadBalancer',
-                        ports: plainPorts.map(p => ({
-                            name: p.name,
-                            protocol: 'TCP',
-                            port: p.port,
-                            targetPort: p.port,
-                        })),
-                        selector: this.args.metadata.getSelectorLabels(args.component),
-                    },
-                },
-                this.opts,
-            );
-        }
-
-        args.ports.forEach(port => {
-            const key = this.getFullPortName({ component: args.component, port });
-            if (port.tls) {
-                this.endpoints[key] = pulumi.interpolate`${fullHostname}:3443`;
-            } else {
-                this.endpoints[key] = pulumi.interpolate`${fullHostname}:${port.port}`;
-            }
-            this.clusterEndpoints[key] =
-                pulumi.interpolate`${clusterService.metadata.name}.${clusterService.metadata.namespace}:${port.port}`;
-        });
     }
 
-    private getFullPortName(args: { component?: string; port: ServicePort }): string {
+    private createTlsRoutes(params: {
+        component?: string;
+        tlsPorts: ServicePort[];
+        service: kubernetes.core.v1.Service;
+        fullHostname: string;
+    }): void {
+        const metadata = this.args.metadata.get({ component: params.component });
+        params.tlsPorts
+            .filter(p => p.tls)
+            .forEach(port => {
+                new kubernetes.apiextensions.CustomResource(
+                    `${metadata.name}-${port.name}-tlsroute`,
+                    {
+                        apiVersion: 'gateway.networking.k8s.io/v1alpha2',
+                        kind: 'TLSRoute',
+                        metadata: this.args.metadata.get({
+                            component: params.component
+                                ? `${params.component}-${port.name}`
+                                : port.name,
+                        }),
+                        spec: {
+                            parentRefs: [
+                                {
+                                    name: 'traefik-gateway',
+                                    namespace: 'traefik',
+                                    sectionName: 'tls',
+                                },
+                            ],
+                            hostnames: [params.fullHostname],
+                            rules: [
+                                {
+                                    backendRefs: [
+                                        {
+                                            name: params.service.metadata.name,
+                                            port: port.port,
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    },
+                    { parent: this.opts?.parent },
+                );
+            });
+    }
+
+    private createInternalLoadBalancer(params: {
+        component: string | undefined;
+        servicePorts: ServicePort[];
+    }): void {
+        const metadata = this.args.metadata.get({ component: params.component });
+        const plainPorts = params.servicePorts.filter(p => !p.tls);
+        if (plainPorts.length === 0) return;
+
+        new kubernetes.core.v1.Service(
+            `${metadata.name}-lb`,
+            {
+                metadata: {
+                    ...metadata,
+                    name: `${metadata.name}-lb`,
+                },
+                spec: {
+                    type: 'LoadBalancer',
+                    ports: plainPorts.map(p => ({
+                        name: p.name,
+                        protocol: 'TCP',
+                        port: p.port,
+                        targetPort: p.port,
+                    })),
+                    selector: this.args.metadata.getSelectorLabels(params.component),
+                },
+            },
+            this.opts,
+        );
+    }
+
+    private getEndpointKey(params: {
+        component: string | undefined;
+        portName: string;
+    }): string {
         return [
             this.appName,
-            args.component,
-            args.port.name === 'http' ? undefined : args.port.name,
+            params.component,
+            params.portName === 'http' ? undefined : params.portName,
         ]
             .filter(Boolean)
             .join('-');

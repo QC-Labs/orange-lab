@@ -37,7 +37,7 @@ export class Network {
         this.createHttpEndpoints(httpPorts, spec);
         const tcpPorts = ports.filter(p => p.tcp);
         this.provider.createTcpEndpoints({
-            ports: tcpPorts,
+            tcpPorts,
             component: spec.name,
             hostname,
         });
@@ -53,7 +53,7 @@ export class Network {
         });
         this.provider.createHttpEndpoints({
             serviceName: service.metadata.name,
-            ports: httpPorts,
+            httpPorts,
             component: spec.name,
             hostname: config.require(this.appName, 'hostname'),
         });

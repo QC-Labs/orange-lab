@@ -207,14 +207,14 @@ export interface RoutingProvider {
     endpoints: Record<string, pulumi.Input<string>>;
     clusterEndpoints: Record<string, pulumi.Input<string>>;
     getHttpEndpointInfo: (hostname: string) => HttpEndpointInfo;
-    createHttpEndpoints: (args: {
+    createHttpEndpoints: (params: {
         serviceName: pulumi.Input<string>;
-        ports: ServicePort[];
+        httpPorts: ServicePort[];
         component?: string;
         hostname: string;
     }) => void;
-    createTcpEndpoints: (args: {
-        ports: ServicePort[];
+    createTcpEndpoints: (params: {
+        tcpPorts: ServicePort[];
         component?: string;
         hostname: string;
     }) => void;
