@@ -85,7 +85,6 @@ export class Ollama extends pulumi.ComponentResource {
                                 secretName: httpEndpointInfo.tlsSecretName,
                             },
                         ],
-                        annotations: httpEndpointInfo.annotations,
                     },
                     ollama: {
                         gpu: {

@@ -110,7 +110,6 @@ export class OpenWebUI extends pulumi.ComponentResource {
                         class: httpEndpointInfo.className,
                         host: httpEndpointInfo.hostname,
                         tls: httpEndpointInfo.tls,
-                        annotations: httpEndpointInfo.annotations,
                     },
                     logging: { level: debug ? 'debug' : 'info' },
                     ollama: { enabled: false },

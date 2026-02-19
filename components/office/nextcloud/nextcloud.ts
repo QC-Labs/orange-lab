@@ -70,7 +70,6 @@ export class Nextcloud extends pulumi.ComponentResource {
                                 secretName: args.httpEndpointInfo.tlsSecretName,
                             },
                         ],
-                        annotations: args.httpEndpointInfo.annotations,
                     },
                     internalDatabase: { enabled: false },
                     livenessProbe: { enabled: true },

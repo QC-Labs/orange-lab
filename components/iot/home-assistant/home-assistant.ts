@@ -54,7 +54,6 @@ export class HomeAssistant extends pulumi.ComponentResource {
                                 secretName: httpEndpointInfo.tlsSecretName,
                             },
                         ],
-                        annotations: httpEndpointInfo.annotations,
                     },
                     persistence: {
                         enabled: true,

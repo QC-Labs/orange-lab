@@ -66,7 +66,6 @@ export class Vaultwarden extends pulumi.ComponentResource {
                         hostname: httpEndpointInfo.hostname,
                         tls: httpEndpointInfo.tls,
                         tlsSecret: httpEndpointInfo.tlsSecretName,
-                        additionalAnnotations: httpEndpointInfo.annotations,
                     },
                     invitationsAllowed: true,
                     resourceType: 'Deployment',

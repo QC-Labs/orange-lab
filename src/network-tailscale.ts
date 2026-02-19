@@ -36,7 +36,6 @@ export class TailscaleNetwork implements RoutingProvider {
             );
             const metadata = this.args.metadata.get({
                 component: [args.component, port.name].filter(Boolean).join('-'),
-                annotations: httpEndpointInfo.annotations,
             });
             new kubernetes.networking.v1.Ingress(
                 `${metadata.name}-ingress`,

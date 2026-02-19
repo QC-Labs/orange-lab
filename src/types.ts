@@ -198,7 +198,6 @@ export interface HttpEndpointInfo {
     tls: boolean;
     tlsSecretName?: string;
     domain: string;
-    annotations?: Record<string, pulumi.Input<string>>;
 }
 
 /**

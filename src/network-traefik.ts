@@ -42,7 +42,6 @@ export class TraefikNetwork implements RoutingProvider {
             const httpEndpointInfo = this.getHttpEndpointInfo(portHostname);
             const metadata = this.args.metadata.get({
                 component: [args.component, port.name].filter(Boolean).join('-'),
-                annotations: httpEndpointInfo.annotations,
             });
             new kubernetes.apiextensions.CustomResource(
                 `${metadata.name}-httproute`,

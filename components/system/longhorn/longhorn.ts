@@ -135,7 +135,6 @@ export class Longhorn extends pulumi.ComponentResource {
                     host: httpEndpointInfo.hostname,
                     ingressClassName: httpEndpointInfo.className,
                     tls: httpEndpointInfo.tls,
-                    annotations: httpEndpointInfo.annotations,
                 },
                 longhornUI: {
                     replicas: 1,
