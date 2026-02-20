@@ -14,7 +14,7 @@ export class Traefik extends pulumi.ComponentResource {
         args = {},
         opts?: pulumi.ResourceOptions,
     ) {
-        super('orangelab:system:Traefik', name, args, opts);
+        super('orangelab:network:Traefik', name, args, opts);
         assert(
             config.customDomain,
             'Traefik component requires a custom domain to be set',

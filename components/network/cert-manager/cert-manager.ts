@@ -4,7 +4,7 @@ import { config } from '@orangelab/config';
 
 export class CertManager extends pulumi.ComponentResource {
     constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
-        super('orangelab:system:CertManager', name, args, opts);
+        super('orangelab:network:CertManager', name, args, opts);
 
         const app = new Application(this, name);
 

@@ -1,73 +1,16 @@
-# Installation - system applications
+# System
 
-Core components required before any other apps can be deployed.
+Core infrastructure components. These should be deployed first before any other modules.
 
-The first time you configure the cluster, it's best to run `pulumi up` after each component. Make sure all pods are running fine before moving to next step.
+## Deployment Order
 
-## Network
-
-Choose how external traffic reaches your services:
-
-- **[Tailscale](./tailscale/tailscale.md)** - Uses Tailscale's `.ts.net` domain with built-in HTTPS and authentication
-- **[Traefik](./traefik/traefik.md)** - Uses your custom domain with automatic TLS certificates
-
-**Cert-manager** is used to create SSL certificates when using custom domain and Traefik.
-
-```sh
-# Tailscale (default)
-pulumi config set orangelab:routingProvider tailscale
-pulumi config set tailscale:tailnet <tailnet>.ts.net
-pulumi config set tailscale:enabled true
-pulumi up
-
-# Custom domain
-pulumi config set orangelab:routingProvider traefik
-pulumi config set orangelab:customDomain example.com
-pulumi config set cert-manager:enabled true
-pulumi config set traefik:enabled true
-pulumi up
-```
-
-Note: Tailscale authentication does not work on custom domains. TCP routes use k3s ServiceLB instead of Tailscale LoadBalancer when using Traefik.
-
-### ServiceLB
-
-When using Traefik, k3s ServiceLB creates endpoints on port 80/443 on each node. This could create issues if these ports are already in use outside of OrangeLab. To limit which nodes run the load balancer:
-
-```sh
-kubectl label node <node> svccontroller.k3s.cattle.io/enablelb=true
-```
-
-Adding the first label switches ServiceLB to whitelist-only mode.
-
-## Storage
-
-**[Longhorn](./longhorn/longhorn.md)** - Required for storage nodes. Only runs on Linux; use local storage for MacOS/Windows or [single node](/docs/single-node.md).
-
-```sh
-kubectl label nodes <node-name> node-role.kubernetes.io/longhorn=true
-pulumi config set longhorn:enabled true
-pulumi up
-```
-
-**[RustFS](./rustfs/rustfs.md)** - S3-compatible object storage used by Longhorn for automatic backups.
-
-## Hardware / GPU
-
-For GPU support and hardware device management, see the **[Hardware Module](../hardware/HARDWARE.md)**.
+1. **[Network](../network/NETWORK.md)** - Ingress and routing (must be first)
+2. **[Storage](../storage/STORAGE.md)** - Distributed storage
+3. **[Hardware](../hardware/HARDWARE.md)** - GPU support (if needed)
+4. **System** - Debug tools (this module)
 
 ## Components
-
-- [Tailscale Operator](./tailscale/tailscale.md) - Manages cluster ingress endpoints and Kubernetes API access.
-- [Traefik](./traefik/traefik.md) - Ingress controller for custom domain traffic.
-- [Longhorn](./longhorn/longhorn.md) - Replicated block storage for Kubernetes workloads.
-- [Rustfs](./rustfs/rustfs.md) - S3-compatible object storage for Longhorn backups.
-- [Cert-manager](./cert-manager/cert-manager.md) - Automated certificate management for custom domains.
 
 ### Experimental
 
 - [Debug](./debug/debug.md) - (Optional, Troubleshooting only) Troubleshooting utilities and volume access tools.
-
-### Deprecated
-
-- [Minio](./minio/minio.md) - S3-compatible object storage. Replaced by Rustfs. MinIO stopped publishing images to quay.io in Oct 2025.

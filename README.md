@@ -29,11 +29,11 @@ Private infrastructure for cloud natives.
 
 # Applications
 
-[System module](./components/system/SYSTEM.md):
+[Network module](./components/network/NETWORK.md):
 
-- [`cert-manager`](./components/system/cert-manager/cert-manager.md) - certificate management
-- [`tailscale-operator`](./components/system/tailscale/tailscale.md) - ingress support with Tailscale authentication
-- [`traefik`](./components/system/traefik/traefik.md) - reverse proxy for custom domain support
+- [`cert-manager`](./components/network/cert-manager/cert-manager.md) - certificate management
+- [`tailscale-operator`](./components/network/tailscale/tailscale.md) - ingress support with Tailscale authentication
+- [`traefik`](./components/network/traefik/traefik.md) - reverse proxy for custom domain support
 
 [Storage module](./components/storage/STORAGE.md):
 

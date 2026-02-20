@@ -52,4 +52,4 @@ sudo tailscale up  --reset --operator=$USER --accept-routes
 sudo tailscale up  --reset --operator=$USER --accept-routes --advertise-exit-node
 ```
 
-For cluster-wide Tailscale integration and ingress support, see the [Tailscale Operator Guide](/components/system/tailscale/tailscale.md).
+For cluster-wide Tailscale integration and ingress support, see the [Tailscale Operator Guide](/components/network/tailscale/tailscale.md).
