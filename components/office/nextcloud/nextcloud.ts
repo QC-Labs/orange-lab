@@ -97,11 +97,7 @@ $CONFIG = array (
                             usernameKey: 'username',
                             passwordKey: 'password',
                         },
-                        trustedDomains: [
-                            config.tailnetDomain,
-                            config.customDomain,
-                            args.httpEndpointInfo.hostname,
-                        ],
+                        trustedDomains: [args.httpEndpointInfo.hostname],
                     },
                     persistence: {
                         enabled: true,
