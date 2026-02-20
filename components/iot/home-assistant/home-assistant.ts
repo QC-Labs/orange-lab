@@ -37,6 +37,7 @@ export class HomeAssistant extends pulumi.ComponentResource {
                         enabled: true,
                         trusted_proxies: args.trustedProxies ?? [],
                     },
+                    dnsPolicy: 'ClusterFirstWithHostNet',
                     fullnameOverride: name,
                     hostNetwork: true,
                     ingress: {
