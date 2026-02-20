@@ -52,25 +52,9 @@ pulumi up
 
 **[RustFS](./rustfs/rustfs.md)** - S3-compatible object storage used by Longhorn for automatic backups.
 
-## GPU
+## Hardware / GPU
 
-To run GPU workloads:
-
-- **[NFD](./nfd/nfd.md)** - Automatic detection of nodes with GPU hardware
-- **[NVIDIA GPU Operator](./nvidia-gpu-operator/nvidia-gpu-operator.md)** - Enables NVIDIA GPU support
-- **[AMD GPU Operator](./amd-gpu-operator/amd-gpu-operator.md)** - Enables AMD GPU support
-
-```sh
-# GPU auto-detection
-pulumi config set nfd:enabled true
-
-# NVidia
-pulumi config set nvidia-gpu-operator:enabled true
-
-# AMD
-pulumi config set amd-gpu-operator true
-pulumi up
-```
+For GPU support and hardware device management, see the **[Hardware Module](../hardware/HARDWARE.md)**.
 
 ## Components
 
@@ -79,9 +63,6 @@ pulumi up
 - [Longhorn](./longhorn/longhorn.md) - Replicated block storage for Kubernetes workloads.
 - [Rustfs](./rustfs/rustfs.md) - S3-compatible object storage for Longhorn backups.
 - [Cert-manager](./cert-manager/cert-manager.md) - Automated certificate management for custom domains.
-- [NFD](./nfd/nfd.md) - Node Feature Discovery for hardware-aware scheduling and GPU auto-detection.
-- [NVIDIA GPU Operator](./nvidia-gpu-operator/nvidia-gpu-operator.md) - (Optional) Enables NVIDIA GPU support for containerized workloads.
-- [AMD GPU Operator](./amd-gpu-operator/amd-gpu-operator.md) - (Optional) Enables AMD GPU support for ROCm workloads.
 
 ### Experimental
 

@@ -1,12 +1,9 @@
 import { config } from '@orangelab/config';
 import * as pulumi from '@pulumi/pulumi';
-import { AmdGPUOperator } from './amd-gpu-operator/amd-gpu-operator';
 import { CertManager } from './cert-manager/cert-manager';
 import { Debug } from './debug/debug';
 import { Longhorn } from './longhorn/longhorn';
 import { Minio } from './minio/minio';
-import { NodeFeatureDiscovery } from './nfd/nfd';
-import { NvidiaGPUOperator } from './nvidia-gpu-operator/nvidia-gpu-operator';
 import { Rustfs } from './rustfs/rustfs';
 import { TailscaleOperator } from './tailscale/tailscale';
 import { Traefik } from './traefik/traefik';
@@ -56,24 +53,6 @@ export class SystemModule extends pulumi.ComponentResource {
             new Traefik('traefik', {}, { parent: this, dependsOn: certManager });
         }
 
-        let nfd: NodeFeatureDiscovery | undefined;
-        if (config.isEnabled('nfd')) {
-            nfd = new NodeFeatureDiscovery('nfd', { parent: this });
-        }
-
-        if (config.isEnabled('nvidia-gpu-operator')) {
-            new NvidiaGPUOperator(
-                'nvidia-gpu-operator',
-                {},
-                { parent: this, dependsOn: nfd },
-            );
-        }
-
-        if (config.isEnabled('amd-gpu-operator')) {
-            new AmdGPUOperator('amd-gpu-operator', {
-                parent: this,
-                dependsOn: [...(certManager ? [certManager] : []), ...(nfd ? [nfd] : [])],
-            });
         }
 
         if (config.isEnabled('minio')) {

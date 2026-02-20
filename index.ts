@@ -3,6 +3,7 @@ import 'tsconfig-paths/register';
 import { AIModule } from './components/ai';
 import { BitcoinModule } from './components/bitcoin';
 import { DataModule } from './components/data';
+import { HardwareModule } from './components/hardware';
 import { IoTModule } from './components/iot';
 import { MonitoringModule } from './components/monitoring';
 import { OfficeModule } from './components/office';
@@ -17,7 +18,15 @@ const dataModule = config.isModuleEnabled('data')
     ? new DataModule('data', { dependsOn: systemModule })
     : undefined;
 
-const baseModules = [systemModule, ...(dataModule ? [dataModule] : [])];
+const hardwareModule = config.isModuleEnabled('hardware')
+    ? new HardwareModule('hardware', { dependsOn: systemModule })
+    : undefined;
+
+const baseModules = [
+    systemModule,
+    ...(dataModule ? [dataModule] : []),
+    ...(hardwareModule ? [hardwareModule] : []),
+];
 
 if (config.isModuleEnabled('monitoring')) {
     const monitoringModule = new MonitoringModule('monitoring', {

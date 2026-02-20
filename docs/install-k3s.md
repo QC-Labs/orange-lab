@@ -102,4 +102,4 @@ kubectl label nodes <node-name> node-role.kubernetes.io/longhorn=true
 kubectl label nodes <node-name> topology.kubernetes.io/zone=home
 ```
 
-> Note: GPU nodes are automatically detected and labeled by the [Node Feature Discovery](/components/system/nfd/nfd.md) component.
+> Note: GPU nodes are automatically detected and labeled by the [Node Feature Discovery](/components/hardware/nfd/nfd.md) component.

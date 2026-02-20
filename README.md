@@ -31,14 +31,17 @@ Private infrastructure for cloud natives.
 
 [System module](./components/system/SYSTEM.md):
 
-- [`amd-gpu-operator`](./components/system/amd-gpu-operator/amd-gpu-operator.md) - AMD GPU support
 - [`cert-manager`](./components/system/cert-manager/cert-manager.md) - certificate management
 - [`longhorn`](./components/system/longhorn/longhorn.md) - replicated storage
 - [`rustfs`](./components/system/rustfs/rustfs.md) - S3-compatible storage (Longhorn backup target)
-- [`nfd`](./components/system/nfd/nfd.md) - Node Feature Discovery (GPU autodetection)
-- [`nvidia-gpu-operator`](./components/system/nvidia-gpu-operator/nvidia-gpu-operator.md) - NVidia GPU support
 - [`tailscale-operator`](./components/system/tailscale/tailscale.md) - ingress support with Tailscale authentication
 - [`traefik`](./components/system/traefik/traefik.md) - reverse proxy for custom domain support
+
+[Hardware module](./components/hardware/HARDWARE.md):
+
+- [`amd-gpu-operator`](./components/hardware/amd-gpu-operator/amd-gpu-operator.md) - AMD GPU support
+- [`nfd`](./components/hardware/nfd/nfd.md) - Node Feature Discovery (GPU autodetection)
+- [`nvidia-gpu-operator`](./components/hardware/nvidia-gpu-operator/nvidia-gpu-operator.md) - NVidia GPU support
 
 [Data module](./components/data/DATA.md):
 
@@ -86,7 +89,7 @@ Windows and MacOS support is limited, specifically they cannot be used as storag
 
 See [Disabling Longhorn Guide](./docs/longhorn-disable.md) with instructions on using `local-path-provisioner` instead of Longhorn.
 
-Both NVIDIA and AMD GPUs are supported. See [AMD GPU support](/components/system/amd-gpu-operator/amd-gpu-operator.md) for more information.
+Both NVIDIA and AMD GPUs are supported. See [Hardware module](/components/hardware/HARDWARE.md) for more information.
 
 # Installation
 

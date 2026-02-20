@@ -11,7 +11,7 @@ export class NodeFeatureDiscovery extends pulumi.ComponentResource {
         private readonly name: string,
         opts?: pulumi.ResourceOptions,
     ) {
-        super('orangelab:system:NFD', name, {}, opts);
+        super('orangelab:hardware:NFD', name, {}, opts);
 
         this.app = new Application(this, name);
 
