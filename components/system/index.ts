@@ -2,30 +2,15 @@ import { config } from '@orangelab/config';
 import * as pulumi from '@pulumi/pulumi';
 import { CertManager } from './cert-manager/cert-manager';
 import { Debug } from './debug/debug';
-import { Longhorn } from './longhorn/longhorn';
-import { Minio } from './minio/minio';
-import { Rustfs } from './rustfs/rustfs';
 import { TailscaleOperator } from './tailscale/tailscale';
 import { Traefik } from './traefik/traefik';
 
 export class SystemModule extends pulumi.ComponentResource {
-    longhorn?: Longhorn;
-    minio?: Minio;
-    rustfs?: Rustfs;
 
     getExports() {
         return {
             endpoints: {
-                ...this.minio?.app.network.endpoints,
-                ...this.rustfs?.app.network.endpoints,
-                longhorn: this.longhorn?.endpointUrl,
             },
-            clusterEndpoints: {
-                ...this.minio?.app.network.clusterEndpoints,
-                ...this.rustfs?.app.network.clusterEndpoints,
-            },
-            minioUsers: this.minio?.users,
-            rustfsUsers: this.rustfs?.users,
             tailscaleDomain: config.tailnetDomain,
         };
     }
@@ -53,25 +38,6 @@ export class SystemModule extends pulumi.ComponentResource {
             new Traefik('traefik', {}, { parent: this, dependsOn: certManager });
         }
 
-        }
-
-        if (config.isEnabled('minio')) {
-            this.minio = new Minio('minio', { parent: this });
-        }
-
-        if (config.isEnabled('rustfs')) {
-            this.rustfs = new Rustfs('rustfs', { parent: this });
-        }
-
-        if (config.isEnabled('longhorn')) {
-            this.longhorn = new Longhorn(
-                'longhorn',
-                {
-                    s3Provisioner:
-                        this.minio?.s3Provisioner ?? this.rustfs?.s3Provisioner,
-                },
-                { parent: this },
-            );
         }
 
         if (config.isEnabled('debug')) {

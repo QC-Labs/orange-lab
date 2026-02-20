@@ -21,7 +21,7 @@ export class Longhorn extends pulumi.ComponentResource {
         private args: LonghornArgs,
         opts?: pulumi.ResourceOptions,
     ) {
-        super('orangelab:system:Longhorn', name, args, opts);
+        super('orangelab:storage:Longhorn', name, args, opts);
 
         this.app = new Application(this, name, { namespace: `${name}-system` });
         const httpEndpointInfo = this.app.network.getHttpEndpointInfo();

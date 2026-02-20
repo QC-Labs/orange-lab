@@ -8,22 +8,26 @@ import { IoTModule } from './components/iot';
 import { MonitoringModule } from './components/monitoring';
 import { OfficeModule } from './components/office';
 import { SecurityModule } from './components/security';
+import { StorageModule } from './components/storage';
 import { config } from '@orangelab/config';
 import { SystemModule } from './components/system';
 
 const systemModule = new SystemModule('system');
 export const system = systemModule.getExports();
 
+const storageModule = new StorageModule('storage', { dependsOn: systemModule });
+
 const dataModule = config.isModuleEnabled('data')
-    ? new DataModule('data', { dependsOn: systemModule })
+    ? new DataModule('data', { dependsOn: [systemModule, storageModule] })
     : undefined;
 
 const hardwareModule = config.isModuleEnabled('hardware')
-    ? new HardwareModule('hardware', { dependsOn: systemModule })
+    ? new HardwareModule('hardware', { dependsOn: [systemModule, storageModule] })
     : undefined;
 
 const baseModules = [
     systemModule,
+    storageModule,
     ...(dataModule ? [dataModule] : []),
     ...(hardwareModule ? [hardwareModule] : []),
 ];

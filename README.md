@@ -32,10 +32,13 @@ Private infrastructure for cloud natives.
 [System module](./components/system/SYSTEM.md):
 
 - [`cert-manager`](./components/system/cert-manager/cert-manager.md) - certificate management
-- [`longhorn`](./components/system/longhorn/longhorn.md) - replicated storage
-- [`rustfs`](./components/system/rustfs/rustfs.md) - S3-compatible storage (Longhorn backup target)
 - [`tailscale-operator`](./components/system/tailscale/tailscale.md) - ingress support with Tailscale authentication
 - [`traefik`](./components/system/traefik/traefik.md) - reverse proxy for custom domain support
+
+[Storage module](./components/storage/STORAGE.md):
+
+- [`longhorn`](./components/storage/longhorn/longhorn.md) - replicated storage
+- [`rustfs`](./components/storage/rustfs/rustfs.md) - S3-compatible storage (Longhorn backup target)
 
 [Hardware module](./components/hardware/HARDWARE.md):
 
