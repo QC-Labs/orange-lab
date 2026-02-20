@@ -18,6 +18,10 @@ export class TailscaleNetwork implements RoutingProvider {
             config.tailnetDomain,
             'orangelab:routingProvider=tailscale requires tailscale:tailnet to be set',
         );
+        assert(
+            config.isEnabled('tailscale'),
+            `${this.appName}: Tailscale Operator has to be installed (tailscale:enabled=true)`,
+        );
     }
 
     getHttpEndpointInfo(hostname: string): HttpEndpointInfo {

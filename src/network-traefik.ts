@@ -18,6 +18,10 @@ export class TraefikNetwork implements RoutingProvider {
             config.customDomain,
             'orangelab:routingProvider=traefik requires orangelab:customDomain to be set',
         );
+        assert(
+            config.isEnabled('traefik'),
+            `${this.appName}: Traefik has to be installed (traefik:enabled=true)`,
+        );
     }
 
     getHttpEndpointInfo(hostname: string): HttpEndpointInfo {

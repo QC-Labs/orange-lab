@@ -54,6 +54,7 @@ The following settings are supported by most applications in OrangeLab:
 | --------------------- | -------------------------------------------------------------------------------------------- |
 | `enabled`             | Enable or disable the application                                                            |
 | `hostname`            | Hostname for the HTTPS endpoint, used with Tailscale for access                              |
+| `routingProvider`     | Override global routing provider (`tailscale` or `traefik`) for this application             |
 | `version`             | Lock Helm chart version to a specific release (uses latest if not specified)                 |
 | `storageOnly`         | Disable application but retain storage (useful for temporarily disabling while keeping data) |
 | `storageSize`         | Expand default storage size if needed (e.g., for large models)                               |
@@ -73,6 +74,18 @@ pulumi config set ollama:hostname ollama-api
 ```
 
 The application will be available at `https://ollama-api.<domain>/`.
+
+### Routing Provider Override
+
+Override the global routing provider for specific applications. Useful for running admin tools on Tailscale while serving public applications via Traefik:
+
+```sh
+# Override global setting for specific app
+pulumi config set prometheus:routingProvider tailscale
+pulumi config set nextcloud:routingProvider traefik
+```
+
+When using `traefik`, ensure `orangelab:customDomain` is set. When using `tailscale`, ensure `tailscale:tailnet` is set.
 
 ### Version Pinning
 

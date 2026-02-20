@@ -16,7 +16,9 @@ export class Network {
         private args: { metadata: Metadata },
         private opts?: pulumi.ComponentResourceOptions,
     ) {
-        switch (config.routingProvider) {
+        const routingProvider =
+            config.get(this.appName, 'routingProvider') ?? config.routingProvider;
+        switch (routingProvider) {
             case 'traefik':
                 this.provider = new TraefikNetwork(appName, args, opts);
                 break;
@@ -25,7 +27,7 @@ export class Network {
                 break;
             default:
                 throw new Error(
-                    `Unknown routingProvider: ${config.routingProvider}. Must be 'traefik' or 'tailscale'.`,
+                    `Unknown routingProvider: ${routingProvider}. Must be 'traefik' or 'tailscale'.`,
                 );
         }
     }
