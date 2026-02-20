@@ -36,10 +36,6 @@ export class Containers {
             metadata,
             spec: {
                 affinity: this.args.nodes.getAffinity(),
-                hostNetwork: spec.hostNetwork,
-                securityContext: this.args.storage?.hasLocal()
-                    ? { seLinuxOptions: { type: 'spc_t' } }
-                    : undefined,
                 containers: [
                     {
                         args: spec.commandArgs
@@ -73,10 +69,15 @@ export class Containers {
                         volumeMounts: this.createVolumeMounts(spec.volumeMounts),
                     },
                 ],
+                dnsPolicy: spec.hostNetwork ? 'ClusterFirstWithHostNet' : undefined,
+                hostNetwork: spec.hostNetwork,
                 initContainers: this.initContainers.create(spec),
                 restartPolicy: spec.restartPolicy,
-                serviceAccountName: this.args.serviceAccount.metadata.name,
                 runtimeClassName: this.args.nodes.gpu === 'nvidia' ? 'nvidia' : undefined,
+                securityContext: this.args.storage?.hasLocal()
+                    ? { seLinuxOptions: { type: 'spc_t' } }
+                    : undefined,
+                serviceAccountName: this.args.serviceAccount.metadata.name,
                 volumes: this.createVolumes(spec.volumeMounts),
             },
         };
