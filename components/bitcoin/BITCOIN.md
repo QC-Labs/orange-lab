@@ -2,14 +2,13 @@
 
 Components related to Bitcoin network nodes and related services.
 
-Recommended setup/tldr:
+## Quick Start
 
 ```sh
-# Create 1TB volume in Longhorn called "bitcoin"
+# Create >=1TB volume in Longhorn called "bitcoin"
 
 # Start node using the volume
 pulumi config set bitcoin-knots:enabled true
-pulumi config set bitcoin-knots:image btcpayserver/bitcoinknots:28.1
 pulumi config set bitcoin-knots:fromVolume bitcoin
 
 pulumi up

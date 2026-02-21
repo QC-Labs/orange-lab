@@ -1,11 +1,12 @@
 # Open-WebUI
 
-|                       |                                                              |
-| --------------------- | ------------------------------------------------------------ |
-| Homepage              | https://openwebui.com/                                       |
-| Helm chart            | https://artifacthub.io/packages/helm/open-webui/open-webui   |
-| Environment variables | https://docs.openwebui.com/getting-started/env-configuration |
-| Endpoints             | `https://webui.<domain>/`                                    |
+|                       |                                                                                   |
+| --------------------- | --------------------------------------------------------------------------------- |
+| Homepage              | https://openwebui.com/                                                            |
+| Helm chart            | https://artifacthub.io/packages/helm/open-webui/open-webui                        |
+| Helm chart values     | https://github.com/open-webui/helm-charts/blob/main/charts/open-webui/values.yaml |
+| Environment variables | https://docs.openwebui.com/getting-started/env-configuration                      |
+| Endpoints             | `https://webui.<domain>/`                                                         |
 
 Authentication happens automatically based on your Tailnet credentials.
 

@@ -2,7 +2,7 @@
 
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/QC-Labs/orange-lab)
 
-Private infrastructure for cloud natives.
+Private distributed infrastructure on consumer hardware.
 
 <img src="docs/orange-lab-910-512.png" alt="OrangeLab logo" height="250"/>
 
@@ -39,6 +39,7 @@ Private infrastructure for cloud natives.
 
 - [`longhorn`](./components/storage/longhorn/longhorn.md) - replicated storage
 - [`rustfs`](./components/storage/rustfs/rustfs.md) - S3-compatible storage (Longhorn backup target)
+- [`minio`](./components/storage/minio/minio.md) - (Deprecated) S3-compatible object storage.
 
 [Hardware module](./components/hardware/HARDWARE.md):
 
@@ -62,11 +63,13 @@ Private infrastructure for cloud natives.
 
 [AI module](./components/ai/AI.md):
 
-- [`kubeai`](./components/ai/kubeai/kubeai.md) - Ollama and vLLM models over OpenAI-compatible API
 - [`invokeai`](./components/ai/invokeai/invokeai.md) - generative AI plaform, community edition
 - [`n8n`](./components/ai/n8n/n8n.md) - AI workflow automation
 - [`ollama`](./components/ai/ollama/ollama.md) - local large language models
 - [`open-webui`](./components/ai/open-webui/open-webui.md) - Open WebUI frontend
+- [`kubeai`](./components/ai/kubeai/kubeai.md) - (Experimental) Private AI SDK for Kubernetes with OpenAI-compatible API
+- [`automatic1111`](./components/ai/automatic1111/automatic1111.md) - (Deprecated) Stable Diffusion WebUI.
+- [`sdnext`](./components/ai/sdnext/sdnext.md) - (Deprecated) Stable Diffusion WebUI.
 
 [Bitcoin module](./components/bitcoin/BITCOIN.md):
 
@@ -77,7 +80,7 @@ Private infrastructure for cloud natives.
 
 [Office module](./components/office/OFFICE.md):
 
-- [`nextcloud`](./components/office/nextcloud/nextcloud.md) - File sharing and collaboration suite
+- [`nextcloud`](./components/office/nextcloud/nextcloud.md) - File sharing, calendars, contacts, tasks
 
 [Security module](./components/security/SECURITY.md):
 
@@ -100,14 +103,18 @@ Both NVIDIA and AMD GPUs are supported. See [Hardware module](/components/hardwa
 
 # Installation
 
-- [Installation - Setup Guide](./docs/install.md) - Initial Pulumi and Tailscale setup
-- [Installation - SSH Configuration](./docs/install-ssh.md) (optional) - Configure SSH keys on nodes for easier access
-- [Installation - Node Configuration](./docs/install-nodes.md) - Configure nodes (firewall, suspend settings)
-- [Installation - K3s Cluster](./docs/install-k3s.md) - Install Kubernetes cluster and label nodes
-- [components/system/SYSTEM.md](./components/system/SYSTEM.md) - Deploy system components
-- [components/data/DATA.md](./components/data/DATA.md) - Deploy data components (databases)
+- [Installation - Admin node](./docs/install-admin.md) - Initial Pulumi and Tailscale setup
+- [Installation - SSH configuration](./docs/install-ssh.md) (Optional) - Configure SSH keys on nodes for easier access
+- [Installation - Linux node configuration](./docs/install-linux.md) - Configure nodes (firewall, suspend settings)
+- [Installation - K3s cluster](./docs/install-k3s.md) - Install Kubernetes cluster and label nodes
 
-After system components have been deployed, you can add any of the optional [#Applications](#applications). Details in each module documentation.
+After setting up the Kubernetes cluster, deploy the core modules:
+
+1. [Network](./components/network/NETWORK.md) - Routing provider (Tailscale or Traefik)
+2. [Storage](./components/storage/STORAGE.md) - Distributed storage (Longhorn) and backups
+3. [Hardware](./components/hardware/HARDWARE.md) - (Optional) GPU support
+
+After core modules are deployed, you can install any optional applications from the [Applications](#applications) section above.
 
 For general application configuration and deployment instructions, see [Configuration Guide](./docs/configuration.md).
 

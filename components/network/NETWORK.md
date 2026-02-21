@@ -2,31 +2,25 @@
 
 Network infrastructure including ingress, routing, and DNS.
 
+Routing options:
+
+- Tailscale - uses `<tsnet>.ts.net` domains managed by Tailscale
+- Traefik - use for custom domain support
+
 ## Quick Start
 
-Choose your routing provider:
-
-### Tailscale (recommended for most users)
-
-Uses Tailscale's `.ts.net` domain with built-in HTTPS and authentication.
-
 ```sh
+# Tailscale (default)
 pulumi config set orangelab:routingProvider tailscale
 pulumi config set tailscale:tailnet <tailnet>.ts.net
 pulumi config set tailscale:enabled true
 pulumi up
-```
 
-### Custom Domain with Traefik
-
-Uses your own domain with automatic TLS certificates from Let's Encrypt.
-
-```sh
+# Traefik (custom domain)
 pulumi config set orangelab:routingProvider traefik
 pulumi config set orangelab:customDomain example.com
 pulumi config set cert-manager:enabled true
 pulumi config set traefik:enabled true
-pulumi up
 ```
 
 ## Components
@@ -51,6 +45,6 @@ Adding the first label switches ServiceLB to whitelist-only mode.
 You can override the global routing provider on a per-application basis:
 
 ```sh
-# Use Traefik for a specific app even if Tailscale is the global default
-pulumi config set myapp:routingProvider traefik
+# Use Tailscale for a specific app even if Traefik is the global default
+pulumi config set <app>:routingProvider tailscale
 ```

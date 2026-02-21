@@ -2,6 +2,22 @@
 
 This document covers general node configuration that should be done before installing K3s.
 
+## Tailscale
+
+Start Tailscale service on each node that will be part of your cluster.
+
+```sh
+# Simple option
+sudo tailscale up --operator=$USER
+
+# Advanced option
+sudo tailscale up \
+--operator=$USER \ # Designate current user as local operator
+--reset \ # Reset all settings to their default values
+--accept-routes \ # Accept routes from subnet routers
+--advertise-exit-node # allow this host to be used as exit node
+```
+
 ## Firewall
 
 Setup firewall rules on k3s server and worker nodes:

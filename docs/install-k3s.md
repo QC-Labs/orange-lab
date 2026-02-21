@@ -1,6 +1,6 @@
 # Installation - Kubernetes nodes (K3S)
 
-This document covers K3s installation and configuration. For general node preparation, see [Installation - Node Configuration](./install-nodes.md).
+This document covers K3s installation and configuration. For general node preparation, see [Installation - Linux node configuration](./install-linux.md).
 
 # Installation - K3S server
 

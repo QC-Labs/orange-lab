@@ -15,6 +15,14 @@ pulumi config set <app>:requiredNodeLabel kubernetes.io/hostname=<host>
 pulumi config set <app>:db/requiredNodeLabel kubernetes.io/hostname=<host>
 ```
 
+## CLI tools
+
+```sh
+# (Optional) Database management tools
+brew install kubectl-cnpg
+flatpak install io.beekeeperstudio.Studio
+```
+
 ## Components
 
 - [MariaDB Operator](./mariadb-operator/mariadb-operator.md) - Management of MariaDB and MySQL databases using CRDs.

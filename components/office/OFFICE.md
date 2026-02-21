@@ -2,7 +2,7 @@
 
 Components related to office productivity and collaboration.
 
-## Recommended setup/tldr
+## Quick Start
 
 ```sh
 pulumi config set nextcloud:enabled true

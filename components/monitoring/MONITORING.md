@@ -2,7 +2,7 @@
 
 Optional components related monitoring the cluster.
 
-Recommended setup:
+## Quick Start
 
 ```sh
 pulumi config set beszel:enabled true

@@ -2,11 +2,20 @@
 
 Components related to artificial intelligence, large language models, AI agents and workflows.
 
-Recommended setup/tldr:
+Install any required components from [Hardware module](../hardware/HARDWARE.md) first.
+
+## Quick Start
 
 ```sh
+# NVidia
 pulumi config set nvidia-gpu-operator:enabled true
-pulumi config set ollama:enabled true
+
+# AMD
+pulumi config set cert-manager:enabled true
+pulumi config set amd-gpu-operator:enabled true
+
+# Install Ollama and OpenWebUI
+pulumi config set ollama:enabled true # uses any NVidia node by default
 pulumi config set open-webui:enabled true
 pulumi up
 ```

@@ -2,8 +2,6 @@
 
 Development and troubleshooting tools.
 
-> **Experimental**: This module contains tools that are still being tested and may change significantly.
-
 ## Components
 
 ### Experimental
