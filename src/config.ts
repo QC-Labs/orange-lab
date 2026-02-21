@@ -6,22 +6,12 @@ const moduleDependencies: Record<string, string[]> = {
     ai: ['automatic1111', 'invokeai', 'kubeai', 'n8n', 'ollama', 'open-webui', 'sdnext'],
     bitcoin: ['bitcoin-core', 'bitcoin-knots', 'electrs', 'mempool'],
     data: ['cloudnative-pg', 'mariadb-operator'],
+    dev: ['debug'],
     hardware: ['amd-gpu-operator', 'nfd', 'nvidia-gpu-operator'],
     iot: ['home-assistant'],
     monitoring: ['beszel', 'prometheus'],
     office: ['nextcloud'],
     security: ['vaultwarden'],
-    system: [
-        'cert-manager',
-        'debug',
-        'longhorn',
-        'minio',
-        'rustfs',
-        'tailscale',
-        'tailscale-operator',
-        'technitium',
-        'traefik',
-    ],
 };
 
 class Config {

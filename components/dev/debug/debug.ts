@@ -33,7 +33,7 @@ export class Debug extends pulumi.ComponentResource {
         args = {},
         opts?: pulumi.ResourceOptions,
     ) {
-        super('orangelab:system:Debug', name, args, opts);
+        super('orangelab:dev:Debug', name, args, opts);
 
         this.namespace = config.require(name, 'namespace');
         this.fromVolume = config.get(name, 'fromVolume');

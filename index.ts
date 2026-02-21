@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+import { config } from '@orangelab/config';
 import 'tsconfig-paths/register';
 import { AIModule } from './components/ai';
 import { BitcoinModule } from './components/bitcoin';
 import { DataModule } from './components/data';
+import { DevModule } from './components/dev';
 import { HardwareModule } from './components/hardware';
 import { IoTModule } from './components/iot';
 import { MonitoringModule } from './components/monitoring';
@@ -10,7 +12,6 @@ import { NetworkModule } from './components/network';
 import { OfficeModule } from './components/office';
 import { SecurityModule } from './components/security';
 import { StorageModule } from './components/storage';
-import { config } from '@orangelab/config';
 
 const networkModule = new NetworkModule('network');
 const storageModule = new StorageModule('storage', { dependsOn: networkModule });
@@ -62,4 +63,9 @@ if (config.isModuleEnabled('office')) {
 if (config.isModuleEnabled('security')) {
     const securityModule = new SecurityModule('security', { dependsOn: baseModules });
     exports.security = securityModule.getExports();
+}
+
+if (config.isModuleEnabled('dev')) {
+    const devModule = new DevModule('dev', { dependsOn: baseModules });
+    exports.dev = devModule.getExports();
 }

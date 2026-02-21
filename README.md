@@ -83,6 +83,10 @@ Private infrastructure for cloud natives.
 
 - [`vaultwarden`](./components/security/vaultwarden/vaultwarden.md) - Bitwarden-compatible password manager
 
+[Dev module](./components/dev/DEV.md):
+
+- [`debug`](./components/dev/debug/debug.md) - (Experimental) Troubleshooting utilities and volume access tools
+
 # Platforms and limitations
 
 Installation instructions assume your machines are running Bluefin (Developer edition, https://projectbluefin.io/) based on Fedora Silverblue unless otherwise noted.
