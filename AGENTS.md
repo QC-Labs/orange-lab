@@ -6,6 +6,8 @@
 - Preview changes: `pulumi preview --diff` (useful for checking for any unintended changes after major code updates or refactoring)
 - Build/Test/TypeCheck: `npm test`
 
+Note: `npm test` only needs to run when TypeScript code changes. Documentation-only changes (markdown files) do not require running tests.
+
 ## Architectural Principles
 
 - **Simplicity Over Complexity (KISS):** Prioritize simple, straightforward solutions. Avoid over-engineering or introducing complex patterns without consultation.

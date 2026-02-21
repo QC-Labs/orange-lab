@@ -2,13 +2,18 @@ import { config } from '@orangelab/config';
 import * as pulumi from '@pulumi/pulumi';
 import { CertManager } from './cert-manager/cert-manager';
 import { TailscaleOperator } from './tailscale/tailscale';
+import { Technitium } from './technitium/technitium';
 import { Traefik } from './traefik/traefik';
 
 export class NetworkModule extends pulumi.ComponentResource {
+    technitium?: Technitium;
 
     getExports() {
         return {
-            clusterEndpoints: {},
+            endpoints: {
+                technitium: this.technitium?.endpointUrl,
+            },
+            technitiumUsers: this.technitium?.users,
             tailscaleDomain: config.tailnetDomain,
         };
     }
@@ -60,5 +65,17 @@ export class NetworkModule extends pulumi.ComponentResource {
             );
         }
 
+        if (config.isEnabled('technitium')) {
+            this.technitium = new Technitium(
+                'technitium',
+                {},
+                {
+                    parent: this,
+                    aliases: [
+                        { type: 'orangelab:system:Technitium', parent: systemAlias },
+                    ],
+                },
+            );
+        }
     }
 }

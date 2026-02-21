@@ -19,6 +19,7 @@ const moduleDependencies: Record<string, string[]> = {
         'rustfs',
         'tailscale',
         'tailscale-operator',
+        'technitium',
         'traefik',
     ],
 };
