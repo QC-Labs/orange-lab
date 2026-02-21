@@ -24,11 +24,10 @@ export class Technitium extends pulumi.ComponentResource {
         };
 
         this.app.addDeployment({
-            image: config.get(name, 'image') ?? 'technitium/dns-server:latest',
             ports: [
                 { name: 'http', port: 5380 },
-                { name: 'dns-tcp', port: 53, tcp: true },
-                { name: 'dns-udp', port: 53 },
+                // { name: 'dns-tcp', port: 53, tcp: true },
+                // { name: 'dns-udp', port: 53 },
             ],
             hostNetwork: true,
             volumeMounts: [{ mountPath: '/etc/dns' }],

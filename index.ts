@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { config } from '@orangelab/config';
 import 'tsconfig-paths/register';
+import { config } from '@orangelab/config';
 import { AIModule } from './components/ai';
 import { BitcoinModule } from './components/bitcoin';
 import { DataModule } from './components/data';

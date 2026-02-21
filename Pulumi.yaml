@@ -76,6 +76,13 @@ config:
     cert-manager:enabled: false
     cert-manager:clusterIssuer: letsencrypt-issuer
 
+    technitium:enabled: false
+    technitium:image: technitium/dns-server:latest
+    technitium:hostname: dns
+    technitium:storageSize: 5Gi
+    technitium:forwarders: ''
+    # technitium:requiredNodeLabel: kubernetes.io/hostname=<hostname>
+
     nfd:enabled: false
     nfd:gpu-autodetect: true
 

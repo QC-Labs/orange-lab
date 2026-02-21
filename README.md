@@ -29,39 +29,44 @@ Private distributed infrastructure on consumer hardware.
 
 # Applications
 
-[Network module](./components/network/NETWORK.md):
+### Base modules
+
+[Network](./components/network/NETWORK.md):
 
 - [`cert-manager`](./components/network/cert-manager/cert-manager.md) - certificate management
 - [`tailscale-operator`](./components/network/tailscale/tailscale.md) - ingress support with Tailscale authentication
 - [`traefik`](./components/network/traefik/traefik.md) - reverse proxy for custom domain support
+- [`technitium`](./components/network/technitium/technitium.md) - (Experimental) DNS server and ad-blocker
 
-[Storage module](./components/storage/STORAGE.md):
+[Storage](./components/storage/STORAGE.md):
 
 - [`longhorn`](./components/storage/longhorn/longhorn.md) - replicated storage
 - [`rustfs`](./components/storage/rustfs/rustfs.md) - S3-compatible storage (Longhorn backup target)
 - [`minio`](./components/storage/minio/minio.md) - (Deprecated) S3-compatible object storage.
 
-[Hardware module](./components/hardware/HARDWARE.md):
+[Hardware](./components/hardware/HARDWARE.md):
 
 - [`amd-gpu-operator`](./components/hardware/amd-gpu-operator/amd-gpu-operator.md) - AMD GPU support
 - [`nfd`](./components/hardware/nfd/nfd.md) - Node Feature Discovery (GPU autodetection)
 - [`nvidia-gpu-operator`](./components/hardware/nvidia-gpu-operator/nvidia-gpu-operator.md) - NVidia GPU support
 
-[Data module](./components/data/DATA.md):
+[Data](./components/data/DATA.md):
 
 - [`cloudnative-pg`](./components/data/cloudnative-pg/cloudnative-pg.md) - PostgreSQL operator
 - [`mariadb-operator`](./components/data/mariadb-operator/mariadb-operator.md) - MariaDB operator
 
-[Monitoring module](./components/monitoring/MONITORING.md):
+[Monitoring](./components/monitoring/MONITORING.md):
 
 - [`beszel`](./components/monitoring/beszel/beszel.md) - Beszel lightweight monitoring
 - [`prometheus`](./components/monitoring/prometheus/prometheus.md) - Prometheus/Grafana monitoring
 
-[IoT module](./components/iot/IOT.md):
+### Optional modules
+
+[IoT](./components/iot/IOT.md):
 
 - [`home-assistant`](./components/iot/home-assistant/home-assistant.md) - sensor and home automation platform
 
-[AI module](./components/ai/AI.md):
+[AI](./components/ai/AI.md):
 
 - [`invokeai`](./components/ai/invokeai/invokeai.md) - generative AI plaform, community edition
 - [`n8n`](./components/ai/n8n/n8n.md) - AI workflow automation
@@ -71,22 +76,22 @@ Private distributed infrastructure on consumer hardware.
 - [`automatic1111`](./components/ai/automatic1111/automatic1111.md) - (Deprecated) Stable Diffusion WebUI.
 - [`sdnext`](./components/ai/sdnext/sdnext.md) - (Deprecated) Stable Diffusion WebUI.
 
-[Bitcoin module](./components/bitcoin/BITCOIN.md):
+[Bitcoin](./components/bitcoin/BITCOIN.md):
 
 - [`bitcoin-core`](./components/bitcoin/bitcoin-core/bitcoin-core.md) - Bitcoin Core node
 - [`bitcoin-knots`](./components/bitcoin/bitcoin-knots/bitcoin-knots.md) - Bitcoin Knots node
 - [`electrs`](./components/bitcoin/electrs/electrs.md) - Electrs (Electrum) server implementation
 - [`mempool`](./components/bitcoin/mempool/mempool.md) - Blockchain explorer
 
-[Office module](./components/office/OFFICE.md):
+[Office](./components/office/OFFICE.md):
 
 - [`nextcloud`](./components/office/nextcloud/nextcloud.md) - File sharing, calendars, contacts, tasks
 
-[Security module](./components/security/SECURITY.md):
+[Security](./components/security/SECURITY.md):
 
 - [`vaultwarden`](./components/security/vaultwarden/vaultwarden.md) - Bitwarden-compatible password manager
 
-[Dev module](./components/dev/DEV.md):
+[Dev](./components/dev/DEV.md):
 
 - [`debug`](./components/dev/debug/debug.md) - (Experimental) Troubleshooting utilities and volume access tools
 

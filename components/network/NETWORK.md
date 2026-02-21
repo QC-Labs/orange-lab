@@ -23,13 +23,6 @@ pulumi config set cert-manager:enabled true
 pulumi config set traefik:enabled true
 ```
 
-## Components
-
-- **[Tailscale Operator](./tailscale/tailscale.md)** - Ingress with Tailscale authentication and `.ts.net` domains
-- **[Traefik](./traefik/traefik.md)** - Ingress controller for custom domains with automatic TLS
-- **[Cert-manager](./cert-manager/cert-manager.md)** - Automated certificate management (required for Traefik)
-- **[Technitium](./technitium/technitium.md)** - DNS server for cluster-internal resolution
-
 ## ServiceLB Configuration
 
 When using Traefik, k3s ServiceLB creates endpoints on port 80/443 on each node. To limit which nodes run the load balancer:
@@ -48,3 +41,13 @@ You can override the global routing provider on a per-application basis:
 # Use Tailscale for a specific app even if Traefik is the global default
 pulumi config set <app>:routingProvider tailscale
 ```
+
+## Components
+
+- **[Tailscale Operator](./tailscale/tailscale.md)** - Ingress with Tailscale authentication and `.ts.net` domains
+- **[Traefik](./traefik/traefik.md)** - Ingress controller for custom domains with automatic TLS
+- **[Cert-manager](./cert-manager/cert-manager.md)** - Automated certificate management (required for Traefik)
+
+### Experimental
+
+- **[Technitium](./technitium/technitium.md)** - DNS server and ad-blocker
