@@ -17,6 +17,7 @@ export interface PostgresClusterArgs {
     instances?: number;
     password?: pulumi.Input<string>;
     imageName?: string;
+    postInitApplicationSQL?: string[];
 }
 
 export class PostgresCluster extends pulumi.ComponentResource {
@@ -82,6 +83,7 @@ export class PostgresCluster extends pulumi.ComponentResource {
                             database: this.appName,
                             owner: this.dbUser,
                             secret: { name: this.secret.metadata.name },
+                            postInitApplicationSQL: this.args.postInitApplicationSQL,
                         },
                     },
                     monitoring: config.enableMonitoring()

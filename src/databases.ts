@@ -99,6 +99,9 @@ export class Databases {
                 name,
                 nodes: this.args.nodes,
                 password: config.getSecret(this.appName, `${name}/password`),
+                postInitApplicationSQL: config
+                    .get(this.appName, `${name}/postInitApplicationSQL`)
+                    ?.split(','),
                 storageClassName: existingVolume
                     ? this.args.storage.getStorageClass(name)
                     : config.storageClass.Database,
