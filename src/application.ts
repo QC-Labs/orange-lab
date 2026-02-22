@@ -142,6 +142,11 @@ export class Application {
         return this;
     }
 
+    addRedis() {
+        this.getDatabases().addRedis();
+        return this;
+    }
+
     addStorage(volume?: PersistentVolumeSpec) {
         this.getStorage().addPersistentVolume(volume);
         return this;

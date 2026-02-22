@@ -31,6 +31,9 @@ config:
     # Custom domain supported by Traefik provider only.
     # orangelab:customDomain: 'example.com'
 
+    # Global Redis image - apps can override with <app>:redis/image
+    orangelab:redis/image: docker.io/redis:8-alpine
+
     traefik:enabled: false
     traefik:hostname: traefik
     traefik:gatewayApiCrdUrl: 'https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/experimental-install.yaml'

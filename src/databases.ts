@@ -4,11 +4,15 @@ import { MariaDbCluster } from './mariadb';
 import { Metadata } from './metadata';
 import { Nodes } from './nodes';
 import { PostgresCluster } from './postgres';
+import { Redis } from './redis';
 import { Storage } from './storage';
 import { DatabaseConfig, InitContainerSpec, StorageType } from './types';
 
 export class Databases {
-    private databases: Record<string, MariaDbCluster | PostgresCluster | undefined> = {};
+    private databases: Record<
+        string,
+        MariaDbCluster | PostgresCluster | Redis | undefined
+    > = {};
 
     constructor(
         private appName: string,
@@ -106,7 +110,29 @@ export class Databases {
     }
 
     /**
-     * Returns the config for MariaDB or PostgreSQL instance for this app.
+     * Adds a Redis instance for the application.
+     * Override default image with <app>:redis/image.
+     */
+    addRedis(name = 'redis'): void {
+        const image =
+            config.get(this.appName, `${name}/image`) ??
+            config.require('orangelab', 'redis/image');
+        if (this.databases[name]) {
+            throw new Error(`Redis ${this.appName}-${name} already exists.`);
+        }
+        this.databases[name] = new Redis(
+            this.appName,
+            {
+                metadata: this.args.metadata,
+                nodes: this.args.nodes,
+                image,
+            },
+            this.opts,
+        );
+    }
+
+    /**
+     * Returns the config for MariaDB, PostgreSQL, or Redis instance for this app.
      * Includes: hostname, database, username, password
      */
     getConfig(name = 'db'): DatabaseConfig {
@@ -121,12 +147,12 @@ export class Databases {
     getWaitContainer(dbConfig: DatabaseConfig = this.getConfig()): InitContainerSpec {
         const hostPort = pulumi.interpolate`${dbConfig.hostname} ${dbConfig.port}`;
         return {
-            name: 'wait-for-db',
+            name: `wait-for-${dbConfig.name}`,
             image: 'busybox:latest',
             command: pulumi.all([
                 'sh',
                 '-c',
-                pulumi.interpolate`until nc -z -v -w30 ${hostPort}; do echo "Waiting for database...${hostPort}" && sleep 5; done`,
+                pulumi.interpolate`until nc -z -v -w30 ${hostPort}; do echo "Waiting for ${dbConfig.name}...${hostPort}" && sleep 5; done`,
             ]),
             volumeMounts: [],
         };

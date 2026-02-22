@@ -119,6 +119,7 @@ export class MariaDbCluster extends pulumi.ComponentResource {
 
     getConfig(): DatabaseConfig {
         return {
+            name: this.args.name,
             hostname: this.clusterName,
             database: this.appName,
             username: this.appName,

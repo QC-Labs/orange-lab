@@ -119,6 +119,7 @@ export class PostgresCluster extends pulumi.ComponentResource {
 
     getConfig(): DatabaseConfig {
         return {
+            name: this.args.name,
             hostname: pulumi.interpolate`${this.clusterName}-rw.${this.args.metadata.namespace}`,
             database: this.appName,
             username: this.dbUser,

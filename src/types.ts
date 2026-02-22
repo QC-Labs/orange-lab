@@ -173,6 +173,7 @@ export interface ConfigVolumeSpec {
  * Represents the configuration needed to connect to a database instance.
  */
 export interface DatabaseConfig {
+    name: string;
     hostname: pulumi.Input<string>;
     database: pulumi.Input<string>;
     username: pulumi.Input<string>;
