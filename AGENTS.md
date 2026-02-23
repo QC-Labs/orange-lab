@@ -16,6 +16,13 @@ Note: `npm test` only needs to run when TypeScript code changes. Documentation-o
 - **Single Responsibility:** Each class has one clear purpose: Metadata for labels/annotations, Network for ingress/services, Storage for volumes, etc. Extract functionality into separate files/classes when components have distinct responsibilities, even if they seem related (e.g., init containers handle volume preparation while runtime containers handle main workloads with GPU support).
 - **Encapsulation of Complexity:** Complex logic should be encapsulated within classes. Expose clean interfaces rather than leaking implementation details.
 
+## Commit Messages
+
+- Use conventional commits: `scope:` or `fix(scope):` for normal changes and bug fixes, `scope!: BREAKING CHANGE` for breaking changes
+- One line is usually sufficient; add detailed description only for breaking changes explaining how to migrate
+- Include why the change matters (e.g., "shows up in Headlamp in Cluster/Nodes")
+- Don't use "refactor:" for breaking changes
+
 ## Working Conventions
 
 ### Step-by-Step Approach
@@ -42,22 +49,6 @@ Stop and ask when you encounter:
 - **Type mismatches**: a value used as boolean in one place but string/enum in another
 
 Even if the change seems straightforward, these signals may indicate the current pattern is intentionally simplified (YAGNI) or needs expansion.
-
-### Initialization Order
-
-When a value from `Application` (like `this.app.debug`) is needed during chained initialization, create the Application instance first: `this.app = new Application(...);`, then continue with chained methods: `this.app.addStorage().addConfigVolume(...)`.
-
-### Commit Messages
-
-- Use conventional commits: `scope:` or `fix(scope):` for normal changes and bug fixes, `scope!: BREAKING CHANGE` for breaking changes
-- One line is usually sufficient; add detailed description only for breaking changes explaining how to migrate
-- Include why the change matters (e.g., "shows up in Headlamp in Cluster/Nodes")
-- Don't use "refactor:" for breaking changes
-
-### Kubernetes Standards
-
-- Prefer standard Kubernetes conventions unless there's a specific reason to deviate
-- Example: node-role labels use `true` value to match k3s `control-plane` and `master` roles
 
 ## Code Style
 
@@ -103,12 +94,10 @@ When a value from `Application` (like `this.app.debug`) is needed during chained
 - Prefer nullish coalescing operator (??) over logical OR (||)
 - Prefix unused variables with underscore (\_)
 
-### Secrets and Security
+### Kubernetes Standards
 
-- Use `envSecret` field in `ContainerSpec` for sensitive data instead of command args
-- Application class automatically creates Kubernetes Secrets and configures envFrom
-- Environment variable names should be UPPERCASE following conventions
-- Never expose passwords or sensitive data in command line arguments
+- Prefer standard Kubernetes conventions unless there's a specific reason to deviate
+- Example: node-role labels use `true` value to match k3s `control-plane` and `master` roles
 
 ## Components
 
@@ -120,9 +109,39 @@ When a value from `Application` (like `this.app.debug`) is needed during chained
 - Only export fields when needed for external use; keep sensitive values like auth keys internal when not required
 - Share provider instances across components (pass via args) rather than creating duplicates
 
-### Documentation
+### Initialization Order
 
-#### Module Documentation (`<module>/MODULE.md`)
+When a value from `Application` (like `this.app.debug`) is needed during chained initialization, create the Application instance first: `this.app = new Application(...);`, then continue with chained methods: `this.app.addStorage().addConfigVolume(...)`.
+
+## Configuration
+
+- Don't use optional accessors (`?.`, `??`) for settings that have defaults defined in `Pulumi.yaml`
+- Use `config.require()` instead of `config.get()` when a default value exists in `Pulumi.yaml`
+- This prevents typos by ensuring all expected settings are present and simplifies processing logic
+- **Feature-gated validation**: When a feature is conditionally enabled (e.g., `smtp/enabled`), validate its required settings only when that feature is enabled. This allows Pulumi.yaml to have defaults for optional features without forcing users to set them.
+- **Conditional requirements**: When a feature is enabled, all its related settings should typically be required (`config.require`), not optional. The `enabled` flag acts as the conditional gate.
+- **Minimal config generation**: Only generate config files when a feature requiring them is enabled. Don't create ConfigMaps/Secrets for unused features.
+- **Derive don't duplicate**: Values that can be derived from existing resources (like URLs from `HttpEndpointInfo`) should be derived, not manually configured.
+
+### Secrets and Security
+
+- Use `envSecret` field in `ContainerSpec` for sensitive data instead of command args
+- Application class automatically creates Kubernetes Secrets and configures envFrom
+- Environment variable names should be UPPERCASE following conventions
+- Never expose passwords or sensitive data in command line arguments
+
+### Auto-generated Secrets
+
+When a component generates secrets/tokens automatically (e.g., encryption keys), provide instructions in the component docs for:
+
+1. Retrieving the secret from stack outputs after first deployment
+2. Saving it to config with `--secret` flag for backup restoration
+
+Example: n8n, vaultwarden
+
+## Documentation
+
+### Module Documentation (`<module>/MODULE.md`)
 
 1. Short description and important things user needs to know before installing
 2. TLDR section with code block containing only settings user must set or is very likely to change
@@ -131,7 +150,7 @@ When a value from `Application` (like `this.app.debug`) is needed during chained
 3. List of existing components with links to component docs
 4. "Experimental" and "Obsolete" sections only if components exist in those categories
 
-#### Component Documentation (`<component>/<component>.md`)
+### Component Documentation (`<component>/<component>.md`)
 
 1. **Links table**: Homepage, Source code, Documentation, Helm chart/values (if used), Endpoints
 2. **Short description** followed by code section with:
@@ -140,12 +159,3 @@ When a value from `Application` (like `this.app.debug`) is needed during chained
     - Comments only when command needs explanation
 3. **Additional sections** only for complex topics needing more than a code comment
 4. **Uninstall section** only when manual cleanup required (CRDs, etc.)
-
-#### Auto-generated Secrets
-
-When a component generates secrets/tokens automatically (e.g., encryption keys), provide instructions in the component docs for:
-
-1. Retrieving the secret from stack outputs after first deployment
-2. Saving it to config with `--secret` flag for backup restoration
-
-Example: n8n, vaultwarden
