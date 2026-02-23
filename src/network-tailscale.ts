@@ -151,7 +151,6 @@ export class TailscaleNetwork implements RoutingProvider {
             {
                 metadata: {
                     ...metadata,
-                    name: `${metadata.name}-ts-lb`,
                     annotations: { 'tailscale.com/hostname': params.hostname },
                 },
                 spec: {
