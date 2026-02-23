@@ -123,6 +123,10 @@ export class Storage extends pulumi.ComponentResource {
         return storage.size;
     }
 
+    getVolumeNames(): string[] {
+        return Array.from(this.volumes.keys());
+    }
+
     hasLocal(): boolean {
         return this.localVolumes.size > 0 || this.hasDeviceMounts();
     }
@@ -162,7 +166,10 @@ export class Storage extends pulumi.ComponentResource {
         }
     }
 
-    private addConfigMapVolume(name: string, files: Record<string, pulumi.Input<string>>) {
+    private addConfigMapVolume(
+        name: string,
+        files: Record<string, pulumi.Input<string>>,
+    ) {
         new ConfigMap(
             `${this.appName}-${name}-cm`,
             {
