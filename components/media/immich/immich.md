@@ -49,3 +49,17 @@ pulumi config set immich:JWT_SECRET $JWT_SECRET --secret
 
 pulumi up
 ```
+
+## Reset Admin Password
+
+If you need to reset the admin password, exec into the Immich server pod and use the `immich-admin` CLI:
+
+```sh
+# Exec into the server container
+./scripts/exec.sh immich
+
+# Reset the admin password
+immich-admin reset-admin-password
+```
+
+See [Server Commands](https://docs.immich.app/administration/server-commands) for more CLI commands like `list-users`, `enable-oauth-login`, etc.

@@ -13,8 +13,12 @@ if [ -z "$appName" ]; then
   exit 1
 fi
 
-if [[ "$appName" == "open-webui" ]]; then
+if [[ "$appName" == "open-webui" ]] || [[ "$appName" == "immich" ]]; then
     label=app.kubernetes.io/component
+fi
+
+if [[ "$appName" == "immich" ]]; then
+    appName=server
 fi
 
 # Get the first pod name
