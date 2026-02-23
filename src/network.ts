@@ -39,16 +39,17 @@ export class Network {
     }
 
     createEndpoints(spec: ContainerSpec) {
-        const hostname = config.require(this.appName, 'hostname');
         const ports = spec.ports ?? [];
         const httpPorts = ports.filter(p => !p.tcp);
         this.createHttpEndpoints(httpPorts, spec);
         const tcpPorts = ports.filter(p => p.tcp);
-        this.provider.createTcpEndpoints({
-            tcpPorts,
-            component: spec.name,
-            hostname,
-        });
+        if (tcpPorts.length > 0) {
+            this.provider.createTcpEndpoints({
+                tcpPorts,
+                component: spec.name,
+                hostname: this.getHostname(spec.name),
+            });
+        }
         Object.assign(this.endpoints, this.provider.endpoints);
         Object.assign(this.clusterEndpoints, this.provider.clusterEndpoints);
     }
@@ -65,9 +66,38 @@ export class Network {
                 serviceName: service.metadata.name,
                 httpPorts: publicHttpPorts,
                 component: spec.name,
-                hostname: config.require(this.appName, 'hostname'),
+                hostname: this.getHostname(spec.name),
             });
         }
+        this.exportPrivateHttpEndpoints(
+            httpPorts.filter(p => p.private),
+            service,
+            spec,
+        );
+    }
+
+    private exportPrivateHttpEndpoints(
+        privateHttpPorts: ServicePort[],
+        service: kubernetes.core.v1.Service,
+        spec: ContainerSpec,
+    ) {
+        privateHttpPorts.forEach(port => {
+            const key = [
+                this.appName,
+                spec.name,
+                port.name === 'http' ? undefined : port.name,
+            ]
+                .filter(Boolean)
+                .join('-');
+            this.clusterEndpoints[key] =
+                pulumi.interpolate`http://${service.metadata.name}.${this.args.metadata.namespace}:${port.port}`;
+        });
+    }
+
+    private getHostname(component?: string) {
+        return component
+            ? config.require(this.appName, `${component}/hostname`)
+            : config.require(this.appName, 'hostname');
     }
 
     private createHttpService(args: {

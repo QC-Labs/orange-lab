@@ -232,10 +232,10 @@ config:
     # electrs:requiredNodeLabel: kubernetes.io/hostname=<hostname>
 
     mempool:enabled: false
-    mempool:hostname: mempool
+    mempool:frontend/hostname: mempool
+    mempool:frontend/image: mempool/frontend:v3.2.1
     mempool:backend/hostname: mempool-backend
     mempool:backend/image: mempool/backend:v3.2.1
-    mempool:frontend/image: mempool/frontend:v3.2.1
     mempool:db/storageSize: 1Gi
 
     ### Media ###
