@@ -11,6 +11,7 @@ export interface OpenWebUIArgs {
 
 export class OpenWebUI extends pulumi.ComponentResource {
     public readonly endpointUrl: string | undefined;
+    public readonly secretKey: pulumi.Output<string>;
 
     constructor(
         private name: string,
@@ -19,117 +20,60 @@ export class OpenWebUI extends pulumi.ComponentResource {
     ) {
         super('orangelab:ai:OpenWebUI', name, args, opts);
 
-        const hostname = config.require(name, 'hostname');
-        const appVersion = config.get(name, 'appVersion');
-        const debug = config.get(name, 'debug');
-        const DEFAULT_MODELS = config.get(name, 'DEFAULT_MODELS') ?? '';
-        const DEFAULT_USER_ROLE = config.require(name, 'DEFAULT_USER_ROLE');
+        this.secretKey = pulumi.output(
+            config.get(name, 'WEBUI_SECRET_KEY') ?? this.createSecretKey(),
+        );
 
         const app = new Application(this, name).addStorage();
-
         if (app.storageOnly) return;
 
-        const httpEndpointInfo = app.network.getHttpEndpointInfo(hostname);
+        const httpEndpointInfo = app.network.getHttpEndpointInfo();
         const isTailscale = httpEndpointInfo.className === 'tailscale';
         this.endpointUrl = httpEndpointInfo.url;
-        app.addHelmChart(
-            name,
-            {
-                chart: 'open-webui',
-                repo: 'https://helm.openwebui.com/',
-                values: {
-                    affinity: app.nodes.getAffinity(),
-                    containerSecurityContext:
-                        app.gpu === 'nvidia' ? { privileged: true } : undefined,
-                    extraEnvVars: [
-                        { name: 'AUTOMATIC1111_BASE_URL', value: args.automatic1111Url },
-                        { name: 'BYPASS_MODEL_ACCESS_CONTROL', value: 'True' },
-                        { name: 'DEFAULT_MODELS', value: DEFAULT_MODELS },
-                        { name: 'DEFAULT_USER_ROLE', value: DEFAULT_USER_ROLE },
-                        { name: 'ENABLE_ADMIN_CHAT_ACCESS', value: 'False' },
-                        { name: 'ENABLE_EVALUATION_ARENA_MODELS', value: 'False' },
-                        {
-                            name: 'ENABLE_IMAGE_GENERATION',
-                            value: args.automatic1111Url ? 'True' : 'False',
-                        },
-                        {
-                            name: 'ENABLE_LOGIN_FORM',
-                            value: isTailscale ? 'False' : 'True',
-                        },
-                        { name: 'ENABLE_PERSISTENT_CONFIG', value: 'False' },
-                        { name: 'ENABLE_SEARCH_QUERY_GENERATION', value: 'True' },
-                        { name: 'ENABLE_SIGNUP', value: 'True' },
-                        { name: 'ENABLE_VERSION_UPDATE_CHECK', value: 'False' },
-                        { name: 'ENABLE_WEB_SEARCH', value: 'True' },
-                        { name: 'IMAGE_GENERATION_ENGINE', value: 'automatic1111' },
-                        {
-                            name: 'USE_CUDA_DOCKER',
-                            value: app.gpu === 'nvidia' ? 'True' : 'False',
-                        },
-                        { name: 'USE_OLLAMA_DOCKER', value: 'False' },
-                        {
-                            name: 'USER_PERMISSIONS_FEATURES_DIRECT_TOOL_SERVERS',
-                            value: 'True',
-                        },
-                        {
-                            name: 'USER_PERMISSIONS_WORKSPACE_KNOWLEDGE_ACCESS',
-                            value: 'True',
-                        },
-                        {
-                            name: 'USER_PERMISSIONS_WORKSPACE_MODELS_ACCESS',
-                            value: 'True',
-                        },
-                        {
-                            name: 'USER_PERMISSIONS_WORKSPACE_PROMPTS_ACCESS',
-                            value: 'True',
-                        },
-                        {
-                            name: 'USER_PERMISSIONS_WORKSPACE_TOOLS_ACCESS',
-                            value: 'True',
-                        },
-                        { name: 'WEB_SEARCH_ENGINE', value: 'duckduckgo' },
-                        { name: 'WEBUI_AUTH', value: isTailscale ? 'False' : 'True' },
-                        ...(isTailscale
-                            ? [
-                                  {
-                                      name: 'WEBUI_AUTH_TRUSTED_EMAIL_HEADER',
-                                      value: 'Tailscale-User-Login',
-                                  },
-                                  {
-                                      name: 'WEBUI_AUTH_TRUSTED_NAME_HEADER',
-                                      value: 'Tailscale-User-Name',
-                                  },
-                              ]
-                            : []),
-                        { name: 'WEBUI_SECRET_KEY', value: this.createSecretKey() },
-                        { name: 'WEBUI_URL', value: httpEndpointInfo.url },
-                    ],
-                    image: { tag: appVersion },
-                    ingress: {
-                        enabled: true,
-                        class: httpEndpointInfo.className,
-                        host: httpEndpointInfo.hostname,
-                        tls: httpEndpointInfo.tls,
-                    },
-                    logging: { level: debug ? 'debug' : 'info' },
-                    ollama: { enabled: false },
-                    ollamaUrls: [args.ollamaUrl],
-                    openaiBaseApiUrl: args.openAiUrl,
-                    persistence: {
-                        enabled: true,
-                        existingClaim: app.storage?.getClaimName(),
-                    },
-                    pipelines: { enabled: false },
-                    runtimeClassName: app.gpu === 'nvidia' ? 'nvidia' : undefined,
-                    websocket: {
-                        redis: {
-                            affinity: app.nodes.getAffinity(),
-                        },
-                    },
-                },
+
+        const env: Record<string, pulumi.Input<string> | undefined> = {
+            AUTOMATIC1111_BASE_URL: args.automatic1111Url,
+            BYPASS_MODEL_ACCESS_CONTROL: 'True',
+            DEFAULT_MODELS: config.get(name, 'DEFAULT_MODELS') ?? '',
+            DEFAULT_USER_ROLE: config.require(name, 'DEFAULT_USER_ROLE'),
+            ENABLE_ADMIN_CHAT_ACCESS: 'False',
+            ENABLE_EVALUATION_ARENA_MODELS: 'False',
+            ENABLE_IMAGE_GENERATION: args.automatic1111Url ? 'True' : 'False',
+            ENABLE_LOGIN_FORM: isTailscale ? 'False' : 'True',
+            ENABLE_PERSISTENT_CONFIG: 'False',
+            ENABLE_SEARCH_QUERY_GENERATION: 'True',
+            ENABLE_SIGNUP: 'True',
+            ENABLE_VERSION_UPDATE_CHECK: 'False',
+            ENABLE_WEB_SEARCH: 'True',
+            IMAGE_GENERATION_ENGINE: 'automatic1111',
+            OLLAMA_BASE_URLS: args.ollamaUrl,
+            OPENAI_BASE_API_URL: args.openAiUrl,
+            USER_PERMISSIONS_FEATURES_DIRECT_TOOL_SERVERS: 'True',
+            USER_PERMISSIONS_WORKSPACE_KNOWLEDGE_ACCESS: 'True',
+            USER_PERMISSIONS_WORKSPACE_MODELS_ACCESS: 'True',
+            USER_PERMISSIONS_WORKSPACE_PROMPTS_ACCESS: 'True',
+            USER_PERMISSIONS_WORKSPACE_TOOLS_ACCESS: 'True',
+            USE_CUDA_DOCKER: app.gpu === 'nvidia' ? 'True' : 'False',
+            USE_OLLAMA_DOCKER: 'False',
+            WEBUI_AUTH: isTailscale ? 'False' : 'True',
+            WEBUI_URL: httpEndpointInfo.url,
+            WEB_SEARCH_ENGINE: 'duckduckgo',
+        };
+
+        if (isTailscale) {
+            env.WEBUI_AUTH_TRUSTED_EMAIL_HEADER = 'Tailscale-User-Login';
+            env.WEBUI_AUTH_TRUSTED_NAME_HEADER = 'Tailscale-User-Name';
+        }
+
+        app.addDeployment({
+            ports: [{ name: 'http', port: 8080 }],
+            volumeMounts: [{ mountPath: '/app/backend/data' }],
+            env,
+            envSecret: {
+                WEBUI_SECRET_KEY: this.secretKey,
             },
-            { dependsOn: app.storage },
-        );
+            healthChecks: true,
+        });
     }
 
     private createSecretKey() {

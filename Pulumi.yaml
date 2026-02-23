@@ -172,12 +172,10 @@ config:
     sdnext:gpu: nvidia
 
     open-webui:enabled: false
-    open-webui:appVersion: cuda
     open-webui:hostname: webui
     open-webui:storageSize: 5Gi
     open-webui:DEFAULT_USER_ROLE: admin
-    # local Whisper speech recognition (nvidia only)
-    # open-webui:gpu: nvidia
+    open-webui:image: ghcr.io/open-webui/open-webui:main-slim
 
     kubeai:enabled: false
     kubeai:hostname: kubeai
