@@ -20,6 +20,7 @@ export class Automatic1111 extends pulumi.ComponentResource {
                 },
                 ports: [{ name: 'http', port: 8080 }],
                 runAsUser: 1000,
+                volumeOwnerUserId: 1000,
                 volumeMounts: [
                     {
                         mountPath: '/app/stable-diffusion-webui/models',
