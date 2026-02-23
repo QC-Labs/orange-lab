@@ -9,6 +9,7 @@ const moduleDependencies: Record<string, string[]> = {
     dev: ['debug'],
     hardware: ['amd-gpu-operator', 'nfd', 'nvidia-gpu-operator'],
     iot: ['home-assistant'],
+    media: ['immich'],
     monitoring: ['beszel', 'prometheus'],
     office: ['nextcloud'],
     security: ['vaultwarden'],

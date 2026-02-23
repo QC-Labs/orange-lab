@@ -240,6 +240,23 @@ config:
     mempool:frontend/image: mempool/frontend:v3.2.1
     mempool:db/storageSize: 1Gi
 
+    ### Media ###
+
+    immich:enabled: false
+    immich:hostname: immich
+    immich:image: ghcr.io/immich-app/immich-server:release
+    immich:storageSize: 50Gi
+    immich:machine-learning/enabled: false
+    immich:machine-learning/image: ghcr.io/immich-app/immich-machine-learning:release
+    immich:machine-learning/storageSize: 10Gi
+    # immich:machine-learning/requiredNodeLabel: kubernetes.io/hostname=<hostname>
+    # immich:machine-learning/gpu: nvidia  # Enable GPU acceleration (nvidia or amd)
+    immich:redis/image: docker.io/valkey/valkey:9@sha256:546304417feac0874c3dd576e0952c6bb8f06bb4093ea0c9ca303c73cf458f63
+    immich:db/storageSize: 5Gi
+    immich:db/image: ghcr.io/tensorchord/cloudnative-vectorchord:18.2
+    immich:db/sharedPreloadLibraries: vchord.so
+    immich:db/postInitApplicationSQL: CREATE EXTENSION IF NOT EXISTS earthdistance CASCADE,CREATE EXTENSION IF NOT EXISTS vchord CASCADE
+
     ### Office ###
 
     nextcloud:enabled: false
