@@ -155,6 +155,7 @@ export interface PersistentVolumeSpec {
 
 /**
  * Represents a volume that contains configuration files mounted in the same folder.
+ * Either `files` or `secretFiles` must be provided, or both.
  */
 export interface ConfigVolumeSpec {
     /**
@@ -165,8 +166,15 @@ export interface ConfigVolumeSpec {
     /**
      * A map of configuration files to their contents.
      * The keys are the file names, and the values are the file contents.
+     * These are stored in a ConfigMap.
      */
-    files: Record<string, pulumi.Input<string>>;
+    files?: Record<string, pulumi.Input<string>>;
+    /**
+     * A map of sensitive configuration files to their contents.
+     * The keys are the file names, and the values are the file contents.
+     * These are stored in a Secret for better security.
+     */
+    secretFiles?: Record<string, pulumi.Input<string>>;
 }
 
 /**

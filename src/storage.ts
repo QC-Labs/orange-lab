@@ -1,5 +1,5 @@
 import * as kubernetes from '@pulumi/kubernetes';
-import { ConfigMap } from '@pulumi/kubernetes/core/v1';
+import { ConfigMap, Secret } from '@pulumi/kubernetes/core/v1';
 import * as pulumi from '@pulumi/pulumi';
 import * as crypto from 'crypto';
 import assert from 'node:assert';
@@ -141,28 +141,64 @@ export class Storage extends pulumi.ComponentResource {
 
     /**
      * Adds a config volume that contains multiple configuration files mounted in the same folder.
-     * @param configVolume The config volume definition (name and files)
+     * Supports both regular files (ConfigMap) and secret files (Secret).
+     * @param configVolume The config volume definition (name, files, and/or secretFiles)
      */
     addConfigVolume(configVolume: ConfigVolumeSpec) {
         if (this.configFilesHash) throw new Error('Only one ConfigVolumeSpec supported');
+
+        if (!configVolume.files && !configVolume.secretFiles) {
+            throw new Error('Either files or secretFiles must be provided');
+        }
+
         this.configFilesHash = this.getConfigHash(configVolume);
         const volumeName = configVolume.name ?? 'config';
+
+        if (configVolume.files) {
+            this.addConfigMapVolume(volumeName, configVolume.files);
+        }
+        if (configVolume.secretFiles) {
+            this.addSecretVolume(volumeName, configVolume.secretFiles);
+        }
+    }
+
+    private addConfigMapVolume(name: string, files: Record<string, pulumi.Input<string>>) {
         new ConfigMap(
-            `${this.appName}-${volumeName}-cm`,
+            `${this.appName}-${name}-cm`,
             {
-                metadata: {
-                    name: volumeName,
-                    namespace: this.args.metadata.namespace,
-                    labels: this.args.metadata.get().labels,
-                },
-                data: configVolume.files,
+                metadata: this.createMetadata(name),
+                data: files,
             },
             { parent: this },
         );
-        this.volumes.set(volumeName, {
-            name: volumeName,
-            configMap: { name: volumeName },
+        this.volumes.set(name, {
+            name,
+            configMap: { name },
         });
+    }
+
+    private addSecretVolume(name: string, files: Record<string, pulumi.Input<string>>) {
+        const fullName = `${this.appName}-${name}`;
+        new Secret(
+            `${fullName}-secret`,
+            {
+                metadata: this.createMetadata(fullName),
+                stringData: files,
+            },
+            { parent: this },
+        );
+        this.volumes.set(fullName, {
+            name: fullName,
+            secret: { secretName: fullName },
+        });
+    }
+
+    private createMetadata(name: string) {
+        return {
+            name,
+            namespace: this.args.metadata.namespace,
+            labels: this.args.metadata.get().labels,
+        };
     }
 
     /**
@@ -170,10 +206,14 @@ export class Storage extends pulumi.ComponentResource {
      * This ensures deployments are restarted when config file contents change.
      */
     private getConfigHash(configVolume: ConfigVolumeSpec) {
-        // Sort keys for deterministic hash
-        const sortedFiles = Object.keys(configVolume.files)
+        // Sort keys for deterministic hash - combine both files and secretFiles
+        const allFiles: Record<string, pulumi.Input<string>> = {
+            ...(configVolume.files ?? {}),
+            ...(configVolume.secretFiles ?? {}),
+        };
+        const sortedFiles = Object.keys(allFiles)
             .sort()
-            .map(k => ({ k, v: configVolume.files[k] }));
+            .map(k => ({ k, v: allFiles[k] }));
         return pulumi.jsonStringify(sortedFiles).apply(str => {
             const hash = crypto.createHash('sha256').update(str).digest('hex');
             return hash;

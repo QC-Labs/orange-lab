@@ -159,7 +159,8 @@ export class Application {
 
     /**
      * Adds a config volume that contains multiple configuration files mounted in the same folder.
-     * @param configVolume The config volume definition (name and files)
+     * Supports both regular files (ConfigMap) and secret files (Secret).
+     * @param configVolume The config volume definition (name, files, and/or secretFiles)
      */
     addConfigVolume(configVolume: ConfigVolumeSpec) {
         if (this.storageOnly) return this;
