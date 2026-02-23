@@ -32,10 +32,15 @@ export class Containers {
                 ? { 'checksum/config': this.args.storage.configFilesHash }
                 : undefined,
         });
+        const image =
+            spec.image ??
+            (spec.name
+                ? config.require(this.appName, `${spec.name}/image`)
+                : config.require(this.appName, 'image'));
         return {
             metadata,
             spec: {
-                affinity: this.args.nodes.getAffinity(),
+                affinity: this.args.nodes.getAffinity(spec.name),
                 containers: [
                     {
                         args: spec.commandArgs
@@ -49,7 +54,7 @@ export class Containers {
                             containerName: spec.name,
                             secretData: spec.envSecret,
                         }),
-                        image: spec.image ?? config.require(this.appName, 'image'),
+                        image,
                         livenessProbe: this.createProbe({
                             healthChecks: spec.healthChecks,
                         }),
