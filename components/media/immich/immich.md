@@ -27,13 +27,6 @@ pulumi config set immich:db/storageSize 10Gi
 pulumi config set immich:machine-learning/enabled true
 pulumi config set immich:machine-learning/gpu nvidia
 
-# (Optional) Enable email notifications for album invites and updates
-pulumi config set immich:smtp/enabled true
-pulumi config set immich:smtp/host smtp.example.com
-pulumi config set immich:smtp/from noreply@example.com
-pulumi config set immich:smtp/username user
-pulumi config set immich:smtp/password --secret
-
 # (Alternative) Use standard cloudnative-pg images with pgvector extension
 pulumi config set immich:db/image ''
 pulumi config set immich:db/postInitApplicationSQL "CREATE EXTENSION IF NOT EXISTS earthdistance CASCADE,CREATE EXTENSION IF NOT EXISTS vector CASCADE"

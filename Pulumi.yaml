@@ -256,13 +256,6 @@ config:
     immich:db/image: ghcr.io/tensorchord/cloudnative-vectorchord:18.2
     immich:db/sharedPreloadLibraries: vchord.so
     immich:db/postInitApplicationSQL: CREATE EXTENSION IF NOT EXISTS earthdistance CASCADE,CREATE EXTENSION IF NOT EXISTS vchord CASCADE
-    immich:smtp/enabled: false
-    # immich:smtp/host: smtp.example.com
-    immich:smtp/port: 587
-    # immich:smtp/from: noreply@example.com
-    # immich:smtp/username: user
-    # immich:smtp/password:
-    #   secure: <SMTP_PASSWORD>
 
     ### Office ###
 

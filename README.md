@@ -66,6 +66,10 @@ Private distributed infrastructure on consumer hardware.
 
 - [`home-assistant`](./components/iot/home-assistant/home-assistant.md) - sensor and home automation platform
 
+[Media](./components/media/MEDIA.md):
+
+- [`immich`](./components/media/immich/immich.md) - Self-hosted photo and video backup solution
+
 [AI](./components/ai/AI.md):
 
 - [`invokeai`](./components/ai/invokeai/invokeai.md) - generative AI plaform, community edition
