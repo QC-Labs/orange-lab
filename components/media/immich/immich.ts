@@ -1,6 +1,6 @@
 import { Application } from '@orangelab/application';
 import { config } from '@orangelab/config';
-import { DatabaseConfig, HttpEndpointInfo } from '@orangelab/types';
+import { DatabaseConfig, HttpEndpointInfo, VolumeMount } from '@orangelab/types';
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
 
@@ -22,16 +22,26 @@ export class Immich extends pulumi.ComponentResource {
         this.app = new Application(this, name).addStorage().addPostgres().addRedis();
         this.dbConfig = this.app.databases?.getConfig();
         if (!this.dbConfig) throw new Error('Database not found');
+        const httpEndpointInfo = this.app.network.getHttpEndpointInfo();
 
         const mlEnabled = config.requireBoolean(this.name, 'machine-learning/enabled');
         if (mlEnabled) {
             this.app.addStorage({ name: 'machine-learning' });
         }
 
+        const smtpEnabled = config.requireBoolean(this.name, 'smtp/enabled');
+        if (smtpEnabled) {
+            const immichConfig = this.generateConfigFile(httpEndpointInfo.url);
+            this.app.addConfigVolume({
+                secretFiles: { 'immich-config.json': immichConfig },
+            });
+        }
+
         this.createDeployment({
-            httpEndpointInfo: this.app.network.getHttpEndpointInfo(),
+            httpEndpointInfo,
             dbConfig: this.dbConfig,
             mlEnabled,
+            smtpEnabled,
         });
         if (mlEnabled) {
             this.createMlDeployment();
@@ -42,33 +52,40 @@ export class Immich extends pulumi.ComponentResource {
         httpEndpointInfo: HttpEndpointInfo;
         dbConfig: DatabaseConfig;
         mlEnabled: boolean;
+        smtpEnabled: boolean;
     }) {
         const waitForDb = this.app.databases?.getWaitContainer();
         const redisConfig = this.app.databases?.getConfig('redis');
         if (!redisConfig) throw new Error('Redis not found');
+
+        const volumeMounts: VolumeMount[] = [{ mountPath: '/data' }];
+        const env: Record<string, pulumi.Input<string>> = {
+            DB_DATABASE_NAME: args.dbConfig.database,
+            DB_HOSTNAME: args.dbConfig.hostname,
+            DB_PORT: '5432',
+            DB_USERNAME: args.dbConfig.username,
+            IMMICH_LOG_LEVEL: this.app.debug ? 'debug' : 'log',
+            IMMICH_MACHINE_LEARNING_ENABLED: args.mlEnabled.toString(),
+            IMMICH_MACHINE_LEARNING_URL: 'http://immich-machine-learning:3003',
+            IMMICH_TRUSTED_PROXIES: `${config.clusterCidr},${config.serviceCidr}`,
+            IMMICH_WORKERS_INCLUDE: 'api,microservices',
+            REDIS_HOSTNAME: redisConfig.hostname,
+        };
+
+        if (args.smtpEnabled) {
+            volumeMounts.push({ mountPath: '/config', name: `${this.name}-config` });
+            env.IMMICH_CONFIG_FILE = '/config/immich-config.json';
+        }
+
         const waitForRedis = this.app.databases?.getWaitContainer(redisConfig);
-
-        const image = config.require(this.name, 'image');
-
         return this.app.addDeployment({
             name: 'server',
-            image,
             ports: [{ name: 'http', port: 2283 }],
-            volumeMounts: [{ mountPath: '/data' }],
-            env: {
-                DB_DATABASE_NAME: args.dbConfig.database,
-                DB_HOSTNAME: args.dbConfig.hostname,
+            volumeMounts,
+            env,
+            envSecret: {
                 DB_PASSWORD: args.dbConfig.password,
-                DB_PORT: '5432',
-                DB_USERNAME: args.dbConfig.username,
-                // IMMICH_CONFIG_FILE: '/data/config/immich-config.json',
-                IMMICH_LOG_LEVEL: this.app.debug ? 'debug' : 'log',
-                IMMICH_MACHINE_LEARNING_ENABLED: args.mlEnabled.toString(),
-                IMMICH_MACHINE_LEARNING_URL: 'http://immich-machine-learning:3003',
-                IMMICH_TRUSTED_PROXIES: `${config.clusterCidr},${config.serviceCidr}`,
-                IMMICH_WORKERS_INCLUDE: 'api,microservices',
                 JWT_SECRET: this.jwtSecret,
-                REDIS_HOSTNAME: redisConfig.hostname,
             },
             initContainers: [
                 ...(waitForRedis ? [waitForRedis] : []),
@@ -85,8 +102,7 @@ export class Immich extends pulumi.ComponentResource {
     private createMlDeployment() {
         this.app.addDeployment({
             name: 'machine-learning',
-            image: config.require(this.name, 'machine-learning/image'),
-            ports: [{ name: 'http', port: 3003 }],
+            ports: [{ name: 'http', port: 3003, private: true }],
             volumeMounts: [
                 { mountPath: '/cache', name: `${this.name}-machine-learning` },
             ],
@@ -108,5 +124,36 @@ export class Immich extends pulumi.ComponentResource {
             { length: 32, special: false },
             { parent: this },
         ).result;
+    }
+
+    private generateConfigFile(externalUrl: string) {
+        const smtpHost = config.require(this.name, 'smtp/host');
+        const smtpPort = config.requireNumber(this.name, 'smtp/port');
+        const smtpFrom = config.require(this.name, 'smtp/from');
+        const smtpUsername = config.require(this.name, 'smtp/username');
+        const smtpPassword = config.require(this.name, 'smtp/password');
+
+        const configObj = {
+            server: {
+                externalDomain: externalUrl,
+            },
+            notifications: {
+                smtp: {
+                    enabled: true,
+                    from: smtpFrom,
+                    replyTo: smtpFrom,
+                    transport: {
+                        host: smtpHost,
+                        port: smtpPort,
+                        secure: true,
+                        ignoreCert: false,
+                        username: smtpUsername,
+                        password: smtpPassword,
+                    },
+                },
+            },
+        };
+
+        return JSON.stringify(configObj, null, 2);
     }
 }

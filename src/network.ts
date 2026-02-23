@@ -59,12 +59,15 @@ export class Network {
             component: spec.name,
             ports: httpPorts,
         });
-        this.provider.createHttpEndpoints({
-            serviceName: service.metadata.name,
-            httpPorts,
-            component: spec.name,
-            hostname: config.require(this.appName, 'hostname'),
-        });
+        const publicHttpPorts = httpPorts.filter(p => !p.private);
+        if (publicHttpPorts.length > 0) {
+            this.provider.createHttpEndpoints({
+                serviceName: service.metadata.name,
+                httpPorts: publicHttpPorts,
+                component: spec.name,
+                hostname: config.require(this.appName, 'hostname'),
+            });
+        }
     }
 
     private createHttpService(args: {

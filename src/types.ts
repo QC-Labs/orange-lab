@@ -20,6 +20,7 @@ export interface ServicePort {
     hostname?: string;
     tcp?: boolean;
     tls?: boolean;
+    private?: boolean;
 }
 
 export interface VolumeMount {
