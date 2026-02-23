@@ -18,6 +18,7 @@ export interface PostgresClusterArgs {
     password?: pulumi.Input<string>;
     imageName?: string;
     postInitApplicationSQL?: string[];
+    sharedPreloadLibraries?: string[];
 }
 
 export class PostgresCluster extends pulumi.ComponentResource {
@@ -74,10 +75,6 @@ export class PostgresCluster extends pulumi.ComponentResource {
                 metadata,
                 spec: {
                     affinity: this.args.nodes.getAffinity(this.args.name),
-                    enablePDB: instances > 1,
-                    instances,
-                    imageName: this.args.imageName,
-                    inheritedMetadata: { labels: metadata.labels },
                     bootstrap: {
                         initdb: {
                             database: this.appName,
@@ -86,9 +83,20 @@ export class PostgresCluster extends pulumi.ComponentResource {
                             postInitApplicationSQL: this.args.postInitApplicationSQL,
                         },
                     },
+                    enablePDB: instances > 1,
+                    imageName: this.args.imageName,
+                    inheritedMetadata: { labels: metadata.labels },
+                    instances,
                     monitoring: config.enableMonitoring()
                         ? { enablePodMonitor: true }
                         : undefined,
+                    postgresql: this.args.sharedPreloadLibraries
+                        ? { shared_preload_libraries: this.args.sharedPreloadLibraries }
+                        : undefined,
+                    resources: {
+                        requests: { cpu: '100m', memory: '128Mi' },
+                        limits: { memory: '1Gi' },
+                    },
                     storage: {
                         size: this.args.storageSize,
                         pvcTemplate: this.args.fromPVC
@@ -107,10 +115,6 @@ export class PostgresCluster extends pulumi.ComponentResource {
                                   storageClassName: this.args.storageClassName,
                                   volumeMode: 'Filesystem',
                               },
-                    },
-                    resources: {
-                        requests: { cpu: '100m', memory: '128Mi' },
-                        limits: { memory: '1Gi' },
                     },
                 },
             },

@@ -102,6 +102,9 @@ export class Databases {
                 postInitApplicationSQL: config
                     .get(this.appName, `${name}/postInitApplicationSQL`)
                     ?.split(','),
+                sharedPreloadLibraries: config
+                    .get(this.appName, `${name}/sharedPreloadLibraries`)
+                    ?.split(','),
                 storageClassName: existingVolume
                     ? this.args.storage.getStorageClass(name)
                     : config.storageClass.Database,
