@@ -75,10 +75,8 @@ export class Immich extends pulumi.ComponentResource {
                 ...(waitForRedis ? [waitForRedis] : []),
                 ...(waitForDb ? [waitForDb] : []),
             ],
-            healthChecks: true,
             resources: {
                 requests: { memory: '512Mi' },
-                limits: { memory: '1Gi' },
             },
         });
     }
@@ -94,7 +92,6 @@ export class Immich extends pulumi.ComponentResource {
                 IMMICH_LOG_LEVEL: this.app.debug ? 'debug' : 'log',
                 IMMICH_PORT: '3003',
             },
-            healthChecks: true,
             resources: {
                 requests: { memory: '512Mi' },
             },
