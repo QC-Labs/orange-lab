@@ -61,6 +61,7 @@ export class Mempool extends pulumi.ComponentResource {
                     ELECTRUM_HOST: electrsUrl.host,
                     ELECTRUM_PORT: electrsUrl.port,
                     ELECTRUM_TLS_ENABLED: 'false',
+                    FIAT_PRICE_ENABLED: 'false',
                     MEMPOOL_BACKEND: 'electrum',
                 },
                 envSecret: {
