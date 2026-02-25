@@ -77,6 +77,7 @@ export class Immich extends pulumi.ComponentResource {
             ],
             resources: {
                 requests: { memory: '512Mi' },
+                limits: { memory: '2Gi' },
             },
         });
     }
