@@ -15,7 +15,10 @@ import { SecurityModule } from './components/security';
 import { StorageModule } from './components/storage';
 
 const networkModule = new NetworkModule('network');
+exports.network = networkModule.getExports();
+
 const storageModule = new StorageModule('storage', { dependsOn: networkModule });
+exports.storage = storageModule.getExports();
 
 const dataModule = config.isModuleEnabled('data')
     ? new DataModule('data', { dependsOn: [networkModule, storageModule] })
