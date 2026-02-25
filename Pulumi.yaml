@@ -83,7 +83,6 @@ config:
     technitium:image: technitium/dns-server:latest
     technitium:hostname: dns
     technitium:storageSize: 5Gi
-    technitium:forwarders: '' # root servers used by default
     # technitium:requiredNodeLabel: kubernetes.io/hostname=<hostname>
 
     nfd:enabled: false
