@@ -11,7 +11,9 @@ Technitium DNS Server is an open source authoritative as well as recursive DNS s
 
 ## Prerequisites
 
-Before deploying Technitium, configure systemd-resolved to free up port 53:
+Before deploying Technitium:
+
+1. **Configure systemd-resolved** to free up port 53:
 
 ```sh
 sudo mkdir -p /etc/systemd/resolved.conf.d/
@@ -25,6 +27,14 @@ sudo systemctl restart systemd-resolved
 # Verify port 53 is free (should not show 127.0.0.53:53)
 ss -tlnp | grep ':53'
 ```
+
+2. **Label the node** that will run Technitium DNS:
+
+```sh
+kubectl label node <node> svccontroller.k3s.cattle.io/enablelb=true
+```
+
+This is required to ensure Technitium runs on a specific node with port 53 available. Without this label, the deployment may fail on any node where port 53 is already in use.
 
 ## Features
 
