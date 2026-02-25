@@ -47,4 +47,7 @@ pulumi config set <app>:routingProvider tailscale
 - **[Tailscale Operator](./tailscale/tailscale.md)** - Ingress with Tailscale authentication and `.ts.net` domains
 - **[Traefik](./traefik/traefik.md)** - Ingress controller for custom domains with automatic TLS
 - **[Cert-manager](./cert-manager/cert-manager.md)** - Automated certificate management (required for Traefik)
-- **[Technitium](./technitium/technitium.md)** - DNS server and ad-blocker with automatic CoreDNS configuration
+
+## Experimental
+
+- **[Technitium](./technitium/technitium.md)** - (Experimental) DNS server and ad-blocker.

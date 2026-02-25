@@ -36,7 +36,7 @@ Private distributed infrastructure on consumer hardware.
 - [`cert-manager`](./components/network/cert-manager/cert-manager.md) - certificate management
 - [`tailscale-operator`](./components/network/tailscale/tailscale.md) - ingress support with Tailscale authentication
 - [`traefik`](./components/network/traefik/traefik.md) - reverse proxy for custom domain support
-- [`technitium`](./components/network/technitium/technitium.md) - DNS server and ad-blocker
+- [`technitium`](./components/network/technitium/technitium.md) - (Experimental) DNS server and ad-blocker
 
 [Storage](./components/storage/STORAGE.md):
 
