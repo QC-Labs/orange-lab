@@ -76,6 +76,7 @@ export interface ContainerSpec {
     env?: Record<string, pulumi.Input<string> | undefined>;
     envSecret?: Record<string, pulumi.Input<string> | undefined>;
     hostNetwork?: boolean;
+    clusterIP?: string;
     initContainers?: InitContainerSpec[];
     volumeMounts?: VolumeMount[];
     healthChecks?: boolean;

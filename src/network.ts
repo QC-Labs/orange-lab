@@ -45,6 +45,7 @@ export class Network {
         const service = this.createClusterService({
             component: spec.name,
             ports,
+            clusterIP: spec.clusterIP,
         });
         this.exportClusterEndpoints({ service, component: spec.name, ports });
 
@@ -59,7 +60,7 @@ export class Network {
             });
         }
         const tcpPorts = publicPorts.filter(p => p.tcp);
-        if (tcpPorts.length > 0) {
+        if (tcpPorts.length > 0 && !spec.hostNetwork) {
             this.provider.createTcpEndpoints({
                 serviceName: service.metadata.name,
                 tcpPorts,
@@ -80,6 +81,7 @@ export class Network {
     private createClusterService(args: {
         component?: string;
         ports: ServicePort[];
+        clusterIP?: string;
     }): kubernetes.core.v1.Service {
         const metadata = this.args.metadata.get({ component: args.component });
         return new kubernetes.core.v1.Service(
@@ -88,6 +90,7 @@ export class Network {
                 metadata,
                 spec: {
                     type: 'ClusterIP',
+                    clusterIP: args.clusterIP,
                     ports: args.ports.map(p => ({
                         name: p.name,
                         protocol: p.udp ? 'UDP' : 'TCP',
