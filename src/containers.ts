@@ -111,7 +111,7 @@ export class Containers {
         return ports.map(port => ({
             name: port.name,
             containerPort: port.port,
-            protocol: 'TCP',
+            protocol: port.udp ? 'UDP' : 'TCP',
         }));
     }
 

@@ -7,7 +7,6 @@ import { HttpEndpointInfo, RoutingProvider, ServicePort } from './types';
 
 export class TailscaleNetwork implements RoutingProvider {
     endpoints: Record<string, pulumi.Input<string>> = {};
-    clusterEndpoints: Record<string, pulumi.Input<string>> = {};
 
     constructor(
         private appName: string,
@@ -54,16 +53,8 @@ export class TailscaleNetwork implements RoutingProvider {
                 serviceName: params.serviceName,
                 servicePort: httpPort,
             });
-
-            const key = this.getEndpointKey({
-                component: params.component,
-                portName: httpPort.name,
-            });
-            this.endpoints[key] =
-                pulumi.interpolate`https://${httpEndpointInfo.hostname}`;
-            this.clusterEndpoints[key] =
-                pulumi.interpolate`http://${params.serviceName}.${this.args.metadata.namespace}:${httpPort.port}`;
         });
+        this.exportHttpEndpoints(params);
     }
 
     private createIngress(params: {
@@ -117,31 +108,28 @@ export class TailscaleNetwork implements RoutingProvider {
     }
 
     createTcpEndpoints(params: {
+        serviceName: pulumi.Input<string>;
         tcpPorts: ServicePort[];
         component?: string;
         hostname: string;
     }): void {
         if (params.tcpPorts.length === 0) return;
 
-        const service = this.createTcpLoadBalancer({
+        const _service = this.createTcpLoadBalancer({
             component: params.component,
             tcpPorts: params.tcpPorts,
             hostname: params.hostname,
         });
 
-        params.tcpPorts.forEach(port => {
-            const key = this.getEndpointKey({
-                component: params.component,
-                portName: port.name,
-            });
-            this.endpoints[key] = pulumi.interpolate`${params.hostname}:${port.port}`;
-            this.clusterEndpoints[key] =
-                pulumi.interpolate`${service.metadata.name}.${service.metadata.namespace}:${port.port}`;
+        this.exportTcpEndpoints({
+            component: params.component,
+            tcpPorts: params.tcpPorts,
+            hostname: params.hostname,
         });
     }
 
     private createTcpLoadBalancer(params: {
-        component: string | undefined;
+        component?: string;
         tcpPorts: ServicePort[];
         hostname: string;
     }): kubernetes.core.v1.Service {
@@ -172,10 +160,39 @@ export class TailscaleNetwork implements RoutingProvider {
         );
     }
 
-    private getEndpointKey(params: {
-        component: string | undefined;
-        portName: string;
-    }): string {
+    private exportHttpEndpoints(params: {
+        component?: string;
+        httpPorts: ServicePort[];
+        hostname: string;
+        serviceName: pulumi.Input<string>;
+    }): void {
+        params.httpPorts.forEach(port => {
+            const portHostname = port.hostname ?? params.hostname;
+            const httpEndpointInfo = this.getHttpEndpointInfo(portHostname);
+            const key = this.getEndpointKey({
+                component: params.component,
+                portName: port.name,
+            });
+            this.endpoints[key] =
+                pulumi.interpolate`https://${httpEndpointInfo.hostname}`;
+        });
+    }
+
+    private exportTcpEndpoints(params: {
+        component?: string;
+        tcpPorts: ServicePort[];
+        hostname: string;
+    }): void {
+        params.tcpPorts.forEach(port => {
+            const key = this.getEndpointKey({
+                component: params.component,
+                portName: port.name,
+            });
+            this.endpoints[key] = pulumi.interpolate`${params.hostname}:${port.port}`;
+        });
+    }
+
+    private getEndpointKey(params: { component?: string; portName: string }): string {
         return [
             this.appName,
             params.component,

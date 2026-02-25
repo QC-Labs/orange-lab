@@ -40,58 +40,35 @@ export class Network {
 
     createEndpoints(spec: ContainerSpec) {
         const ports = spec.ports ?? [];
-        const httpPorts = ports.filter(p => !p.tcp);
-        this.createHttpEndpoints(httpPorts, spec);
-        const tcpPorts = ports.filter(p => p.tcp);
+        if (ports.length === 0) return;
+
+        const service = this.createClusterService({
+            component: spec.name,
+            ports,
+        });
+        this.exportClusterEndpoints({ service, component: spec.name, ports });
+
+        const publicPorts = ports.filter(p => !p.private);
+        const httpPorts = publicPorts.filter(p => !p.tcp);
+        if (httpPorts.length > 0) {
+            this.provider.createHttpEndpoints({
+                serviceName: service.metadata.name,
+                httpPorts,
+                component: spec.name,
+                hostname: this.getHostname(spec.name),
+            });
+        }
+        const tcpPorts = publicPorts.filter(p => p.tcp);
         if (tcpPorts.length > 0) {
             this.provider.createTcpEndpoints({
+                serviceName: service.metadata.name,
                 tcpPorts,
                 component: spec.name,
                 hostname: this.getHostname(spec.name),
             });
         }
+
         Object.assign(this.endpoints, this.provider.endpoints);
-        Object.assign(this.clusterEndpoints, this.provider.clusterEndpoints);
-    }
-
-    private createHttpEndpoints(httpPorts: ServicePort[], spec: ContainerSpec) {
-        if (httpPorts.length === 0) return;
-        const service = this.createHttpService({
-            component: spec.name,
-            ports: httpPorts,
-        });
-        const publicHttpPorts = httpPorts.filter(p => !p.private);
-        if (publicHttpPorts.length > 0) {
-            this.provider.createHttpEndpoints({
-                serviceName: service.metadata.name,
-                httpPorts: publicHttpPorts,
-                component: spec.name,
-                hostname: this.getHostname(spec.name),
-            });
-        }
-        this.exportPrivateHttpEndpoints(
-            httpPorts.filter(p => p.private),
-            service,
-            spec,
-        );
-    }
-
-    private exportPrivateHttpEndpoints(
-        privateHttpPorts: ServicePort[],
-        service: kubernetes.core.v1.Service,
-        spec: ContainerSpec,
-    ) {
-        privateHttpPorts.forEach(port => {
-            const key = [
-                this.appName,
-                spec.name,
-                port.name === 'http' ? undefined : port.name,
-            ]
-                .filter(Boolean)
-                .join('-');
-            this.clusterEndpoints[key] =
-                pulumi.interpolate`http://${service.metadata.name}.${this.args.metadata.namespace}:${port.port}`;
-        });
     }
 
     private getHostname(component?: string) {
@@ -100,7 +77,7 @@ export class Network {
             : config.require(this.appName, 'hostname');
     }
 
-    private createHttpService(args: {
+    private createClusterService(args: {
         component?: string;
         ports: ServicePort[];
     }): kubernetes.core.v1.Service {
@@ -113,7 +90,7 @@ export class Network {
                     type: 'ClusterIP',
                     ports: args.ports.map(p => ({
                         name: p.name,
-                        protocol: 'TCP',
+                        protocol: p.udp ? 'UDP' : 'TCP',
                         port: p.port,
                         targetPort: p.port,
                     })),
@@ -122,5 +99,34 @@ export class Network {
             },
             this.opts,
         );
+    }
+
+    private exportClusterEndpoints(params: {
+        service: kubernetes.core.v1.Service;
+        component?: string;
+        ports: ServicePort[];
+    }): void {
+        params.ports.forEach(port => {
+            const key = this.getEndpointKey({
+                component: params.component,
+                portName: port.name,
+            });
+            const prefix = port.tcp ? '' : 'http://';
+            this.clusterEndpoints[key] =
+                pulumi.interpolate`${prefix}${params.service.metadata.name}.${this.args.metadata.namespace}:${port.port}`;
+        });
+    }
+
+    private getEndpointKey(params: {
+        component: string | undefined;
+        portName: string;
+    }): string {
+        return [
+            this.appName,
+            params.component,
+            params.portName === 'http' ? undefined : params.portName,
+        ]
+            .filter(Boolean)
+            .join('-');
     }
 }

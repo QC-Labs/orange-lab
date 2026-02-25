@@ -20,6 +20,7 @@ export interface ServicePort {
     hostname?: string;
     tcp?: boolean;
     tls?: boolean;
+    udp?: boolean;
     private?: boolean;
 }
 
@@ -219,7 +220,6 @@ export interface HttpEndpointInfo {
  */
 export interface RoutingProvider {
     endpoints: Record<string, pulumi.Input<string>>;
-    clusterEndpoints: Record<string, pulumi.Input<string>>;
     getHttpEndpointInfo: (hostname: string) => HttpEndpointInfo;
     createHttpEndpoints: (params: {
         serviceName: pulumi.Input<string>;
@@ -228,6 +228,7 @@ export interface RoutingProvider {
         hostname: string;
     }) => void;
     createTcpEndpoints: (params: {
+        serviceName: pulumi.Input<string>;
         tcpPorts: ServicePort[];
         component?: string;
         hostname: string;
