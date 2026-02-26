@@ -11,9 +11,7 @@ export class HomeAssistant extends pulumi.ComponentResource {
     constructor(name: string, args: HomeAssistantArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:iot:HomeAssistant', name, args, opts);
 
-        const app = new Application(this, name).addStorage({
-            overrideFullname: 'home-assistant-home-assistant-0',
-        });
+        const app = new Application(this, name).addStorage();
 
         if (app.storageOnly) return;
         const httpEndpointInfo = app.network.getHttpEndpointInfo();
@@ -37,6 +35,9 @@ export class HomeAssistant extends pulumi.ComponentResource {
                         enabled: true,
                         trusted_proxies: args.trustedProxies ?? [],
                     },
+                    controller: {
+                        type: 'Deployment',
+                    },
                     dnsPolicy: 'ClusterFirstWithHostNet',
                     fullnameOverride: name,
                     hostNetwork: true,
@@ -58,7 +59,7 @@ export class HomeAssistant extends pulumi.ComponentResource {
                     },
                     persistence: {
                         enabled: true,
-                        storageClass: app.storage?.getStorageClass(),
+                        existingClaim: app.storage?.getClaimName(),
                     },
                     replicaCount: 1,
                     securityContext: {
