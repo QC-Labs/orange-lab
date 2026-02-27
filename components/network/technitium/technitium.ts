@@ -37,6 +37,7 @@ export class Technitium extends pulumi.ComponentResource {
             volumeMounts: [{ mountPath: '/etc/dns' }],
             env: {
                 DNS_SERVER_DOMAIN: httpEndpointInfo.hostname,
+                DNS_SERVER_FORWARDERS: config.get(name, 'forwarders'),
             },
             envSecret: {
                 DNS_SERVER_ADMIN_PASSWORD: this.users.admin,

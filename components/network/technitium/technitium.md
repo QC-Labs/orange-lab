@@ -55,6 +55,10 @@ technitium:hostname: dns
 
 # (Optional) Storage size for configuration (default: 5Gi)
 technitium:storageSize: 5Gi
+
+# (Optional) DNS forwarders - comma-separated list
+# Leave empty or unset to use root DNS servers (default)
+technitium:forwarders: "1.1.1.1,8.8.8.8"
 ```
 
 ## Tailscale DNS Configuration
