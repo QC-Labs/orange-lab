@@ -1,6 +1,6 @@
-import * as pulumi from '@pulumi/pulumi';
 import { Application } from '@orangelab/application';
 import { config } from '@orangelab/config';
+import * as pulumi from '@pulumi/pulumi';
 
 export class Beszel extends pulumi.ComponentResource {
     public readonly app: Application;
@@ -32,7 +32,6 @@ export class Beszel extends pulumi.ComponentResource {
         if (hubKey) {
             this.app.addDaemonSet({
                 name: 'agent',
-                image: config.require(this.name, 'agent/image'),
                 hostNetwork: true,
                 env: {
                     LISTEN: '45876',
