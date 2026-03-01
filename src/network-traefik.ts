@@ -105,6 +105,7 @@ export class TraefikNetwork implements RoutingProvider {
         tcpPorts: ServicePort[];
         component?: string;
         hostname: string;
+        externalTrafficPolicy?: 'Local' | 'Cluster';
     }): void {
         if (params.tcpPorts.length === 0) return;
         assert(
@@ -121,6 +122,7 @@ export class TraefikNetwork implements RoutingProvider {
         this.createInternalLoadBalancer({
             component: params.component,
             tcpPorts: params.tcpPorts.filter(p => !p.tls),
+            externalTrafficPolicy: params.externalTrafficPolicy,
         });
 
         this.exportTcpEndpoints({
@@ -177,6 +179,7 @@ export class TraefikNetwork implements RoutingProvider {
     private createInternalLoadBalancer(params: {
         component?: string;
         tcpPorts: ServicePort[];
+        externalTrafficPolicy?: 'Local' | 'Cluster';
     }): void {
         const metadata = this.args.metadata.get({ component: params.component });
         if (params.tcpPorts.length === 0) return;
@@ -190,6 +193,7 @@ export class TraefikNetwork implements RoutingProvider {
                 },
                 spec: {
                     type: 'LoadBalancer',
+                    externalTrafficPolicy: params.externalTrafficPolicy,
                     ports: params.tcpPorts.flatMap(p => [
                         {
                             name: p.name,

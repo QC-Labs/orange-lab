@@ -112,6 +112,7 @@ export class TailscaleNetwork implements RoutingProvider {
         tcpPorts: ServicePort[];
         component?: string;
         hostname: string;
+        externalTrafficPolicy?: 'Local' | 'Cluster';
     }): void {
         if (params.tcpPorts.length === 0) return;
 
@@ -119,6 +120,7 @@ export class TailscaleNetwork implements RoutingProvider {
             component: params.component,
             tcpPorts: params.tcpPorts,
             hostname: params.hostname,
+            externalTrafficPolicy: params.externalTrafficPolicy,
         });
 
         this.exportTcpEndpoints({
@@ -132,6 +134,7 @@ export class TailscaleNetwork implements RoutingProvider {
         component?: string;
         tcpPorts: ServicePort[];
         hostname: string;
+        externalTrafficPolicy?: 'Local' | 'Cluster';
     }): kubernetes.core.v1.Service {
         const metadata = this.args.metadata.get({ component: params.component });
         return new kubernetes.core.v1.Service(
@@ -144,9 +147,10 @@ export class TailscaleNetwork implements RoutingProvider {
                 spec: {
                     type: 'LoadBalancer',
                     loadBalancerClass: 'tailscale',
+                    externalTrafficPolicy: params.externalTrafficPolicy,
                     ports: params.tcpPorts.map(p => ({
                         name: p.name,
-                        protocol: 'TCP',
+                        protocol: p.udp ? 'UDP' : 'TCP',
                         port: p.port,
                         targetPort: p.port,
                     })),

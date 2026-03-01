@@ -66,6 +66,7 @@ export class Network {
                 tcpPorts,
                 component: spec.name,
                 hostname: this.getHostname(spec.name),
+                externalTrafficPolicy: spec.externalTrafficPolicy,
             });
         }
 

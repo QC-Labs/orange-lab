@@ -75,6 +75,7 @@ export interface ContainerSpec {
     commandArgs?: pulumi.Input<string[]>;
     env?: Record<string, pulumi.Input<string> | undefined>;
     envSecret?: Record<string, pulumi.Input<string> | undefined>;
+    externalTrafficPolicy?: 'Local' | 'Cluster';
     hostNetwork?: boolean;
     clusterIP?: string;
     initContainers?: InitContainerSpec[];
@@ -233,5 +234,6 @@ export interface RoutingProvider {
         tcpPorts: ServicePort[];
         component?: string;
         hostname: string;
+        externalTrafficPolicy?: 'Local' | 'Cluster';
     }) => void;
 }
