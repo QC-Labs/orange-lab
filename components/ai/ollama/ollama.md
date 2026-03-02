@@ -71,13 +71,15 @@ Add local models with:
 # Chat
 ollama pull deepseek-r1
 ollama pull gpt-oss
-ollama pull qwen3
+ollama pull qwen3.5
 
 # Vision models
+ollama pull qwen3.5
 ollama pull qwen3-vl
 ollama pull ministral-3
 
 # Coding
+ollama pull glm-4.7-flash
 ollama pull gpt-oss:20b
 ollama pull qwen3-coder
 
