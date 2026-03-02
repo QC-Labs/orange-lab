@@ -4,9 +4,8 @@
 
 - Deployment: `pulumi up --yes` (only with user approval)
 - Preview changes: `pulumi preview --diff` (useful for checking for any unintended changes after major code updates or refactoring)
-- Build/Test/TypeCheck: `npm test`
-
-Note: `npm test` only needs to run when TypeScript code changes. Documentation-only changes (markdown files) do not require running tests.
+- Build/Test/TypeCheck (TypeScript only): `npm test`
+    - ⚠️ SKIP for markdown/documentation changes - no need to run
 
 ## Architectural Principles
 
@@ -122,6 +121,7 @@ When a value from `Application` (like `this.app.debug`) is needed during chained
 - **Conditional requirements**: When a feature is enabled, all its related settings should typically be required (`config.require`), not optional. The `enabled` flag acts as the conditional gate.
 - **Minimal config generation**: Only generate config files when a feature requiring them is enabled. Don't create ConfigMaps/Secrets for unused features.
 - **Derive don't duplicate**: Values that can be derived from existing resources (like URLs from `HttpEndpointInfo`) should be derived, not manually configured.
+- **Naming Configuration Settings**: When settings map to environment variables in containers, use the exact environment variable name as the setting name. This makes it immediately obvious which env var a setting configures. Example: `DNS_SERVER_FORWARDERS` instead of `forwarders` when setting `DNS_SERVER_FORWARDERS` env var.
 
 ### Secrets and Security
 
