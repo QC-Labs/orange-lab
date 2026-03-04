@@ -1,10 +1,12 @@
 # Rustfs
 
-|           |                                                                                |
-| --------- | ------------------------------------------------------------------------------ |
-| Homepage  | https://rustfs.dev/                                                            |
-| Source    | https://github.com/rustfs/rustfs/                                              |
-| Endpoints | `https://rustfs.<domain>/` (console) <br> `https://rustfs-api.<domain>/` (api) |
+|                   |                                                                                |
+| ----------------- | ------------------------------------------------------------------------------ |
+| Homepage          | https://rustfs.dev/                                                            |
+| Source            | https://github.com/rustfs/rustfs/                                              |
+| Docker image      | https://hub.docker.com/r/rustfs/rustfs                                         |
+| Docker image (rc) | https://hub.docker.com/r/rustfs/rc                                             |
+| Endpoints         | `https://rustfs.<domain>/` (console) <br> `https://rustfs-api.<domain>/` (api) |
 
 Rustfs is a distributed object storage system compatible with Amazon S3, implemented in Rust.
 
