@@ -1,7 +1,7 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '@orangelab/application';
 import { config } from '@orangelab/config';
-import { HttpEndpointInfo, StorageType } from '@orangelab/types';
+import { HttpEndpointInfo } from '@orangelab/types';
 
 export class Ollama extends pulumi.ComponentResource {
     public readonly endpointUrl?: string;
@@ -17,9 +17,7 @@ export class Ollama extends pulumi.ComponentResource {
 
         const hostname = config.require(name, 'hostname');
 
-        this.app = new Application(this, name).addStorage({
-            type: StorageType.GPU,
-        });
+        this.app = new Application(this, name).addStorage();
 
         if (this.app.storageOnly) return;
 

@@ -1,7 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '@orangelab/application';
 import { config } from '@orangelab/config';
-import { StorageType } from '@orangelab/types';
 import { BitcoinConf } from '../utils/bitcoin-conf';
 import { RpcUser } from '../utils/rpc-user';
 
@@ -23,7 +22,7 @@ export class BitcoinKnots extends pulumi.ComponentResource {
 
         this.app = new Application(this, name);
 
-        this.app.addStorage({ type: StorageType.Large }).addConfigVolume({
+        this.app.addStorage().addConfigVolume({
             name: 'config',
             files: {
                 'bitcoin.conf': BitcoinConf.create({

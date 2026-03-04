@@ -6,7 +6,7 @@ import { Nodes } from './nodes';
 import { PostgresCluster } from './postgres';
 import { Redis } from './redis';
 import { Storage } from './storage';
-import { DatabaseConfig, InitContainerSpec, StorageType } from './types';
+import { DatabaseConfig, InitContainerSpec } from './types';
 
 export class Databases {
     private databases: Record<
@@ -33,7 +33,6 @@ export class Databases {
         this.args.storage.addPersistentVolume({
             name,
             overrideFullname: `storage-${this.appName}-${name}-0`,
-            type: StorageType.Database,
         });
         const enabledDefault = config.getBoolean(this.appName, `storageOnly`)
             ? false
@@ -68,7 +67,6 @@ export class Databases {
             this.args.storage.addPersistentVolume({
                 name,
                 overrideFullname: `${this.appName}-${name}-1`,
-                type: StorageType.Database,
                 labels: {
                     'cnpg.io/cluster': `${this.appName}-${name}`,
                     'cnpg.io/instanceName': `${this.appName}-${name}-1`,
@@ -107,7 +105,7 @@ export class Databases {
                     ?.split(','),
                 storageClassName: existingVolume
                     ? this.args.storage.getStorageClass(name)
-                    : config.storageClass.Database,
+                    : config.require('orangelab', 'postgres/storageClass'),
                 storageSize: config.require(this.appName, `${name}/storageSize`),
             },
             this.opts,

@@ -1,7 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '@orangelab/application';
 import { config } from '@orangelab/config';
-import { StorageType } from '@orangelab/types';
 
 export class InvokeAi extends pulumi.ComponentResource {
     app: Application;
@@ -11,7 +10,7 @@ export class InvokeAi extends pulumi.ComponentResource {
 
         const huggingfaceToken = config.getSecret(name, 'huggingfaceToken');
 
-        this.app = new Application(this, name).addStorage({ type: StorageType.GPU });
+        this.app = new Application(this, name).addStorage();
 
         this.app.addDeployment({
             ports: [{ name: 'http', port: 9090 }],

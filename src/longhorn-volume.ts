@@ -1,19 +1,13 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
-import { config } from './config';
-import { StorageType } from './types';
 
 interface LonghornVolumeArgs {
     name: string;
     namespace: pulumi.Output<string> | string;
     size: string;
     /**
-     * Determine storage class based on workload type
-     */
-    type?: StorageType;
-    /**
-     * Override storage class used
+     * Storage class to use. Defaults to 'longhorn' if not specified.
      */
     storageClass?: string;
     /**
@@ -67,10 +61,13 @@ export class LonghornVolume extends pulumi.ComponentResource {
 
     private createVolume() {
         assert(!this.args.fromVolume);
+        assert(
+            this.args.storageClass,
+            'storageClass must be specified when creating a volume',
+        );
         return this.createPVC({
             name: this.args.name,
-            storageClassName:
-                this.args.storageClass ?? config.getStorageClass(this.args.type),
+            storageClassName: this.args.storageClass,
         });
     }
 

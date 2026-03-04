@@ -2,13 +2,6 @@ import * as pulumi from '@pulumi/pulumi';
 
 export type GpuType = 'amd' | 'nvidia';
 
-export enum StorageType {
-    Default,
-    GPU,
-    Large,
-    Database,
-}
-
 export interface ServicePort {
     /**
      * The name of the port. Used to generate endpoint keys and URLs.
@@ -127,11 +120,6 @@ export interface PersistentVolumeSpec {
      * `${name}/storageSize` or `storageSize` if `name` is not set.
      */
     size?: string;
-    /**
-     * The type of persistent storage to use.
-     * Defaults to `StorageType.Default` if not specified.
-     */
-    type?: StorageType;
     /**
      * Specifies an existing volume name to potentially restore data from.
      * This is typically used in conjunction with backup/restore mechanisms.

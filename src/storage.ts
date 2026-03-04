@@ -77,21 +77,24 @@ export class Storage extends pulumi.ComponentResource {
         const labels = volume?.name
             ? this.args.metadata.get({ component: volume.name }).labels
             : this.args.metadata.get().labels;
+        const fromVolume =
+            volume?.fromVolume ?? config.get(this.appName, `${prefix}fromVolume`);
+        const storageClass =
+            config.get(this.appName, `${prefix}storageClass`) ??
+            config.require('orangelab', 'storageClass');
         const storage = new LonghornVolume(
             `${volumeName}-storage`,
             {
                 affinity: this.args.nodes.getVolumeAffinity(volume?.name),
                 annotations: volume?.annotations,
                 enableBackup: config.isBackupEnabled(this.appName, volume?.name),
-                fromVolume:
-                    volume?.fromVolume ?? config.get(this.appName, `${prefix}fromVolume`),
+                fromVolume,
                 labels: { ...labels, ...volume?.labels },
                 name: volume?.overrideFullname ?? volumeName,
                 namespace: this.args.metadata.namespace,
                 size:
                     volume?.size ?? config.require(this.appName, `${prefix}storageSize`),
-                storageClass: config.get(this.appName, `${prefix}storageClass`),
-                type: volume?.type,
+                storageClass: fromVolume ? undefined : storageClass,
             },
             { parent: this },
         );

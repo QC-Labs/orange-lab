@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 import * as pulumi from '@pulumi/pulumi';
-import { StorageType } from './types';
 
 const moduleDependencies: Record<string, string[]> = {
     ai: ['automatic1111', 'invokeai', 'kubeai', 'n8n', 'ollama', 'open-webui', 'sdnext'],
@@ -27,12 +26,6 @@ class Config {
     }
 
     public helmHistoryLimit = 5;
-    public storageClass = {
-        Default: 'longhorn',
-        GPU: 'longhorn-gpu',
-        Large: 'longhorn-large',
-        Database: 'longhorn',
-    };
     public routingProvider = this.require('orangelab', 'routingProvider');
     public customDomain = this.get('orangelab', 'customDomain');
     public tailnetDomain = this.require('tailscale', 'tailnet');
@@ -47,19 +40,6 @@ class Config {
         const volumePrefix = volumeName ? `${volumeName}/` : '';
         const appSetting = this.getBoolean(appName, `${volumePrefix}backupVolume`);
         return appSetting ?? this.getBoolean('longhorn', 'backupAllVolumes') ?? false;
-    }
-
-    public getStorageClass(storageType?: StorageType): string {
-        switch (storageType) {
-            case StorageType.GPU:
-                return this.storageClass.GPU;
-            case StorageType.Large:
-                return this.storageClass.Large;
-            case StorageType.Database:
-                return this.storageClass.Database;
-            default:
-                return this.storageClass.Default;
-        }
     }
 
     public enableMonitoring() {
@@ -130,11 +110,6 @@ class Config {
         }
         if (this.get('grafana', 'auth')) {
             console.warn('grafana:auth is not used anymore');
-        }
-        if (this.get('orangelab', 'storageClass')) {
-            console.warn(
-                'orangelab:storageClass is deprecated. Use per-app <app>:storageClass if needed.',
-            );
         }
         if (this.get('orangelab', 'storageClass-gpu')) {
             console.warn(

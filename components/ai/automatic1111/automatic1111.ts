@@ -1,7 +1,6 @@
 import * as pulumi from '@pulumi/pulumi';
 import { Application } from '@orangelab/application';
 import { config } from '@orangelab/config';
-import { StorageType } from '@orangelab/types';
 
 export class Automatic1111 extends pulumi.ComponentResource {
     app: Application;
@@ -11,33 +10,31 @@ export class Automatic1111 extends pulumi.ComponentResource {
 
         const cliArgs = config.require(name, 'cliArgs');
 
-        this.app = new Application(this, name)
-            .addStorage({ type: StorageType.GPU })
-            .addDeployment({
-                commandArgs: ['--listen', '--api', '--skip-torch-cuda-test'],
-                env: {
-                    COMMANDLINE_ARGS: cliArgs,
+        this.app = new Application(this, name).addStorage().addDeployment({
+            commandArgs: ['--listen', '--api', '--skip-torch-cuda-test'],
+            env: {
+                COMMANDLINE_ARGS: cliArgs,
+            },
+            ports: [{ name: 'http', port: 8080 }],
+            runAsUser: 1000,
+            volumeOwnerUserId: 1000,
+            volumeMounts: [
+                {
+                    mountPath: '/app/stable-diffusion-webui/models',
+                    subPath: 'models',
                 },
-                ports: [{ name: 'http', port: 8080 }],
-                runAsUser: 1000,
-                volumeOwnerUserId: 1000,
-                volumeMounts: [
-                    {
-                        mountPath: '/app/stable-diffusion-webui/models',
-                        subPath: 'models',
-                    },
-                    {
-                        mountPath: '/app/stable-diffusion-webui/extensions',
-                        subPath: 'extensions',
-                    },
-                    {
-                        mountPath: '/app/stable-diffusion-webui/outputs',
-                        subPath: 'outputs',
-                    },
-                ],
-                resources: {
-                    requests: { cpu: '100m', memory: '2Gi' },
+                {
+                    mountPath: '/app/stable-diffusion-webui/extensions',
+                    subPath: 'extensions',
                 },
-            });
+                {
+                    mountPath: '/app/stable-diffusion-webui/outputs',
+                    subPath: 'outputs',
+                },
+            ],
+            resources: {
+                requests: { cpu: '100m', memory: '2Gi' },
+            },
+        });
     }
 }

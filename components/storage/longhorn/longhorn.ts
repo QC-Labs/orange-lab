@@ -163,7 +163,7 @@ export class Longhorn extends pulumi.ComponentResource {
             `${this.name}-gpu-storage`,
             {
                 metadata: {
-                    name: config.storageClass.GPU,
+                    name: `${this.name}-gpu`,
                     namespace: this.app.metadata.namespace,
                 },
                 allowVolumeExpansion: true,
@@ -187,7 +187,7 @@ export class Longhorn extends pulumi.ComponentResource {
             `${this.name}-large-storage`,
             {
                 metadata: {
-                    name: config.storageClass.Large,
+                    name: `${this.name}-large`,
                     namespace: this.app.metadata.namespace,
                 },
                 allowVolumeExpansion: true,
