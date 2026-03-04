@@ -31,6 +31,12 @@ pulumi config set longhorn:replicaCount 3
 # increase size of storage from default 50Gi to 100Gi
 pulumi config set longhorn:storageSize 100Gi
 
+# Enable replica auto-balancing for better distribution across nodes
+# "disabled" - (default) minimises traffic between nodes, manage per volume in UI
+# "least-effort" - balance so replicas have at least single node redundancy
+# "best-effort" - continuously spread replicas evenly across all nodes
+pulumi config set longhorn:replicaAutoBalance best-effort
+
 pulumi up
 
 ```
