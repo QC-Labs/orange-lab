@@ -30,10 +30,13 @@ export class Databases {
         if (this.databases[name]) {
             throw new Error(`Database ${this.appName}-${name} already exists.`);
         }
-        this.args.storage.addPersistentVolume({
-            name,
-            overrideFullname: `storage-${this.appName}-${name}-0`,
-        });
+        const existingVolume = config.get(this.appName, `${name}/fromVolume`);
+        if (existingVolume) {
+            this.args.storage.addPersistentVolume({
+                name,
+                overrideFullname: `storage-${this.appName}-${name}-0`,
+            });
+        }
         const enabledDefault = config.getBoolean(this.appName, `storageOnly`)
             ? false
             : true;
@@ -48,9 +51,13 @@ export class Databases {
                 name,
                 password: config.getSecret(this.appName, `${name}/password`),
                 rootPassword: config.getSecret(this.appName, `${name}/rootPassword`),
-                storageClassName: this.args.storage.getStorageClass(name),
+                storageClassName: existingVolume
+                    ? this.args.storage.getStorageClass(name)
+                    : config.require('orangelab', 'mariadb/storageClass'),
                 storageOnly: this.args.storageOnly,
-                storageSize: this.args.storage.getStorageSize(name),
+                storageSize: existingVolume
+                    ? this.args.storage.getStorageSize(name)
+                    : config.require(this.appName, `${name}/storageSize`),
             },
             this.opts,
         );
