@@ -1,6 +1,5 @@
 import { Application } from '@orangelab/application';
 import { config } from '@orangelab/config';
-import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
 
@@ -20,15 +19,13 @@ export class Technitium extends pulumi.ComponentResource {
         this.app = new Application(this, name).addStorage();
         const httpEndpointInfo = this.app.network.getHttpEndpointInfo();
 
-        this.users = {
-            admin: this.createPassword(),
-        };
-
-        const technitiumIP = '10.43.0.53';
-        this.createCoreDnsConfig(technitiumIP);
+        const adminPassword =
+            config.getSecret(name, 'adminPassword') ?? this.createPassword();
+        this.users = { admin: adminPassword };
 
         this.app.addDeployment({
-            clusterIP: technitiumIP,
+            clusterIP: '10.43.0.53',
+            externalTrafficPolicy: 'Local',
             ports: [
                 { name: 'http', port: 5380 },
                 { name: 'dns-tcp', port: 53, tcp: true },
@@ -37,7 +34,11 @@ export class Technitium extends pulumi.ComponentResource {
             volumeMounts: [{ mountPath: '/etc/dns' }],
             env: {
                 DNS_SERVER_DOMAIN: httpEndpointInfo.hostname,
-                DNS_SERVER_FORWARDERS: config.get(name, 'forwarders'),
+                DNS_SERVER_FORWARDERS: config.require(name, 'DNS_SERVER_FORWARDERS'),
+                DNS_SERVER_FORWARDER_PROTOCOL: config.require(
+                    name,
+                    'DNS_SERVER_FORWARDER_PROTOCOL',
+                ),
             },
             envSecret: {
                 DNS_SERVER_ADMIN_PASSWORD: this.users.admin,
@@ -49,25 +50,6 @@ export class Technitium extends pulumi.ComponentResource {
         });
 
         this.endpointUrl = httpEndpointInfo.url;
-    }
-
-    private createCoreDnsConfig(technitiumIP: string) {
-        new kubernetes.core.v1.ConfigMap(
-            'coredns-custom',
-            {
-                metadata: {
-                    name: 'coredns-custom',
-                    namespace: 'kube-system',
-                },
-                data: {
-                    'forward.override': `forward . ${technitiumIP} {
-    health_check 5s
-}
-forward . /etc/resolv.conf`,
-                },
-            },
-            { parent: this },
-        );
     }
 
     private createPassword() {
