@@ -28,8 +28,8 @@ export class Technitium extends pulumi.ComponentResource {
             externalTrafficPolicy: 'Local',
             ports: [
                 { name: 'http', port: 5380 },
-                { name: 'dns-tcp', port: 53, tcp: true },
-                { name: 'dns-udp', port: 53, tcp: true, udp: true },
+                { name: 'dns-tcp', port: 53, protocol: 'tcp' },
+                { name: 'dns-udp', port: 53, protocol: 'udp' },
             ],
             volumeMounts: [{ mountPath: '/etc/dns' }],
             env: {

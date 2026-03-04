@@ -49,8 +49,8 @@ export class BitcoinCore extends pulumi.ComponentResource {
             },
             image,
             ports: [
-                { name: 'rpc', port: 8332, tcp: true },
-                { name: 'p2p', port: 8333, tcp: true },
+                { name: 'rpc', port: 8332, protocol: 'tcp' },
+                { name: 'p2p', port: 8333, protocol: 'tcp' },
             ],
             commandArgs: commandArgs.split(' '),
             env: {

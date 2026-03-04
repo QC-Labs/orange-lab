@@ -116,7 +116,7 @@ export class TailscaleNetwork implements RoutingProvider {
     }): void {
         if (params.tcpPorts.length === 0) return;
 
-        const _service = this.createTcpLoadBalancer({
+        this.createTcpLoadBalancer({
             component: params.component,
             tcpPorts: params.tcpPorts,
             hostname: params.hostname,
@@ -150,7 +150,7 @@ export class TailscaleNetwork implements RoutingProvider {
                     externalTrafficPolicy: params.externalTrafficPolicy,
                     ports: params.tcpPorts.map(p => ({
                         name: p.name,
-                        protocol: p.udp ? 'UDP' : 'TCP',
+                        protocol: p.protocol === 'udp' ? 'UDP' : 'TCP',
                         port: p.port,
                         targetPort: p.port,
                     })),

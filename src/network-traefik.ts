@@ -115,13 +115,15 @@ export class TraefikNetwork implements RoutingProvider {
 
         this.createTlsRoutes({
             component: params.component,
-            tlsPorts: params.tcpPorts.filter(p => p.tls),
+            tlsPorts: params.tcpPorts.filter(p => p.protocol === 'tls'),
             serviceName: params.serviceName,
             hostname: `${params.hostname}.${config.customDomain}`,
         });
         this.createInternalLoadBalancer({
             component: params.component,
-            tcpPorts: params.tcpPorts.filter(p => !p.tls),
+            tcpPorts: params.tcpPorts.filter(
+                p => p.protocol === 'tcp' || p.protocol === 'udp',
+            ),
             externalTrafficPolicy: params.externalTrafficPolicy,
         });
 
@@ -197,7 +199,7 @@ export class TraefikNetwork implements RoutingProvider {
                     ports: params.tcpPorts.flatMap(p => [
                         {
                             name: p.name,
-                            protocol: p.udp ? 'UDP' : 'TCP',
+                            protocol: p.protocol === 'udp' ? 'UDP' : 'TCP',
                             port: p.port,
                             targetPort: p.port,
                         },
@@ -240,9 +242,10 @@ export class TraefikNetwork implements RoutingProvider {
                 component: params.component,
                 portName: port.name,
             });
-            this.endpoints[key] = port.tls
-                ? pulumi.interpolate`${params.hostname}:3443`
-                : pulumi.interpolate`${params.hostname}:${port.port}`;
+            this.endpoints[key] =
+                port.protocol === 'tls'
+                    ? pulumi.interpolate`${params.hostname}:3443`
+                    : pulumi.interpolate`${params.hostname}:${port.port}`;
         });
     }
 

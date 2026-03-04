@@ -50,7 +50,7 @@ export class Network {
         this.exportClusterEndpoints({ service, component: spec.name, ports });
 
         const publicPorts = ports.filter(p => !p.private);
-        const httpPorts = publicPorts.filter(p => !p.tcp);
+        const httpPorts = publicPorts.filter(p => !p.protocol || p.protocol === 'http');
         if (httpPorts.length > 0) {
             this.provider.createHttpEndpoints({
                 serviceName: service.metadata.name,
@@ -59,7 +59,9 @@ export class Network {
                 hostname: this.getHostname(spec.name),
             });
         }
-        const tcpPorts = publicPorts.filter(p => p.tcp);
+        const tcpPorts = publicPorts.filter(
+            p => p.protocol === 'tcp' || p.protocol === 'tls' || p.protocol === 'udp',
+        );
         if (tcpPorts.length > 0 && !spec.hostNetwork) {
             this.provider.createTcpEndpoints({
                 serviceName: service.metadata.name,
@@ -94,7 +96,7 @@ export class Network {
                     clusterIP: args.clusterIP,
                     ports: args.ports.map(p => ({
                         name: p.name,
-                        protocol: p.udp ? 'UDP' : 'TCP',
+                        protocol: p.protocol === 'udp' ? 'UDP' : 'TCP',
                         port: p.port,
                         targetPort: p.port,
                     })),
@@ -115,7 +117,7 @@ export class Network {
                 component: params.component,
                 portName: port.name,
             });
-            const prefix = port.tcp ? '' : 'http://';
+            const prefix = port.protocol && port.protocol !== 'http' ? '' : 'http://';
             this.clusterEndpoints[key] =
                 pulumi.interpolate`${prefix}${params.service.metadata.name}.${this.args.metadata.namespace}:${port.port}`;
         });

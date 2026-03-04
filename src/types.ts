@@ -11,9 +11,14 @@ export interface ServicePort {
     name: string;
     port: number;
     hostname?: string;
-    tcp?: boolean;
-    tls?: boolean;
-    udp?: boolean;
+    /**
+     * The protocol for this port. Defaults to 'http'.
+     * - 'http': Standard HTTP endpoint (default, no explicit protocol needed)
+     * - 'tcp': TCP endpoint via LoadBalancer
+     * - 'tls': TLS-encrypted TCP endpoint via TLSRoute
+     * - 'udp': UDP endpoint via LoadBalancer
+     */
+    protocol?: 'http' | 'tcp' | 'tls' | 'udp';
     private?: boolean;
 }
 
