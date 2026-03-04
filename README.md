@@ -1,7 +1,5 @@
 # OrangeLab
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/QC-Labs/orange-lab)
-
 Private distributed infrastructure on consumer hardware.
 
 <img src="docs/orange-lab-910-512.png" alt="OrangeLab logo" height="250"/>
@@ -62,14 +60,6 @@ Private distributed infrastructure on consumer hardware.
 
 ### Optional modules
 
-[IoT](./components/iot/IOT.md):
-
-- [`home-assistant`](./components/iot/home-assistant/home-assistant.md) - sensor and home automation platform
-
-[Media](./components/media/MEDIA.md):
-
-- [`immich`](./components/media/immich/immich.md) - Self-hosted photo and video backup solution
-
 [AI](./components/ai/AI.md):
 
 - [`invokeai`](./components/ai/invokeai/invokeai.md) - generative AI plaform, community edition
@@ -86,6 +76,14 @@ Private distributed infrastructure on consumer hardware.
 - [`bitcoin-knots`](./components/bitcoin/bitcoin-knots/bitcoin-knots.md) - Bitcoin Knots node
 - [`electrs`](./components/bitcoin/electrs/electrs.md) - Electrs (Electrum) server implementation
 - [`mempool`](./components/bitcoin/mempool/mempool.md) - Blockchain explorer
+
+[IoT](./components/iot/IOT.md):
+
+- [`home-assistant`](./components/iot/home-assistant/home-assistant.md) - sensor and home automation platform
+
+[Media](./components/media/MEDIA.md):
+
+- [`immich`](./components/media/immich/immich.md) - Self-hosted photo and video backup solution
 
 [Office](./components/office/OFFICE.md):
 
@@ -129,7 +127,7 @@ For general application configuration and deployment instructions, see [Configur
 
 # Documentation
 
-- [Ask Devin/DeepWiki](https://deepwiki.com/QC-Labs/orange-lab) - AI generated documentation and good place to ask questions
+- [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/QC-Labs/orange-lab) - AI generated documentation and good place to ask questions
 - [Configuration Guide](./docs/configuration.md) - Application configuration and deployment
 - [Upgrade Guide](./docs/upgrade.md) - Upgrading your OrangeLab installation
 - [Disabling Longhorn](./docs/longhorn-disable.md) - Running OrangeLab without distributed storage
