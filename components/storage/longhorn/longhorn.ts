@@ -90,6 +90,7 @@ export class Longhorn extends pulumi.ComponentResource {
                     autoCleanupSnapshotWhenDeleteBackup: 'true',
                     autoCleanupSystemGeneratedSnapshot: 'true',
                     backupConcurrentLimit: '2',
+                    concurrentReplicaRebuildPerNodeLimit: '2',
                     defaultDataLocality: 'best-effort',
                     defaultReplicaCount: config.require('longhorn', 'replicaCount'),
                     deletingConfirmationFlag: 'false',
