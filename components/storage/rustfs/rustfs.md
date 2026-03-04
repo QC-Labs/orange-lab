@@ -43,34 +43,3 @@ rc alias set rustfs https://rustfs.<domain> $ACCESS_KEY $SECRET_KEY
 # Test connection
 rc ls rustfs
 ```
-
-## Longhorn Backups
-
-The automatic provisioner for Longhorn backup user is currently broken because `rustfs/rc` CLI doesn't support all required operations yet. Manual setup required:
-
-### Fix Longhorn Backup User
-
-The provisioner creates the `longhorn` user but cannot attach the required policy because rc CLI doesn't support policy operations yet.
-
-**Steps:**
-
-1. Get the password from the Kubernetes secret:
-
-```sh
-kubectl get secret longhorn-rustfs-backup -n longhorn-system -o jsonpath='{.data.AWS_SECRET_ACCESS_KEY}' | base64 -d
-```
-
-2. Open RustFS web console at `https://rustfs.<domain>/`
-
-3. Log in with root credentials
-
-4. Go to Users section
-
-5. Delete the existing `longhorn` user (created by provisioner without policy)
-
-6. Create new user with:
-    - Username: `longhorn`
-    - Password: (from step 1)
-    - Policy: `readwrite`
-
-The user is now ready for Longhorn backups.

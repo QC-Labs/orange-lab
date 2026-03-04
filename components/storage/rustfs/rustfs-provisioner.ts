@@ -50,22 +50,11 @@ export class RustfsProvisioner extends pulumi.ComponentResource implements S3Pro
         password: pulumi.Output<string>,
         bucket: string,
     ): kubernetes.batch.v1.Job {
-        const secret = new kubernetes.core.v1.Secret(
-            `${this.name}-${username}-env`,
-            {
-                metadata: {
-                    ...this.args.metadata.get({ component: username }),
-                    name: `${this.name}-${username}-env`,
-                },
-                stringData: {
-                    ROOT_PASSWORD: this.args.rootPassword,
-                    USER_PASSWORD: password,
-                },
-            },
-            { parent: this },
-        );
-
-        const configMap = this.createScript(username, bucket);
+        const envSecret = this.createEnvSecret(username, password);
+        const script = this.createScript(username, bucket);
+        const scriptConfigMap = this.createScriptConfigMap(username, script);
+        const policyJson = this.createPolicyJson(bucket);
+        const policyConfigMap = this.createPolicyConfigMap(username, policyJson);
 
         const image = config.require(this.args.appName, 'provisioner/image');
         return new kubernetes.batch.v1.Job(
@@ -85,17 +74,22 @@ export class RustfsProvisioner extends pulumi.ComponentResource implements S3Pro
                                     image,
                                     command: ['sh', '/config/script.sh'],
                                     envFrom: [
-                                        { secretRef: { name: secret.metadata.name } },
+                                        { secretRef: { name: envSecret.metadata.name } },
                                     ],
                                     volumeMounts: [
                                         { name: 'config', mountPath: '/config' },
+                                        { name: 'policy', mountPath: '/policy' },
                                     ],
                                 },
                             ],
                             volumes: [
                                 {
                                     name: 'config',
-                                    configMap: { name: configMap.metadata.name },
+                                    configMap: { name: scriptConfigMap.metadata.name },
+                                },
+                                {
+                                    name: 'policy',
+                                    configMap: { name: policyConfigMap.metadata.name },
                                 },
                             ],
                             restartPolicy: 'Never',
@@ -107,16 +101,48 @@ export class RustfsProvisioner extends pulumi.ComponentResource implements S3Pro
         );
     }
 
-    private createScript(username: string, bucket: string) {
+    private createEnvSecret(username: string, password: pulumi.Output<string>) {
+        return new kubernetes.core.v1.Secret(
+            `${this.name}-${username}-env`,
+            {
+                metadata: {
+                    ...this.args.metadata.get({ component: username }),
+                    name: `${this.name}-${username}-env`,
+                },
+                stringData: {
+                    ROOT_PASSWORD: this.args.rootPassword,
+                    USER_PASSWORD: password,
+                },
+            },
+            { parent: this },
+        );
+    }
+
+    private createPolicyJson(bucket: string): string {
+        return JSON.stringify({
+            Version: '2012-10-17',
+            Statement: [
+                {
+                    Effect: 'Allow',
+                    Action: ['s3:*'],
+                    Resource: [`arn:aws:s3:::${bucket}`, `arn:aws:s3:::${bucket}/*`],
+                },
+            ],
+        });
+    }
+
+    private createScript(username: string, bucket: string): pulumi.Output<string> {
+        const policyName = `${username}-policy`;
         const connectCmd = pulumi.interpolate`rc alias set ${this.name} "${this.args.s3EndpointUrl}" "${this.args.rootUser}" "$ROOT_PASSWORD" --insecure`;
+
         const commands = [
             `rc admin user add ${this.name} ${username} "$USER_PASSWORD"`,
-            // `rc mb ${this.name}/${bucket} --ignore-existing`,
             `rc ls ${this.name}/${bucket} 2>/dev/null || rc mb ${this.name}/${bucket}`,
-            // `rc admin policy attach ${this.name} readwrite --user ${username}`,
+            `rc admin policy info ${this.name} ${policyName} >/dev/null 2>&1 || rc admin policy create ${this.name} ${policyName} /policy/policy.json`,
+            `rc admin policy attach ${this.name} ${policyName} --user ${username}`,
         ];
 
-        const script = pulumi
+        return pulumi
             .all([connectCmd, ...commands])
             .apply(([connect, ...cmds]) =>
                 [
@@ -131,8 +157,13 @@ export class RustfsProvisioner extends pulumi.ComponentResource implements S3Pro
                     ...cmds.flatMap(cmd => ['', `echo '${cmd}'`, cmd]),
                 ].join('\n'),
             );
+    }
 
-        const configMap = new kubernetes.core.v1.ConfigMap(
+    private createScriptConfigMap(
+        username: string,
+        script: pulumi.Output<string>,
+    ): kubernetes.core.v1.ConfigMap {
+        return new kubernetes.core.v1.ConfigMap(
             `${this.name}-${username}-script`,
             {
                 metadata: {
@@ -143,6 +174,22 @@ export class RustfsProvisioner extends pulumi.ComponentResource implements S3Pro
             },
             { parent: this },
         );
-        return configMap;
+    }
+
+    private createPolicyConfigMap(
+        username: string,
+        policyJson: string,
+    ): kubernetes.core.v1.ConfigMap {
+        return new kubernetes.core.v1.ConfigMap(
+            `${this.name}-${username}-policy`,
+            {
+                metadata: {
+                    ...this.args.metadata.get({ component: username }),
+                    name: `${this.name}-${username}-policy`,
+                },
+                data: { 'policy.json': policyJson },
+            },
+            { parent: this },
+        );
     }
 }

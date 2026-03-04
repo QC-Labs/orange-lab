@@ -78,7 +78,7 @@ config:
     # rustfs:requiredNodeLabel: kubernetes.io/hostname=<hostname>
     rustfs:rootUser: admin
     rustfs:image: rustfs/rustfs:1.0.0-alpha.85
-    rustfs:provisioner/image: rustfs/rc:v0.1.3
+    rustfs:provisioner/image: rustfs/rc:v0.1.4
 
     cert-manager:enabled: false
     cert-manager:clusterIssuer: letsencrypt-issuer
