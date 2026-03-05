@@ -4,36 +4,58 @@ This step is **optional**, but makes it easier to login to remote hosts on your 
 
 The assumption is that you have SSH server enabled (`systemctl enable sshd.service --now`) and you can login using password to a user account created during OS installation.
 
-Let's create a new SSH key and enable key-based authentication for root user.
+More info:
 
-Using passphrase is recommended as this will help with situation when your private key is leaked or copied.
+- https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent
+- https://www.ssh.com/academy/ssh/keygen
+
+## One-time setup (management node)
+
+Let's create a new SSH key and enable key-based authentication for root user. Using passphrase is recommended as this will help with situation when your private key is leaked or copied.
 We'll use ssh-agent so you don't have to enter it too often.
 
 ```sh
-# Generate key on your management node, use passphrase
+# Generate key (use passphrase when prompted)
 ssh-keygen # interactive
-ssh-keygen -f ~/.ssh/orangelab -C "user@orangelab.space"
+ssh-keygen -f ~/.ssh/orangelab -C "user@<domain>"
 
 # Add ssh key to agent
 ssh-add ~/.ssh/orangelab
 
 # Confirm the key is available to ssh-agent
 ssh-add -l
-
-# Create entry in remote ~/.ssh/authorized_keys
-# Use password login to "user" account
-ssh-copy-id -i ~/.ssh/orangelab user@<host>
-
-# Login using key authentication
-ssh user@<host>
 ```
 
-Now we can log in to normal user account on remote host. Let's enable root login as well using the same key.
+## Per-node setup
 
-If `authorized_keys` only has one entry, you can just copy it. Otherwise only copy the last line:
+Run these commands for every new node you add to the cluster.
+
+### Enable SSH
+
+In the terminal of new node:
 
 ```sh
-# Copy authorized_keys from user to root account...
+systemctl enable sshd.service --now
+```
+
+### Copy key to node
+
+On the admin node:
+
+```sh
+# Creates entry in remote ~/.ssh/authorized_keys
+ssh-copy-id -i ~/.ssh/orangelab user@<host>
+```
+
+Now we can log in to normal user account on remote host using the key. Let's enable root login as well using the same key.
+
+### Enable root login
+
+```sh
+# Login as regular user using the SSH key
+ssh user@<host>
+
+# Copy authorized_keys from user to root account
 sudo cp ~/.ssh/authorized_keys /root/.ssh/authorized_keys
 sudo chown root:root /root/.ssh/authorized_keys
 
@@ -49,10 +71,8 @@ PermitRootLogin prohibit-password
 systemctl reload sshd.service
 
 # Log out and test connection to root account
+exit
 ssh root@<host>
 ```
 
-More info:
-
--   https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent
--   https://www.ssh.com/academy/ssh/keygen
+Done! You can now SSH to `root@<host>` without password.
