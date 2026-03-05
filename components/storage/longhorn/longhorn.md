@@ -10,6 +10,16 @@
 
 Longhorn adds permanent storage that is replicated across multiple nodes. It also supports snapshots and backups of data volumes. The nodes need to be labeled with `node-role.kubernetes.io/longhorn=true` - you need at least one. Volumes stored at `/var/lib/longhorn/`.
 
+## Prerequisites (Bluefin)
+
+Rebase to developer mode image as it includes iSCSI drivers:
+
+```sh
+ujust devmode
+```
+
+Answer no to question about flatpaks.
+
 ## Installation
 
 Enable iSCSI service before deploying Longhorn.
