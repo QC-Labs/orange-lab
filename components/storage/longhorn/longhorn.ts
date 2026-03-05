@@ -136,6 +136,12 @@ export class Longhorn extends pulumi.ComponentResource {
                     host: httpEndpointInfo.hostname,
                     ingressClassName: httpEndpointInfo.className,
                     tls: httpEndpointInfo.tls,
+                    annotations: {
+                        'cert-manager.io/cluster-issuer': config.require(
+                            'cert-manager',
+                            'clusterIssuer',
+                        ),
+                    },
                 },
                 longhornUI: {
                     replicas: 1,
