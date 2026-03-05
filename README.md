@@ -111,8 +111,8 @@ Both NVIDIA and AMD GPUs are supported. See [Hardware module](/components/hardwa
 # Installation
 
 - [Installation - Admin node](./docs/install-admin.md) - Initial Pulumi and Tailscale setup
-- [Installation - SSH configuration](./docs/install-ssh.md) (Optional) - Configure SSH keys on nodes for easier access
 - [Installation - Linux node configuration](./docs/install-linux.md) - Configure nodes (firewall, suspend settings)
+- [Installation - SSH configuration](./docs/install-ssh.md) (Optional) - Configure SSH keys on nodes for easier access
 - [Installation - K3s cluster](./docs/install-k3s.md) - Install Kubernetes cluster and label nodes
 
 After setting up the Kubernetes cluster, deploy the core modules:
