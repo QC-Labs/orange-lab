@@ -7,8 +7,19 @@ This document covers general node configuration that should be done before insta
 Start Tailscale service on each node that will be part of your cluster.
 
 ```sh
-# Simple option
+# Recommended for desktops, allows user to control Tailscale client with tray icon
 sudo tailscale up --operator=$USER
+
+# Recommended for servers, doesn't require logging in with user credentials
+#
+# Create auth key:
+# https://login.tailscale.com/admin/settings/keys
+#
+# Disable key expiry for the node after joining:
+# Admin Console → Machines → <node> → Disable key expiry
+sudo tailscale up --auth-key=<auth-key> \
+--advertise-tags orangelab \ # optional when key already has tags
+--hostname <host> # override hostname provided by OS
 
 # Advanced option
 sudo tailscale up \
