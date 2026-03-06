@@ -47,7 +47,7 @@ export class NodeFeatureDiscovery extends pulumi.ComponentResource {
     // Based on https://github.com/ROCm/gpu-operator/blob/main/helm-charts/templates/nfd-default-rule.yaml
     private createAmdGpuRule(): kubernetes.apiextensions.CustomResource {
         const vendorId = ['1002']; // AMD vendor ID
-        const gpuClass = ['0300']; // Display/GPU class
+        const gpuClass = ['0300', '0380']; // Display/GPU/VGA controller classes
         return new kubernetes.apiextensions.CustomResource(
             `${this.name}-rule-amd`,
             {
