@@ -107,6 +107,14 @@ export class Traefik extends pulumi.ComponentResource {
                             },
                             exposedPort: 3443,
                         },
+                        websecure: {
+                            port: 8443,
+                            transport: {
+                                respondingTimeouts: {
+                                    readTimeout: '5s',
+                                },
+                            },
+                        },
                     },
                     priorityClassName: 'system-cluster-critical',
                     providers: {
