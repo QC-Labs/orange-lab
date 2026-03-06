@@ -100,7 +100,7 @@ export class Longhorn extends pulumi.ComponentResource {
                         'delete-both-statefulset-and-deployment-pod',
                     nodeDrainPolicy: 'always-allow',
                     offlineRelicaRebuilding: 'true',
-                    orphanResourceAutoDeletion: 'replica-data;instance',
+                    orphanResourceAutoDeletion: 'instance',
                     recurringJobMaxRetention: '20',
                     removeSnapshotsDuringFilesystemTrim: 'true',
                     replicaAutoBalance: config.require('longhorn', 'replicaAutoBalance'),
