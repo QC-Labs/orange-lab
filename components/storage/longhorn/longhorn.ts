@@ -120,6 +120,22 @@ export class Longhorn extends pulumi.ComponentResource {
                         'node-role.kubernetes.io/longhorn': 'true',
                     },
                 },
+                ...(httpEndpointInfo.gatewayRef
+                    ? {
+                          httproute: {
+                              enabled: true,
+                              hostnames: [httpEndpointInfo.hostname],
+                              parentRefs: [httpEndpointInfo.gatewayRef],
+                          },
+                      }
+                    : {
+                          ingress: {
+                              enabled: true,
+                              host: httpEndpointInfo.hostname,
+                              ingressClassName: httpEndpointInfo.className,
+                              tls: httpEndpointInfo.tls,
+                          },
+                      }),
                 // Hotfix for v1.11.0 - see https://github.com/longhorn/longhorn/releases/tag/v1.11.0
                 image: {
                     longhorn: {
@@ -129,18 +145,6 @@ export class Longhorn extends pulumi.ComponentResource {
                         instanceManager: {
                             tag: 'v1.11.0-hotfix-1',
                         },
-                    },
-                },
-                ingress: {
-                    enabled: true,
-                    host: httpEndpointInfo.hostname,
-                    ingressClassName: httpEndpointInfo.className,
-                    tls: httpEndpointInfo.tls,
-                    annotations: {
-                        'cert-manager.io/cluster-issuer': config.require(
-                            'cert-manager',
-                            'clusterIssuer',
-                        ),
                     },
                 },
                 longhornUI: {
