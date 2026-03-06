@@ -36,6 +36,11 @@ export class TraefikNetwork implements RoutingProvider {
             tls: true,
             tlsSecretName: `${domain}-tls`,
             domain,
+            gatewayRef: {
+                name: 'traefik-gateway',
+                namespace: 'traefik',
+                sectionName: 'websecure',
+            },
         };
     }
 

@@ -208,6 +208,11 @@ export interface HttpEndpointInfo {
     tls: boolean;
     tlsSecretName?: string;
     domain: string;
+    gatewayRef?: {
+        name: string;
+        namespace: string;
+        sectionName: string;
+    };
 }
 
 /**
