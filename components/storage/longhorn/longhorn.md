@@ -48,8 +48,11 @@ pulumi config set longhorn:storageSize 100Gi
 pulumi config set longhorn:replicaAutoBalance best-effort
 
 pulumi up
-
 ```
+
+## Troubleshooting
+
+There is an issue with Longhorn getting into a loop when auto-balancing is enabled and some nodes have scheduling disabled. Try removing all replicas but 1 and enable scheduling on that node.
 
 ## Backups
 
