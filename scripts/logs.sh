@@ -15,12 +15,8 @@ if [ -z "$appName" ]; then
   exit 1
 fi
 
-if [[ "$appName" == "open-webui" ]]; then
-    label=app.kubernetes.io/component
-fi
-
 while true; do
   kubectl logs -f -l $label=$appName -n $namespace --all-containers=true --ignore-errors=true --pod-running-timeout=5m
-  echo "*** Connection lost *** Retrying in 10 seconds..."
-  sleep 10
+  echo "*** Connection lost *** Retrying in 5 seconds..."
+  sleep 5
 done
