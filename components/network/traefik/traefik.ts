@@ -111,7 +111,7 @@ export class Traefik extends pulumi.ComponentResource {
                             port: 8443,
                             transport: {
                                 respondingTimeouts: {
-                                    readTimeout: '5s',
+                                    readTimeout: '30s',
                                 },
                             },
                         },
