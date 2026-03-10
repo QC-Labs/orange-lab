@@ -125,7 +125,7 @@ pulumi config set <app>:requiredVolumeLabel kubernetes.io/hostname=nas
 pulumi config set <app>:db/requiredVolumeLabel kubernetes.io/hostname=nas
 ```
 
-### AMD GPU
+### GPU
 
 GPU node labeling is automatic with Node Feature Discovery (NFD) enabled.
 
@@ -136,6 +136,8 @@ pulumi config set ollama:gpu amd
 ```
 
 More details at [/components/system/amd-gpu-operator/amd-gpu-operator.md](/components/system/amd-gpu-operator/amd-gpu-operator.md)
+
+When `<app>:gpu` is used then node affinity is set so deployment is placed on nodes with the selected GPU. Setting `requiredNodeLabel` overrides this behaviour.
 
 ### Storage
 

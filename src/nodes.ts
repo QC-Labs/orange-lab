@@ -79,6 +79,7 @@ export class Nodes {
 
         if (requiredNodeLabel) {
             terms.push(this.getNodeSelectorTerm(requiredNodeLabel));
+            return terms;
         }
 
         if (this.gpu === 'amd') {

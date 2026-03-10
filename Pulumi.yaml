@@ -161,6 +161,8 @@ config:
     ollama:OLLAMA_KEEP_ALIVE: '-1'
     # LLM parameter tuning
     ollama:OLLAMA_CONTEXT_LENGTH: '16536'
+    # Deploy to any node with selected GPU if requiredNodeLabel not specified
+    # ollama:requiredNodeLabel: kubernetes.io/hostname=<host>
 
     automatic1111:enabled: false
     automatic1111:hostname: 'automatic1111'
