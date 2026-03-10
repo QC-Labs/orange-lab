@@ -137,7 +137,7 @@ export class RustfsProvisioner extends pulumi.ComponentResource implements S3Pro
 
         const commands = [
             `rc admin user add ${this.name} ${username} "$USER_PASSWORD"`,
-            `rc ls ${this.name}/${bucket} 2>/dev/null || rc mb ${this.name}/${bucket}`,
+            `rc mb ${this.name}/${bucket} --ignore-existing`,
             `rc admin policy info ${this.name} ${policyName} >/dev/null 2>&1 || rc admin policy create ${this.name} ${policyName} /policy/policy.json`,
             `rc admin policy attach ${this.name} ${policyName} --user ${username}`,
         ];
