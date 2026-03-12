@@ -174,12 +174,21 @@ export class Containers {
     private createEnv(specEnv?: Record<string, pulumi.Input<string> | undefined>) {
         const gfxVersion = config.get(this.appName, 'HSA_OVERRIDE_GFX_VERSION');
         const amdTargets = config.get(this.appName, 'HCC_AMDGPU_TARGETS');
+        const hipDevices = config.get(this.appName, 'HIP_VISIBLE_DEVICES');
+        const rocrDevices = config.get(this.appName, 'ROCR_VISIBLE_DEVICES');
+        const cudaDevices = config.get(this.appName, 'CUDA_VISIBLE_DEVICES');
         const env = {
             ...specEnv,
             HSA_OVERRIDE_GFX_VERSION:
                 this.args.nodes.gpu === 'amd' && gfxVersion ? gfxVersion : undefined,
             HCC_AMDGPU_TARGETS:
                 this.args.nodes.gpu === 'amd' && amdTargets ? amdTargets : undefined,
+            HIP_VISIBLE_DEVICES:
+                this.args.nodes.gpu === 'amd' && hipDevices ? hipDevices : undefined,
+            ROCR_VISIBLE_DEVICES:
+                this.args.nodes.gpu === 'amd' && rocrDevices ? rocrDevices : undefined,
+            CUDA_VISIBLE_DEVICES:
+                this.args.nodes.gpu === 'nvidia' && cudaDevices ? cudaDevices : undefined,
         };
         return Object.entries(env)
             .filter(([_, value]) => value)

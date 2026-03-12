@@ -135,9 +135,24 @@ Switch to ROCm image if needed:
 pulumi config set ollama:gpu amd
 ```
 
-More details at [/components/system/amd-gpu-operator/amd-gpu-operator.md](/components/system/amd-gpu-operator/amd-gpu-operator.md)
+More details at [/components/hardware/amd-gpu-operator/amd-gpu-operator.md](/components/hardware/amd-gpu-operator/amd-gpu-operator.md)
 
 When `<app>:gpu` is used then node affinity is set so deployment is placed on nodes with the selected GPU. Setting `requiredNodeLabel` overrides this behaviour.
+
+#### GPU Device Selection
+
+In multi-GPU setups, you can restrict an application to specific GPU devices:
+
+```sh
+# AMD - use only the first GPU
+pulumi config set ollama:HIP_VISIBLE_DEVICES "0"
+pulumi config set ollama:ROCR_VISIBLE_DEVICES "0"
+
+# NVIDIA - use first two GPUs
+pulumi config set ollama:CUDA_VISIBLE_DEVICES "0,1"
+```
+
+These use standard GPU runtime environment variables. See [Ollama environment variables](https://github.com/ollama/ollama/blob/main/envconfig/config.go) for more options.
 
 ### Storage
 

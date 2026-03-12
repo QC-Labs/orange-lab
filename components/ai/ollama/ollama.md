@@ -27,6 +27,12 @@ pulumi config set ollama:storageSize "100Gi"
 # Recommended when using AMD to allow GPU sharing (required to determine image tag)
 pulumi config set ollama:appVersion 0.13.1
 
+# Limit GPU access to specific devices in multi-GPU setups
+# (comma-separated device IDs, 0-indexed)
+pulumi config set ollama:HIP_VISIBLE_DEVICES "0"
+# or for NVIDIA
+pulumi config set ollama:CUDA_VISIBLE_DEVICES "0,1"
+
 # Preload models at startup (comma-separated list)
 pulumi config set ollama:models "qwen2.5-coder:1.5b,gpt-oss:20b"
 
