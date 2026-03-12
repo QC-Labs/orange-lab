@@ -160,8 +160,9 @@ config:
     # "-1" = keep models loaded indefinitely, "30m" unload after 30 minutes of inactivity
     ollama:OLLAMA_KEEP_ALIVE: '-1'
     # LLM parameter tuning
-    ollama:OLLAMA_CONTEXT_LENGTH: '16536'
-    # Deploy to any node with selected GPU if requiredNodeLabel not specified
+    ollama:OLLAMA_CONTEXT_LENGTH: '8192'
+    ollama:OLLAMA_FLASH_ATTENTION: 'true'
+    # Deploys to any node with selected GPU if requiredNodeLabel NOT specified
     # ollama:requiredNodeLabel: kubernetes.io/hostname=<host>
 
     automatic1111:enabled: false

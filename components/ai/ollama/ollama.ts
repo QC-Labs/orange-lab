@@ -43,6 +43,10 @@ export class Ollama extends pulumi.ComponentResource {
                 name: 'OLLAMA_CONTEXT_LENGTH',
                 value: config.require(this.name, 'OLLAMA_CONTEXT_LENGTH'),
             },
+            {
+                name: 'OLLAMA_FLASH_ATTENTION',
+                value: config.require(this.name, 'OLLAMA_FLASH_ATTENTION'),
+            },
         ];
         if (amdGpu && gfxVersion) {
             extraEnv.push({
