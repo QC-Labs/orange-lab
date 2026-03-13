@@ -34,7 +34,7 @@ export class TraefikNetwork implements RoutingProvider {
             hostname: `${hostname}.${domain}`,
             url: `https://${hostname}.${domain}`,
             tls: true,
-            tlsSecretName: `${domain}-tls`,
+            tlsSecretName: `${hostname}-tls-secret`,
             domain,
             gatewayRef: {
                 name: 'traefik-gateway',
