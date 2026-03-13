@@ -29,6 +29,7 @@ class Config {
     public routingProvider = this.require('orangelab', 'routingProvider');
     public customDomain = this.get('orangelab', 'customDomain');
     public tailnetDomain = this.require('tailscale', 'tailnet');
+    public tailnetCidr = '100.64.0.0/10';
     public clusterCidr = this.require('k3s', 'clusterCidr');
     public serviceCidr = this.require('k3s', 'serviceCidr');
 

@@ -23,6 +23,7 @@ export class IoTModule extends pulumi.ComponentResource {
                     trustedProxies: [
                         config.clusterCidr,
                         config.serviceCidr,
+                        config.tailnetCidr,
                         '127.0.0.0/8',
                     ],
                 },
