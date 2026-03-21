@@ -43,7 +43,7 @@ config:
     traefik:gatewayApiCrdUrl: 'https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/experimental-install.yaml'
 
     longhorn:enabled: false
-    longhorn:version: 1.11.0
+    longhorn:version: 1.11.1
     longhorn:hostname: longhorn
     # Initial value for default storage. Adjust each volume in Longhorn UI
     longhorn:replicaCount: 2

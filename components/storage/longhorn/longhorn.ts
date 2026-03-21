@@ -136,17 +136,6 @@ export class Longhorn extends pulumi.ComponentResource {
                               tls: httpEndpointInfo.tls,
                           },
                       }),
-                // Hotfix for v1.11.0 - see https://github.com/longhorn/longhorn/releases/tag/v1.11.0
-                image: {
-                    longhorn: {
-                        manager: {
-                            tag: 'v1.11.0-hotfix-1',
-                        },
-                        instanceManager: {
-                            tag: 'v1.11.0-hotfix-1',
-                        },
-                    },
-                },
                 longhornUI: {
                     replicas: 1,
                 },
@@ -159,10 +148,6 @@ export class Longhorn extends pulumi.ComponentResource {
                         'replicaCount',
                     ),
                     defaultDataLocality: 'best-effort',
-                },
-                // Hotfix for v1.11.0 - see https://github.com/longhorn/longhorn/releases/tag/v1.11.0
-                preUpgradeChecker: {
-                    upgradeVersionCheck: false,
                 },
             },
         });
