@@ -32,6 +32,8 @@ export class Ollama extends pulumi.ComponentResource {
         const amdGpu = this.app.gpu === 'amd';
         const gfxVersion = config.get(this.name, 'HSA_OVERRIDE_GFX_VERSION');
         const amdTargets = config.get(this.name, 'HCC_AMDGPU_TARGETS');
+        const flashAttention = config.get(this.name, 'OLLAMA_FLASH_ATTENTION');
+        const kvCacheType = config.get(this.name, 'OLLAMA_KV_CACHE_TYPE');
         const extraEnv = [
             { name: 'OLLAMA_DEBUG', value: this.app.debug ? 'true' : 'false' },
             {
@@ -43,11 +45,19 @@ export class Ollama extends pulumi.ComponentResource {
                 name: 'OLLAMA_CONTEXT_LENGTH',
                 value: config.require(this.name, 'OLLAMA_CONTEXT_LENGTH'),
             },
-            {
-                name: 'OLLAMA_FLASH_ATTENTION',
-                value: config.require(this.name, 'OLLAMA_FLASH_ATTENTION'),
-            },
         ];
+        if (flashAttention) {
+            extraEnv.push({
+                name: 'OLLAMA_FLASH_ATTENTION',
+                value: flashAttention,
+            });
+        }
+        if (kvCacheType) {
+            extraEnv.push({
+                name: 'OLLAMA_KV_CACHE_TYPE',
+                value: kvCacheType,
+            });
+        }
         if (amdGpu && gfxVersion) {
             extraEnv.push({
                 name: 'HSA_OVERRIDE_GFX_VERSION',

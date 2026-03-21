@@ -42,6 +42,11 @@ pulumi config set ollama:OLLAMA_KEEP_ALIVE "1h"
 # Configure maximum context length
 pulumi config set ollama:OLLAMA_CONTEXT_LENGTH "65536"
 
+# (Optional) Enable Flash Attention
+# pulumi config set ollama:OLLAMA_FLASH_ATTENTION "true"
+# (Optional) Configure KV cache type (f16, q8_0, q4_0)
+# pulumi config set ollama:OLLAMA_KV_CACHE_TYPE "q8_0"
+
 # Enable Ollama
 pulumi config set ollama:enabled true
 pulumi up
