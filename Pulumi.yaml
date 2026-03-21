@@ -77,8 +77,8 @@ config:
     rustfs:storageSize: 2000Gi
     # rustfs:requiredNodeLabel: kubernetes.io/hostname=<hostname>
     rustfs:rootUser: admin
-    rustfs:image: rustfs/rustfs:1.0.0-alpha.85
-    rustfs:provisioner/image: rustfs/rc:v0.1.7
+    rustfs:image: rustfs/rustfs:1.0.0-alpha.89
+    rustfs:provisioner/image: rustfs/rc:v0.1.8
 
     cert-manager:enabled: false
     cert-manager:clusterIssuer: letsencrypt-issuer
