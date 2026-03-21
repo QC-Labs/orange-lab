@@ -5,6 +5,10 @@ import { Application } from '@orangelab/application';
 import { config } from '@orangelab/config';
 import { DatabaseConfig, HttpEndpointInfo } from '@orangelab/types';
 
+export interface NextcloudArgs {
+    trustedProxies: string[];
+}
+
 export class Nextcloud extends pulumi.ComponentResource {
     public readonly serviceUrl?: string;
     public readonly app: Application;
@@ -13,6 +17,7 @@ export class Nextcloud extends pulumi.ComponentResource {
 
     constructor(
         private appName: string,
+        private args: NextcloudArgs,
         opts?: pulumi.ComponentResourceOptions,
     ) {
         super('orangelab:office:Nextcloud', appName, {}, opts);
@@ -89,6 +94,17 @@ $CONFIG = array (
                                   }
                                 : {}),
                         },
+                        extraEnv: [
+                            {
+                                name: 'TRUSTED_PROXIES',
+                                value: this.args.trustedProxies.join(' '),
+                            },
+                            {
+                                name: 'OVERWRITEHOST',
+                                value: args.httpEndpointInfo.hostname,
+                            },
+                            { name: 'OVERWRITEPROTOCOL', value: 'https' },
+                        ],
                         extraInitContainers: [waitForDb],
                         host: args.httpEndpointInfo.hostname,
                         existingSecret: {

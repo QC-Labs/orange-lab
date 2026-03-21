@@ -21,7 +21,17 @@ export class OfficeModule extends pulumi.ComponentResource {
         super('orangelab:office', name, {}, opts);
 
         if (config.isEnabled('nextcloud')) {
-            this.nextcloud = new Nextcloud('nextcloud', { parent: this });
+            this.nextcloud = new Nextcloud(
+                'nextcloud',
+                {
+                    trustedProxies: [
+                        config.clusterCidr,
+                        config.serviceCidr,
+                        '127.0.0.0/8',
+                    ],
+                },
+                { parent: this },
+            );
         }
     }
 }
