@@ -166,6 +166,20 @@ config:
     # Deploys to any node with selected GPU if requiredNodeLabel NOT specified
     # ollama:requiredNodeLabel: kubernetes.io/hostname=<host>
 
+    shimmy:enabled: false
+    shimmy:hostname: shimmy
+    shimmy:storageSize: 50Gi
+    shimmy:storageOnly: false
+    shimmy:storageClass: longhorn-gpu
+    # shimmy:fromVolume: shimmy
+    # Set to 'nvidia' or 'amd' to enable GPU support, Use '' for CPU-only mode
+    shimmy:gpu: nvidia
+    # Override GPU version for AMD ROCm compatibility (shimmy:gpu=amd)
+    # shimmy:HSA_OVERRIDE_GFX_VERSION: "11.0.2"
+    # shimmy:HCC_AMDGPU_TARGETS: "gfx1103"
+    # Override shimmy image tag (default: latest)
+    # shimmy:image: latest
+
     automatic1111:enabled: false
     automatic1111:hostname: 'automatic1111'
     automatic1111:image: universonic/stable-diffusion-webui:full
