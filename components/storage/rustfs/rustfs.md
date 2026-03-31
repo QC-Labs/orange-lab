@@ -16,6 +16,8 @@ Files are stored on host disk outside of cluster so make sure it's deployed to a
 
 Currently deployed to a single node only.
 
+Migration from MinIO - https://rustfs.dev/binary-replacement-a-simple-way-to-migrate-from-minio-to-rustfs/
+
 ## Installation
 
 ```sh
