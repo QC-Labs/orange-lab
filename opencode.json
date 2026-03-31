@@ -6,6 +6,7 @@
             "*Pulumi.*.yaml*": "ask",
             "cat *": "allow",
             "curl *": "allow",
+            "echo *": "allow",
             "gh release *": "ask",
             "git diff *": "allow",
             "git fetch *": "allow",
