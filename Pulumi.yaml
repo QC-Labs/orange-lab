@@ -39,6 +39,7 @@ config:
     orangelab:redis/image: docker.io/redis:8-alpine
 
     traefik:enabled: false
+    traefik:version: 39.0.7
     traefik:hostname: traefik
     traefik:gatewayApiCrdUrl: 'https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/experimental-install.yaml'
 
@@ -77,10 +78,11 @@ config:
     rustfs:storageSize: 2000Gi
     # rustfs:requiredNodeLabel: kubernetes.io/hostname=<hostname>
     rustfs:rootUser: admin
-    rustfs:image: rustfs/rustfs:1.0.0-alpha.89
+    rustfs:image: rustfs/rustfs:1.0.0-alpha.90
     rustfs:provisioner/image: rustfs/rc:v0.1.8
 
     cert-manager:enabled: false
+    cert-manager:version: v1.20.1
     cert-manager:clusterIssuer: letsencrypt-issuer
 
     technitium:enabled: false
@@ -96,6 +98,7 @@ config:
     nfd:gpu-autodetect: true
 
     nvidia-gpu-operator:enabled: false
+    nvidia-gpu-operator:version: v26.3.0
 
     amd-gpu-operator:enabled: false
 
@@ -146,6 +149,7 @@ config:
     ### AI ###
 
     ollama:enabled: false
+    ollama:version: 1.53.0
     ollama:hostname: ollama
     ollama:storageSize: 50Gi
     ollama:storageOnly: false
@@ -275,6 +279,7 @@ config:
     ### Office ###
 
     nextcloud:enabled: false
+    nextcloud:version: 9.0.4
     nextcloud:hostname: nextcloud
     nextcloud:storageSize: 20Gi
     nextcloud:db/storageSize: 5Gi

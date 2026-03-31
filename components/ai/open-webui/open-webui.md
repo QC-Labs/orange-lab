@@ -21,6 +21,9 @@ pulumi config set open-webui:image ghcr.io/open-webui/open-webui:cuda-slim
 # Or use CPU-only image (default)
 pulumi config set open-webui:image ghcr.io/open-webui/open-webui:main-slim
 
+# Use latest Helm chart version instead of pinned default
+pulumi config set open-webui:version ""
+
 pulumi up
 ```
 

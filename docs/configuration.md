@@ -89,13 +89,20 @@ When using `traefik`, ensure `orangelab:customDomain` is set. When using `tailsc
 
 ### Version Pinning
 
-Lock a Helm chart to a specific version:
+Lock a Helm chart to a specific version. Set to empty string to use the latest version instead of the pinned default:
 
 ```sh
-# latest used by default
+# Use specific version (default from Pulumi.yaml)
 pulumi config set longhorn:version 1.8.1
-# some Helm charts allow to specify appVersion as well
-# f.e. Open-WebUI to upgrade before new chart is published
+
+# Use latest chart version
+pulumi config set longhorn:version ""
+```
+
+Some Helm charts support separate `appVersion` for upgrading the application before the chart is updated:
+
+```sh
+# Upgrade Open-WebUI before new Helm chart is published
 pulumi config set open-webui:appVersion 0.6.1
 ```
 

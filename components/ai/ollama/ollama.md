@@ -23,6 +23,9 @@ pulumi config set ollama:gpu ""
 # Increase volume size if needed for bigger models (50 by default, can be expanded later)
 pulumi config set ollama:storageSize "100Gi"
 
+# Use latest Helm chart version instead of pinned default
+pulumi config set ollama:version ""
+
 # Override appVersion when new Ollama released but Helm chart not yet updated.
 # Recommended when using AMD to allow GPU sharing (required to determine image tag)
 pulumi config set ollama:appVersion 0.13.1
