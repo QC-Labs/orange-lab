@@ -149,7 +149,8 @@ config:
     ### AI ###
 
     ollama:enabled: false
-    ollama:version: 1.53.0
+    ollama:version: 1.54.0
+    ollama:appVersion: 0.20.0
     ollama:hostname: ollama
     ollama:storageSize: 50Gi
     ollama:storageOnly: false
