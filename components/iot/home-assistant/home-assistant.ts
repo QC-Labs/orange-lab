@@ -38,6 +38,7 @@ export class HomeAssistant extends pulumi.ComponentResource {
                     controller: {
                         type: 'Deployment',
                     },
+                    deploymentStrategy: 'Recreate',
                     dnsPolicy: 'ClusterFirstWithHostNet',
                     fullnameOverride: name,
                     hostNetwork: true,
