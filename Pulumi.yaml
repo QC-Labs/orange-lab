@@ -78,7 +78,7 @@ config:
     rustfs:storageSize: 2000Gi
     # rustfs:requiredNodeLabel: kubernetes.io/hostname=<hostname>
     rustfs:rootUser: admin
-    rustfs:image: rustfs/rustfs:1.0.0-alpha.90
+    rustfs:image: rustfs/rustfs:1.0.0-alpha.93
     rustfs:provisioner/image: rustfs/rc:v0.1.9
 
     cert-manager:enabled: false
@@ -150,7 +150,7 @@ config:
 
     ollama:enabled: false
     ollama:version: 1.54.0
-    ollama:appVersion: 0.20.0
+    ollama:appVersion: 0.20.6
     ollama:hostname: ollama
     ollama:storageSize: 50Gi
     ollama:storageOnly: false
