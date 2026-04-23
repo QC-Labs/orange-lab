@@ -3,7 +3,7 @@
     "permission": {
         "bash": {
             "*": "ask",
-            "*Pulumi.*.yaml*": "ask",
+            "Pulumi.*.yaml": "ask",
             "cat *": "allow",
             "curl *": "allow",
             "echo *": "allow",
