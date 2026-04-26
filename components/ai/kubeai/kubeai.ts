@@ -66,7 +66,6 @@ export class KubeAi extends pulumi.ComponentResource {
                 ['open-webui']: { enabled: false },
                 resourceProfiles: {
                     nvidia: {
-                        runtimeClassName: 'nvidia',
                         nodeSelector: { 'orangelab/gpu-nvidia': 'true' },
                     },
                     amd: {

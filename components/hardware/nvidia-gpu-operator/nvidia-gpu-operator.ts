@@ -22,6 +22,7 @@ export class NvidiaGPUOperator extends pulumi.ComponentResource {
                 values: {
                     // NVIDIA Confidential Computing Manager for Kubernetes
                     ccManager: { enabled: false },
+                    cdi: { enabled: true, nriPluginEnabled: true },
                     // NVidia Data Center GPU Manager - https://docs.nvidia.com/datacenter/dcgm/latest/user-guide/index.html
                     dcgm: { enabled: false },
                     dcgmExporter: { enabled: false },
@@ -70,27 +71,7 @@ export class NvidiaGPUOperator extends pulumi.ComponentResource {
                     operator: { defaultRuntime: 'containerd' },
                     sandboxDevicePlugin: { enabled: false },
                     // NVidia container toolkit
-                    toolkit: {
-                        enabled: true,
-                        env: [
-                            {
-                                name: 'CONTAINERD_CONFIG',
-                                value: '/var/lib/rancher/k3s/agent/etc/containerd/config.toml',
-                            },
-                            {
-                                name: 'CONTAINERD_SOCKET',
-                                value: '/run/k3s/containerd/containerd.sock',
-                            },
-                            {
-                                name: 'CONTAINERD_RUNTIME_CLASS',
-                                value: 'nvidia',
-                            },
-                            {
-                                name: 'CONTAINERD_SET_AS_DEFAULT',
-                                value: 'true',
-                            },
-                        ],
-                    },
+                    toolkit: { enabled: false },
                     vfioManager: { enabled: false },
                     // https://github.com/NVIDIA/vgpu-device-manager
                     vgpuDeviceManager: { enabled: false },

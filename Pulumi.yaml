@@ -98,7 +98,7 @@ config:
     nfd:gpu-autodetect: true
 
     nvidia-gpu-operator:enabled: false
-    nvidia-gpu-operator:version: v26.3.0
+    nvidia-gpu-operator:version: v26.3.1
 
     amd-gpu-operator:enabled: false
 

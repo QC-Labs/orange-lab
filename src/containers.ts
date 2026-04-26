@@ -37,6 +37,7 @@ export class Containers {
             (spec.name
                 ? config.require(this.appName, `${spec.name}/image`)
                 : config.require(this.appName, 'image'));
+        const volumes = this.createVolumes(spec.volumeMounts);
         return {
             metadata,
             spec: {
@@ -78,12 +79,11 @@ export class Containers {
                 hostNetwork: spec.hostNetwork,
                 initContainers: this.initContainers.create(spec),
                 restartPolicy: spec.restartPolicy,
-                runtimeClassName: this.args.nodes.gpu === 'nvidia' ? 'nvidia' : undefined,
                 securityContext: this.args.storage?.hasLocal()
                     ? { seLinuxOptions: { type: 'spc_t' } }
                     : undefined,
                 serviceAccountName: this.args.serviceAccount.metadata.name,
-                volumes: this.createVolumes(spec.volumeMounts),
+                volumes,
             },
         };
     }
@@ -94,10 +94,8 @@ export class Containers {
         const context: kubernetes.types.input.core.v1.SecurityContext = {};
         if (this.args.nodes.gpu === 'amd') {
             context.seccompProfile = { type: 'Unconfined' };
-        } else if (
-            this.args.nodes.gpu === 'nvidia' ||
-            this.args.storage?.hasDeviceMounts()
-        ) {
+        }
+        if (this.args.storage?.hasDeviceMounts()) {
             context.privileged = true;
         }
         if (runAsUser) {
