@@ -50,6 +50,18 @@ pulumi config set longhorn:replicaAutoBalance best-effort
 pulumi up
 ```
 
+## Using Extra Disks
+
+By default, Longhorn stores data at `/var/lib/longhorn/` (root disk). To use a dedicated storage drive:
+
+1. Mount the disk (see [Node Configuration](/docs/install-linux.md#optional-mount-storage-disk))
+2. Create Longhorn subdirectory: `sudo mkdir -p /mnt/<mount>/longhorn`
+3. Open Longhorn UI → **Node** tab → Select node → **Edit Disks**
+4. Click **Add Disk**
+5. **Path:** `/mnt/<mount>/longhorn`
+6. **Enable Scheduling:** ✅
+8. Click **Save**
+
 ## Troubleshooting
 
 There is an issue with Longhorn getting into a loop when auto-balancing is enabled and some nodes have scheduling disabled. Try removing all replicas but 1 and enable scheduling on that node.

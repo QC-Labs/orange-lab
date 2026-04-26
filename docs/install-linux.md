@@ -67,6 +67,40 @@ sudo systemctl mask dev-zram0.swap
 free -h
 ```
 
+## (Optional) Mount Storage Disk
+
+You can use "Gnome Disks" application or below commands.
+
+Mount additional drives for application storage (used by Longhorn, RustFS, etc.):
+
+```bash
+# 1. Identify the disk
+lsblk -f
+
+# 2. Format disk with a label (replace <drive-label> and /dev/nvme0n1)
+# This creates the label AND the /dev/disk/by-label/<drive-label> symlink
+sudo mkfs.ext4 -L <drive-label> /dev/nvme0n1
+
+# 3. Create mount point and mount using label
+sudo mkdir -p /mnt/<mount>
+sudo mount /dev/disk/by-label/<drive-label> /mnt/<mount>
+
+# 4. Add to fstab for persistence
+echo '/dev/disk/by-label/<drive-label> /mnt/<mount> auto nosuid,nodev,x-gvfs-show 0 0' | sudo tee -a /etc/fstab
+```
+
+**Security options:** `nosuid` and `nodev` for security hardening; `x-gvfs-show` to show in file manager. Add `nofail` for USB/removable drives.
+
+**Example:**
+
+```bash
+lsblk
+sudo mkfs.ext4 -L 4TBDrive /dev/nvme0n1
+sudo mkdir -p /mnt/4TBDrive
+sudo mount /dev/disk/by-label/4TBDrive /mnt/4TBDrive
+echo '/dev/disk/by-label/4TBDrive /mnt/4TBDrive auto nosuid,nodev,x-gvfs-show 0 0' | sudo tee -a /etc/fstab
+```
+
 ## (Optional) Disable suspend
 
 ### Server
