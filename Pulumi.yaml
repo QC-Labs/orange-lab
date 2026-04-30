@@ -75,7 +75,6 @@ config:
     rustfs:hostname: rustfs
     rustfs:hostname-api: rustfs-api
     # rustfs:dataPath: /mnt/my-drive/rustfs-data
-    rustfs:storageSize: 2000Gi
     # rustfs:requiredNodeLabel: kubernetes.io/hostname=<hostname>
     rustfs:rootUser: admin
     rustfs:image: rustfs/rustfs:1.0.0-alpha.93
