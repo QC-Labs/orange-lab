@@ -118,21 +118,38 @@ If you lose the admin password, you can reset it. This is also helpful after res
     pulumi config set nextcloud:adminPassword YourNewPassword --secret
     ```
 
-## Pika Backup
+## Rclone Backup
 
-Pika Backup is a simple backup utility that can use Nextcloud as a remote backup destination via WebDAV. This allows you to store your local backups in your private cloud.
+Rclone can sync Nextcloud files to a local backup destination using WebDAV.
 
-To configure Pika Backup with Nextcloud as a remote location:
+### Setup
 
-1.  Install Pika Backup on your client machine.
-2.  Select "Remote Location" as the backup destination.
-3.  Use the following URL format:
+1.  Create an app password in Nextcloud at **Settings → Security → Devices & sessions → Create new app password**.
+
+2.  Configure the rclone remote:
+
+    ```sh
+    rclone config
     ```
-    dav://<user>@nextcloud.<domain>/remote.php/webdav/
-    ```
-4.  Enter your Nextcloud username and password when prompted.
 
-This will allow Pika Backup to access your Nextcloud storage for automated backups.
+    The resulting config (view with `rclone config show`) should look like:
+
+    ```ini
+    [nextcloud]
+    type = webdav
+    url = https://nextcloud.<domain>/remote.php/dav/files/<user>
+    vendor = nextcloud
+    user = <user>
+    pass = <encoded-password>
+    ```
+
+3.  Sync Nextcloud files to local storage:
+
+    ```sh
+    rclone sync nextcloud:/ /mnt/my-drive/NextCloud/ -v -n
+    ```
+
+    Remove `-n` (dry-run) once you've verified the output.
 
 ---
 
