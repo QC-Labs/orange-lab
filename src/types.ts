@@ -93,7 +93,7 @@ export interface LocalVolumeSpec {
     name: string;
     localPath?: string;
     hostPath?: string;
-    size: string;
+    size?: string;
     type?: 'Directory' | 'DirectoryOrCreate' | 'FileOrCreate' | 'CharDevice';
 }
 

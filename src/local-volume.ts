@@ -7,7 +7,7 @@ interface LocalVolumeArgs {
     volumeName: string;
     localPath?: string;
     hostPath?: string;
-    size: string;
+    size?: string;
     namespace: pulumi.Input<string>;
     labels: Record<string, string>;
     affinity?: kubernetes.types.input.core.v1.VolumeNodeAffinity;
@@ -49,6 +49,7 @@ export class LocalVolume extends pulumi.ComponentResource {
     }
 
     private createLocalVolume(): kubernetes.types.input.core.v1.Volume {
+        assert(this.args.size, 'size is required when using localPath');
         const storageClass = this.createStorageClass();
         const pv = this.createPersistentVolume(storageClass);
         const pvc = this.createPersistentVolumeClaim(storageClass, pv);
@@ -72,7 +73,7 @@ export class LocalVolume extends pulumi.ComponentResource {
                     labels: this.args.labels,
                 },
                 spec: {
-                    capacity: { storage: this.args.size },
+                    capacity: this.args.size ? { storage: this.args.size } : undefined,
                     accessModes: ['ReadWriteOnce'],
                     persistentVolumeReclaimPolicy: 'Retain',
                     storageClassName: storageClass.metadata.name,
@@ -100,7 +101,9 @@ export class LocalVolume extends pulumi.ComponentResource {
                     accessModes: ['ReadWriteOnce'],
                     storageClassName: storageClass.metadata.name,
                     volumeName: pv.metadata.name,
-                    resources: { requests: { storage: this.args.size } },
+                    resources: this.args.size
+                        ? { requests: { storage: this.args.size } }
+                        : undefined,
                 },
             },
             { parent: this },
