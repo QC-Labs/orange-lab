@@ -37,7 +37,8 @@ export class Containers {
             (spec.name
                 ? config.require(this.appName, `${spec.name}/image`)
                 : config.require(this.appName, 'image'));
-        const volumes = this.createVolumes(spec.volumeMounts);
+        const volumeMounts = this.createVolumeMounts(spec.volumeMounts);
+        const volumes = this.createVolumes(volumeMounts);
         return {
             metadata,
             spec: {
@@ -72,7 +73,7 @@ export class Containers {
                             healthChecks: spec.healthChecks,
                             failureThreshold: 10,
                         }),
-                        volumeMounts: this.createVolumeMounts(spec.volumeMounts),
+                        volumeMounts,
                     },
                 ],
                 dnsPolicy: spec.hostNetwork ? 'ClusterFirstWithHostNet' : undefined,
@@ -114,7 +115,7 @@ export class Containers {
     }
 
     private createVolumes(
-        volumeMounts?: VolumeMount[],
+        volumeMounts: kubernetes.types.input.core.v1.VolumeMount[],
     ): kubernetes.types.input.core.v1.Volume[] | undefined {
         if (this.args.nodes.gpu === 'amd') {
             this.args.storage?.addDeviceMount({
@@ -127,12 +128,15 @@ export class Containers {
                 type: 'Directory',
             });
         }
-        return volumeMounts?.length ? (this.args.storage?.getVolumes() ?? []) : undefined;
+        const volumes = (this.args.storage?.getVolumes() ?? []).filter(vol =>
+            volumeMounts.find(mount => mount.name === vol.name),
+        );
+        return volumes.length ? volumes : undefined;
     }
 
     private createVolumeMounts(
         volumeMounts?: VolumeMount[],
-    ): kubernetes.types.input.core.v1.VolumeMount[] | undefined {
+    ): kubernetes.types.input.core.v1.VolumeMount[] {
         const mounts = (volumeMounts ?? []).map(volumeMount => ({
             ...volumeMount,
             ...{ name: volumeMount.name ?? this.appName },
