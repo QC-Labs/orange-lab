@@ -74,6 +74,8 @@ Install K3S agent nodes on any additional physical hardware. Server already runs
 
 `k3s-agent.sh` executed on _management node_ generates script to install K3S on _agent node_:
 
+> **Alpine nodes**: Use `./scripts/k3s-agent-alpine.sh` instead. See [Alpine Linux node configuration](./install-linux-alpine.md) for preparation steps.
+
 ```sh
 # Run where Pulumi is installed
 ./scripts/k3s-agent.sh
@@ -87,7 +89,8 @@ ssh root@<agent-node>
 Check is the service is running:
 
 ```sh
-systemctl status k3s-agent.service
+systemctl status k3s-agent.service    # Fedora/Bluefin
+rc-service k3s-agent status           # Alpine
 ```
 
 ## Node labels
