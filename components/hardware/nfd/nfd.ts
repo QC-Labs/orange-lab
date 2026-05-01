@@ -39,6 +39,22 @@ export class NodeFeatureDiscovery extends pulumi.ComponentResource {
                         allowPrivilegeEscalation: true,
                         privileged: true,
                     },
+                    affinity: {
+                        nodeAffinity: {
+                            requiredDuringSchedulingIgnoredDuringExecution: {
+                                nodeSelectorTerms: [
+                                    {
+                                        matchExpressions: [
+                                            {
+                                                key: 'orangelab/alpine',
+                                                operator: 'DoesNotExist',
+                                            },
+                                        ],
+                                    },
+                                ],
+                            },
+                        },
+                    },
                 },
             },
         });

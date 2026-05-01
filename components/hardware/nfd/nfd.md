@@ -47,6 +47,16 @@ kubectl label nodes <node_name> orangelab/gpu-nvidia-
 kubectl label nodes <node_name> orangelab/gpu-amd-
 ```
 
+## Alpine nodes
+
+NFD worker pods exclude nodes with the `orangelab/alpine` label. Label your Alpine nodes after joining the cluster:
+
+```sh
+kubectl label nodes <node-name> orangelab/alpine=true
+```
+
+This prevents NFD worker from scheduling on Alpine-based nodes.
+
 ## Uninstall
 
 To uninstall NFD and clean up its custom resource definitions:

@@ -131,6 +131,14 @@ This sets unlimited retries so Tailscale keeps trying until the network is avail
 
 Run `scripts/k3s-agent-alpine.sh` on the management node and copy the output to the Alpine node.
 
+### Node labels
+
+After joining the cluster, label the node to help workloads identify this OS:
+
+```sh
+kubectl label nodes <node-name> orangelab/alpine=true
+```
+
 ### K3s agent Tailscale dependency
 
 When Tailscale restarts (auto-updates ~monthly), the `tailscale0` interface is recreated which breaks flannel networking — pods become unreachable until k3s is restarted. This is a [known issue](https://github.com/k3s-io/k3s/issues/12436).
