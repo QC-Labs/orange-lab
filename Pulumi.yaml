@@ -274,6 +274,17 @@ config:
     immich:db/sharedPreloadLibraries: vchord.so
     immich:db/postInitApplicationSQL: CREATE EXTENSION IF NOT EXISTS earthdistance CASCADE,CREATE EXTENSION IF NOT EXISTS vchord CASCADE
 
+    jellyfin:enabled: false
+    jellyfin:hostname: jellyfin
+    jellyfin:image: jellyfin/jellyfin:latest
+    jellyfin:storageSize: 5Gi # Config - metadata, cache, plugins
+    # jellyfin:gpu: nvidia
+    jellyfin:media/storageSize: 50Gi
+    jellyfin:media/path: /media
+    jellyfin:localMedia/enabled: false # Optional local storage
+    # jellyfin:localMedia/hostPath: /mnt/media  # Node path (required when enabled)
+    jellyfin:localMedia/path: /media-local
+
     ### Office ###
 
     nextcloud:enabled: false

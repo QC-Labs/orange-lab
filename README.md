@@ -84,6 +84,7 @@ Private distributed infrastructure on consumer hardware.
 [Media](./components/media/MEDIA.md):
 
 - [`immich`](./components/media/immich/immich.md) - Self-hosted photo and video backup solution
+- [`jellyfin`](./components/media/jellyfin/jellyfin.md) - Streaming movies, TV shows and music
 
 [Office](./components/office/OFFICE.md):
 
