@@ -62,6 +62,7 @@ The following settings are supported by most applications in OrangeLab:
 | `storageClass`        | Force specific storage class used by the application                                         |
 | `preferredNodeLabel`  | Deploy to node with specified label if exists (soft constraint)                              |
 | `requiredNodeLabel`   | Deploy only to node with specified label (hard constraint)                                   |
+| `excludeNodeLabel`    | Do not deploy to nodes with specified label (hard constraint)                                |
 | `requiredVolumeLabel` | Pin volume to specific node(s). Immutable - requires app redeploy to change                  |
 | `backupVolume`        | Enable volume backups to S3-compatible storage                                               |
 
@@ -116,6 +117,9 @@ pulumi config set ollama:preferredNodeLabel orangelab/ollama
 
 # Hard constraint - only run on these nodes
 pulumi config set prometheus:requiredNodeLabel orangelab/prometheus=true
+
+# Hard exclusion - do not run on nodes with this label
+pulumi config set nfd:excludeNodeLabel orangelab/alpine
 ```
 
 ### Volume Affinity

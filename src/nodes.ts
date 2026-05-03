@@ -27,7 +27,13 @@ export class Nodes {
         const requiredNodeLabel =
             config.get(this.args.appName, `${prefix}requiredNodeLabel`) ??
             config.get(this.args.appName, 'requiredNodeLabel');
-        const requiredTerms = this.getRequiredNodeSelectorTerms(requiredNodeLabel);
+        const excludeNodeLabel =
+            config.get(this.args.appName, `${prefix}excludeNodeLabel`) ??
+            config.get(this.args.appName, 'excludeNodeLabel');
+        const requiredTerms = this.getRequiredNodeSelectorTerms(
+            requiredNodeLabel,
+            excludeNodeLabel,
+        );
 
         if (requiredTerms.length === 0 && !preferredNodeLabel) return;
 
@@ -74,12 +80,17 @@ export class Nodes {
         };
     }
 
-    private getRequiredNodeSelectorTerms(requiredNodeLabel?: string): NodeSelectorTerm[] {
+    private getRequiredNodeSelectorTerms(
+        requiredNodeLabel?: string,
+        excludeNodeLabel?: string,
+    ): NodeSelectorTerm[] {
         const terms: NodeSelectorTerm[] = [];
 
         if (requiredNodeLabel) {
             terms.push(this.getNodeSelectorTerm(requiredNodeLabel));
-            return terms;
+        }
+        if (excludeNodeLabel) {
+            terms.push(this.getExclusionNodeSelectorTerm(excludeNodeLabel));
         }
 
         if (this.gpu === 'amd') {
@@ -113,6 +124,22 @@ export class Nodes {
                 {
                     key,
                     operator: 'In',
+                    values: value.split('|'),
+                },
+            ],
+        };
+    }
+
+    private getExclusionNodeSelectorTerm(labelSpec: string): NodeSelectorTerm {
+        const [key, value] = labelSpec.split('=');
+        if (!value) {
+            return { matchExpressions: [{ key, operator: 'DoesNotExist' }] };
+        }
+        return {
+            matchExpressions: [
+                {
+                    key,
+                    operator: 'NotIn',
                     values: value.split('|'),
                 },
             ],
