@@ -144,6 +144,9 @@ Switch to ROCm image if needed:
 
 ```sh
 pulumi config set ollama:gpu amd
+
+# component only
+pulumi config set immich:machine-learning/gpu nvidia
 ```
 
 More details at [/components/hardware/amd-gpu-operator/amd-gpu-operator.md](/components/hardware/amd-gpu-operator/amd-gpu-operator.md)

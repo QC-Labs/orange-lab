@@ -29,7 +29,7 @@ export class Ollama extends pulumi.ComponentResource {
     }
 
     private createHelmRelease(httpEndpointInfo: HttpEndpointInfo) {
-        const amdGpu = this.app.gpu === 'amd';
+        const gpu = this.app.nodes.getGpu();
         const gfxVersion = config.get(this.name, 'HSA_OVERRIDE_GFX_VERSION');
         const amdTargets = config.get(this.name, 'HCC_AMDGPU_TARGETS');
         const flashAttention = config.get(this.name, 'OLLAMA_FLASH_ATTENTION');
@@ -58,20 +58,20 @@ export class Ollama extends pulumi.ComponentResource {
                 value: kvCacheType,
             });
         }
-        if (amdGpu && gfxVersion) {
+        if (gpu === 'amd' && gfxVersion) {
             extraEnv.push({
                 name: 'HSA_OVERRIDE_GFX_VERSION',
                 value: gfxVersion,
             });
         }
-        if (amdGpu && amdTargets) {
+        if (gpu === 'amd' && amdTargets) {
             extraEnv.push({
                 name: 'HCC_AMDGPU_TARGETS',
                 value: amdTargets,
             });
         }
         let imageTag = config.get(this.name, 'appVersion');
-        if (amdGpu && imageTag) imageTag = imageTag.concat('-rocm');
+        if (gpu === 'amd' && imageTag) imageTag = imageTag.concat('-rocm');
         this.app.addHelmChart(
             this.name,
             {
@@ -103,15 +103,15 @@ export class Ollama extends pulumi.ComponentResource {
                             // CPU-only mode: no GPU resources requested
                             // AMD: device volumes used instead of resource requests
                             // NVIDIA: standard GPU resource requests
-                            enabled: this.app.gpu ? true : false,
-                            type: this.app.gpu ?? undefined,
+                            enabled: gpu ? true : false,
+                            type: gpu ?? undefined,
                             number: 1,
                         },
                         models: {
                             run: config.get(this.name, 'models')?.split(',') ?? [],
                         },
                     },
-                    ...(amdGpu
+                    ...(gpu === 'amd'
                         ? {
                               volumes: [
                                   {
@@ -134,8 +134,7 @@ export class Ollama extends pulumi.ComponentResource {
                         existingClaim: this.app.storage?.getClaimName(),
                     },
                     replicaCount: 1,
-                    securityContext:
-                        this.app.gpu === 'amd' ? { privileged: true } : undefined,
+                    securityContext: gpu === 'amd' ? { privileged: true } : undefined,
                 },
             },
             { dependsOn: this.app.storage },

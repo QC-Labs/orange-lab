@@ -53,7 +53,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
             USER_PERMISSIONS_WORKSPACE_MODELS_ACCESS: 'True',
             USER_PERMISSIONS_WORKSPACE_PROMPTS_ACCESS: 'True',
             USER_PERMISSIONS_WORKSPACE_TOOLS_ACCESS: 'True',
-            USE_CUDA_DOCKER: app.gpu === 'nvidia' ? 'True' : 'False',
+            USE_CUDA_DOCKER: app.nodes.getGpu() === 'nvidia' ? 'True' : 'False',
             USE_OLLAMA_DOCKER: 'False',
             WEBUI_AUTH: isTailscale ? 'False' : 'True',
             WEBUI_URL: httpEndpointInfo.url,

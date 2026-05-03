@@ -5,7 +5,13 @@ import { InitContainers } from './containers-init';
 import { Metadata } from './metadata';
 import { Nodes } from './nodes';
 import { Storage } from './storage';
-import { ContainerResources, ContainerSpec, ServicePort, VolumeMount } from './types';
+import {
+    ContainerResources,
+    ContainerSpec,
+    GpuType,
+    ServicePort,
+    VolumeMount,
+} from './types';
 
 export class Containers {
     private initContainers: InitContainers;
@@ -26,6 +32,7 @@ export class Containers {
     public createPodTemplateSpec(
         spec: ContainerSpec,
     ): kubernetes.types.input.core.v1.PodTemplateSpec {
+        const gpu = this.args.nodes.getGpu(spec.name);
         const metadata = this.args.metadata.get({
             component: spec.name,
             annotations: this.args.storage?.configFilesHash
@@ -37,8 +44,8 @@ export class Containers {
             (spec.name
                 ? config.require(this.appName, `${spec.name}/image`)
                 : config.require(this.appName, 'image'));
-        const volumeMounts = this.createVolumeMounts(spec.volumeMounts);
-        const volumes = this.createVolumes(volumeMounts);
+        const volumeMounts = this.createVolumeMounts(spec.volumeMounts, gpu);
+        const volumes = this.createVolumes(volumeMounts, gpu);
         return {
             metadata,
             spec: {
@@ -51,7 +58,7 @@ export class Containers {
                                   .apply(args => args.filter(Boolean))
                             : undefined,
                         command: spec.command,
-                        env: this.createEnv(spec.env),
+                        env: this.createEnv(spec.env, gpu),
                         envFrom: this.createEnvSecret({
                             containerName: spec.name,
                             secretData: spec.envSecret,
@@ -65,9 +72,10 @@ export class Containers {
                         readinessProbe: this.createProbe({
                             healthChecks: spec.healthChecks,
                         }),
-                        resources: this.createResourceLimits(spec.resources),
+                        resources: this.createResourceLimits(spec.resources, gpu),
                         securityContext: this.createContainerSecurityContext(
                             spec.runAsUser,
+                            gpu,
                         ),
                         startupProbe: this.createProbe({
                             healthChecks: spec.healthChecks,
@@ -91,9 +99,10 @@ export class Containers {
 
     private createContainerSecurityContext(
         runAsUser?: number,
+        gpu?: GpuType,
     ): kubernetes.types.input.core.v1.SecurityContext | undefined {
         const context: kubernetes.types.input.core.v1.SecurityContext = {};
-        if (this.args.nodes.gpu === 'amd') {
+        if (gpu === 'amd') {
             context.seccompProfile = { type: 'Unconfined' };
         }
         if (this.args.storage?.hasDeviceMounts()) {
@@ -116,8 +125,9 @@ export class Containers {
 
     private createVolumes(
         volumeMounts: kubernetes.types.input.core.v1.VolumeMount[],
+        gpu?: GpuType,
     ): kubernetes.types.input.core.v1.Volume[] | undefined {
-        if (this.args.nodes.gpu === 'amd') {
+        if (gpu === 'amd') {
             this.args.storage?.addDeviceMount({
                 name: 'dev-kfd',
                 hostPath: '/dev/kfd',
@@ -136,12 +146,13 @@ export class Containers {
 
     private createVolumeMounts(
         volumeMounts?: VolumeMount[],
+        gpu?: GpuType,
     ): kubernetes.types.input.core.v1.VolumeMount[] {
         const mounts = (volumeMounts ?? []).map(volumeMount => ({
             ...volumeMount,
             ...{ name: volumeMount.name ?? this.appName },
         }));
-        if (this.args.nodes.gpu === 'amd') {
+        if (gpu === 'amd') {
             mounts.push({ name: 'dev-kfd', mountPath: '/dev/kfd' });
             mounts.push({ name: 'dev-dri', mountPath: '/dev/dri' });
         }
@@ -150,8 +161,9 @@ export class Containers {
 
     private createResourceLimits(
         resources?: ContainerResources,
+        gpu?: GpuType,
     ): kubernetes.types.input.core.v1.ResourceRequirements | undefined {
-        switch (this.args.nodes.gpu) {
+        switch (gpu) {
             case 'nvidia':
                 return {
                     ...resources,
@@ -173,7 +185,10 @@ export class Containers {
             : undefined;
     }
 
-    private createEnv(specEnv?: Record<string, pulumi.Input<string> | undefined>) {
+    private createEnv(
+        specEnv?: Record<string, pulumi.Input<string> | undefined>,
+        gpu?: GpuType,
+    ) {
         const gfxVersion = config.get(this.appName, 'HSA_OVERRIDE_GFX_VERSION');
         const amdTargets = config.get(this.appName, 'HCC_AMDGPU_TARGETS');
         const hipDevices = config.get(this.appName, 'HIP_VISIBLE_DEVICES');
@@ -182,15 +197,12 @@ export class Containers {
         const env = {
             ...specEnv,
             HSA_OVERRIDE_GFX_VERSION:
-                this.args.nodes.gpu === 'amd' && gfxVersion ? gfxVersion : undefined,
-            HCC_AMDGPU_TARGETS:
-                this.args.nodes.gpu === 'amd' && amdTargets ? amdTargets : undefined,
-            HIP_VISIBLE_DEVICES:
-                this.args.nodes.gpu === 'amd' && hipDevices ? hipDevices : undefined,
-            ROCR_VISIBLE_DEVICES:
-                this.args.nodes.gpu === 'amd' && rocrDevices ? rocrDevices : undefined,
+                gpu === 'amd' && gfxVersion ? gfxVersion : undefined,
+            HCC_AMDGPU_TARGETS: gpu === 'amd' && amdTargets ? amdTargets : undefined,
+            HIP_VISIBLE_DEVICES: gpu === 'amd' && hipDevices ? hipDevices : undefined,
+            ROCR_VISIBLE_DEVICES: gpu === 'amd' && rocrDevices ? rocrDevices : undefined,
             CUDA_VISIBLE_DEVICES:
-                this.args.nodes.gpu === 'nvidia' && cudaDevices ? cudaDevices : undefined,
+                gpu === 'nvidia' && cudaDevices ? cudaDevices : undefined,
         };
         return Object.entries(env)
             .filter(([_, value]) => value)

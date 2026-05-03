@@ -6,17 +6,16 @@ type NodeSelectorTerm = kubernetes.types.input.core.v1.NodeSelectorTerm;
 
 export interface NodesArgs {
     appName: string;
-    gpu?: GpuType;
 }
 
 export class Nodes {
-    /**
-     * Optional GPU type, if specified, will set node affinity for the specified GPU type.
-     */
-    public readonly gpu?: GpuType;
+    constructor(private args: NodesArgs) {}
 
-    constructor(private args: NodesArgs) {
-        this.gpu = args.gpu;
+    getGpu(component?: string): GpuType | undefined {
+        const gpu = component
+            ? config.get(this.args.appName, `${component}/gpu`)
+            : config.get(this.args.appName, 'gpu');
+        return gpu as GpuType | undefined;
     }
 
     getAffinity(component?: string): kubernetes.types.input.core.v1.Affinity | undefined {
@@ -33,6 +32,7 @@ export class Nodes {
         const requiredTerms = this.getRequiredNodeSelectorTerms(
             requiredNodeLabel,
             excludeNodeLabel,
+            component,
         );
 
         if (requiredTerms.length === 0 && !preferredNodeLabel) return;
@@ -83,22 +83,26 @@ export class Nodes {
     private getRequiredNodeSelectorTerms(
         requiredNodeLabel?: string,
         excludeNodeLabel?: string,
+        component?: string,
     ): NodeSelectorTerm[] {
         const terms: NodeSelectorTerm[] = [];
 
         if (requiredNodeLabel) {
             terms.push(this.getNodeSelectorTerm(requiredNodeLabel));
+        } else {
+            const gpu = this.getGpu(component);
+            if (gpu === 'amd') {
+                terms.push(this.getNodeSelectorTerm('orangelab/gpu-amd=true'));
+            }
+            if (gpu === 'nvidia') {
+                terms.push(this.getNodeSelectorTerm('orangelab/gpu-nvidia=true'));
+            }
         }
+
         if (excludeNodeLabel) {
             terms.push(this.getExclusionNodeSelectorTerm(excludeNodeLabel));
         }
 
-        if (this.gpu === 'amd') {
-            terms.push(this.getNodeSelectorTerm('orangelab/gpu-amd=true'));
-        }
-        if (this.gpu === 'nvidia') {
-            terms.push(this.getNodeSelectorTerm('orangelab/gpu-nvidia=true'));
-        }
         return terms;
     }
 
