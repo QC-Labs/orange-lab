@@ -12,15 +12,12 @@ export class Jellyfin extends pulumi.ComponentResource {
     ) {
         super('orangelab:media:Jellyfin', name, {}, opts);
 
-        this.app = new Application(this, name).addStorage().addStorage({ name: 'media' });
-
-        if (config.requireBoolean(this.name, 'localMedia/enabled')) {
-            this.app.addLocalStorage({
-                name: 'media-local',
-                hostPath: config.require(this.name, 'localMedia/hostPath'),
-                size: config.require(this.name, 'localMedia/size'),
+        this.app = new Application(this, name)
+            .addStorage()
+            .addLocalStorage({
+                name: 'media',
+                hostPath: config.require(this.name, 'media/hostPath'),
             });
-        }
 
         this.createDeployment();
     }
@@ -50,17 +47,10 @@ export class Jellyfin extends pulumi.ComponentResource {
     }
 
     private createVolumeMounts(mediaPath: string): VolumeMount[] {
-        const volumeMounts: VolumeMount[] = [
+        return [
             { mountPath: '/config' },
-            { mountPath: mediaPath, name: `${this.name}-media` },
+            { mountPath: mediaPath, name: 'media' },
         ];
-        if (config.requireBoolean(this.name, 'localMedia/enabled')) {
-            volumeMounts.push({
-                mountPath: config.require(this.name, 'localMedia/path'),
-                name: `${this.name}-media-local`,
-            });
-        }
-        return volumeMounts;
     }
 
     private createInitContainer(mediaPath: string, volumeMounts: VolumeMount[]) {
@@ -70,14 +60,17 @@ export class Jellyfin extends pulumi.ComponentResource {
                 'sh',
                 '-c',
                 [
+                    `mkdir -p ${mediaPath}/downloads`,
                     `mkdir -p ${mediaPath}/movies`,
                     `mkdir -p ${mediaPath}/shows`,
                     `mkdir -p ${mediaPath}/books`,
                     `mkdir -p ${mediaPath}/home-videos`,
                     `mkdir -p ${mediaPath}/music-videos`,
+                    `chown -R 1000:1000 ${mediaPath}`,
                 ].join(' && '),
             ],
             volumeMounts,
         };
     }
 }
+

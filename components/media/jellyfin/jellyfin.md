@@ -12,16 +12,10 @@ Free Software Media System. Streaming movies, TV shows and music.
 ```sh
 # Enable Jellyfin
 pulumi config set jellyfin:enabled true
+pulumi config set jellyfin:media/hostPath /mnt/media
 
 # Use restored Longhorn volume for config
 pulumi config set jellyfin:fromVolume jellyfin
-
-# (Optional) Increase media storage size
-pulumi config set jellyfin:media/storageSize 100Gi
-
-# (Optional) Mount local media directory
-pulumi config set jellyfin:localMedia/enabled true
-pulumi config set jellyfin:localMedia/path /mnt/media
 
 pulumi up
 ```

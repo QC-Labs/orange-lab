@@ -280,11 +280,8 @@ config:
     jellyfin:image: jellyfin/jellyfin:latest
     jellyfin:storageSize: 5Gi # Config - metadata, cache, plugins
     # jellyfin:gpu: nvidia
-    jellyfin:media/storageSize: 50Gi
+    # jellyfin:media/hostPath: /mnt/media # Required
     jellyfin:media/path: /media
-    jellyfin:localMedia/enabled: false # Optional local storage
-    # jellyfin:localMedia/hostPath: /mnt/media  # Node path (required when enabled)
-    jellyfin:localMedia/path: /media-local
 
     ### Office ###
 
