@@ -39,7 +39,7 @@ config:
     orangelab:redis/image: docker.io/redis:8-alpine
 
     traefik:enabled: false
-    traefik:version: 39.0.7
+    traefik:version: 39.0.9
     traefik:hostname: traefik
     traefik:gatewayApiCrdUrl: 'https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/experimental-install.yaml'
 
