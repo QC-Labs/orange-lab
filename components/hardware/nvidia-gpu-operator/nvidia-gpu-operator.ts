@@ -71,7 +71,7 @@ export class NvidiaGPUOperator extends pulumi.ComponentResource {
                     operator: { defaultRuntime: 'containerd' },
                     sandboxDevicePlugin: { enabled: false },
                     // NVidia container toolkit
-                    toolkit: { enabled: false },
+                    toolkit: { enabled: true },
                     vfioManager: { enabled: false },
                     // https://github.com/NVIDIA/vgpu-device-manager
                     vgpuDeviceManager: { enabled: false },
