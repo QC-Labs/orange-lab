@@ -31,6 +31,7 @@ export class TraefikNetwork implements RoutingProvider {
         const domain = config.customDomain;
         return {
             className: 'traefik',
+            host: hostname,
             hostname: `${hostname}.${domain}`,
             url: `https://${hostname}.${domain}`,
             tls: true,

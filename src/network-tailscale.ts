@@ -26,6 +26,7 @@ export class TailscaleNetwork implements RoutingProvider {
     getHttpEndpointInfo(hostname: string): HttpEndpointInfo {
         return {
             className: 'tailscale',
+            host: hostname,
             hostname,
             url: `https://${hostname}.${config.tailnetDomain}`,
             tls: true,

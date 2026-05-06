@@ -203,6 +203,7 @@ export interface S3Provisioner {
  */
 export interface HttpEndpointInfo {
     className: string;
+    host: string;
     hostname: string;
     url: string;
     tls: boolean;
