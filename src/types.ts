@@ -80,6 +80,7 @@ export interface ContainerSpec {
     volumeMounts?: VolumeMount[];
     healthChecks?: boolean;
     resources?: ContainerResources;
+    hostname?: string;
     runAsUser?: number;
     volumeOwnerUserId?: number;
     restartPolicy?: string;

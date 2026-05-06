@@ -50,6 +50,7 @@ export class Containers {
             metadata,
             spec: {
                 affinity: this.args.nodes.getAffinity(spec.name),
+                hostname: spec.hostname,
                 containers: [
                     {
                         args: spec.commandArgs
