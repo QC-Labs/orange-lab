@@ -9,24 +9,36 @@
 
 Free Software Media System. Streaming movies, TV shows and music.
 
+Jellyfin shares the host media directory with [Radarr](../radarr/radarr.md), [Sonarr](../sonarr/sonarr.md), and [Transmission](../transmission/transmission.md). All apps must point to the same `media/hostPath` and run on the same node.
+
 ```sh
-# Enable Jellyfin
+# Deploy Jellyfin to my-host using /mnt/media as media folder
 pulumi config set jellyfin:enabled true
 pulumi config set jellyfin:media/hostPath /mnt/media
+pulumi config set jellyfin:requiredNodeLabel kubernetes.io/hostname=my-host
 
-# Use restored Longhorn volume for config
+# Use specified Longhorn volume as data volume
 pulumi config set jellyfin:fromVolume jellyfin
 
 pulumi up
 ```
 
-## Media Library Setup
+## Post-Installation
 
-After deployment, access Jellyfin at the endpoint URL and complete the initial setup wizard. During setup:
+After deployment, access Jellyfin at `https://jellyfin.<domain>/` and complete the setup wizard:
 
-1. Create an admin user
-2. Add media libraries pointing to `/media` (Longhorn volume) or `/media-local` (if localMedia is enabled)
-3. Configure metadata providers and other settings as desired
+1. Create a root user
+2. Add media libraries: Movies (`/media/movies`), Shows (`/media/shows`), etc.
+
+### Seerr Integration
+
+Create a dedicated Jellyfin user for Seerr at Dashboard → Users (`https://jellyfin.<domain>/`):
+
+1. Add a user (e.g., `seerr`) with a password
+2. Enable "Allow this user to manage the server"
+3. Grant access to all libraries
+
+An existing admin user works but a dedicated user is recommended.
 
 ## Hardware Acceleration
 
@@ -39,4 +51,17 @@ Jellyfin supports hardware transcoding with NVIDIA and AMD GPUs. To enable:
 pulumi config set jellyfin:gpu nvidia
 # or
 pulumi config set jellyfin:gpu amd
+```
+
+3. Enable hardware acceleration in Jellyfin UI at Dashboard → Playback → Transcoding:
+   - Set **Hardware acceleration** to `NVIDIA NVENC` or `AMD AMF`
+   - Enable all relevant codecs for your GPU
+
+## Permissions/SELinux
+
+The deployment includes an init container that creates necessary directories and sets ownership. However, if you're running SELinux, you may need to set the container context on the host directory:
+
+```sh
+semanage fcontext -a -t container_file_t '/mnt/media(/.*)?'
+restorecon -R /mnt/media
 ```

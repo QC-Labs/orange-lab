@@ -12,33 +12,39 @@ export class Jellyfin extends pulumi.ComponentResource {
     ) {
         super('orangelab:media:Jellyfin', name, {}, opts);
 
-        this.app = new Application(this, name)
-            .addStorage()
-            .addLocalStorage({
-                name: 'media',
-                hostPath: config.require(this.name, 'media/hostPath'),
-            });
+        this.app = new Application(this, name).addStorage().addLocalStorage({
+            name: 'media',
+            hostPath: config.require(this.name, 'media/hostPath'),
+        });
 
         this.createDeployment();
     }
 
     private createDeployment() {
         const httpEndpointInfo = this.app.network.getHttpEndpointInfo();
-        const mediaPath = config.require(this.name, 'media/path');
-        const volumeMounts = this.createVolumeMounts(mediaPath);
+        const volumeMounts: VolumeMount[] = [
+            { mountPath: '/data' },
+            { mountPath: '/media', name: 'media' },
+        ];
 
         return this.app.addDeployment({
+            hostname: httpEndpointInfo.host,
             ports: [
                 { name: 'http', port: 8096 },
-                { name: 'udp', port: 7359, protocol: 'udp', private: true },
+                { name: 'udp', port: 7359, protocol: 'udp' },
+                { name: 'dnla', port: 1900, protocol: 'udp' },
             ],
             volumeMounts,
             env: {
-                JELLYFIN_DATA_DIR: '/config',
-                JELLYFIN_CACHE_DIR: '/config/cache',
+                PUID: '1000',
+                PGID: '1000',
+                JELLYFIN_DATA_DIR: '/data',
+                JELLYFIN_CONFIG_DIR: '/data/config',
+                JELLYFIN_CACHE_DIR: '/data/cache',
+                JELLYFIN_LOG_DIR: '/data/log',
                 JELLYFIN_PublishedServerUrl: httpEndpointInfo.url,
             },
-            initContainers: [this.createInitContainer(mediaPath, volumeMounts)],
+            initContainers: [this.createInitContainer(volumeMounts)],
             resources: {
                 requests: { memory: '512Mi' },
                 limits: { memory: '2Gi' },
@@ -46,31 +52,20 @@ export class Jellyfin extends pulumi.ComponentResource {
         });
     }
 
-    private createVolumeMounts(mediaPath: string): VolumeMount[] {
-        return [
-            { mountPath: '/config' },
-            { mountPath: mediaPath, name: 'media' },
-        ];
-    }
-
-    private createInitContainer(mediaPath: string, volumeMounts: VolumeMount[]) {
+    private createInitContainer(volumeMounts: VolumeMount[]) {
         return {
             name: 'init-media-folders',
             command: [
                 'sh',
                 '-c',
                 [
-                    `mkdir -p ${mediaPath}/downloads`,
-                    `mkdir -p ${mediaPath}/movies`,
-                    `mkdir -p ${mediaPath}/shows`,
-                    `mkdir -p ${mediaPath}/books`,
-                    `mkdir -p ${mediaPath}/home-videos`,
-                    `mkdir -p ${mediaPath}/music-videos`,
-                    `chown -R 1000:1000 ${mediaPath}`,
+                    `mkdir -p /media/downloads`,
+                    `mkdir -p /media/movies`,
+                    `mkdir -p /media/shows`,
+                    `chown -R 1000:1000 /media`,
                 ].join(' && '),
             ],
             volumeMounts,
         };
     }
 }
-

@@ -281,7 +281,7 @@ config:
     jellyfin:storageSize: 5Gi # Config - metadata, cache, plugins
     # jellyfin:gpu: nvidia
     # jellyfin:media/hostPath: /mnt/media # Required
-    jellyfin:media/path: /media
+
 
     ### Office ###
 
