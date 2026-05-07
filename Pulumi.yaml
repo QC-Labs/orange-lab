@@ -282,6 +282,17 @@ config:
     # jellyfin:gpu: nvidia
     # jellyfin:media/hostPath: /mnt/media # Required
 
+    lidarr:enabled: false
+    lidarr:hostname: lidarr
+    lidarr:image: lscr.io/linuxserver/lidarr:latest
+    lidarr:storageSize: 1Gi
+    # lidarr:media/hostPath: /mnt/media # Required
+
+    musicseerr:enabled: false
+    musicseerr:hostname: musicseerr
+    musicseerr:image: ghcr.io/habirabbu/musicseerr:latest
+    musicseerr:storageSize: 1Gi
+
     prowlarr:enabled: false
     prowlarr:hostname: prowlarr
     prowlarr:image: lscr.io/linuxserver/prowlarr:latest

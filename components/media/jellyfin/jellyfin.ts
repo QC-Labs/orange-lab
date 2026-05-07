@@ -62,6 +62,7 @@ export class Jellyfin extends pulumi.ComponentResource {
                     `mkdir -p /media/downloads`,
                     `mkdir -p /media/movies`,
                     `mkdir -p /media/shows`,
+                    `mkdir -p /media/music`,
                     `chown -R 1000:1000 /media`,
                 ].join(' && '),
             ],

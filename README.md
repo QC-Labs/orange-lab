@@ -85,6 +85,8 @@ Private distributed infrastructure on consumer hardware.
 
 - [`immich`](./components/media/immich/immich.md) - Self-hosted photo and video backup solution
 - [`jellyfin`](./components/media/jellyfin/jellyfin.md) - Streaming movies, TV shows and music
+- [`lidarr`](./components/media/lidarr/lidarr.md) - Music collection manager
+- [`musicseerr`](./components/media/musicseerr/musicseerr.md) - Music discovery and request management
 - [`prowlarr`](./components/media/prowlarr/prowlarr.md) - Indexer manager for the *arr ecosystem
 - [`radarr`](./components/media/radarr/radarr.md) - Movie collection manager
 - [`seerr`](./components/media/seerr/seerr.md) - Media discovery
