@@ -5,11 +5,13 @@ import { InvokeAi } from './invokeai/invokeai';
 import { KubeAi } from './kubeai/kubeai';
 import { N8n } from './n8n/n8n';
 import { Ollama } from './ollama/ollama';
+import { Shimmy } from './shimmy/shimmy';
 import { OpenWebUI } from './open-webui/open-webui';
 import { SDNext } from './sdnext/sdnext';
 
 export class AIModule extends pulumi.ComponentResource {
     private readonly ollama?: Ollama;
+    private readonly shimmy?: Shimmy;
     private readonly kubeAI?: KubeAi;
     private readonly openWebUI?: OpenWebUI;
     private readonly automatic1111?: Automatic1111;
@@ -24,6 +26,7 @@ export class AIModule extends pulumi.ComponentResource {
                 ...this.invokeAi?.app.network.endpoints,
                 kubeai: this.kubeAI?.serviceUrl,
                 ollama: this.ollama?.endpointUrl,
+                shimmy: this.shimmy?.endpointUrl,
                 'open-webui': this.openWebUI?.endpointUrl,
                 ...this.sdnext?.app.network.endpoints,
                 ...this.n8n?.app.network.endpoints,
@@ -33,6 +36,7 @@ export class AIModule extends pulumi.ComponentResource {
                 ...this.invokeAi?.app.network.clusterEndpoints,
                 kubeai: this.kubeAI?.serviceUrl,
                 ollama: this.ollama?.serviceUrl,
+                shimmy: this.shimmy?.serviceUrl,
                 ...this.sdnext?.app.network.clusterEndpoints,
                 ...this.n8n?.app.network.clusterEndpoints,
             },
@@ -52,6 +56,10 @@ export class AIModule extends pulumi.ComponentResource {
             this.ollama = new Ollama('ollama', { parent: this });
         }
 
+        if (config.isEnabled('shimmy')) {
+            this.shimmy = new Shimmy('shimmy', { parent: this });
+        }
+
         if (config.isEnabled('automatic1111')) {
             this.automatic1111 = new Automatic1111('automatic1111', { parent: this });
         }
@@ -65,10 +73,11 @@ export class AIModule extends pulumi.ComponentResource {
         }
 
         if (config.isEnabled('open-webui')) {
+            const llmUrl = this.ollama?.serviceUrl ?? this.shimmy?.serviceUrl;
             this.openWebUI = new OpenWebUI(
                 'open-webui',
                 {
-                    ollamaUrl: this.ollama?.serviceUrl,
+                    ollamaUrl: llmUrl,
                     openAiUrl: this.kubeAI?.serviceUrl,
                     automatic1111Url:
                         this.sdnext?.app.network.clusterEndpoints.sdnext ??
@@ -76,9 +85,12 @@ export class AIModule extends pulumi.ComponentResource {
                 },
                 {
                     parent: this,
-                    dependsOn: [this.ollama, this.kubeAI, this.automatic1111].filter(
-                        x => x !== undefined,
-                    ),
+                    dependsOn: [
+                        this.ollama,
+                        this.shimmy,
+                        this.kubeAI,
+                        this.automatic1111,
+                    ].filter(x => x !== undefined),
                 },
             );
         }
@@ -88,11 +100,8 @@ export class AIModule extends pulumi.ComponentResource {
         }
 
         if (config.isEnabled('n8n')) {
-            this.n8n = new N8n(
-                'n8n',
-                { ollamaUrl: this.ollama?.serviceUrl },
-                { parent: this },
-            );
+            const llmUrl = this.ollama?.serviceUrl ?? this.shimmy?.serviceUrl;
+            this.n8n = new N8n('n8n', { ollamaUrl: llmUrl }, { parent: this });
         }
     }
 }
