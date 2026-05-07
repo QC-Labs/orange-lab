@@ -282,6 +282,33 @@ config:
     # jellyfin:gpu: nvidia
     # jellyfin:media/hostPath: /mnt/media # Required
 
+    prowlarr:enabled: false
+    prowlarr:hostname: prowlarr
+    prowlarr:image: lscr.io/linuxserver/prowlarr:latest
+    prowlarr:storageSize: 1Gi
+
+    radarr:enabled: false
+    radarr:hostname: radarr
+    radarr:image: lscr.io/linuxserver/radarr:latest
+    radarr:storageSize: 1Gi
+    # radarr:media/hostPath: /mnt/media # Required
+
+    sonarr:enabled: false
+    sonarr:hostname: sonarr
+    sonarr:image: lscr.io/linuxserver/sonarr:latest
+    sonarr:storageSize: 1Gi
+    # sonarr:media/hostPath: /mnt/media # Required
+
+    seerr:enabled: false
+    seerr:hostname: seerr
+    seerr:image: ghcr.io/seerr-team/seerr:latest
+    seerr:storageSize: 1Gi
+
+    transmission:enabled: false
+    transmission:hostname: transmission
+    transmission:image: lscr.io/linuxserver/transmission:latest
+    transmission:storageSize: 1Gi
+    # transmission:media/hostPath: /mnt/media # Required
 
     ### Office ###
 

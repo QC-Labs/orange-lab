@@ -85,6 +85,11 @@ Private distributed infrastructure on consumer hardware.
 
 - [`immich`](./components/media/immich/immich.md) - Self-hosted photo and video backup solution
 - [`jellyfin`](./components/media/jellyfin/jellyfin.md) - Streaming movies, TV shows and music
+- [`prowlarr`](./components/media/prowlarr/prowlarr.md) - Indexer manager for the *arr ecosystem
+- [`radarr`](./components/media/radarr/radarr.md) - Movie collection manager
+- [`seerr`](./components/media/seerr/seerr.md) - Media discovery
+- [`sonarr`](./components/media/sonarr/sonarr.md) - TV show collection manager
+- [`transmission`](./components/media/transmission/transmission.md) - BitTorrent download client
 
 [Office](./components/office/OFFICE.md):
 

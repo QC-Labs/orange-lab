@@ -50,7 +50,6 @@ export class Containers {
             metadata,
             spec: {
                 affinity: this.args.nodes.getAffinity(spec.name),
-                hostname: spec.hostname,
                 containers: [
                     {
                         args: spec.commandArgs
@@ -87,6 +86,7 @@ export class Containers {
                 ],
                 dnsPolicy: spec.hostNetwork ? 'ClusterFirstWithHostNet' : undefined,
                 hostNetwork: spec.hostNetwork,
+                hostname: spec.hostname,
                 initContainers: this.initContainers.create(spec),
                 restartPolicy: spec.restartPolicy,
                 securityContext: this.args.storage?.hasLocal()

@@ -1,11 +1,12 @@
 # Jellyfin
 
-|                       |                                              |
-| --------------------- | -------------------------------------------- |
-| Homepage              | https://jellyfin.org/                        |
-| Source code           | https://github.com/jellyfin/jellyfin         |
-| Documentation         | https://jellyfin.org/docs/                   |
-| Endpoints             | `https://jellyfin.<domain>/`                 |
+|               |                                            |
+| ------------- | ------------------------------------------ |
+| Homepage      | https://jellyfin.org/                      |
+| Source code   | https://github.com/jellyfin/jellyfin       |
+| Docker Image  | https://hub.docker.com/r/jellyfin/jellyfin |
+| Documentation | https://jellyfin.org/docs/                 |
+| Endpoints     | `https://jellyfin.<domain>/`               |
 
 Free Software Media System. Streaming movies, TV shows and music.
 
@@ -54,8 +55,7 @@ pulumi config set jellyfin:gpu amd
 ```
 
 3. Enable hardware acceleration in Jellyfin UI at Dashboard → Playback → Transcoding:
-   - Set **Hardware acceleration** to `NVIDIA NVENC` or `AMD AMF`
-   - Enable all relevant codecs for your GPU
+    - Set **Hardware acceleration** to `NVIDIA NVENC` or `AMD AMF`
 
 ## Permissions/SELinux
 
