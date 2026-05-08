@@ -58,7 +58,7 @@ export class Immich extends pulumi.ComponentResource {
             IMMICH_MACHINE_LEARNING_ENABLED: args.mlEnabled.toString(),
             IMMICH_MACHINE_LEARNING_URL: 'http://immich-machine-learning:3003',
             IMMICH_PORT: '2283',
-            IMMICH_TRUSTED_PROXIES: `${config.clusterCidr},${config.serviceCidr}`,
+            IMMICH_TRUSTED_PROXIES: config.require(this.name, 'trustedProxies'),
             REDIS_HOSTNAME: redisConfig.hostname,
         };
 

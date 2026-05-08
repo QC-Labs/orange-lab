@@ -25,8 +25,6 @@ class Config {
     }
 
     public helmHistoryLimit = 5;
-    public clusterCidr = this.require('k3s', 'clusterCidr');
-    public serviceCidr = this.require('k3s', 'serviceCidr');
 
     public isEnabled(name: string): boolean {
         return this.getBoolean(name, 'enabled') ?? false;

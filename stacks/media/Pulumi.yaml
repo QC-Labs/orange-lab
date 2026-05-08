@@ -8,8 +8,6 @@ runtime:
 description: OrangeLab Media Stack
 config:
     # Required shared defaults (duplicated from root Pulumi.yaml)
-    k3s:clusterCidr: 10.42.0.0/16
-    k3s:serviceCidr: 10.43.0.0/16
     # orangelab:routingProvider: tailscale | traefik
     orangelab:storageClass: longhorn
 
@@ -19,6 +17,7 @@ config:
     immich:hostname: immich
     immich:image: ghcr.io/immich-app/immich-server:release
     immich:storageSize: 50Gi
+    immich:trustedProxies: '10.42.0.0/16,10.43.0.0/16' # clsterCidr,serviceCidr
     immich:machine-learning/enabled: false
     immich:machine-learning/image: ghcr.io/immich-app/immich-machine-learning:release
     immich:machine-learning/storageSize: 10Gi

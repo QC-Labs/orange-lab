@@ -25,8 +25,8 @@ export class OfficeModule extends pulumi.ComponentResource {
                 'nextcloud',
                 {
                     trustedProxies: [
-                        config.clusterCidr,
-                        config.serviceCidr,
+                        config.require('k3s', 'clusterCidr'),
+                        config.require('k3s', 'serviceCidr'),
                         '127.0.0.0/8',
                     ],
                 },
