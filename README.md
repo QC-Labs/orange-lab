@@ -81,17 +81,17 @@ Private distributed infrastructure on consumer hardware.
 
 - [`home-assistant`](./components/iot/home-assistant/home-assistant.md) - sensor and home automation platform
 
-[Media](./components/media/MEDIA.md):
+[Media](./stacks/media/README.md):
 
-- [`immich`](./components/media/immich/immich.md) - Self-hosted photo and video backup solution
-- [`jellyfin`](./components/media/jellyfin/jellyfin.md) - Streaming movies, TV shows and music
-- [`lidarr`](./components/media/lidarr/lidarr.md) - Music collection manager
-- [`musicseerr`](./components/media/musicseerr/musicseerr.md) - Music discovery and request management
-- [`prowlarr`](./components/media/prowlarr/prowlarr.md) - Indexer manager for the *arr ecosystem
-- [`radarr`](./components/media/radarr/radarr.md) - Movie collection manager
-- [`seerr`](./components/media/seerr/seerr.md) - Media discovery
-- [`sonarr`](./components/media/sonarr/sonarr.md) - TV show collection manager
-- [`transmission`](./components/media/transmission/transmission.md) - BitTorrent download client
+- [`immich`](./stacks/media/apps/immich/immich.md) - Self-hosted photo and video backup solution
+- [`jellyfin`](./stacks/media/apps/jellyfin/jellyfin.md) - Streaming movies, TV shows and music
+- [`lidarr`](./stacks/media/apps/lidarr/lidarr.md) - Music collection manager
+- [`musicseerr`](./stacks/media/apps/musicseerr/musicseerr.md) - Music discovery and request management
+- [`prowlarr`](./stacks/media/apps/prowlarr/prowlarr.md) - Indexer manager for the *arr ecosystem
+- [`radarr`](./stacks/media/apps/radarr/radarr.md) - Movie collection manager
+- [`seerr`](./stacks/media/apps/seerr/seerr.md) - Media discovery
+- [`sonarr`](./stacks/media/apps/sonarr/sonarr.md) - TV show collection manager
+- [`transmission`](./stacks/media/apps/transmission/transmission.md) - BitTorrent download client
 
 [Office](./components/office/OFFICE.md):
 

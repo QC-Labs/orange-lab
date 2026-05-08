@@ -258,69 +258,6 @@ config:
     mempool:backend/image: mempool/backend:v3.2.1
     mempool:db/storageSize: 1Gi
 
-    ### Media ###
-
-    immich:enabled: false
-    immich:hostname: immich
-    immich:image: ghcr.io/immich-app/immich-server:release
-    immich:storageSize: 50Gi
-    immich:machine-learning/enabled: false
-    immich:machine-learning/image: ghcr.io/immich-app/immich-machine-learning:release
-    immich:machine-learning/storageSize: 10Gi
-    # immich:machine-learning/requiredNodeLabel: kubernetes.io/hostname=<hostname>
-    # immich:machine-learning/gpu: nvidia  # Enable GPU acceleration (nvidia or amd)
-    immich:redis/image: docker.io/valkey/valkey:9@sha256:546304417feac0874c3dd576e0952c6bb8f06bb4093ea0c9ca303c73cf458f63
-    immich:db/storageSize: 5Gi
-    immich:db/image: ghcr.io/tensorchord/cloudnative-vectorchord:18.2
-    immich:db/sharedPreloadLibraries: vchord.so
-    immich:db/postInitApplicationSQL: CREATE EXTENSION IF NOT EXISTS earthdistance CASCADE,CREATE EXTENSION IF NOT EXISTS vchord CASCADE
-
-    jellyfin:enabled: false
-    jellyfin:hostname: jellyfin
-    jellyfin:image: jellyfin/jellyfin:latest
-    jellyfin:storageSize: 5Gi # Config - metadata, cache, plugins
-    # jellyfin:gpu: nvidia
-    # jellyfin:media/hostPath: /mnt/media # Required
-
-    lidarr:enabled: false
-    lidarr:hostname: lidarr
-    lidarr:image: lscr.io/linuxserver/lidarr:latest
-    lidarr:storageSize: 1Gi
-    # lidarr:media/hostPath: /mnt/media # Required
-
-    musicseerr:enabled: false
-    musicseerr:hostname: musicseerr
-    musicseerr:image: ghcr.io/habirabbu/musicseerr:latest
-    musicseerr:storageSize: 1Gi
-
-    prowlarr:enabled: false
-    prowlarr:hostname: prowlarr
-    prowlarr:image: lscr.io/linuxserver/prowlarr:latest
-    prowlarr:storageSize: 1Gi
-
-    radarr:enabled: false
-    radarr:hostname: radarr
-    radarr:image: lscr.io/linuxserver/radarr:latest
-    radarr:storageSize: 1Gi
-    # radarr:media/hostPath: /mnt/media # Required
-
-    sonarr:enabled: false
-    sonarr:hostname: sonarr
-    sonarr:image: lscr.io/linuxserver/sonarr:latest
-    sonarr:storageSize: 1Gi
-    # sonarr:media/hostPath: /mnt/media # Required
-
-    seerr:enabled: false
-    seerr:hostname: seerr
-    seerr:image: ghcr.io/seerr-team/seerr:latest
-    seerr:storageSize: 1Gi
-
-    transmission:enabled: false
-    transmission:hostname: transmission
-    transmission:image: lscr.io/linuxserver/transmission:latest
-    transmission:storageSize: 1Gi
-    # transmission:media/hostPath: /mnt/media # Required
-
     ### Office ###
 
     nextcloud:enabled: false

@@ -8,7 +8,6 @@ const moduleDependencies: Record<string, string[]> = {
     dev: ['debug'],
     hardware: ['amd-gpu-operator', 'nfd', 'nvidia-gpu-operator'],
     iot: ['home-assistant'],
-    media: ['immich', 'jellyfin', 'prowlarr', 'radarr', 'seerr', 'sonarr', 'transmission'],
     monitoring: ['beszel', 'prometheus'],
     office: ['nextcloud'],
     security: ['vaultwarden'],
@@ -28,7 +27,7 @@ class Config {
     public helmHistoryLimit = 5;
     public routingProvider = this.require('orangelab', 'routingProvider');
     public customDomain = this.get('orangelab', 'customDomain');
-    public tailnetDomain = this.require('tailscale', 'tailnet');
+    public tailnetDomain = this.get('tailscale', 'tailnet');
     public clusterCidr = this.require('k3s', 'clusterCidr');
     public serviceCidr = this.require('k3s', 'serviceCidr');
 
@@ -43,12 +42,9 @@ class Config {
     }
 
     public enableMonitoring() {
-        const prometheusEnabled = this.requireBoolean('prometheus', 'enabled');
-
-        const componentsEnabled = this.requireBoolean(
-            'prometheus',
-            'enableComponentMonitoring',
-        );
+        const prometheusEnabled = this.getBoolean('prometheus', 'enabled') ?? false;
+        const componentsEnabled =
+            this.getBoolean('prometheus', 'enableComponentMonitoring') ?? false;
         return prometheusEnabled && componentsEnabled;
     }
 

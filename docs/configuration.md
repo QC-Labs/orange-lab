@@ -6,7 +6,7 @@ This document describes application configuration and common settings for Orange
 
 After system components have been deployed, you can add any of the optional applications.
 
-All available settings can be found in `Pulumi.yaml`. Override defaults with `pulumi config` or by directly modifying `Pulumi.<stack>.yaml`.
+All available settings can be found in `Pulumi.yaml` (or `stacks/*/Pulumi.yaml`). Override defaults with `pulumi config` or by directly modifying `Pulumi.<stack>.yaml`.
 
 ```sh
 # enable app

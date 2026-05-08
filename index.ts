@@ -7,7 +7,6 @@ import { DataModule } from './components/data';
 import { DevModule } from './components/dev';
 import { HardwareModule } from './components/hardware';
 import { IoTModule } from './components/iot';
-import { MediaModule } from './components/media';
 import { MonitoringModule } from './components/monitoring';
 import { NetworkModule } from './components/network';
 import { OfficeModule } from './components/office';
@@ -47,11 +46,6 @@ if (config.isModuleEnabled('iot')) {
         dependsOn: baseModules,
     });
     exports.iot = iotModule.getExports();
-}
-
-if (config.isModuleEnabled('media')) {
-    const mediaModule = new MediaModule('media', { dependsOn: baseModules });
-    exports.media = mediaModule.getExports();
 }
 
 if (config.isModuleEnabled('ai')) {

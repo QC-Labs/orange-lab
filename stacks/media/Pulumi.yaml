@@ -1,0 +1,71 @@
+name: orangelab-media
+main: index.ts
+runtime:
+  name: nodejs
+  options:
+    typescript: true
+    packagemanager: npm
+description: OrangeLab Media Stack
+config:
+  # Required shared defaults (duplicated from root Pulumi.yaml)
+  k3s:clusterCidr: 10.42.0.0/16
+  k3s:serviceCidr: 10.43.0.0/16
+  orangelab:routingProvider: tailscale
+  orangelab:storageClass: longhorn
+  orangelab:postgres/storageClass: longhorn
+  orangelab:redis/image: docker.io/redis:8-alpine
+
+  ### Media ###
+
+  immich:enabled: false
+  immich:hostname: immich
+  immich:image: ghcr.io/immich-app/immich-server:release
+  immich:storageSize: 50Gi
+  immich:machine-learning/enabled: false
+  immich:machine-learning/image: ghcr.io/immich-app/immich-machine-learning:release
+  immich:machine-learning/storageSize: 10Gi
+  immich:redis/image: docker.io/valkey/valkey:9@sha256:546304417feac0874c3dd576e0952c6bb8f06bb4093ea0c9ca303c73cf458f63
+  immich:db/storageSize: 5Gi
+  immich:db/image: ghcr.io/tensorchord/cloudnative-vectorchord:18.2
+  immich:db/sharedPreloadLibraries: vchord.so
+  immich:db/postInitApplicationSQL: CREATE EXTENSION IF NOT EXISTS earthdistance CASCADE,CREATE EXTENSION IF NOT EXISTS vchord CASCADE
+
+  jellyfin:enabled: false
+  jellyfin:hostname: jellyfin
+  jellyfin:image: jellyfin/jellyfin:latest
+  jellyfin:storageSize: 5Gi
+
+  lidarr:enabled: false
+  lidarr:hostname: lidarr
+  lidarr:image: lscr.io/linuxserver/lidarr:latest
+  lidarr:storageSize: 1Gi
+
+  musicseerr:enabled: false
+  musicseerr:hostname: musicseerr
+  musicseerr:image: ghcr.io/habirabbu/musicseerr:latest
+  musicseerr:storageSize: 1Gi
+
+  prowlarr:enabled: false
+  prowlarr:hostname: prowlarr
+  prowlarr:image: lscr.io/linuxserver/prowlarr:latest
+  prowlarr:storageSize: 1Gi
+
+  radarr:enabled: false
+  radarr:hostname: radarr
+  radarr:image: lscr.io/linuxserver/radarr:latest
+  radarr:storageSize: 1Gi
+
+  sonarr:enabled: false
+  sonarr:hostname: sonarr
+  sonarr:image: lscr.io/linuxserver/sonarr:latest
+  sonarr:storageSize: 1Gi
+
+  seerr:enabled: false
+  seerr:hostname: seerr
+  seerr:image: ghcr.io/seerr-team/seerr:latest
+  seerr:storageSize: 1Gi
+
+  transmission:enabled: false
+  transmission:hostname: transmission
+  transmission:image: lscr.io/linuxserver/transmission:latest
+  transmission:storageSize: 1Gi
