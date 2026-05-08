@@ -10,10 +10,8 @@ config:
   # Required shared defaults (duplicated from root Pulumi.yaml)
   k3s:clusterCidr: 10.42.0.0/16
   k3s:serviceCidr: 10.43.0.0/16
-  orangelab:routingProvider: tailscale
+  # orangelab:routingProvider: tailscale | traefik
   orangelab:storageClass: longhorn
-  orangelab:postgres/storageClass: longhorn
-  orangelab:redis/image: docker.io/redis:8-alpine
 
   ### Media ###
 

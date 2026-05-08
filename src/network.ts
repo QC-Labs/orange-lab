@@ -17,7 +17,8 @@ export class Network {
         private opts?: pulumi.ComponentResourceOptions,
     ) {
         const routingProvider =
-            config.get(this.appName, 'routingProvider') ?? config.routingProvider;
+            config.get(this.appName, 'routingProvider') ??
+            config.require('orangelab', 'routingProvider');
         switch (routingProvider) {
             case 'traefik':
                 this.provider = new TraefikNetwork(appName, args, opts);

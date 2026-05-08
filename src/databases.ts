@@ -65,7 +65,6 @@ export class Databases {
     }
 
     addPostgres(name = 'db'): void {
-        config.requireEnabled(this.appName, 'cloudnative-pg');
         if (this.databases[name]) {
             throw new Error(`Database ${this.appName}-${name} already exists.`);
         }

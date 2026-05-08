@@ -7,6 +7,7 @@ import { HttpEndpointInfo, RoutingProvider, ServicePort } from './types';
 
 export class TailscaleNetwork implements RoutingProvider {
     endpoints: Record<string, pulumi.Input<string>> = {};
+    tailnetDomain: string;
 
     constructor(
         private appName: string,
@@ -14,13 +15,10 @@ export class TailscaleNetwork implements RoutingProvider {
         private opts?: pulumi.ComponentResourceOptions,
     ) {
         assert(
-            config.tailnetDomain,
-            'orangelab:routingProvider=tailscale requires tailscale:tailnet to be set',
-        );
-        assert(
             config.isEnabled('tailscale'),
             `${this.appName}: Tailscale Operator has to be installed (tailscale:enabled=true)`,
         );
+        this.tailnetDomain = config.require('tailscale', 'tailnet');
     }
 
     getHttpEndpointInfo(hostname: string): HttpEndpointInfo {
@@ -28,9 +26,9 @@ export class TailscaleNetwork implements RoutingProvider {
             className: 'tailscale',
             host: hostname,
             hostname,
-            url: `https://${hostname}.${config.tailnetDomain}`,
+            url: `https://${hostname}.${this.tailnetDomain}`,
             tls: true,
-            domain: config.tailnetDomain,
+            domain: this.tailnetDomain,
         };
     }
 

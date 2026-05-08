@@ -2,12 +2,11 @@ import { Application } from '@orangelab/application';
 import { config } from '@orangelab/config';
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
-import assert from 'assert';
 
 export class Traefik extends pulumi.ComponentResource {
     private readonly app: Application;
     private chart: kubernetes.helm.v3.Release;
-    private readonly domain: string;
+    private readonly customDomain: string;
 
     constructor(
         private name: string,
@@ -15,12 +14,8 @@ export class Traefik extends pulumi.ComponentResource {
         opts?: pulumi.ResourceOptions,
     ) {
         super('orangelab:network:Traefik', name, args, opts);
-        assert(
-            config.customDomain,
-            'Traefik component requires a custom domain to be set',
-        );
+        this.customDomain = config.require('orangelab', 'customDomain');
         config.requireEnabled(name, 'cert-manager');
-        this.domain = config.customDomain;
         this.app = new Application(this, name);
         const crds = this.createGatewayAPICRDs();
         this.chart = this.createChart(crds);
@@ -60,7 +55,7 @@ export class Traefik extends pulumi.ComponentResource {
                                     {
                                         kind: 'Secret',
                                         group: '',
-                                        name: `${this.domain}-tls`,
+                                        name: `${this.customDomain}-tls`,
                                     },
                                 ],
                             },
@@ -73,7 +68,7 @@ export class Traefik extends pulumi.ComponentResource {
                                     {
                                         kind: 'Secret',
                                         group: '',
-                                        name: `${this.domain}-tls`,
+                                        name: `${this.customDomain}-tls`,
                                     },
                                 ],
                             },
@@ -149,8 +144,6 @@ export class Traefik extends pulumi.ComponentResource {
     }
 
     private createCertificate() {
-        if (!this.domain) return;
-
         const clusterIssuer = config.get('cert-manager', 'clusterIssuer');
         if (!clusterIssuer) {
             throw new Error(
@@ -164,12 +157,12 @@ export class Traefik extends pulumi.ComponentResource {
                 apiVersion: 'cert-manager.io/v1',
                 kind: 'Certificate',
                 metadata: {
-                    name: `${this.domain}-cert`,
+                    name: `${this.customDomain}-cert`,
                     namespace: this.app.metadata.namespace,
                 },
                 spec: {
-                    secretName: `${this.domain}-tls`,
-                    dnsNames: [`*.${this.domain}`, this.domain],
+                    secretName: `${this.customDomain}-tls`,
+                    dnsNames: [`*.${this.customDomain}`, this.customDomain],
                     issuerRef: { name: clusterIssuer, kind: 'ClusterIssuer' },
                 },
             },
@@ -196,7 +189,7 @@ export class Traefik extends pulumi.ComponentResource {
                             services: [{ name: 'api@internal', kind: 'TraefikService' }],
                         },
                     ],
-                    tls: { secretName: `${this.domain}-tls` },
+                    tls: { secretName: `${this.customDomain}-tls` },
                 },
             },
             { parent: this, dependsOn: this.chart },

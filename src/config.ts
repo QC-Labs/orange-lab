@@ -25,9 +25,6 @@ class Config {
     }
 
     public helmHistoryLimit = 5;
-    public routingProvider = this.require('orangelab', 'routingProvider');
-    public customDomain = this.get('orangelab', 'customDomain');
-    public tailnetDomain = this.get('tailscale', 'tailnet');
     public clusterCidr = this.require('k3s', 'clusterCidr');
     public serviceCidr = this.require('k3s', 'serviceCidr');
 

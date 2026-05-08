@@ -14,7 +14,6 @@ export class NetworkModule extends pulumi.ComponentResource {
                 technitium: this.technitium?.endpointUrl,
             },
             technitiumUsers: this.technitium?.users,
-            tailscaleDomain: config.tailnetDomain,
         };
     }
 

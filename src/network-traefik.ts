@@ -7,36 +7,25 @@ import { HttpEndpointInfo, RoutingProvider, ServicePort } from './types';
 
 export class TraefikNetwork implements RoutingProvider {
     endpoints: Record<string, pulumi.Input<string>> = {};
+    customDomain: string;
 
     constructor(
         private appName: string,
         private args: { metadata: Metadata },
         private opts?: pulumi.ComponentResourceOptions,
     ) {
-        assert(
-            config.customDomain,
-            'orangelab:routingProvider=traefik requires orangelab:customDomain to be set',
-        );
-        assert(
-            config.isEnabled('traefik'),
-            `${this.appName}: Traefik has to be installed (traefik:enabled=true)`,
-        );
+        this.customDomain = config.require('orangelab', 'customDomain');
     }
 
     getHttpEndpointInfo(hostname: string): HttpEndpointInfo {
-        assert(
-            config.customDomain,
-            'orangelab:customDomain is required for TraefikNetwork',
-        );
-        const domain = config.customDomain;
         return {
             className: 'traefik',
             host: hostname,
-            hostname: `${hostname}.${domain}`,
-            url: `https://${hostname}.${domain}`,
+            hostname: `${hostname}.${this.customDomain}`,
+            url: `https://${hostname}.${this.customDomain}`,
             tls: true,
             tlsSecretName: `${hostname}-tls-secret`,
-            domain,
+            domain: this.customDomain,
             gatewayRef: {
                 name: 'traefik-gateway',
                 namespace: 'traefik',
@@ -114,16 +103,11 @@ export class TraefikNetwork implements RoutingProvider {
         externalTrafficPolicy?: 'Local' | 'Cluster';
     }): void {
         if (params.tcpPorts.length === 0) return;
-        assert(
-            config.customDomain,
-            'orangelab:customDomain is required for Traefik TCP endpoints',
-        );
-
         this.createTlsRoutes({
             component: params.component,
             tlsPorts: params.tcpPorts.filter(p => p.protocol === 'tls'),
             serviceName: params.serviceName,
-            hostname: `${params.hostname}.${config.customDomain}`,
+            hostname: `${params.hostname}.${this.customDomain}`,
         });
         this.createInternalLoadBalancer({
             component: params.component,
@@ -136,7 +120,7 @@ export class TraefikNetwork implements RoutingProvider {
         this.exportTcpEndpoints({
             component: params.component,
             tcpPorts: params.tcpPorts,
-            hostname: `${params.hostname}.${config.customDomain}`,
+            hostname: `${params.hostname}.${this.customDomain}`,
         });
     }
 
