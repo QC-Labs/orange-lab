@@ -65,3 +65,20 @@ The deployment includes an init container that creates necessary directories and
 semanage fcontext -a -t container_file_t '/mnt/media(/.*)?'
 restorecon -R /mnt/media
 ```
+
+## Uploading Media Files
+
+To upload files directly to the Jellyfin media volume without SSH access to the node, use the provided script:
+
+```sh
+# From stacks/media/
+cd stacks/media
+
+# Upload a movie
+./scripts/jellyfin-upload.sh ~/Downloads/movie.mkv /media/movies/
+
+# Upload multiple TV episodes
+./scripts/jellyfin-upload.sh ~/TV/*.mkv /media/shows/
+```
+
+The script uses `kubectl cp` to copy files into the running Jellyfin pod. Wildcards in the source path are supported natively by `kubectl cp`.
