@@ -39,9 +39,9 @@ config:
     orangelab:redis/image: docker.io/redis:8-alpine
 
     traefik:enabled: false
-    traefik:version: 39.0.9
+    traefik:version: 40.0.0
     traefik:hostname: traefik
-    traefik:gatewayApiCrdUrl: 'https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/experimental-install.yaml'
+    traefik:gatewayApiCrdUrl: 'https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.1/experimental-install.yaml'
 
     longhorn:enabled: false
     longhorn:version: 1.11.2
@@ -101,6 +101,7 @@ config:
     nvidia-gpu-operator:version: v26.3.1
 
     amd-gpu-operator:enabled: false
+    amd-gpu-operator:version: v1.5.0
 
     mariadb-operator:enabled: false
 
