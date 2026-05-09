@@ -28,7 +28,7 @@ export class Network {
                 break;
             default:
                 throw new Error(
-                    `Unknown orangelab:routingProvider: ${routingProvider}. Must be 'traefik' or 'tailscale'.`,
+                    `Unknown orangelab:routingProvider: ${routingProvider ?? 'undefined'}. Must be 'traefik' or 'tailscale'.`,
                 );
         }
     }

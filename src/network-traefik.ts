@@ -1,6 +1,5 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
-import assert from 'node:assert';
 import { config } from './config';
 import { Metadata } from './metadata';
 import { HttpEndpointInfo, RoutingProvider, ServicePort } from './types';
