@@ -9,7 +9,7 @@ description: OrangeLab Media Stack
 config:
     # Required shared defaults (duplicated from root Pulumi.yaml)
     # orangelab:routingProvider: tailscale | traefik
-    orangelab:storageClass: longhorn
+    # orangelab:customDomain: 'example.com'
 
     ### Media ###
 
@@ -17,7 +17,7 @@ config:
     immich:hostname: immich
     immich:image: ghcr.io/immich-app/immich-server:release
     immich:storageSize: 50Gi
-    immich:trustedProxies: '10.42.0.0/16,10.43.0.0/16' # clsterCidr,serviceCidr
+    immich:trustedProxies: '10.42.0.0/16,10.43.0.0/16' # clusterCidr,serviceCidr
     immich:machine-learning/enabled: false
     immich:machine-learning/image: ghcr.io/immich-app/immich-machine-learning:release
     immich:machine-learning/storageSize: 10Gi

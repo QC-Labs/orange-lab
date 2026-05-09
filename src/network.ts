@@ -18,7 +18,7 @@ export class Network {
     ) {
         const routingProvider =
             config.get(this.appName, 'routingProvider') ??
-            config.require('orangelab', 'routingProvider');
+            config.get('orangelab', 'routingProvider');
         switch (routingProvider) {
             case 'traefik':
                 this.provider = new TraefikNetwork(appName, args, opts);
@@ -28,7 +28,7 @@ export class Network {
                 break;
             default:
                 throw new Error(
-                    `Unknown routingProvider: ${routingProvider}. Must be 'traefik' or 'tailscale'.`,
+                    `Unknown orangelab:routingProvider: ${routingProvider}. Must be 'traefik' or 'tailscale'.`,
                 );
         }
     }

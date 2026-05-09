@@ -53,7 +53,7 @@ export class Databases {
                 rootPassword: config.getSecret(this.appName, `${name}/rootPassword`),
                 storageClassName: existingVolume
                     ? this.args.storage.getStorageClass(name)
-                    : config.require('orangelab', 'mariadb/storageClass'),
+                    : this.args.storage.getDefaultStorageClass('mariadb'),
                 storageOnly: this.args.storageOnly,
                 storageSize: existingVolume
                     ? this.args.storage.getStorageSize(name)
@@ -111,7 +111,7 @@ export class Databases {
                     ?.split(','),
                 storageClassName: existingVolume
                     ? this.args.storage.getStorageClass(name)
-                    : config.require('orangelab', 'postgres/storageClass'),
+                    : this.args.storage.getDefaultStorageClass('postgres'),
                 storageSize: config.require(this.appName, `${name}/storageSize`),
             },
             this.opts,

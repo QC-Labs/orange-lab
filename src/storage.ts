@@ -16,10 +16,11 @@ import {
 } from './types';
 
 export class Storage extends pulumi.ComponentResource {
+    private defaultStorageClass = 'longhorn';
+    private deviceMounts = new Map<string, DeviceMountSpec>();
     private localVolumes = new Map<string, LocalVolume>();
     private longhornVolumes = new Map<string, LonghornVolume>();
     private volumes = new Map<string, kubernetes.types.input.core.v1.Volume>();
-    private deviceMounts = new Map<string, DeviceMountSpec>();
     public configFilesHash?: pulumi.Output<string>;
 
     constructor(
@@ -79,9 +80,6 @@ export class Storage extends pulumi.ComponentResource {
             : this.args.metadata.get().labels;
         const fromVolume =
             volume?.fromVolume ?? config.get(this.appName, `${prefix}fromVolume`);
-        const storageClass =
-            config.get(this.appName, `${prefix}storageClass`) ??
-            config.require('orangelab', 'storageClass');
         const storage = new LonghornVolume(
             `${volumeName}-storage`,
             {
@@ -94,7 +92,9 @@ export class Storage extends pulumi.ComponentResource {
                 namespace: this.args.metadata.namespace,
                 size:
                     volume?.size ?? config.require(this.appName, `${prefix}storageSize`),
-                storageClass: fromVolume ? undefined : storageClass,
+                storageClass: fromVolume
+                    ? undefined
+                    : this.getDefaultStorageClass(volume?.name),
             },
             { parent: this },
         );
@@ -103,6 +103,17 @@ export class Storage extends pulumi.ComponentResource {
             name: volumeName,
             persistentVolumeClaim: { claimName: storage.volumeClaimName },
         });
+    }
+
+    // <app>:component/storageClass ?? orangelab:component/storageClass ?? longhorn
+    // <app>:storageClass ?? orangelab:storageClass ?? longhorn
+    public getDefaultStorageClass(component?: string): string {
+        const prefix = component ? `${component}/` : '';
+        return (
+            config.get(this.appName, `${prefix}storageClass`) ??
+            config.get('orangelab', `${prefix}storageClass`) ??
+            this.defaultStorageClass
+        );
     }
 
     getClaimName(storageName?: string): pulumi.Output<string> {
