@@ -7,7 +7,6 @@ const moduleDependencies: Record<string, string[]> = {
     data: ['cloudnative-pg', 'mariadb-operator'],
     dev: ['debug'],
     hardware: ['amd-gpu-operator', 'nfd', 'nvidia-gpu-operator'],
-    iot: ['home-assistant'],
     monitoring: ['beszel', 'prometheus'],
     office: ['nextcloud'],
     security: ['vaultwarden'],

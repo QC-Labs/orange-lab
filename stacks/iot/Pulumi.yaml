@@ -1,0 +1,25 @@
+name: orangelab-iot
+main: index.ts
+runtime:
+    name: nodejs
+    options:
+        typescript: true
+        packagemanager: npm
+description: OrangeLab IoT Stack
+config:
+    # Required shared defaults (duplicated from root Pulumi.yaml)
+    # orangelab:routingProvider: tailscale | traefik
+    # orangelab:customDomain: 'example.com'
+
+    ### IoT ###
+
+    home-assistant:enabled: false
+    home-assistant:hostname: home-assistant
+    home-assistant:storageSize: 5Gi
+    # Set zone for deployment on nodes with topology.kubernetes.io/zone=<value> label
+    # This gives access to sensors on local host network
+    # home-assistant:requiredNodeLabel: topology.kubernetes.io/zone=<value>
+    # or deploy to specific node
+    # home-assistant:requiredNodeLabel: kubernetes.io/hostname=<value>
+
+    home-assistant:trustedProxies: '10.42.0.0/16,10.43.0.0/16,127.0.0.0/8' # clusterCidr,serviceCidr,local

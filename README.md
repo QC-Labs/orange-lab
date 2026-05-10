@@ -77,9 +77,9 @@ Private distributed infrastructure on consumer hardware.
 - [`electrs`](./components/bitcoin/electrs/electrs.md) - Electrs (Electrum) server implementation
 - [`mempool`](./components/bitcoin/mempool/mempool.md) - Blockchain explorer
 
-[IoT](./components/iot/IOT.md):
+[IoT](./stacks/iot/README.md):
 
-- [`home-assistant`](./components/iot/home-assistant/home-assistant.md) - sensor and home automation platform
+- [`home-assistant`](./stacks/iot/apps/home-assistant/home-assistant.md) - sensor and home automation platform
 
 [Media](./stacks/media/README.md):
 

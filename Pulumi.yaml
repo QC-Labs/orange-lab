@@ -138,15 +138,6 @@ config:
     beszel:storageSize: 5Gi
     beszel:storageOnly: false
 
-    ### IoT ###
-
-    home-assistant:enabled: false
-    home-assistant:hostname: home-assistant
-    home-assistant:storageSize: 5Gi
-    # Set zone for deployment on nodes with topology.kubernetes.io/zone=<value> label
-    # This gives access to sensors on local host network
-    # home-assistant:requiredNodeLabel: topology.kubernetes.io/zone=<value>
-
     ### AI ###
 
     ollama:enabled: false

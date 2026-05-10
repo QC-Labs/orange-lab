@@ -5,7 +5,6 @@ import { BitcoinModule } from './components/bitcoin';
 import { DataModule } from './components/data';
 import { DevModule } from './components/dev';
 import { HardwareModule } from './components/hardware';
-import { IoTModule } from './components/iot';
 import { MonitoringModule } from './components/monitoring';
 import { NetworkModule } from './components/network';
 import { OfficeModule } from './components/office';
@@ -38,13 +37,6 @@ if (config.isModuleEnabled('monitoring')) {
         dependsOn: baseModules,
     });
     exports.monitoring = monitoringModule.getExports();
-}
-
-if (config.isModuleEnabled('iot')) {
-    const iotModule = new IoTModule('iot', {
-        dependsOn: baseModules,
-    });
-    exports.iot = iotModule.getExports();
 }
 
 if (config.isModuleEnabled('ai')) {
