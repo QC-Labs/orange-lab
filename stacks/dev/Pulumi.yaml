@@ -1,0 +1,18 @@
+name: orangelab-dev
+main: index.ts
+runtime:
+    name: nodejs
+    options:
+        typescript: true
+        packagemanager: npm
+description: OrangeLab Development Stack
+config:
+    # Required shared defaults (duplicated from root Pulumi.yaml)
+    # orangelab:routingProvider: tailscale | traefik
+    # orangelab:customDomain: 'example.com'
+
+    debug:enabled: false
+    # debug:namespace: bitcoin
+    # debug:fromVolume: bitcoin
+    # debug:requiredNodeLabel: kubernetes.io/hostname=<host>
+    # debug:exportPath: /export

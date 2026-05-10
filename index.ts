@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { config } from '@orangelab/pulumi';
 import { DataModule } from './components/data';
-import { DevModule } from './components/dev';
 import { HardwareModule } from './components/hardware';
 import { MonitoringModule } from './components/monitoring';
 import { NetworkModule } from './components/network';
@@ -41,7 +40,4 @@ if (config.isModuleEnabled('security')) {
     exports.security = securityModule.getExports();
 }
 
-if (config.isModuleEnabled('dev')) {
-    const devModule = new DevModule('dev', { dependsOn: baseModules });
-    exports.dev = devModule.getExports();
-}
+
