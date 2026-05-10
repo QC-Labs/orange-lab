@@ -7,7 +7,6 @@ const moduleDependencies: Record<string, string[]> = {
     dev: ['debug'],
     hardware: ['amd-gpu-operator', 'nfd', 'nvidia-gpu-operator'],
     monitoring: ['beszel', 'prometheus'],
-
     security: ['vaultwarden'],
 };
 

@@ -7,6 +7,10 @@ runtime:
         packagemanager: npm
 description: OrangeLab Office Stack
 config:
+    # Required shared defaults (duplicated from root Pulumi.yaml)
+    # orangelab:routingProvider: tailscale | traefik
+    # orangelab:customDomain: 'example.com'
+
     nextcloud:enabled: false
     nextcloud:hostname: nextcloud
     nextcloud:storageSize: 20Gi

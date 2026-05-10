@@ -10,6 +10,7 @@ config:
     # Required shared defaults (duplicated from root Pulumi.yaml)
     # orangelab:routingProvider: tailscale | traefik
     # orangelab:customDomain: 'example.com'
+    cloudnative-pg:enabled: false
 
     ### Media ###
 

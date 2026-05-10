@@ -29,6 +29,9 @@ pulumi up --stack lab-media
 ### Immich
 
 ```sh
+# Confirm cloudnative-pg from root stack is installed
+pulumi config set --stack lab-media cloudnative-pg:enabled false
+
 pulumi config set --stack lab-media immich:enabled true
 pulumi config set --stack lab-media immich:machine-learning/enabled true
 pulumi up --stack lab-media
