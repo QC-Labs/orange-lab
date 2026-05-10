@@ -4,6 +4,8 @@
 
 ```sh
 git clone https://github.com/QC-Labs/orange-lab
+# build required after every change to packages/pulumi/
+npm run build
 ```
 
 ## Prerequisites

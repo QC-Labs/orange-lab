@@ -1,5 +1,5 @@
+import { config } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
-import { config } from '@orangelab/config';
 import { Beszel } from './beszel/beszel';
 import { Prometheus } from './prometheus/prometheus';
 

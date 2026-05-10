@@ -2,6 +2,8 @@
 
 This guide explains the process for upgrading your Orange Lab installation.
 
+## AI-assisted upgrades
+
 You can use AI to guide you through the migration process or follow manual instructions below.
 
 ```sh
@@ -15,28 +17,14 @@ opencode
 /orangelab-upgrade
 ```
 
-## Standard Upgrades
+## Prerequisites
 
-```sh
-# Pull the latest changes
-git pull
-
-# Apply changes, make sure you verify the changes first
-pulumi up
-```
-
-If any application has problems deploying or gets stuck, try disabling and enabling the app while keeping storage intact:
-
-```sh
-pulumi config set <app>:enabled true
-pulumi config set <app>:storageOnly true
-pulumi up
-
-pulumi config delete <app>:storageOnly
-pulumi up
-```
-
-## Handling Breaking Changes
+The general procedure is:
+- make sure all apps can be shut down with no data loss (static volumes used, secrets saved)
+- get latest code
+- rebuild @orangelab/pulumi library
+- pulumi up
+- disable/re-enable any app with breaking changes
 
 ### Preparing Volumes for Recovery
 
@@ -67,15 +55,23 @@ pulumi stack output <module> --show-secrets --json | jq -r '.<app>.<path>'
 pulumi config set <app>:<config-key> "<value>" --secret
 ```
 
-### Upgrade Procedure
+## Upgrade Procedure
 
-Once you have static volumes configured and secrets saved, disable the app and enable it again. Only the related `PersistentVolume` and its claim will be removed but the volume will just be detached in Longhorn and can be reused.
-
-Do this for all affected applications:
+Once you have static volumes configured and secrets saved, update the code:
 
 ```sh
+# Pull the latest changes
 git pull
+# Build packages/pulumi
+npm run build
 
+# Apply, make sure you verify the changes before confirming
+pulumi up
+```
+
+If any application has problems deploying, try disabling the app first. Make sure you use static Longhorn volumes so your data is not lost (check )
+
+```sh
 pulumi config set <app>:enabled false
 pulumi up
 

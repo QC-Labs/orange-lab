@@ -1,8 +1,6 @@
+import { Application, config, DatabaseConfig } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
-import { Application } from '@orangelab/application';
-import { config } from '@orangelab/config';
-import { DatabaseConfig } from '@orangelab/types';
 
 export interface N8nArgs {
     ollamaUrl?: string;

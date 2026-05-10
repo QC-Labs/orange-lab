@@ -1,9 +1,7 @@
+import { Application, config, DatabaseConfig, HttpEndpointInfo } from '@orangelab/pulumi';
 import * as k8s from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
-import { Application } from '@orangelab/application';
-import { config } from '@orangelab/config';
-import { DatabaseConfig, HttpEndpointInfo } from '@orangelab/types';
 
 export interface NextcloudArgs {
     trustedProxies: string[];

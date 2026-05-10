@@ -1,4 +1,4 @@
-import { config } from '@orangelab/config';
+import { config } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 import { CertManager } from './cert-manager/cert-manager';
 import { TailscaleOperator } from './tailscale/tailscale';

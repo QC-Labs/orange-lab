@@ -2,18 +2,25 @@
     "name": "orange-lab",
     "description": "Private infrastructure for cloud natives",
     "version": "0.5.0",
+    "private": true,
     "main": "index.ts",
     "license": "MIT",
+    "workspaces": [
+        "packages/*",
+        "stacks/*"
+    ],
     "engines": {
         "node": ">= 22.0.0"
     },
     "scripts": {
+        "build": "npm run build -w @orangelab/pulumi",
         "deploy": "pulumi up",
-        "preview": "pulumi preview --diff",
         "lint": "node_modules/.bin/eslint .",
+        "preview": "pulumi preview --diff",
         "test": "npx tsc --noEmit && npm run lint"
     },
     "dependencies": {
+        "@orangelab/pulumi": "*",
         "@pulumi/kubernetes": "4.29.0",
         "@pulumi/pulumi": "3.232.0",
         "@pulumi/random": "4.19.2",
@@ -25,7 +32,6 @@
         "@types/node": "25.6.0",
         "eslint": "9.39.2",
         "prettier": "3.8.3",
-        "tsconfig-paths": "4.2.0",
         "typescript": "5.9.3",
         "typescript-eslint": "8.59.0"
     }

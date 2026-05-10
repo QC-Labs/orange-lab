@@ -4,7 +4,7 @@ runtime:
     options:
         typescript: true
         packagemanager: npm
-description: Private infrastructure for cloud natives
+description: Private infrastructure on consumer hardware based on K8s, Pulumi and Longhorn
 config:
     # Below is list of all settings with default values.
     # Do NOT modify this file but add overrides in your Pulumi.<stack>.yaml.

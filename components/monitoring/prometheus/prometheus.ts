@@ -1,7 +1,5 @@
+import { Application, Nodes, config } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
-import { Application } from '@orangelab/application';
-import { Nodes } from '@orangelab/nodes';
-import { config } from '@orangelab/config';
 
 export class Prometheus extends pulumi.ComponentResource {
     public readonly alertmanagerEndpointUrl: string | undefined;
@@ -32,8 +30,10 @@ export class Prometheus extends pulumi.ComponentResource {
 
         if (this.app.storageOnly) return;
         const grafanaHttpEndpoint = this.app.network.getHttpEndpointInfo(grafanaHostname);
-        const prometheusHttpEndpoint = this.app.network.getHttpEndpointInfo(prometheusHostname);
-        const alertManagerHttpEndpoint = this.app.network.getHttpEndpointInfo(alertManagerHostname);
+        const prometheusHttpEndpoint =
+            this.app.network.getHttpEndpointInfo(prometheusHostname);
+        const alertManagerHttpEndpoint =
+            this.app.network.getHttpEndpointInfo(alertManagerHostname);
         this.app.addHelmChart(
             name,
             {

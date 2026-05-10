@@ -1,6 +1,4 @@
-import { Application } from '@orangelab/application';
-import { config } from '@orangelab/config';
-import { HttpEndpointInfo } from '@orangelab/types';
+import { Application, config, HttpEndpointInfo } from '@orangelab/pulumi';
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { VaultwardenToken } from './vaultwarden-token';

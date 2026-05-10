@@ -11,9 +11,9 @@ All stacks target the **same Kubernetes cluster**. The core stack must be deploy
 
 ## Available Module Stacks
 
-| Module | Path | Description |
-|---|---|---|
-| Media | [`stacks/media/`](./stacks/media/README.md) | Photo backup, streaming, *arr stack |
+| Module | Path                                        | Description                         |
+|--------|---------------------------------------------|-------------------------------------|
+| Media  | [`stacks/media/`](./stacks/media/README.md) | Photo backup, streaming, *arr stack |
 
 ## Prerequisites
 
@@ -37,7 +37,7 @@ Core must include:
 cd stacks/media
 
 # Initialize the stack
-pulumi stack init lab-media
+pulumi stack init <stack> # f.e. lab
 
 # Configure shared settings (copy from core stack overrides)
 pulumi config set orangelab:routingProvider traefik
@@ -60,7 +60,7 @@ Each module stack has its own `Pulumi.yaml` with default values. Stack-specific 
 ```
 stacks/<module>/
 ├── Pulumi.yaml              # Project name + shared defaults
-├── Pulumi.lab-media.yaml    # Stack-specific overrides
+├── Pulumi.<stack>.yaml      # Stack-specific overrides
 ├── index.ts                 # Entry point
 └── components/              # Module components
 ```
@@ -69,12 +69,8 @@ Shared config keys that must be duplicated in every module stack:
 
 | Key | Example | Purpose |
 |---|---|---|
-| `k3s:serverIp` | `100.92.253.4` | Kubernetes API server |
-| `k3s:clusterCidr` | `10.42.0.0/16` | Pod network CIDR |
-| `k3s:serviceCidr` | `10.43.0.0/16` | Service network CIDR |
 | `orangelab:routingProvider` | `traefik` or `tailscale` | Ingress/routing |
-| `orangelab:customDomain` | `example.com` | Traefik domain |
-| `orangelab:storageClass` | `longhorn` | Default storage class |
+| `orangelab:customDomain`    | `example.com`            | Traefik domain  |
 
 ## Migrating a Module from Core Stack
 
@@ -82,7 +78,7 @@ To move a module from the monolithic core stack to its own stack:
 
 1. **Disable the module in core**:
    ```sh
-   # In root Pulumi.lab.yaml, set all module apps to false
+   # In root Pulumi.<stack>.yaml, set all module apps to false
    pulumi config set jellyfin:enabled false
    # ... etc for all apps in the module
    ```
@@ -96,7 +92,7 @@ To move a module from the monolithic core stack to its own stack:
 3. **Configure and deploy the module stack**:
    ```sh
    cd stacks/<module>
-   pulumi stack init lab-<module>
+   pulumi stack init lab
    # Copy app overrides from root Pulumi.lab.yaml
-   pulumi up --stack lab-<module>
+   pulumi up
    ```

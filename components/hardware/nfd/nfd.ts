@@ -1,7 +1,6 @@
+import { Application, config } from '@orangelab/pulumi';
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
-import { Application } from '@orangelab/application';
-import { config } from '@orangelab/config';
 
 export class NodeFeatureDiscovery extends pulumi.ComponentResource {
     private readonly app: Application;

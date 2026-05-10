@@ -1,5 +1,5 @@
+import { Application } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
-import { Application } from '@orangelab/application';
 
 export interface HomeAssistantArgs {
     trustedProxies?: string[];

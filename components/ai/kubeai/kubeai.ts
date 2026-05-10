@@ -1,7 +1,5 @@
+import { Application, GrafanaDashboard, config } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
-import { Application } from '@orangelab/application';
-import { GrafanaDashboard } from '@orangelab/grafana-dashboard';
-import { config } from '@orangelab/config';
 import dashboardJson from './kubeai-dashboard-vllm.json';
 
 export class KubeAi extends pulumi.ComponentResource {

@@ -1,6 +1,6 @@
+import { config } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 import assert from 'assert';
-import { config } from '@orangelab/config';
 import { BitcoinCore } from './bitcoin-core/bitcoin-core';
 import { BitcoinKnots } from './bitcoin-knots/bitcoin-knots';
 import { Electrs } from './electrs/electrs';

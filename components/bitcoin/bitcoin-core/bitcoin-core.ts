@@ -1,6 +1,5 @@
+import { Application, config } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
-import { Application } from '@orangelab/application';
-import { config } from '@orangelab/config';
 import { BitcoinConf } from '../utils/bitcoin-conf';
 import { RpcUser } from '../utils/rpc-user';
 

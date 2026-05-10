@@ -1,6 +1,4 @@
-import { config } from '@orangelab/config';
-import { Metadata } from '@orangelab/metadata';
-import { S3Provisioner } from '@orangelab/types';
+import { config, Metadata, S3Provisioner } from '@orangelab/pulumi';
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';

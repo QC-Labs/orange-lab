@@ -1,6 +1,4 @@
-import { Application } from '@orangelab/application';
-import { config } from '@orangelab/config';
-import { InitContainerSpec, VolumeMount } from '@orangelab/types';
+import { Application, config, InitContainerSpec, VolumeMount } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 
 export class Transmission extends pulumi.ComponentResource {

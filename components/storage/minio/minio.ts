@@ -1,5 +1,4 @@
-import { Application } from '@orangelab/application';
-import { config } from '@orangelab/config';
+import { Application, config } from '@orangelab/pulumi';
 import { MinioProvisioner } from './minio-provisioner';
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';

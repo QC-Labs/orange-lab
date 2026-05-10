@@ -1,5 +1,4 @@
-import { Application } from '@orangelab/application';
-import { config } from '@orangelab/config';
+import { Application, config } from '@orangelab/pulumi';
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 

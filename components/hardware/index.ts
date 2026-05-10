@@ -1,4 +1,4 @@
-import { config } from '@orangelab/config';
+import { config } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 import { AmdGPUOperator } from './amd-gpu-operator/amd-gpu-operator';
 import { NodeFeatureDiscovery } from './nfd/nfd';

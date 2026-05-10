@@ -1,8 +1,6 @@
+import { Application, GrafanaDashboard, config } from '@orangelab/pulumi';
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
-import { Application } from '@orangelab/application';
-import { GrafanaDashboard } from '@orangelab/grafana-dashboard';
-import { config } from '@orangelab/config';
 import dashboardGpuJson from './amd-dashboard_gpu.json';
 import dashboardJobJson from './amd-dashboard_job.json';
 import dashboardNodeJson from './amd-dashboard_node.json';

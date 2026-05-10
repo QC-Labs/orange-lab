@@ -1,5 +1,4 @@
-import { config } from '@orangelab/config';
-import { Metadata } from '@orangelab/metadata';
+import { config, Metadata } from '@orangelab/pulumi';
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';

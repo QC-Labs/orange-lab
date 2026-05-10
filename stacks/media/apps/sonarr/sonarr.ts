@@ -1,6 +1,4 @@
-import { Application } from '@orangelab/application';
-import { config } from '@orangelab/config';
-import { VolumeMount } from '@orangelab/types';
+import { Application, config, VolumeMount } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 
 export class Sonarr extends pulumi.ComponentResource {

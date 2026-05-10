@@ -1,4 +1,4 @@
-import { config } from '@orangelab/config';
+import { config } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 import { Longhorn } from './longhorn/longhorn';
 import { Minio } from './minio/minio';

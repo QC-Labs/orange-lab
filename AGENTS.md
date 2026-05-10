@@ -6,6 +6,7 @@
 - Preview changes: `pulumi preview --diff` (useful for checking for any unintended changes after major code updates or refactoring)
 - Build/Test/TypeCheck (TypeScript only): `npm test`
     - ⚠️ SKIP for markdown/documentation changes - no need to run
+- Build `@orangelab/pulumi` after editing `packages/pulumi/src/`: `npm run build` (must be run before `pulumi up` or `pulumi preview`)
 
 ## Architectural Principles
 

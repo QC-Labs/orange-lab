@@ -1,4 +1,4 @@
-import { Application } from '@orangelab/application';
+import { Application } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 
 export class MusicSeerr extends pulumi.ComponentResource {

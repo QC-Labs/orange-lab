@@ -1,6 +1,10 @@
-import { Application } from '@orangelab/application';
-import { config } from '@orangelab/config';
-import { DatabaseConfig, HttpEndpointInfo, VolumeMount } from '@orangelab/types';
+import {
+    Application,
+    config,
+    DatabaseConfig,
+    HttpEndpointInfo,
+    VolumeMount,
+} from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
 

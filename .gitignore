@@ -1,5 +1,10 @@
 bin
 /node_modules/
+dist/
+*.js
+*.js.map
+*.d.ts
+*.d.ts.map
 Pulumi.*.yaml
 .goose/
 .github/copilot.yml

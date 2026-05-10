@@ -1,5 +1,5 @@
+import { config } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
-import { config } from '@orangelab/config';
 import { Vaultwarden } from './vaultwarden/vaultwarden';
 
 export class SecurityModule extends pulumi.ComponentResource {

@@ -6,7 +6,7 @@ import pulumiPlugin from '@pulumi/eslint-plugin';
 
 export default defineConfig(
     {
-        ignores: ['node_modules/**', 'bin/**'],
+        ignores: ['node_modules/**', 'bin/**', 'dist/**', '**/*.js', '**/*.d.ts'],
     },
     {
         files: ['**/*.{js,mjs,ts}'],

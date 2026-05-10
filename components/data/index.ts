@@ -1,7 +1,7 @@
+import { MariaDBOperator } from './mariadb-operator/mariadb-operator';
+import { config } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 import { CloudNativePG } from './cloudnative-pg/cloudnative-pg';
-import { MariaDBOperator } from './mariadb-operator/mariadb-operator';
-import { config } from '@orangelab/config';
 
 export class DataModule extends pulumi.ComponentResource {
     cloudNativePG?: CloudNativePG;

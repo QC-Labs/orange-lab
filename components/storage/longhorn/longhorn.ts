@@ -1,7 +1,10 @@
-import { Application } from '@orangelab/application';
-import { config } from '@orangelab/config';
-import { GrafanaDashboard } from '@orangelab/grafana-dashboard';
-import { HttpEndpointInfo, S3Provisioner } from '@orangelab/types';
+import {
+    Application,
+    config,
+    GrafanaDashboard,
+    HttpEndpointInfo,
+    S3Provisioner,
+} from '@orangelab/pulumi';
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import dashboardJson from './longhorn-dashboard.json';

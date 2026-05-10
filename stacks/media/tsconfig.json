@@ -10,7 +10,7 @@
     "noImplicitReturns": true,
     "outDir": "../../bin/stacks/media",
     "paths": {
-      "@orangelab/*": ["../../src/*"]
+      "@orangelab/pulumi": ["../../packages/pulumi/src/index.ts"]
     },
     "pretty": true,
     "resolveJsonModule": true,

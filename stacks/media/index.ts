@@ -1,6 +1,5 @@
-import 'tsconfig-paths/register';
+import { config } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
-import { config } from '@orangelab/config';
 import { Immich } from './apps/immich/immich';
 import { Jellyfin } from './apps/jellyfin/jellyfin';
 import { Lidarr } from './apps/lidarr/lidarr';
@@ -14,19 +13,26 @@ import { Transmission } from './apps/transmission/transmission';
 const media = new pulumi.ComponentResource('orangelab:media', 'media', {});
 
 const jellyfin = config.isEnabled('jellyfin')
-    ? new Jellyfin('jellyfin', { parent: media }) : undefined;
+    ? new Jellyfin('jellyfin', { parent: media })
+    : undefined;
 const immichApp = config.isEnabled('immich')
-    ? new Immich('immich', { parent: media }) : undefined;
+    ? new Immich('immich', { parent: media })
+    : undefined;
 const lidarr = config.isEnabled('lidarr')
-    ? new Lidarr('lidarr', { parent: media }) : undefined;
+    ? new Lidarr('lidarr', { parent: media })
+    : undefined;
 const prowlarr = config.isEnabled('prowlarr')
-    ? new Prowlarr('prowlarr', { parent: media }) : undefined;
+    ? new Prowlarr('prowlarr', { parent: media })
+    : undefined;
 const radarr = config.isEnabled('radarr')
-    ? new Radarr('radarr', { parent: media }) : undefined;
+    ? new Radarr('radarr', { parent: media })
+    : undefined;
 const sonarr = config.isEnabled('sonarr')
-    ? new Sonarr('sonarr', { parent: media }) : undefined;
+    ? new Sonarr('sonarr', { parent: media })
+    : undefined;
 const transmission = config.isEnabled('transmission')
-    ? new Transmission('transmission', { parent: media }) : undefined;
+    ? new Transmission('transmission', { parent: media })
+    : undefined;
 
 const musicseerr = config.isEnabled('musicseerr')
     ? new MusicSeerr('musicseerr', {
@@ -38,7 +44,9 @@ const musicseerr = config.isEnabled('musicseerr')
 const seerr = config.isEnabled('seerr')
     ? new Seerr('seerr', {
           parent: media,
-          dependsOn: [jellyfin, radarr, sonarr, transmission].filter(x => x !== undefined),
+          dependsOn: [jellyfin, radarr, sonarr, transmission].filter(
+              x => x !== undefined,
+          ),
       })
     : undefined;
 
