@@ -7,8 +7,6 @@ import { Electrs } from './apps/electrs/electrs';
 import { Mempool } from './apps/mempool/mempool';
 import { RpcUser } from './utils/rpc-user';
 
-const bitcoin = new pulumi.ComponentResource('orangelab:bitcoin', 'bitcoin', {});
-
 const usernames = config
     .require('bitcoin', 'rpcUsers')
     .split(',')
@@ -17,16 +15,16 @@ const rpcUsers: Record<string, RpcUser> = {};
 const bitcoinUsers: Record<string, pulumi.Output<string>> = {};
 
 usernames.forEach(username => {
-    rpcUsers[username] = new RpcUser('bitcoin', { username }, { parent: bitcoin });
+    rpcUsers[username] = new RpcUser('bitcoin', { username });
     bitcoinUsers[username] = rpcUsers[username].password;
 });
 
 const bitcoinKnots = config.isEnabled('bitcoin-knots')
-    ? new BitcoinKnots('bitcoin-knots', { rpcUsers }, { parent: bitcoin })
+    ? new BitcoinKnots('bitcoin-knots', { rpcUsers })
     : undefined;
 
 const bitcoinCore = config.isEnabled('bitcoin-core')
-    ? new BitcoinCore('bitcoin-core', { rpcUsers }, { parent: bitcoin })
+    ? new BitcoinCore('bitcoin-core', { rpcUsers })
     : undefined;
 
 const bitcoinRpcUrl =
@@ -38,15 +36,11 @@ const bitcoinP2pUrl =
 
 const electrs =
     config.isEnabled('electrs') && bitcoinRpcUrl && bitcoinP2pUrl
-        ? new Electrs(
-              'electrs',
-              {
-                  rpcUser: rpcUsers.electrs,
-                  bitcoinRpcUrl,
-                  bitcoinP2pUrl,
-              },
-              { parent: bitcoin },
-          )
+        ? new Electrs('electrs', {
+              rpcUser: rpcUsers.electrs,
+              bitcoinRpcUrl,
+              bitcoinP2pUrl,
+          })
         : undefined;
 
 if (config.isEnabled('electrs')) {
@@ -55,15 +49,11 @@ if (config.isEnabled('electrs')) {
 
 const mempool =
     config.isEnabled('mempool') && electrs && bitcoinRpcUrl
-        ? new Mempool(
-              'mempool',
-              {
-                  electrsUrl: electrs.app.network.clusterEndpoints['electrs-rpc'],
-                  rpcUser: rpcUsers.mempool,
-                  bitcoinRpcUrl,
-              },
-              { parent: bitcoin },
-          )
+        ? new Mempool('mempool', {
+              electrsUrl: electrs.app.network.clusterEndpoints['electrs-rpc'],
+              rpcUser: rpcUsers.mempool,
+              bitcoinRpcUrl,
+          })
         : undefined;
 
 if (config.isEnabled('mempool')) {
@@ -71,8 +61,11 @@ if (config.isEnabled('mempool')) {
     assert(bitcoinRpcUrl, 'Bitcoin RPC must be enabled for Mempool');
 }
 
-export const bitcoinUserPasswords = Object.fromEntries(
-    Object.entries(bitcoinUsers).map(([user, password]) => [user, pulumi.secret(password)]),
+const bitcoinUserPasswords = Object.fromEntries(
+    Object.entries(bitcoinUsers).map(([user, password]) => [
+        user,
+        pulumi.secret(password),
+    ]),
 );
 
 export const endpoints = {
@@ -89,4 +82,7 @@ export const clusterEndpoints = {
     ...mempool?.app.network.clusterEndpoints,
 };
 
-export const mempoolDb = mempool ? { db: mempool.dbConfig } : undefined;
+export const apps = {
+    mempool: mempool ? { db: mempool.dbConfig } : undefined,
+    bitcoin: { users: bitcoinUserPasswords },
+};

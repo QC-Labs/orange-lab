@@ -1,5 +1,4 @@
 import { config } from '@orangelab/pulumi';
-import * as pulumi from '@pulumi/pulumi';
 import { Immich } from './apps/immich/immich';
 import { Jellyfin } from './apps/jellyfin/jellyfin';
 import { Lidarr } from './apps/lidarr/lidarr';
@@ -10,40 +9,24 @@ import { Seerr } from './apps/seerr/seerr';
 import { Sonarr } from './apps/sonarr/sonarr';
 import { Transmission } from './apps/transmission/transmission';
 
-const media = new pulumi.ComponentResource('orangelab:media', 'media', {});
-
-const jellyfin = config.isEnabled('jellyfin')
-    ? new Jellyfin('jellyfin', { parent: media })
-    : undefined;
-const immichApp = config.isEnabled('immich')
-    ? new Immich('immich', { parent: media })
-    : undefined;
-const lidarr = config.isEnabled('lidarr')
-    ? new Lidarr('lidarr', { parent: media })
-    : undefined;
-const prowlarr = config.isEnabled('prowlarr')
-    ? new Prowlarr('prowlarr', { parent: media })
-    : undefined;
-const radarr = config.isEnabled('radarr')
-    ? new Radarr('radarr', { parent: media })
-    : undefined;
-const sonarr = config.isEnabled('sonarr')
-    ? new Sonarr('sonarr', { parent: media })
-    : undefined;
+const jellyfin = config.isEnabled('jellyfin') ? new Jellyfin('jellyfin') : undefined;
+const immich = config.isEnabled('immich') ? new Immich('immich') : undefined;
+const lidarr = config.isEnabled('lidarr') ? new Lidarr('lidarr') : undefined;
+const prowlarr = config.isEnabled('prowlarr') ? new Prowlarr('prowlarr') : undefined;
+const radarr = config.isEnabled('radarr') ? new Radarr('radarr') : undefined;
+const sonarr = config.isEnabled('sonarr') ? new Sonarr('sonarr') : undefined;
 const transmission = config.isEnabled('transmission')
-    ? new Transmission('transmission', { parent: media })
+    ? new Transmission('transmission')
     : undefined;
 
 const musicseerr = config.isEnabled('musicseerr')
     ? new MusicSeerr('musicseerr', {
-          parent: media,
           dependsOn: [lidarr, jellyfin].filter(x => x !== undefined),
       })
     : undefined;
 
 const seerr = config.isEnabled('seerr')
     ? new Seerr('seerr', {
-          parent: media,
           dependsOn: [jellyfin, radarr, sonarr, transmission].filter(
               x => x !== undefined,
           ),
@@ -52,7 +35,7 @@ const seerr = config.isEnabled('seerr')
 
 export const endpoints = {
     ...jellyfin?.app.network.endpoints,
-    ...immichApp?.app.network.endpoints,
+    ...immich?.app.network.endpoints,
     ...lidarr?.app.network.endpoints,
     ...musicseerr?.app.network.endpoints,
     ...prowlarr?.app.network.endpoints,
@@ -71,9 +54,11 @@ export const clusterUrls = {
     transmission: transmission?.app.network.clusterEndpoints.transmission,
 };
 
-export const immich = immichApp
-    ? {
-          jwtSecret: immichApp.jwtSecret,
-          db: immichApp.dbConfig,
-      }
-    : undefined;
+export const apps = {
+    immich: immich
+        ? {
+              jwtSecret: immich.jwtSecret,
+              db: immich.dbConfig,
+          }
+        : undefined,
+};

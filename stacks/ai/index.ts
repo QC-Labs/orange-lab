@@ -1,5 +1,4 @@
 import { config } from '@orangelab/pulumi';
-import * as pulumi from '@pulumi/pulumi';
 import { Automatic1111 } from './apps/automatic1111/automatic1111';
 import { InvokeAi } from './apps/invokeai/invokeai';
 import { KubeAi } from './apps/kubeai/kubeai';
@@ -8,23 +7,15 @@ import { Ollama } from './apps/ollama/ollama';
 import { OpenWebUI } from './apps/open-webui/open-webui';
 import { SDNext } from './apps/sdnext/sdnext';
 
-const ai = new pulumi.ComponentResource('orangelab:ai', 'ai', {});
-
-const ollama = config.isEnabled('ollama')
-    ? new Ollama('ollama', { parent: ai })
-    : undefined;
+const ollama = config.isEnabled('ollama') ? new Ollama('ollama') : undefined;
 
 const automatic1111 = config.isEnabled('automatic1111')
-    ? new Automatic1111('automatic1111', { parent: ai })
+    ? new Automatic1111('automatic1111')
     : undefined;
 
-const sdnext = config.isEnabled('sdnext')
-    ? new SDNext('sdnext', { parent: ai })
-    : undefined;
+const sdnext = config.isEnabled('sdnext') ? new SDNext('sdnext') : undefined;
 
-const kubeAI = config.isEnabled('kubeai')
-    ? new KubeAi('kubeai', { parent: ai })
-    : undefined;
+const kubeAI = config.isEnabled('kubeai') ? new KubeAi('kubeai') : undefined;
 
 const openWebUI = config.isEnabled('open-webui')
     ? new OpenWebUI(
@@ -37,18 +28,15 @@ const openWebUI = config.isEnabled('open-webui')
                   automatic1111?.app.network.clusterEndpoints.automatic1111,
           },
           {
-              parent: ai,
               dependsOn: [ollama, kubeAI, automatic1111].filter(x => x !== undefined),
           },
       )
     : undefined;
 
-const invokeAi = config.isEnabled('invokeai')
-    ? new InvokeAi('invokeai', { parent: ai })
-    : undefined;
+const invokeAi = config.isEnabled('invokeai') ? new InvokeAi('invokeai') : undefined;
 
 const n8n = config.isEnabled('n8n')
-    ? new N8n('n8n', { ollamaUrl: ollama?.serviceUrl }, { parent: ai })
+    ? new N8n('n8n', { ollamaUrl: ollama?.serviceUrl })
     : undefined;
 
 export const endpoints = {
@@ -70,9 +58,11 @@ export const clusterEndpoints = {
     ...n8n?.app.network.clusterEndpoints,
 };
 
-export const n8nConfig = n8n
-    ? {
-          encryptionKey: n8n.encryptionKey,
-          db: n8n.postgresConfig,
-      }
-    : undefined;
+export const apps = {
+    n8n: n8n
+        ? {
+              encryptionKey: n8n.encryptionKey,
+              db: n8n.postgresConfig,
+          }
+        : undefined,
+};
