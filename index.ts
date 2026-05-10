@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { config } from '@orangelab/pulumi';
-import { AIModule } from './components/ai';
 import { DataModule } from './components/data';
 import { DevModule } from './components/dev';
 import { HardwareModule } from './components/hardware';
@@ -35,11 +34,6 @@ if (config.isModuleEnabled('monitoring')) {
         dependsOn: baseModules,
     });
     exports.monitoring = monitoringModule.getExports();
-}
-
-if (config.isModuleEnabled('ai')) {
-    const aiModule = new AIModule('ai', { dependsOn: baseModules });
-    exports.ai = aiModule.getExports();
 }
 
 if (config.isModuleEnabled('security')) {

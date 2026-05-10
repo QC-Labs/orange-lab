@@ -1,0 +1,56 @@
+# AI Stack
+
+AI-related components for running large language models, image generation, and workflow automation.
+
+**Prerequisite**: Core stack must be deployed first (network, storage).
+
+## Components
+
+- [Ollama](./apps/ollama/ollama.md) - Local LLM inference server with GPU support.
+- [Open WebUI](./apps/open-webui/open-webui.md) - Web interface for LLMs with support for multiple backends.
+- [InvokeAI](./apps/invokeai/invokeai.md) - Professional image generation toolkit.
+- [n8n](./apps/n8n/n8n.md) - Workflow automation with AI node integration.
+- [KubeAI](./apps/kubeai/kubeai.md) - Private AI SDK providing OpenAI-compatible API (experimental).
+- [Automatic1111](./apps/automatic1111/automatic1111.md) - Stable Diffusion WebUI (deprecated).
+- [SDNext](./apps/sdnext/sdnext.md) - Alternative Stable Diffusion WebUI (deprecated).
+
+## Deploy
+
+```sh
+cd stacks/ai
+pulumi stack init <stack> # f.e. lab-ai
+pulumi up
+```
+
+## Migrate from Root Stack
+
+If AI components were previously deployed in the root stack, migrate their settings before deploying in this stack.
+
+Plain values can just be copied from `Pulumi.<stack>.yaml` to `stacks/ai/Pulumi.<stack>.yaml`.
+
+Secrets use different encryption keys so the values have to be exported first.
+
+Get plaintext values from the root stack:
+
+```sh
+# copy all settings from: ollama,open-webui,invokeai,n8n,kubeai,automatic1111,sdnext
+
+# export secrets
+pulumi config get open-webui:WEBUI_SECRET_KEY
+pulumi config get n8n:N8N_ENCRYPTION_KEY
+pulumi config get kubeai:huggingfaceToken
+pulumi config get invokeai:huggingfaceToken
+```
+
+Then set them in the AI stack:
+
+```sh
+cd stacks/ai
+# copy all settings from root stack
+
+# set secrets with new stack encryption key
+pulumi config set --secret open-webui:WEBUI_SECRET_KEY <value>
+pulumi config set --secret n8n:N8N_ENCRYPTION_KEY <value>
+pulumi config set --secret kubeai:huggingfaceToken <value>
+pulumi config set --secret invokeai:huggingfaceToken <value>
+```

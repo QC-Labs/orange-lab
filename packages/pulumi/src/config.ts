@@ -2,7 +2,6 @@
 import * as pulumi from '@pulumi/pulumi';
 
 const moduleDependencies: Record<string, string[]> = {
-    ai: ['automatic1111', 'invokeai', 'kubeai', 'n8n', 'ollama', 'open-webui', 'sdnext'],
     data: ['cloudnative-pg', 'mariadb-operator'],
     dev: ['debug'],
     hardware: ['amd-gpu-operator', 'nfd', 'nvidia-gpu-operator'],
