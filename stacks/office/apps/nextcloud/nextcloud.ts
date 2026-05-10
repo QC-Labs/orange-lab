@@ -3,10 +3,6 @@ import * as k8s from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
 
-export interface NextcloudArgs {
-    trustedProxies: string[];
-}
-
 export class Nextcloud extends pulumi.ComponentResource {
     public readonly serviceUrl?: string;
     public readonly app: Application;
@@ -15,7 +11,6 @@ export class Nextcloud extends pulumi.ComponentResource {
 
     constructor(
         private appName: string,
-        private args: NextcloudArgs,
         opts?: pulumi.ComponentResourceOptions,
     ) {
         super('orangelab:office:Nextcloud', appName, {}, opts);
@@ -40,6 +35,10 @@ export class Nextcloud extends pulumi.ComponentResource {
         dbConfig: DatabaseConfig;
     }) {
         const waitForDb = this.app.databases?.getWaitContainer();
+        const trustedProxies = config
+            .require('nextcloud', 'trustedProxies')
+            .split(',')
+            .map(s => s.trim());
         return this.app.addHelmChart(
             this.appName,
             {
@@ -95,7 +94,7 @@ $CONFIG = array (
                         extraEnv: [
                             {
                                 name: 'TRUSTED_PROXIES',
-                                value: this.args.trustedProxies.join(' '),
+                                value: trustedProxies.join(' '),
                             },
                             {
                                 name: 'OVERWRITEHOST',

@@ -1,0 +1,14 @@
+{
+    "name": "@orangelab/office",
+    "description": "OrangeLab Office Stack",
+    "version": "0.5.0",
+    "private": true,
+    "license": "MIT",
+    "engines": {
+        "node": ">= 22.0.0"
+    },
+    "dependencies": {
+        "@orangelab/pulumi": "*",
+        "@pulumi/pulumi": "3.232.0"
+    }
+}

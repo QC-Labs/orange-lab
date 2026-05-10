@@ -1,0 +1,15 @@
+name: orangelab-office
+main: index.ts
+runtime:
+    name: nodejs
+    options:
+        typescript: true
+        packagemanager: npm
+description: OrangeLab Office Stack
+config:
+    nextcloud:enabled: false
+    nextcloud:hostname: nextcloud
+    nextcloud:storageSize: 20Gi
+    nextcloud:db/storageSize: 5Gi
+    # Comma-separated list of trusted proxy CIDRs
+    nextcloud:trustedProxies: '10.42.0.0/16,10.43.0.0/16,127.0.0.0/8'

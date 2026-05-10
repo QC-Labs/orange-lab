@@ -26,7 +26,6 @@ export class Databases {
     ) {}
 
     addMariaDB(name = 'db'): void {
-        config.requireEnabled(this.appName, 'mariadb-operator');
         if (this.databases[name]) {
             throw new Error(`Database ${this.appName}-${name} already exists.`);
         }

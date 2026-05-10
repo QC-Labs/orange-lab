@@ -12,6 +12,15 @@ Nextcloud is a self-hosted productivity platform that lets you store files, coll
 
 It can also be used to store your contacts, bookmarks, calendar etc. and has a lot of additional modules which can be installed through the deployed website.
 
+## Prerequisites
+
+Requires [`mariadb-operator`](../../../../components/data/mariadb-operator/mariadb-operator.md) enabled in the root stack.
+
+```sh
+pulumi config set mariadb-operator:enabled true
+pulumi up
+```
+
 ## Basic configuration
 
 ```sh
@@ -55,7 +64,7 @@ https://nextcloud.<domain>/
 Login with the admin user. The password can be retrieved with:
 
 ```sh
-pulumi stack output --show-secrets --json | jq '.office.nextcloudUsers.admin' -r
+pulumi stack output --show-secrets --json | jq '.nextcloudUsers.admin' -r
 ```
 
 ## Database
@@ -66,7 +75,7 @@ When restoring from a backup, the auto-generated passwords will not match the on
 
 ```sh
 # Get the nextcloud user password from Pulumi stack output
-pulumi stack output --show-secrets --json | jq '.office.nextcloud.db.password' -r
+pulumi stack output --show-secrets --json | jq '.nextcloudDb.password' -r
 
 # Set password for the nextcloud user
 pulumi config set nextcloud:db/password YourNextcloudDbPassword --secret

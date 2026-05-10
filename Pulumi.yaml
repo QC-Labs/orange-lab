@@ -250,13 +250,6 @@ config:
     mempool:backend/image: mempool/backend:v3.2.1
     mempool:db/storageSize: 1Gi
 
-    ### Office ###
-
-    nextcloud:enabled: false
-    nextcloud:hostname: nextcloud
-    nextcloud:storageSize: 20Gi
-    nextcloud:db/storageSize: 5Gi
-
     ### Security ###
 
     vaultwarden:enabled: false

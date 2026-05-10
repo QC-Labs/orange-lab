@@ -7,7 +7,6 @@ import { DevModule } from './components/dev';
 import { HardwareModule } from './components/hardware';
 import { MonitoringModule } from './components/monitoring';
 import { NetworkModule } from './components/network';
-import { OfficeModule } from './components/office';
 import { SecurityModule } from './components/security';
 import { StorageModule } from './components/storage';
 
@@ -47,11 +46,6 @@ if (config.isModuleEnabled('ai')) {
 if (config.isModuleEnabled('bitcoin')) {
     const bitcoinModule = new BitcoinModule('bitcoin', { dependsOn: baseModules });
     exports.bitcoin = bitcoinModule.getExports();
-}
-
-if (config.isModuleEnabled('office')) {
-    const officeModule = new OfficeModule('office', { dependsOn: baseModules });
-    exports.office = officeModule.getExports();
 }
 
 if (config.isModuleEnabled('security')) {

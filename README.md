@@ -93,9 +93,9 @@ Private distributed infrastructure on consumer hardware.
 - [`sonarr`](./stacks/media/apps/sonarr/sonarr.md) - TV show collection manager
 - [`transmission`](./stacks/media/apps/transmission/transmission.md) - BitTorrent download client
 
-[Office](./components/office/OFFICE.md):
+[Office](./stacks/office/README.md):
 
-- [`nextcloud`](./components/office/nextcloud/nextcloud.md) - File sharing, calendars, contacts, tasks
+- [`nextcloud`](./stacks/office/apps/nextcloud/nextcloud.md) - File sharing, calendars, contacts, tasks
 
 [Security](./components/security/SECURITY.md):
 
