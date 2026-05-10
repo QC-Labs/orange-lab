@@ -58,6 +58,10 @@ Private distributed infrastructure on consumer hardware.
 - [`beszel`](./components/monitoring/beszel/beszel.md) - Beszel lightweight monitoring
 - [`prometheus`](./components/monitoring/prometheus/prometheus.md) - Prometheus/Grafana monitoring
 
+[Security](./components/security/SECURITY.md):
+
+- [`vaultwarden`](./components/security/vaultwarden/vaultwarden.md) - Bitwarden-compatible password manager
+
 ### Optional modules
 
 [AI](./components/ai/AI.md):
@@ -70,12 +74,12 @@ Private distributed infrastructure on consumer hardware.
 - [`automatic1111`](./components/ai/automatic1111/automatic1111.md) - (Deprecated) Stable Diffusion WebUI.
 - [`sdnext`](./components/ai/sdnext/sdnext.md) - (Deprecated) Stable Diffusion WebUI.
 
-[Bitcoin](./components/bitcoin/BITCOIN.md):
+[Bitcoin](./stacks/bitcoin/README.md):
 
-- [`bitcoin-core`](./components/bitcoin/bitcoin-core/bitcoin-core.md) - Bitcoin Core node
-- [`bitcoin-knots`](./components/bitcoin/bitcoin-knots/bitcoin-knots.md) - Bitcoin Knots node
-- [`electrs`](./components/bitcoin/electrs/electrs.md) - Electrs (Electrum) server implementation
-- [`mempool`](./components/bitcoin/mempool/mempool.md) - Blockchain explorer
+- [`bitcoin-core`](./stacks/bitcoin/apps/bitcoin-core/bitcoin-core.md) - Bitcoin Core node
+- [`bitcoin-knots`](./stacks/bitcoin/apps/bitcoin-knots/bitcoin-knots.md) - Bitcoin Knots node
+- [`electrs`](./stacks/bitcoin/apps/electrs/electrs.md) - Electrs (Electrum) server implementation
+- [`mempool`](./stacks/bitcoin/apps/mempool/mempool.md) - Blockchain explorer
 
 [IoT](./stacks/iot/README.md):
 
@@ -96,10 +100,6 @@ Private distributed infrastructure on consumer hardware.
 [Office](./stacks/office/README.md):
 
 - [`nextcloud`](./stacks/office/apps/nextcloud/nextcloud.md) - File sharing, calendars, contacts, tasks
-
-[Security](./components/security/SECURITY.md):
-
-- [`vaultwarden`](./components/security/vaultwarden/vaultwarden.md) - Bitwarden-compatible password manager
 
 [Dev](./components/dev/DEV.md):
 

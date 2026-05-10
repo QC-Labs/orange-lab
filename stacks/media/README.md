@@ -4,6 +4,18 @@ Media management, photo storage, and media streaming applications.
 
 **Prerequisite**: Core stack must be deployed first (network, storage, and data operators).
 
+## Components
+
+- [Immich](./apps/immich/immich.md) — Self-hosted photo and video backup solution
+- [Jellyfin](./apps/jellyfin/jellyfin.md) — Streaming movies, TV shows and music
+- [Lidarr](./apps/lidarr/lidarr.md) — Music collection manager
+- [MusicSeerr](./apps/musicseerr/musicseerr.md) — Music discovery and request management
+- [Prowlarr](./apps/prowlarr/prowlarr.md) — Indexer manager for the *arr ecosystem
+- [Radarr](./apps/radarr/radarr.md) — Movie collection manager
+- [Seerr](./apps/seerr/seerr.md) — Media discovery
+- [Sonarr](./apps/sonarr/sonarr.md) — TV show collection manager
+- [Transmission](./apps/transmission/transmission.md) — BitTorrent download client
+
 ## Deploy
 
 ```sh
@@ -52,15 +64,3 @@ pulumi config set --stack lab-media transmission:enabled true
 pulumi config set --stack lab-media prowlarr:enabled true
 pulumi up --stack lab-media
 ```
-
-## Components
-
-- [Immich](./apps/immich/immich.md) — Self-hosted photo and video backup solution
-- [Jellyfin](./apps/jellyfin/jellyfin.md) — Streaming movies, TV shows and music
-- [Lidarr](./apps/lidarr/lidarr.md) — Music collection manager
-- [MusicSeerr](./apps/musicseerr/musicseerr.md) — Music discovery and request management
-- [Prowlarr](./apps/prowlarr/prowlarr.md) — Indexer manager for the *arr ecosystem
-- [Radarr](./apps/radarr/radarr.md) — Movie collection manager
-- [Seerr](./apps/seerr/seerr.md) — Media discovery
-- [Sonarr](./apps/sonarr/sonarr.md) — TV show collection manager
-- [Transmission](./apps/transmission/transmission.md) — BitTorrent download client

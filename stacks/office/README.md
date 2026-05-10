@@ -4,6 +4,10 @@ Components related to office productivity and collaboration.
 
 **Prerequisite**: Core stack must be deployed first (network, storage).
 
+## Components
+
+- [Nextcloud](./apps/nextcloud/nextcloud.md) - Self-hosted productivity platform for file storage, collaboration, and office apps.
+
 ## Deploy
 
 ```sh
@@ -52,7 +56,3 @@ pulumi config set --secret nextcloud:db/rootPassword <value>
 pulumi config set nextcloud:enabled true
 pulumi up
 ```
-
-## Components
-
-- [Nextcloud](./apps/nextcloud/nextcloud.md) - Self-hosted productivity platform for file storage, collaboration, and office apps.

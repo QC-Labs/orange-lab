@@ -1,7 +1,7 @@
 import { Application, config } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
-import { BitcoinConf } from '../utils/bitcoin-conf';
-import { RpcUser } from '../utils/rpc-user';
+import { BitcoinConf } from '../../utils/bitcoin-conf';
+import { RpcUser } from '../../utils/rpc-user';
 
 export interface BitcoinCoreArgs {
     rpcUsers: Record<string, RpcUser>;

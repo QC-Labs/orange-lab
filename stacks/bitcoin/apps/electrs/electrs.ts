@@ -1,6 +1,6 @@
 import { Application, config } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
-import { RpcUser } from '../utils/rpc-user';
+import { RpcUser } from '../../utils/rpc-user';
 
 export interface ElectrsArgs {
     rpcUser: RpcUser;

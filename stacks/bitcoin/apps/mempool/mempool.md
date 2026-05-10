@@ -9,11 +9,18 @@
 
 Mempool provides a visualization of the Bitcoin blockchain and acts as a block explorer. This allows you to inspect transactions and your addresses privately.
 
+## Prerequisites
+
+Requires [`mariadb-operator`](../../../../components/data/mariadb-operator/mariadb-operator.md) enabled in the root stack.
+
 ```sh
-# Make sure MariaDB-operator is installed
 pulumi config set mariadb-operator:enabled true
 pulumi up
+```
 
+## Basic configuration
+
+```sh
 # Enable component
 pulumi config set mempool:enabled true
 

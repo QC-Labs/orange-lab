@@ -1,6 +1,6 @@
 import { Application, config, DatabaseConfig } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
-import { RpcUser } from '../utils/rpc-user';
+import { RpcUser } from '../../utils/rpc-user';
 
 export interface MempoolArgs {
     electrsUrl: pulumi.Input<string>;
@@ -18,8 +18,6 @@ export class Mempool extends pulumi.ComponentResource {
         opts?: pulumi.ResourceOptions,
     ) {
         super('orangelab:bitcoin:Mempool', name, args, opts);
-
-        config.requireEnabled(name, 'mariadb-operator');
 
         this.app = new Application(this, name).addMariaDB();
         this.dbConfig = this.app.databases?.getConfig();

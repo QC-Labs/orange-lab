@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { config } from '@orangelab/pulumi';
 import { AIModule } from './components/ai';
-import { BitcoinModule } from './components/bitcoin';
 import { DataModule } from './components/data';
 import { DevModule } from './components/dev';
 import { HardwareModule } from './components/hardware';
@@ -41,11 +40,6 @@ if (config.isModuleEnabled('monitoring')) {
 if (config.isModuleEnabled('ai')) {
     const aiModule = new AIModule('ai', { dependsOn: baseModules });
     exports.ai = aiModule.getExports();
-}
-
-if (config.isModuleEnabled('bitcoin')) {
-    const bitcoinModule = new BitcoinModule('bitcoin', { dependsOn: baseModules });
-    exports.bitcoin = bitcoinModule.getExports();
 }
 
 if (config.isModuleEnabled('security')) {

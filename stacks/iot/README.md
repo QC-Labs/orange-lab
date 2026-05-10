@@ -4,6 +4,10 @@ Components related to IoT (Internet of Things) sensors and home automation.
 
 **Prerequisite**: Core stack must be deployed first (network, storage).
 
+## Components
+
+- [Home Assistant](./apps/home-assistant/home-assistant.md) - Open source home automation platform that puts local control and privacy first.
+
 ## Deploy
 
 ```sh
@@ -20,7 +24,3 @@ pulumi up
 pulumi config set home-assistant:enabled true
 pulumi up
 ```
-
-## Components
-
-- [Home Assistant](./apps/home-assistant/home-assistant.md) - Open source home automation platform that puts local control and privacy first.
