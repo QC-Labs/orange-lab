@@ -27,7 +27,3 @@ pulumi up
 
 - **[Longhorn](./longhorn/longhorn.md)** - Replicated block storage for Kubernetes workloads. Required for storage nodes.
 - **[RustFS](./rustfs/rustfs.md)** - S3-compatible object storage for Longhorn backups.
-
-### Deprecated
-
-- **[Minio](./minio/minio.md)** - S3-compatible object storage.

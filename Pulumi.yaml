@@ -61,15 +61,7 @@ config:
     longhorn:replicaAutoBalance: disabled
     longhorn:backupAllVolumes: false
 
-    minio:enabled: false
-    minio:hostname: minio
-    minio:hostname-api: minio-api
-    # minio:dataPath: /mnt/my-drive/minio-data
-    minio:storageSize: 2000Gi
-    minio:rootUser: minioadmin
-    minio:image: quay.io/minio/minio:latest
-    minio:provisioner/image: minio/mc:latest
-    # minio:requiredNodeLabel: kubernetes.io/hostname=<hostname>
+
 
     rustfs:enabled: false
     rustfs:hostname: rustfs

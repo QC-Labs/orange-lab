@@ -138,7 +138,6 @@ class Config {
             'n8n',
             'sdnext',
             'automatic1111',
-            'minio',
             'rustfs',
             'beszel',
             'invokeai',

@@ -1,26 +1,21 @@
 import { config } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 import { Longhorn } from './longhorn/longhorn';
-import { Minio } from './minio/minio';
 import { Rustfs } from './rustfs/rustfs';
 
 export class StorageModule extends pulumi.ComponentResource {
     longhorn?: Longhorn;
-    minio?: Minio;
     rustfs?: Rustfs;
 
     getExports() {
         return {
             endpoints: {
-                ...this.minio?.app.network.endpoints,
                 ...this.rustfs?.app.network.endpoints,
                 longhorn: this.longhorn?.endpointUrl,
             },
             clusterEndpoints: {
-                ...this.minio?.app.network.clusterEndpoints,
                 ...this.rustfs?.app.network.clusterEndpoints,
             },
-            minioUsers: this.minio?.users,
             rustfsUsers: this.rustfs?.users,
         };
     }
@@ -33,13 +28,6 @@ export class StorageModule extends pulumi.ComponentResource {
 
         const systemAlias = pulumi.interpolate`urn:pulumi:${pulumi.getStack()}::${pulumi.getProject()}::orangelab:system::system`;
 
-        if (config.isEnabled('minio')) {
-            this.minio = new Minio('minio', {
-                parent: this,
-                aliases: [{ type: 'orangelab:system:Minio', parent: systemAlias }],
-            });
-        }
-
         if (config.isEnabled('rustfs')) {
             this.rustfs = new Rustfs('rustfs', {
                 parent: this,
@@ -51,8 +39,7 @@ export class StorageModule extends pulumi.ComponentResource {
             this.longhorn = new Longhorn(
                 'longhorn',
                 {
-                    s3Provisioner:
-                        this.minio?.s3Provisioner ?? this.rustfs?.s3Provisioner,
+                    s3Provisioner: this.rustfs?.s3Provisioner,
                 },
                 {
                     parent: this,

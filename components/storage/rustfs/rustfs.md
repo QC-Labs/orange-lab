@@ -10,13 +10,11 @@
 
 Rustfs is a distributed object storage system compatible with Amazon S3, implemented in Rust.
 
-It is used by Longhorn as a backup target when Minio is disabled. Minio runs by default, but if `minio:enabled` is set to `false`, Longhorn falls back to using RustFS for backups (see `components/system/index.ts`).
+It is used by Longhorn as a backup target.
 
 Files are stored on host disk outside of cluster so make sure it's deployed to a specific node with enough disk space.
 
 Currently deployed to a single node only.
-
-Migration from MinIO - https://rustfs.dev/binary-replacement-a-simple-way-to-migrate-from-minio-to-rustfs/
 
 ## Installation
 

@@ -40,7 +40,6 @@ Private distributed infrastructure on consumer hardware.
 
 - [`longhorn`](./components/storage/longhorn/longhorn.md) - replicated storage
 - [`rustfs`](./components/storage/rustfs/rustfs.md) - S3-compatible storage (Longhorn backup target)
-- [`minio`](./components/storage/minio/minio.md) - (Deprecated) S3-compatible object storage.
 
 [Hardware](./components/hardware/HARDWARE.md):
 

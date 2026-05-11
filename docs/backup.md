@@ -1,6 +1,6 @@
 # Backup and Restore
 
-Longhorn provides automated snapshots and backups of persistent volumes to S3-compatible storage (MinIO). This guide explains how to set up, configure, and use this functionality.
+Longhorn provides automated snapshots and backups of persistent volumes to S3-compatible storage (RustFS). This guide explains how to set up, configure, and use this functionality.
 
 Longhorn jobs:
 
@@ -10,17 +10,15 @@ Longhorn jobs:
 
 **Note:** Snapshots are disabled by default to save storage space. You can enable them with `longhorn:snapshotEnabled` to be able to revert storage to previous state. It's recommneded however to enable daily backups instead as a snapshot is also taked during backup operation.
 
-Please refer to the official MinIO installation documentation for detailed instructions on setting up MinIO: [https://min.io/docs/minio/user-guide/install.html]
+## Setup S3 storage (RustFS)
 
-## Setup S3 storage (MinIO)
-
-Make sure MinIO is installed and functioning before enabling backups. See [MinIO installation instructions](/components/storage/minio/minio.md) for details.
+Make sure RustFS is installed and functioning before enabling backups. See [RustFS installation instructions](/components/storage/rustfs/rustfs.md) for details.
 
 ```sh
 # S3 bucket that will be used for backups. Default: backup-longhorn
 pulumi config set longhorn:backupBucket backup-longhorn
 
-# Enable backup functionality in Longhorn. MinIO has to be running.
+# Enable backup functionality in Longhorn. RustFS has to be running.
 pulumi config set longhorn:backupEnabled true
 ```
 
