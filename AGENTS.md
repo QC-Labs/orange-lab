@@ -115,6 +115,7 @@ When a value from `Application` (like `this.app.debug`) is needed during chained
 
 ## Configuration
 
+- **Pulumi stack files**: Never modify `Pulumi.*.yaml` files directly. Use `pulumi config set <key> <value>` (or `pulumi config set --secret <key> <value>`) instead. If a change to these files is needed, inform the user what commands or values to update rather than editing the files yourself.
 - **Reading settings**: Use `pulumi config get <key>` command to read configuration values. Do NOT read `Pulumi.*.yaml` files directly as they may contain secrets.
 - Don't use optional accessors (`?.`, `??`) for settings that have defaults defined in `Pulumi.yaml`
 - Use `config.require()` instead of `config.get()` when a default value exists in `Pulumi.yaml`
