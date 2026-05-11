@@ -180,7 +180,7 @@ export class Containers {
     private createProbe(args: { healthChecks?: boolean; failureThreshold?: number }) {
         return args.healthChecks
             ? {
-                  httpGet: { path: '/', port: 'http' },
+                  httpGet: { path: '/health', port: 'http' },
                   failureThreshold: args.failureThreshold,
               }
             : undefined;
