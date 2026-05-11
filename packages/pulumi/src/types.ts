@@ -58,6 +58,13 @@ export interface ContainerResources {
     };
 }
 
+export interface HealthCheck {
+    httpGet?: {
+        path?: string;
+    };
+    failureThreshold?: number;
+}
+
 /**
  * Represents the specification for a container in a Kubernetes deployment.
  */
@@ -78,7 +85,7 @@ export interface ContainerSpec {
     clusterIP?: string;
     initContainers?: InitContainerSpec[];
     volumeMounts?: VolumeMount[];
-    healthChecks?: boolean;
+    healthCheck?: HealthCheck;
     resources?: ContainerResources;
     hostname?: string;
     runAsUser?: number;

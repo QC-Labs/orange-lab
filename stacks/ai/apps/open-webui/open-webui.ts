@@ -71,7 +71,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
             envSecret: {
                 WEBUI_SECRET_KEY: this.secretKey,
             },
-            healthChecks: true,
+            healthCheck: { httpGet: { path: '/health' } },
         });
     }
 

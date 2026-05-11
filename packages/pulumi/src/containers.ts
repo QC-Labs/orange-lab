@@ -9,6 +9,7 @@ import {
     ContainerResources,
     ContainerSpec,
     GpuType,
+    HealthCheck,
     ServicePort,
     VolumeMount,
 } from './types';
@@ -64,21 +65,16 @@ export class Containers {
                             secretData: spec.envSecret,
                         }),
                         image,
-                        livenessProbe: this.createProbe({
-                            healthChecks: spec.healthChecks,
-                        }),
+                        livenessProbe: this.createProbe(spec.healthCheck),
                         name: metadata.name,
                         ports: this.createPorts(spec.ports),
-                        readinessProbe: this.createProbe({
-                            healthChecks: spec.healthChecks,
-                        }),
+                        readinessProbe: this.createProbe(spec.healthCheck),
                         resources: this.createResourceLimits(spec.resources, gpu),
                         securityContext: this.createContainerSecurityContext(
                             spec.runAsUser,
                             gpu,
                         ),
-                        startupProbe: this.createProbe({
-                            healthChecks: spec.healthChecks,
+                        startupProbe: this.createProbe(spec.healthCheck, {
                             failureThreshold: 10,
                         }),
                         volumeMounts,
@@ -177,13 +173,19 @@ export class Containers {
         }
     }
 
-    private createProbe(args: { healthChecks?: boolean; failureThreshold?: number }) {
-        return args.healthChecks
-            ? {
-                  httpGet: { path: '/health', port: 'http' },
-                  failureThreshold: args.failureThreshold,
-              }
-            : undefined;
+    private createProbe(
+        probe?: HealthCheck,
+        override?: Partial<kubernetes.types.input.core.v1.Probe>,
+    ): kubernetes.types.input.core.v1.Probe | undefined {
+        if (!probe) return undefined;
+        const result: Record<string, unknown> = {
+            failureThreshold: probe.failureThreshold,
+            httpGet: probe.httpGet ? { ...probe.httpGet, port: 'http' } : undefined,
+        };
+        if (override) {
+            Object.assign(result, override);
+        }
+        return result;
     }
 
     private createEnv(
