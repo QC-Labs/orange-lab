@@ -45,8 +45,9 @@ export class Storage extends pulumi.ComponentResource {
     }
 
     addLocalVolume(spec: LocalVolumeSpec) {
+        const volumeName = this.getVolumeName(spec.name);
         const volume = new LocalVolume(
-            `${this.appName}-storage-${spec.name}`,
+            `${this.appName}-storage-${volumeName}`,
             {
                 appName: this.appName,
                 volumeName: spec.name,
@@ -54,17 +55,17 @@ export class Storage extends pulumi.ComponentResource {
                 hostPath: spec.hostPath,
                 size: spec.size,
                 namespace: this.args.metadata.namespace,
-                labels: this.args.metadata.get({ component: spec.name }).labels,
+                labels: this.args.metadata.get({ component: volumeName }).labels,
                 affinity: this.args.nodes.getLocalVolumeAffinity(),
             },
             { parent: this },
         );
-        this.localVolumes.set(spec.name, volume);
-        this.volumes.set(spec.name, volume.getVolumeDefinition());
+        this.localVolumes.set(volumeName, volume);
+        this.volumes.set(volumeName, volume.getVolumeDefinition());
     }
 
     addDeviceMount(volume: DeviceMountSpec) {
-        const volumeName = volume.name;
+        const volumeName = this.getVolumeName(volume.name);
         this.deviceMounts.set(volumeName, volume);
         this.volumes.set(volumeName, {
             name: volumeName,
@@ -74,6 +75,7 @@ export class Storage extends pulumi.ComponentResource {
 
     addPersistentVolume(volume?: PersistentVolumeSpec) {
         const volumeName = this.getVolumeName(volume?.name);
+        const fullVolumeName = this.getFullVolumeName(volume?.name);
         const prefix = volume?.name ? `${volume.name}/` : '';
         const labels = volume?.name
             ? this.args.metadata.get({ component: volume.name }).labels
@@ -81,14 +83,14 @@ export class Storage extends pulumi.ComponentResource {
         const fromVolume =
             volume?.fromVolume ?? config.get(this.appName, `${prefix}fromVolume`);
         const storage = new LonghornVolume(
-            `${volumeName}-storage`,
+            `${fullVolumeName}-storage`,
             {
                 affinity: this.args.nodes.getVolumeAffinity(volume?.name),
                 annotations: volume?.annotations,
                 enableBackup: config.isBackupEnabled(this.appName, volume?.name),
                 fromVolume,
                 labels: { ...labels, ...volume?.labels },
-                name: volume?.overrideFullname ?? volumeName,
+                name: volume?.overrideFullname ?? fullVolumeName,
                 namespace: this.args.metadata.namespace,
                 size:
                     volume?.size ?? config.require(this.appName, `${prefix}storageSize`),
@@ -154,6 +156,10 @@ export class Storage extends pulumi.ComponentResource {
     }
 
     private getVolumeName(storageName?: string): string {
+        return storageName ?? this.appName;
+    }
+
+    private getFullVolumeName(storageName?: string): string {
         return storageName ? `${this.appName}-${storageName}` : this.appName;
     }
 
@@ -184,10 +190,11 @@ export class Storage extends pulumi.ComponentResource {
         name: string,
         files: Record<string, pulumi.Input<string>>,
     ) {
+        const fullName = `${this.appName}-${name}`;
         new ConfigMap(
-            `${this.appName}-${name}-cm`,
+            `${fullName}-cm`,
             {
-                metadata: this.createMetadata(name),
+                metadata: this.createMetadata(fullName),
                 data: files,
             },
             { parent: this },

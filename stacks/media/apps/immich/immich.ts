@@ -90,9 +90,7 @@ export class Immich extends pulumi.ComponentResource {
         this.app.addDeployment({
             name: 'machine-learning',
             ports: [{ name: 'http', port: 3003, private: true }],
-            volumeMounts: [
-                { mountPath: '/cache', name: `${this.name}-machine-learning` },
-            ],
+            volumeMounts: [{ mountPath: '/cache', name: 'machine-learning' }],
             env: {
                 IMMICH_LOG_LEVEL: this.app.debug ? 'debug' : 'log',
                 IMMICH_PORT: '3003',
