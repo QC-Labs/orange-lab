@@ -39,7 +39,7 @@ config:
     orangelab:redis/image: docker.io/redis:8-alpine
 
     traefik:enabled: false
-    traefik:version: 40.0.0
+    traefik:version: 40.2.0
     traefik:hostname: traefik
     traefik:gatewayApiCrdUrl: 'https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.1/experimental-install.yaml'
 
@@ -60,8 +60,6 @@ config:
     # Set to "least-effort" or "best-effort" to move replicas when nodes become unavailable
     longhorn:replicaAutoBalance: disabled
     longhorn:backupAllVolumes: false
-
-
 
     rustfs:enabled: false
     rustfs:hostname: rustfs
@@ -98,7 +96,7 @@ config:
     mariadb-operator:enabled: false
 
     cloudnative-pg:enabled: false
-    cloudnative-pg:version: 0.28.0
+    cloudnative-pg:version: 0.28.2
 
     ### Monitoring ###
 
