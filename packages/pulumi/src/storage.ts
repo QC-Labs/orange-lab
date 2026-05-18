@@ -201,7 +201,7 @@ export class Storage extends pulumi.ComponentResource {
         );
         this.volumes.set(name, {
             name,
-            configMap: { name },
+            configMap: { name: fullName },
         });
     }
 
