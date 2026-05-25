@@ -105,7 +105,7 @@ export class Vaultwarden extends pulumi.ComponentResource {
         return new kubernetes.core.v1.Secret(
             `${this.appName}-smtp`,
             {
-                metadata: this.app.metadata.get(),
+                metadata: this.app.metadata.get({ component: 'smtp' }),
                 stringData: {
                     SMTP_USERNAME: username,
                     SMTP_PASSWORD: password,

@@ -35,7 +35,7 @@ export class VaultwardenToken extends pulumi.ComponentResource {
         return new kubernetes.core.v1.Secret(
             `${this.appName}-admin-token`,
             {
-                metadata: this.metadata.get(),
+                metadata: this.metadata.get({ component: 'admin-token' }),
                 stringData: pulumi
                     .all([plainToken, hashOutput])
                     .apply(([plain, hash]) => ({
