@@ -41,7 +41,7 @@ For example if you decide to run BIP-110 variant:
 # set custom image location
 # sha256 is not required but recommended to ensure image has not been modified
 # docker tags are mutable so the repository will return 404 if hash doesn't match
-pulumi config set bitcoin-knots:image ghcr.io/retropex/bitcoin:29.3.knots20260210-bip110-v0.3@sha256:6508ab365d90f5dfcad97130cee52f011d85dfa0b5b2a5695350eb4e045ca68b
+pulumi config set bitcoin-knots:image ghcr.io/retropex/bitcoin:29.3.knots20260210-bip110-v0.4.1@sha256:7115247a71d981b5b17745cd165aea956cfd2efcae789f269a897c9aef2159e2
 
 # where to mount volume, this needs to match VOLUME in Dockerfile (/data by default)
 pulumi config set bitcoin-knots:volumePath /data/.bitcoin
