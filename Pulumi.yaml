@@ -119,5 +119,7 @@ config:
     beszel:hostname: beszel
     beszel:image: henrygd/beszel:latest
     beszel:agent/image: henrygd/beszel-agent:latest
+    # Deploy to all nodes by default, even if requiredNodeLabel used on beszel
+    beszel:agent/requiredNodeLabel: ''
     beszel:storageSize: 5Gi
     beszel:storageOnly: false
