@@ -39,7 +39,7 @@ On first deployment, an admin token is automatically generated and hashed using 
 After first deployment, save the admin token to the Pulumi config:
 
 ```sh
-export ADMIN_TOKEN=$(pulumi stack output --show-secrets --json | jq '.security.vaultwarden.adminToken' -r)
+export ADMIN_TOKEN=$(pulumi stack output --show-secrets --json | jq '.apps.vaultwarden.adminToken' -r)
 pulumi config set vaultwarden:adminToken $ADMIN_TOKEN --secret
 
 pulumi up

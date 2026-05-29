@@ -11,9 +11,15 @@ All stacks target the **same Kubernetes cluster**. The core stack must be deploy
 
 ## Available Module Stacks
 
-| Module | Path                                        | Description                         |
-|--------|---------------------------------------------|-------------------------------------|
-| Media  | [`stacks/media/`](./stacks/media/README.md) | Photo backup, streaming, *arr stack |
+| Module   | Path                                              | Description                             |
+|----------|---------------------------------------------------|-----------------------------------------|
+| AI       | [`stacks/ai/`](./stacks/ai/README.md)             | AI workloads, LLMs                      |
+| Bitcoin  | [`stacks/bitcoin/`](./stacks/bitcoin/README.md)   | Bitcoin nodes and blockchain tools      |
+| Dev      | [`stacks/dev/`](./stacks/dev/README.md)           | Development and debugging utilities     |
+| IoT      | [`stacks/iot/`](./stacks/iot/README.md)           | Home automation and IoT platforms       |
+| Media    | [`stacks/media/`](./stacks/media/README.md)       | Photo backup, streaming, *arr stack     |
+| Office   | [`stacks/office/`](./stacks/office/README.md)     | Collaboration and office tools          |
+| Apps    | [`stacks/apps/`](./stacks/apps/README.md)      | General-purpose tools and utilities    |
 
 ## Prerequisites
 
@@ -51,6 +57,9 @@ pulumi config set sonarr:enabled true
 
 # Deploy current stack (lab-media)
 pulumi up
+
+# Undeploy the stack, make sure you use static volumes and fromVolume setting so no data is lost
+pulumi destroy
 ```
 
 ### Config Structure
@@ -89,10 +98,24 @@ To move a module from the monolithic core stack to its own stack:
    pulumi up
    ```
 
-3. **Configure and deploy the module stack**:
-   ```sh
-   cd stacks/<module>
-   pulumi stack init lab
-   # Copy app overrides from root Pulumi.lab.yaml
-   pulumi up
-   ```
+3. **Configure the module stack**:
+    ```sh
+    cd stacks/<module>
+    # initialize new stack
+    pulumi stack init lab
+    # select stack as active
+    pulumi stack select lab
+
+    # Copy shared settings from root Pulumi.lab.yaml
+    pulumi config set orangelab:routingProvider traefik
+
+    # Copy app overrides from root Pulumi.lab.yaml
+    # Secrets must be re-set because each stack has its own encryption key
+    pulumi config set --secret vaultwarden:adminToken <value>
+    pulumi config set --secret vaultwarden:smtp/password <value>
+    ```
+
+4. **Deploy the module stack**:
+    ```sh
+    pulumi up
+    ```

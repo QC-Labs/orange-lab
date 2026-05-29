@@ -121,19 +121,3 @@ config:
     beszel:agent/image: henrygd/beszel-agent:latest
     beszel:storageSize: 5Gi
     beszel:storageOnly: false
-
-    ### Security ###
-
-    vaultwarden:enabled: false
-    vaultwarden:hostname: vaultwarden
-    vaultwarden:storageSize: 5Gi
-    # vaultwarden:adminToken:
-    #   secure: <ADMIN_TOKEN>
-    # vaultwarden:smtp/host: smtp.example.com
-    # vaultwarden:smtp/from: noreply@example.com
-    # vaultwarden:smtp/username: user
-    # vaultwarden:smtp/password:
-    #   secure: <SMTP_PASSWORD>
-    vaultwarden:smtp/port: 587
-    vaultwarden:signupsAllowed: false
-    vaultwarden:signupsVerify: true

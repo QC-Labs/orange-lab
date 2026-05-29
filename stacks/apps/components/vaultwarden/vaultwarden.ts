@@ -12,7 +12,7 @@ export class Vaultwarden extends pulumi.ComponentResource {
         private appName: string,
         opts?: pulumi.ComponentResourceOptions,
     ) {
-        super('orangelab:security:Vaultwarden', appName, {}, opts);
+        super('orangelab:apps:Vaultwarden', appName, {}, opts);
 
         this.app = new Application(this, appName).addStorage();
         if (this.app.storageOnly) return;

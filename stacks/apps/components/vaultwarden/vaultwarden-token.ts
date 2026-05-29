@@ -13,7 +13,7 @@ export class VaultwardenToken extends pulumi.ComponentResource {
         private metadata: Metadata,
         opts?: pulumi.ComponentResourceOptions,
     ) {
-        super('orangelab:security:VaultwardenToken', `${appName}-token`, {}, opts);
+        super('orangelab:apps:VaultwardenToken', `${appName}-token`, {}, opts);
         const plainToken =
             config.getSecret(appName, 'adminToken') ?? this.createPlainToken(appName);
 

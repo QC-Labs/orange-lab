@@ -1,0 +1,15 @@
+{
+    "name": "@orangelab/apps",
+    "description": "OrangeLab Apps Stack",
+    "version": "0.5.0",
+    "private": true,
+    "license": "MIT",
+    "engines": {
+        "node": ">= 22.0.0"
+    },
+    "dependencies": {
+        "@orangelab/pulumi": "*",
+        "@pulumi/pulumi": "3.237.0",
+        "argon2": "0.44.0"
+    }
+}

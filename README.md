@@ -57,10 +57,6 @@ Private distributed infrastructure on consumer hardware.
 - [`beszel`](./components/monitoring/beszel/beszel.md) - Beszel lightweight monitoring
 - [`prometheus`](./components/monitoring/prometheus/prometheus.md) - Prometheus/Grafana monitoring
 
-[Security](./components/security/SECURITY.md):
-
-- [`vaultwarden`](./components/security/vaultwarden/vaultwarden.md) - Bitwarden-compatible password manager
-
 ### Optional modules
 
 [AI](./components/ai/AI.md):
@@ -79,6 +75,10 @@ Private distributed infrastructure on consumer hardware.
 - [`bitcoin-knots`](./stacks/bitcoin/apps/bitcoin-knots/bitcoin-knots.md) - Bitcoin Knots node
 - [`electrs`](./stacks/bitcoin/apps/electrs/electrs.md) - Electrs (Electrum) server implementation
 - [`mempool`](./stacks/bitcoin/apps/mempool/mempool.md) - Blockchain explorer
+
+[Dev](./components/dev/DEV.md):
+
+- [`debug`](./components/dev/debug/debug.md) - (Experimental) Troubleshooting utilities and volume access tools
 
 [IoT](./stacks/iot/README.md):
 
@@ -100,9 +100,9 @@ Private distributed infrastructure on consumer hardware.
 
 - [`nextcloud`](./stacks/office/apps/nextcloud/nextcloud.md) - File sharing, calendars, contacts, tasks
 
-[Dev](./components/dev/DEV.md):
+[Apps](./stacks/apps/README.md):
 
-- [`debug`](./components/dev/debug/debug.md) - (Experimental) Troubleshooting utilities and volume access tools
+- [`vaultwarden`](./stacks/apps/components/vaultwarden/vaultwarden.md) - Bitwarden-compatible password manager
 
 # Platforms and limitations
 
@@ -117,10 +117,14 @@ Both NVIDIA and AMD GPUs are supported. See [Hardware module](/components/hardwa
 
 # Installation
 
+## Cluster
+
 - [Installation - Admin node](./docs/install-admin.md) - Initial Pulumi and Tailscale setup
 - [Installation - Linux node configuration](./docs/install-linux.md) - Configure nodes (firewall, suspend settings)
 - [Installation - SSH configuration](./docs/install-ssh.md) (Optional) - Configure SSH keys on nodes for easier access
 - [Installation - K3s cluster](./docs/install-k3s.md) - Install Kubernetes cluster and label nodes
+
+## Core components
 
 After setting up the Kubernetes cluster, deploy the core modules:
 
@@ -128,13 +132,17 @@ After setting up the Kubernetes cluster, deploy the core modules:
 2. [Storage](./components/storage/STORAGE.md) - Distributed storage (Longhorn) and backups
 3. [Hardware](./components/hardware/HARDWARE.md) - (Optional) GPU support
 
-After core modules are deployed, you can install any optional applications from the [Applications](#applications) section above.
+## Applications
 
-For general application configuration and deployment instructions, see [Configuration Guide](./docs/configuration.md).
+After core modules are deployed, install optional applications:
+
+- [Multi-Stack Deployment](./docs/stacks.md) - Deploy applications as independent Pulumi stacks
+- [Configuration Guide](./docs/configuration.md) - General application configuration and deployment
 
 # Documentation
 
 - [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/QC-Labs/orange-lab) - AI generated documentation and good place to ask questions
+- [Multi-Stack Deployment](./docs/stacks.md) - Deploy applications as independent Pulumi stacks
 - [Configuration Guide](./docs/configuration.md) - Application configuration and deployment
 - [Upgrade Guide](./docs/upgrade.md) - Upgrading your OrangeLab installation
 - [Disabling Longhorn](./docs/longhorn-disable.md) - Running OrangeLab without distributed storage
