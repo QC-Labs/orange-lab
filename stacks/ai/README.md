@@ -6,13 +6,13 @@ AI-related components for running large language models, image generation, and w
 
 ## Components
 
-- [Ollama](./apps/ollama/ollama.md) - Local LLM inference server with GPU support.
-- [Open WebUI](./apps/open-webui/open-webui.md) - Web interface for LLMs with support for multiple backends.
-- [InvokeAI](./apps/invokeai/invokeai.md) - Professional image generation toolkit.
-- [n8n](./apps/n8n/n8n.md) - Workflow automation with AI node integration.
-- [KubeAI](./apps/kubeai/kubeai.md) - Private AI SDK providing OpenAI-compatible API (experimental).
-- [Automatic1111](./apps/automatic1111/automatic1111.md) - Stable Diffusion WebUI (deprecated).
-- [SDNext](./apps/sdnext/sdnext.md) - Alternative Stable Diffusion WebUI (deprecated).
+- [Ollama](./components/ollama/ollama.md) - Local LLM inference server with GPU support.
+- [Open WebUI](./components/open-webui/open-webui.md) - Web interface for LLMs with support for multiple backends.
+- [InvokeAI](./components/invokeai/invokeai.md) - Professional image generation toolkit.
+- [n8n](./components/n8n/n8n.md) - Workflow automation with AI node integration.
+- [KubeAI](./components/kubeai/kubeai.md) - Private AI SDK providing OpenAI-compatible API (experimental).
+- [Automatic1111](./components/automatic1111/automatic1111.md) - Stable Diffusion WebUI (deprecated).
+- [SDNext](./components/sdnext/sdnext.md) - Alternative Stable Diffusion WebUI (deprecated).
 
 ## Deploy
 

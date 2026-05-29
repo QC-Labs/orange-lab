@@ -1,5 +1,5 @@
 import { config } from '@orangelab/pulumi';
-import { HomeAssistant } from './apps/home-assistant/home-assistant';
+import { HomeAssistant } from './components/home-assistant/home-assistant';
 
 const homeAssistant = config.isEnabled('home-assistant')
     ? new HomeAssistant('home-assistant', {

@@ -6,7 +6,7 @@ Development and debugging utilities.
 
 ## Components
 
-- [Debug](./apps/debug/debug.md) - Debug pod for inspecting existing Longhorn volumes or exporting data.
+- [Debug](./components/debug/debug.md) - Debug pod for inspecting existing Longhorn volumes or exporting data.
 
 ## Deploy
 

@@ -1,13 +1,13 @@
 import { config } from '@orangelab/pulumi';
-import { Immich } from './apps/immich/immich';
-import { Jellyfin } from './apps/jellyfin/jellyfin';
-import { Lidarr } from './apps/lidarr/lidarr';
-import { MusicSeerr } from './apps/musicseerr/musicseerr';
-import { Prowlarr } from './apps/prowlarr/prowlarr';
-import { Radarr } from './apps/radarr/radarr';
-import { Seerr } from './apps/seerr/seerr';
-import { Sonarr } from './apps/sonarr/sonarr';
-import { Transmission } from './apps/transmission/transmission';
+import { Immich } from './components/immich/immich';
+import { Jellyfin } from './components/jellyfin/jellyfin';
+import { Lidarr } from './components/lidarr/lidarr';
+import { MusicSeerr } from './components/musicseerr/musicseerr';
+import { Prowlarr } from './components/prowlarr/prowlarr';
+import { Radarr } from './components/radarr/radarr';
+import { Seerr } from './components/seerr/seerr';
+import { Sonarr } from './components/sonarr/sonarr';
+import { Transmission } from './components/transmission/transmission';
 
 const jellyfin = config.isEnabled('jellyfin') ? new Jellyfin('jellyfin') : undefined;
 const immich = config.isEnabled('immich') ? new Immich('immich') : undefined;

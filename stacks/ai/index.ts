@@ -1,11 +1,11 @@
 import { config } from '@orangelab/pulumi';
-import { Automatic1111 } from './apps/automatic1111/automatic1111';
-import { InvokeAi } from './apps/invokeai/invokeai';
-import { KubeAi } from './apps/kubeai/kubeai';
-import { N8n } from './apps/n8n/n8n';
-import { Ollama } from './apps/ollama/ollama';
-import { OpenWebUI } from './apps/open-webui/open-webui';
-import { SDNext } from './apps/sdnext/sdnext';
+import { Automatic1111 } from './components/automatic1111/automatic1111';
+import { InvokeAi } from './components/invokeai/invokeai';
+import { KubeAi } from './components/kubeai/kubeai';
+import { N8n } from './components/n8n/n8n';
+import { Ollama } from './components/ollama/ollama';
+import { OpenWebUI } from './components/open-webui/open-webui';
+import { SDNext } from './components/sdnext/sdnext';
 
 const ollama = config.isEnabled('ollama') ? new Ollama('ollama') : undefined;
 

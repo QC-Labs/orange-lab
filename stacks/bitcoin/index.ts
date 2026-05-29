@@ -1,10 +1,10 @@
 import { config } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 import assert from 'assert';
-import { BitcoinCore } from './apps/bitcoin-core/bitcoin-core';
-import { BitcoinKnots } from './apps/bitcoin-knots/bitcoin-knots';
-import { Electrs } from './apps/electrs/electrs';
-import { Mempool } from './apps/mempool/mempool';
+import { BitcoinCore } from './components/bitcoin-core/bitcoin-core';
+import { BitcoinKnots } from './components/bitcoin-knots/bitcoin-knots';
+import { Electrs } from './components/electrs/electrs';
+import { Mempool } from './components/mempool/mempool';
 import { RpcUser } from './utils/rpc-user';
 
 const usernames = config

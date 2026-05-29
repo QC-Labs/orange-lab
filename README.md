@@ -71,10 +71,10 @@ Private distributed infrastructure on consumer hardware.
 
 [Bitcoin](./stacks/bitcoin/README.md):
 
-- [`bitcoin-core`](./stacks/bitcoin/apps/bitcoin-core/bitcoin-core.md) - Bitcoin Core node
-- [`bitcoin-knots`](./stacks/bitcoin/apps/bitcoin-knots/bitcoin-knots.md) - Bitcoin Knots node
-- [`electrs`](./stacks/bitcoin/apps/electrs/electrs.md) - Electrs (Electrum) server implementation
-- [`mempool`](./stacks/bitcoin/apps/mempool/mempool.md) - Blockchain explorer
+- [`bitcoin-core`](./stacks/bitcoin/components/bitcoin-core/bitcoin-core.md) - Bitcoin Core node
+- [`bitcoin-knots`](./stacks/bitcoin/components/bitcoin-knots/bitcoin-knots.md) - Bitcoin Knots node
+- [`electrs`](./stacks/bitcoin/components/electrs/electrs.md) - Electrs (Electrum) server implementation
+- [`mempool`](./stacks/bitcoin/components/mempool/mempool.md) - Blockchain explorer
 
 [Dev](./components/dev/DEV.md):
 
@@ -82,19 +82,19 @@ Private distributed infrastructure on consumer hardware.
 
 [IoT](./stacks/iot/README.md):
 
-- [`home-assistant`](./stacks/iot/apps/home-assistant/home-assistant.md) - sensor and home automation platform
+- [`home-assistant`](./stacks/iot/components/home-assistant/home-assistant.md) - sensor and home automation platform
 
 [Media](./stacks/media/README.md):
 
-- [`immich`](./stacks/media/apps/immich/immich.md) - Self-hosted photo and video backup solution
-- [`jellyfin`](./stacks/media/apps/jellyfin/jellyfin.md) - Streaming movies, TV shows and music
-- [`lidarr`](./stacks/media/apps/lidarr/lidarr.md) - Music collection manager
-- [`musicseerr`](./stacks/media/apps/musicseerr/musicseerr.md) - Music discovery and request management
-- [`prowlarr`](./stacks/media/apps/prowlarr/prowlarr.md) - Indexer manager for the *arr ecosystem
-- [`radarr`](./stacks/media/apps/radarr/radarr.md) - Movie collection manager
-- [`seerr`](./stacks/media/apps/seerr/seerr.md) - Media discovery
-- [`sonarr`](./stacks/media/apps/sonarr/sonarr.md) - TV show collection manager
-- [`transmission`](./stacks/media/apps/transmission/transmission.md) - BitTorrent download client
+- [`immich`](./stacks/media/components/immich/immich.md) - Self-hosted photo and video backup solution
+- [`jellyfin`](./stacks/media/components/jellyfin/jellyfin.md) - Streaming movies, TV shows and music
+- [`lidarr`](./stacks/media/components/lidarr/lidarr.md) - Music collection manager
+- [`musicseerr`](./stacks/media/components/musicseerr/musicseerr.md) - Music discovery and request management
+- [`prowlarr`](./stacks/media/components/prowlarr/prowlarr.md) - Indexer manager for the *arr ecosystem
+- [`radarr`](./stacks/media/components/radarr/radarr.md) - Movie collection manager
+- [`seerr`](./stacks/media/components/seerr/seerr.md) - Media discovery
+- [`sonarr`](./stacks/media/components/sonarr/sonarr.md) - TV show collection manager
+- [`transmission`](./stacks/media/components/transmission/transmission.md) - BitTorrent download client
 
 [Apps](./stacks/apps/README.md):
 

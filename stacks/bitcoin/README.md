@@ -6,10 +6,10 @@ Components related to Bitcoin network nodes and related services.
 
 ## Components
 
-- [Bitcoin Knots](./apps/bitcoin-knots/bitcoin-knots.md) - A conservative fork of Bitcoin Core focused on stability and improvements.
-- [Bitcoin Core](./apps/bitcoin-core/bitcoin-core.md) - The reference implementation of the Bitcoin protocol.
-- [Electrs](./apps/electrs/electrs.md) - Efficient Electrum Server implementation for wallet synchronization.
-- [Mempool](./apps/mempool/mempool.md) - Full-stack block explorer and visualization tool.
+- [Bitcoin Knots](./components/bitcoin-knots/bitcoin-knots.md) - A conservative fork of Bitcoin Core focused on stability and improvements.
+- [Bitcoin Core](./components/bitcoin-core/bitcoin-core.md) - The reference implementation of the Bitcoin protocol.
+- [Electrs](./components/electrs/electrs.md) - Efficient Electrum Server implementation for wallet synchronization.
+- [Mempool](./components/mempool/mempool.md) - Full-stack block explorer and visualization tool.
 
 ## Deploy
 
