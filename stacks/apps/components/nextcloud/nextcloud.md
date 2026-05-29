@@ -64,7 +64,7 @@ https://nextcloud.<domain>/
 Login with the admin user. The password can be retrieved with:
 
 ```sh
-pulumi stack output --show-secrets --json | jq '.nextcloudUsers.admin' -r
+pulumi stack output --show-secrets --json | jq '.apps.nextcloud.users.admin' -r
 ```
 
 ## Database
@@ -75,7 +75,7 @@ When restoring from a backup, the auto-generated passwords will not match the on
 
 ```sh
 # Get the nextcloud user password from Pulumi stack output
-pulumi stack output --show-secrets --json | jq '.nextcloudDb.password' -r
+pulumi stack output --show-secrets --json | jq '.apps.nextcloud.db.password' -r
 
 # Set password for the nextcloud user
 pulumi config set nextcloud:db/password YourNextcloudDbPassword --secret

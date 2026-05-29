@@ -18,7 +18,6 @@ All stacks target the **same Kubernetes cluster**. The core stack must be deploy
 | Dev      | [`stacks/dev/`](./stacks/dev/README.md)           | Development and debugging utilities     |
 | IoT      | [`stacks/iot/`](./stacks/iot/README.md)           | Home automation and IoT platforms       |
 | Media    | [`stacks/media/`](./stacks/media/README.md)       | Photo backup, streaming, *arr stack     |
-| Office   | [`stacks/office/`](./stacks/office/README.md)     | Collaboration and office tools          |
 | Apps    | [`stacks/apps/`](./stacks/apps/README.md)      | General-purpose tools and utilities    |
 
 ## Prerequisites
@@ -108,9 +107,12 @@ To move a module from the monolithic core stack to its own stack:
 
     # Copy shared settings from root Pulumi.lab.yaml
     pulumi config set orangelab:routingProvider traefik
+    pulumi config set orangelab:customDomain example.com
+    pulumi config set mariadb-operator:enabled true
 
     # Copy app overrides from root Pulumi.lab.yaml
     # Secrets must be re-set because each stack has its own encryption key
+    # Check secrets in old stack: pulumi config --show-secrets
     pulumi config set --secret vaultwarden:adminToken <value>
     pulumi config set --secret vaultwarden:smtp/password <value>
     ```

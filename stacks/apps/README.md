@@ -6,6 +6,7 @@ General-purpose tools and utilities.
 
 ## Components
 
+- [Nextcloud](./components/nextcloud/nextcloud.md) — Self-hosted productivity platform
 - [Vaultwarden](./components/vaultwarden/vaultwarden.md) — Bitwarden-compatible password manager
 
 ## Deploy
@@ -17,6 +18,16 @@ pulumi stack select lab-apps
 ```
 
 ## Configure Applications
+
+### Nextcloud
+
+```sh
+# Confirm you have mariadb-operator is already installed
+pulumi config set mariadb-operator:enabled true
+# Enable NextCloud
+pulumi config set nextcloud:enabled true
+pulumi up
+```
 
 ### Vaultwarden
 

@@ -13,7 +13,7 @@ export class Nextcloud extends pulumi.ComponentResource {
         private appName: string,
         opts?: pulumi.ComponentResourceOptions,
     ) {
-        super('orangelab:office:Nextcloud', appName, {}, opts);
+        super('orangelab:Nextcloud', appName, {}, opts);
 
         this.app = new Application(this, appName).addStorage().addMariaDB();
         if (this.app.storageOnly) return;

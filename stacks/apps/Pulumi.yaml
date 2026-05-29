@@ -10,8 +10,7 @@ config:
     # Required shared defaults (duplicated from root Pulumi.yaml)
     # orangelab:routingProvider: tailscale | traefik
     # orangelab:customDomain: 'example.com'
-
-    ### Security ###
+    mariadb-operator:enabled: false
 
     vaultwarden:enabled: false
     vaultwarden:hostname: vaultwarden
@@ -26,3 +25,9 @@ config:
     vaultwarden:smtp/port: 587
     vaultwarden:signupsAllowed: false
     vaultwarden:signupsVerify: true
+
+    nextcloud:enabled: false
+    nextcloud:hostname: nextcloud
+    nextcloud:storageSize: 20Gi
+    nextcloud:db/storageSize: 5Gi
+    nextcloud:trustedProxies: '10.42.0.0/16,10.43.0.0/16,127.0.0.0/8'

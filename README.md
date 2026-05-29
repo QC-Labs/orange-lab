@@ -96,12 +96,9 @@ Private distributed infrastructure on consumer hardware.
 - [`sonarr`](./stacks/media/apps/sonarr/sonarr.md) - TV show collection manager
 - [`transmission`](./stacks/media/apps/transmission/transmission.md) - BitTorrent download client
 
-[Office](./stacks/office/README.md):
-
-- [`nextcloud`](./stacks/office/apps/nextcloud/nextcloud.md) - File sharing, calendars, contacts, tasks
-
 [Apps](./stacks/apps/README.md):
 
+- [`nextcloud`](./stacks/apps/components/nextcloud/nextcloud.md) - File sharing, calendars, contacts, tasks
 - [`vaultwarden`](./stacks/apps/components/vaultwarden/vaultwarden.md) - Bitwarden-compatible password manager
 
 # Platforms and limitations
