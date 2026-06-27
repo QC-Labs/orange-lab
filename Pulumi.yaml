@@ -39,12 +39,12 @@ config:
     orangelab:redis/image: docker.io/redis:8-alpine
 
     traefik:enabled: false
-    traefik:version: 40.2.0
+    traefik:version: 41.0.0
     traefik:hostname: traefik
     traefik:gatewayApiCrdUrl: 'https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.1/experimental-install.yaml'
 
     longhorn:enabled: false
-    longhorn:version: 1.11.2
+    longhorn:version: 1.12.0
     longhorn:hostname: longhorn
     # Initial value for default storage. Adjust each volume in Longhorn UI
     longhorn:replicaCount: 2
@@ -67,11 +67,11 @@ config:
     # rustfs:dataPath: /mnt/my-drive/rustfs-data
     # rustfs:requiredNodeLabel: kubernetes.io/hostname=<hostname>
     rustfs:rootUser: admin
-    rustfs:image: rustfs/rustfs:1.0.0-beta.5
-    rustfs:provisioner/image: rustfs/rc:v0.1.18
+    rustfs:image: rustfs/rustfs:1.0.0-beta.8
+    rustfs:provisioner/image: rustfs/rc:latest
 
     cert-manager:enabled: false
-    cert-manager:version: v1.20.1
+    cert-manager:version: v1.20.3
     cert-manager:clusterIssuer: letsencrypt-issuer
 
     technitium:enabled: false
@@ -88,7 +88,7 @@ config:
     nfd:excludeNodeLabel: orangelab/alpine
 
     nvidia-gpu-operator:enabled: false
-    nvidia-gpu-operator:version: v26.3.2
+    nvidia-gpu-operator:version: v26.3.3
 
     amd-gpu-operator:enabled: false
     amd-gpu-operator:version: v1.5.0
@@ -96,7 +96,7 @@ config:
     mariadb-operator:enabled: false
 
     cloudnative-pg:enabled: false
-    cloudnative-pg:version: 0.28.2
+    cloudnative-pg:version: 0.28.3
 
     ### Monitoring ###
 
