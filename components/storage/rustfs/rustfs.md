@@ -29,6 +29,12 @@ pulumi config set rustfs:dataPath /mnt/my-usb-drive/rustfs-data
 pulumi up
 ```
 
+After first deployment, save the root password to config to keep it stable across redeployments:
+
+```sh
+pulumi config set --secret rustfs:rootPassword $(pulumi stack output --show-secrets --json | jq '.storage.rustfsUsers.admin' -r)
+```
+
 ## CLI
 
 RustFS provides the `rc` CLI tool for S3 operations:

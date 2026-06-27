@@ -22,8 +22,10 @@ export class Rustfs extends pulumi.ComponentResource {
         this.hostnameApi = config.require(name, 'hostname-api');
         const dataPath = config.require(name, 'dataPath');
         this.rootUser = config.require(name, 'rootUser');
+        const rootPassword =
+            config.getSecret(name, 'rootPassword') ?? this.createPassword();
         this.users = {
-            [this.rootUser]: this.createPassword(),
+            [this.rootUser]: rootPassword,
         };
 
         this.app = new Application(this, name).addLocalStorage({
