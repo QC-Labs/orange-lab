@@ -114,6 +114,9 @@ Both NVIDIA and AMD GPUs are supported. See [Hardware module](/components/hardwa
 
 # Installation
 
+> [!WARNING]
+> This project is under active development. It is recommended to use static Longhorn volumes and `fromVolume` setting so applications can be destroyed and redeployed without data loss.
+
 ## Cluster
 
 - [Installation - Admin node](./docs/install-admin.md) - Initial Pulumi and Tailscale setup
@@ -126,7 +129,7 @@ Both NVIDIA and AMD GPUs are supported. See [Hardware module](/components/hardwa
 After setting up the Kubernetes cluster, deploy the core modules:
 
 1. [Network](./components/network/NETWORK.md) - Routing provider (Tailscale or Traefik)
-2. [Storage](./components/storage/STORAGE.md) - Distributed storage (Longhorn) and backups
+2. [Storage](./components/storage/STORAGE.md) - Distributed storage (Longhorn) and backups (S3)
 3. [Hardware](./components/hardware/HARDWARE.md) - (Optional) GPU support
 
 ## Applications
