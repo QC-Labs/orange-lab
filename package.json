@@ -17,7 +17,9 @@
         "deploy": "pulumi up",
         "lint": "node_modules/.bin/eslint .",
         "preview": "pulumi preview --diff",
-        "test": "npx tsc --noEmit && npm run lint"
+        "test": "npx tsc --noEmit && npm run lint",
+        "release": "bash scripts/orangelab-release.sh",
+        "publish": "bash scripts/orangelab-publish.sh"
     },
     "dependencies": {
         "@orangelab/pulumi": "*",

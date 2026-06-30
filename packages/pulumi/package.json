@@ -12,6 +12,33 @@
         "build": "tsc",
         "prepare": "npm run build"
     },
+    "publishConfig": {
+        "access": "public"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/QC-Labs/orange-lab.git",
+        "directory": "packages/pulumi"
+    },
+    "bugs": {
+        "url": "https://github.com/QC-Labs/orange-lab/issues"
+    },
+    "homepage": "https://github.com/QC-Labs/orange-lab/tree/main/packages/pulumi#readme",
+    "keywords": [
+        "pulumi",
+        "kubernetes",
+        "infrastructure",
+        "iac",
+        "dsl",
+        "ai",
+        "bitcoin",
+        "dev",
+        "iot",
+        "media",
+        "apps",
+        "homelab"
+    ],
+    "author": "OrangeLab",
     "dependencies": {
         "@pulumi/kubernetes": "4.30.0",
         "@pulumi/pulumi": "3.237.0",

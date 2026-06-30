@@ -1,7 +1,7 @@
 {
     "name": "@orangelab/dev",
     "description": "OrangeLab Development Stack",
-    "version": "0.5.0",
+    "version": "0.0.0",
     "private": true,
     "license": "MIT",
     "engines": {
