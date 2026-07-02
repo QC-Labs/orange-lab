@@ -3,6 +3,7 @@
 This document covers general node configuration that should be done before installing K3s.
 
 For Alpine-specific steps, see [Installation - Alpine Linux node configuration](./install-linux-alpine.md).
+For Zimaboard (ZimaOS) steps, see [Installation - Zimaboard node configuration](./install-linux-zima.md).
 
 ## Tailscale
 

@@ -75,6 +75,8 @@ Install K3S agent nodes on any additional physical hardware. Server already runs
 `k3s-agent.sh` executed on _management node_ generates script to install K3S on _agent node_:
 
 > **Alpine nodes**: Use `./scripts/k3s-agent-alpine.sh` instead. See [Alpine Linux node configuration](./install-linux-alpine.md) for preparation steps.
+>
+> **Zimaboard (ZimaOS) nodes**: Use `./scripts/k3s-agent-zima.sh` instead. See [Zimaboard node configuration](./install-linux-zima.md) for preparation steps.
 
 ```sh
 # Run where Pulumi is installed
@@ -95,13 +97,14 @@ rc-service k3s-agent status           # Alpine
 
 ## Node labels
 
-You can set node labels later when installing applications. Examples:
+Set Kubernetes node labels to enable Longhorn storage:
 
 ```sh
-# Storage node used by Longhorn, at least one is needed
+# Deploy Longhorn components on the node
 kubectl label nodes <node-name> node-role.kubernetes.io/longhorn=true
 
-# Set zone, used f.e. by home-assistant to deploy to node on same network as sensors
+# (Recommended) Set zone, used f.e. by home-assistant to deploy to node on same network as sensors
+# Longhorn distributes replicas across zones.
 kubectl label nodes <node-name> topology.kubernetes.io/zone=home
 ```
 
