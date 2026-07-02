@@ -96,7 +96,7 @@ config:
     mariadb-operator:enabled: false
 
     cloudnative-pg:enabled: false
-    cloudnative-pg:version: 0.28.3
+    cloudnative-pg:version: 0.29.0
 
     ### Monitoring ###
 
