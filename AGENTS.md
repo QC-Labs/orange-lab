@@ -25,18 +25,22 @@
 
 ## Working Conventions
 
-### Step-by-Step Approach
+### Workflow Phases
 
-- Agree on plan first before making changes
-- Ask questions about trade-offs if multiple paths exist
-- Work incrementally on one task at a time
-- Ask for confirmation before moving to next phase
+Follow these phases in order. Do NOT skip to implementation without completing the earlier phases. Implementation is the LAST step.
 
-### Architecture Planning
+1. **Understand**: Investigate the problem thoroughly before proposing solutions. Reproduce issues, read logs, trace code paths, gather evidence. Ask questions to uncover hidden assumptions or constraints the user may have.
+2. **Discuss**: Present findings and potential solutions with trade-offs. Ask the user to choose direction when multiple paths exist. Do not implement yet.
+3. **Plan**: Once direction is agreed, present a concrete implementation plan (files to change, what changes, verification steps). Get explicit confirmation before proceeding.
+4. **Implement**: Only after the plan is confirmed, make the changes. Run build/test/typecheck. Report results.
+5. **Verify**: Confirm the changes work (preview, deploy, test). Report results and stop — let the user decide next steps.
 
-- Present the architecture plan before implementing multi-file changes
-- Validate the approach with user before writing code to avoid rework
-- Focus on interfaces and data flow rather than implementation details
+### Switching Back to Discussion Mode
+
+During implementation, stop and switch back to discussion mode when:
+
+1. **Library change may be needed**: If the implementation would require manual Kubernetes manifests or workarounds to accomplish something the library (`@orangelab/pulumi`) should handle, stop. Propose the library change instead so other components can reuse it. Keep stacks clean and delegate to the Application class wherever possible.
+2. **Scope changes or faulty assumptions surface**: If something unexpected comes up during implementation (a conflict, a wrong assumption, a side effect), stop. Note the issue and agree on a path forward before continuing. The user may have context outside the current session, or may want to defer the fix to a separate task.
 
 ### Asking for Confirmation
 
