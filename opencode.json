@@ -3,7 +3,7 @@
     "permission": {
         "bash": {
             "*": "ask",
-            "Pulumi.*.yaml": "ask",
+            "*Pulumi*.yaml*": "ask",
             "cat *": "allow",
             "curl *": "allow",
             "echo *": "allow",
@@ -33,11 +33,11 @@
             "tail *": "allow"
         },
         "read": {
-            "Pulumi.*.yaml": "deny"
+            "**/Pulumi*.yaml": "deny"
         },
         "edit": {
             "*": "ask",
-            "Pulumi.*.yaml": "deny",
+            "**/Pulumi*.yaml": "deny",
             "node_modules/*": "deny"
         }
     }
