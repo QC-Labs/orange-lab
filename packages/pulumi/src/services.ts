@@ -22,9 +22,9 @@ export class Services {
         private opts?: pulumi.ComponentResourceOptions,
     ) {}
 
-    private getServiceAccount() {
-        this.serviceAccount ??= this.createServiceAccount();
-        return this.serviceAccount;
+    private getServiceAccount(spec: ContainerSpec) {
+        if (spec.serviceAccountName) return;
+        return (this.serviceAccount ??= this.createServiceAccount());
     }
 
     private createServiceAccount() {
@@ -36,7 +36,7 @@ export class Services {
     }
 
     createDeployment(spec: ContainerSpec) {
-        const serviceAccount = this.getServiceAccount();
+        const serviceAccount = this.getServiceAccount(spec);
         const podSpec = new Containers(
             this.appName,
             {
@@ -74,7 +74,7 @@ export class Services {
 
     createDaemonSet(spec: ContainerSpec) {
         assert(spec.name, 'name is required for daemonset');
-        const serviceAccount = this.getServiceAccount();
+        const serviceAccount = this.getServiceAccount(spec);
         const podSpec = new Containers(this.appName, {
             metadata: this.args.metadata,
             serviceAccount,
@@ -98,7 +98,7 @@ export class Services {
 
     createJob(spec: ContainerSpec) {
         assert(spec.name, 'name is required for job');
-        const serviceAccount = this.getServiceAccount();
+        const serviceAccount = this.getServiceAccount(spec);
         const podSpec = new Containers(
             this.appName,
             {

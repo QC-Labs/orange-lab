@@ -51,13 +51,14 @@ export class Network {
         this.exportClusterEndpoints({ service, component: spec.name, ports });
 
         const publicPorts = ports.filter(p => !p.private);
+        const hostname = spec.hostname ?? this.getHostname(spec.name);
         const httpPorts = publicPorts.filter(p => !p.protocol || p.protocol === 'http');
         if (httpPorts.length > 0) {
             this.provider.createHttpEndpoints({
                 serviceName: service.metadata.name,
                 httpPorts,
                 component: spec.name,
-                hostname: this.getHostname(spec.name),
+                hostname,
             });
         }
         const tcpPorts = publicPorts.filter(
@@ -68,7 +69,7 @@ export class Network {
                 serviceName: service.metadata.name,
                 tcpPorts,
                 component: spec.name,
-                hostname: this.getHostname(spec.name),
+                hostname,
                 externalTrafficPolicy: spec.externalTrafficPolicy,
             });
         }

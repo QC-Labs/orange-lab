@@ -82,6 +82,11 @@ export interface ContainerSpec {
     envSecret?: Record<string, pulumi.Input<string> | undefined>;
     externalTrafficPolicy?: 'Local' | 'Cluster';
     hostNetwork?: boolean;
+    /**
+     * If provided, the pod uses this existing ServiceAccount name
+     * instead of creating a new one.
+     */
+    serviceAccountName?: pulumi.Input<string>;
     clusterIP?: string;
     initContainers?: InitContainerSpec[];
     volumeMounts?: VolumeMount[];

@@ -21,7 +21,7 @@ export class Containers {
         private appName: string,
         private args: {
             metadata: Metadata;
-            serviceAccount: kubernetes.core.v1.ServiceAccount;
+            serviceAccount?: kubernetes.core.v1.ServiceAccount;
             storage?: Storage;
             nodes: Nodes;
         },
@@ -88,7 +88,8 @@ export class Containers {
                 securityContext: this.args.storage?.hasLocal()
                     ? { seLinuxOptions: { type: 'spc_t' } }
                     : undefined,
-                serviceAccountName: this.args.serviceAccount.metadata.name,
+                serviceAccountName: spec.serviceAccountName ??
+                    this.args.serviceAccount?.metadata.name,
                 volumes,
             },
         };
