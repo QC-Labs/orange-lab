@@ -29,7 +29,7 @@
 
 Follow these phases in order. Do NOT skip to implementation without completing the earlier phases. Implementation is the LAST step.
 
-1. **Understand**: Investigate the problem thoroughly before proposing solutions. Reproduce issues, read logs, trace code paths, gather evidence. Ask questions to uncover hidden assumptions or constraints the user may have.
+1. **Understand**: Start with a quick assessment of the situation — gather key symptoms and surface possible investigation tracks. Present these to the user early so they can provide additional context, reject paths they know are dead ends, or suggest simpler fixes (e.g., "just restart the service"). Only dive deep into logs/code paths if the quick assessment doesn't reveal an obvious fix or the user confirms the direction. Avoid long debugging sessions with diminishing returns — if deep investigation isn't converging, stop and discuss findings so far.
 2. **Discuss**: Present findings and potential solutions with trade-offs. Ask the user to choose direction when multiple paths exist. Do not implement yet.
 3. **Plan**: Once direction is agreed, present a concrete implementation plan (files to change, what changes, verification steps). Get explicit confirmation before proceeding.
 4. **Implement**: Only after the plan is confirmed, make the changes. Run build/test/typecheck. Report results.
@@ -51,6 +51,7 @@ Stop and ask when you encounter:
 - **Configuration that maps to multiple levels**: debug might be true/false in one place but have granular levels elsewhere
 - **Deprecation markers**: comments about future changes or TODOs
 - **Type mismatches**: a value used as boolean in one place but string/enum in another
+- **Defaults from a single use case**: when generalizing code into a library, a hardcoded value that matched the original caller (e.g., a port) may not be a sensible default. Check whether the value is universal or app-specific — make app-specific values required parameters.
 
 Even if the change seems straightforward, these signals may indicate the current pattern is intentionally simplified (YAGNI) or needs expansion.
 
