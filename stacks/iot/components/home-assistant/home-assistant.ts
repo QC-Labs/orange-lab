@@ -42,22 +42,7 @@ export class HomeAssistant extends pulumi.ComponentResource {
                     dnsPolicy: 'ClusterFirstWithHostNet',
                     fullnameOverride: name,
                     hostNetwork: true,
-                    ingress: {
-                        enabled: true,
-                        className: httpEndpointInfo.className,
-                        hosts: [
-                            {
-                                host: httpEndpointInfo.hostname,
-                                paths: [{ path: '/', pathType: 'Prefix' }],
-                            },
-                        ],
-                        tls: [
-                            {
-                                hosts: [httpEndpointInfo.hostname],
-                                secretName: httpEndpointInfo.tlsSecretName,
-                            },
-                        ],
-                    },
+                    ingress: { enabled: false },
                     persistence: {
                         enabled: true,
                         existingClaim: app.storage?.getClaimName(),
@@ -78,6 +63,8 @@ export class HomeAssistant extends pulumi.ComponentResource {
             },
             { dependsOn: app.storage },
         );
+
+        app.addHostNetworkProxy({ targetPort: 8080, serviceAccountName: name });
 
         this.endpointUrl = httpEndpointInfo.url;
     }

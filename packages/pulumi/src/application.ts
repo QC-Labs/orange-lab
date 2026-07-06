@@ -172,6 +172,39 @@ export class Application {
         return this;
     }
 
+    /**
+     * Adds a caddy reverse proxy deployment that exposes a hostNetwork app
+     * through the standard routing provider (Traefik/Tailscale).
+     * Uses Caddy as reverse-proxy to application pod.
+     */
+    addHostNetworkProxy(spec: {
+        targetPort: number;
+        serviceAccountName?: pulumi.Input<string>;
+    }) {
+        if (this.storageOnly) return this;
+        const httpEndpointInfo = this.network.getHttpEndpointInfo();
+        this.addDeployment({
+            name: 'proxy',
+            image: 'caddy:2-alpine',
+            command: ['caddy'],
+            commandArgs: this.metadata.namespace.apply(ns => [
+                'reverse-proxy',
+                '--from',
+                ':8080',
+                '--to',
+                `http://${this.appName}.${ns}:${String(spec.targetPort)}`,
+            ]),
+            hostname: httpEndpointInfo.host,
+            ports: [{ name: 'http', port: 8080 }],
+            resources: {
+                limits: { memory: '64Mi' },
+                requests: { cpu: '10m', memory: '32Mi' },
+            },
+            serviceAccountName: spec.serviceAccountName,
+        });
+        return this;
+    }
+
     addDaemonSet(spec: ContainerSpec) {
         if (this.storageOnly) return this;
         this.getServices().createDaemonSet(spec);
