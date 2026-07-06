@@ -2,6 +2,32 @@
 
 ZimaOS-specific steps for joining a K3s cluster. For general node configuration, see [Installation - Node Configuration](./install-linux.md).
 
+## Prerequisites
+
+### Developer Mode (SSH)
+
+SSH is disabled by default on ZimaOS. Enable it in **Settings → Developer → SSH** and set a password.
+
+### System Configuration
+
+Enable IP forwarding (required by K3s for pod networking):
+
+```sh
+echo 'net.ipv4.ip_forward = 1' | sudo tee -a /etc/sysctl.conf
+echo 'net.ipv6.conf.all.forwarding = 1' | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+```
+
+See [Tailscale's performance tuning docs](https://tailscale.com/kb/1320/performance-best-practices#ethtool-configuration) for optional network interface optimizations.
+
+### Directories
+
+```sh
+sudo mkdir -p /opt/bin
+sudo mkdir -p /DATA/k3s
+sudo mkdir -p /media/<my-drive>/k3s # replace with folder on your external hard drive
+```
+
 ## Tailscale
 
 On ZimaOS, Tailscale is installed via the Zima App Store (**Networking -> Tailscale**) rather than on the host directly. It runs as a Docker container, so the `tailscale` CLI is not available on the host.
@@ -29,7 +55,7 @@ Run [`scripts/k3s-agent-zima.sh`](../scripts/k3s-agent-zima.sh) on the managemen
 
 Copy the generated output to the Zimaboard node and execute it.
 
-The script configures K3s to use the `/DATA/k3s` directory (ZimaOS's data partition) and installs the binary to `/opt/bin` with SELinux enabled.
+The script configures K3s to use the `/DATA/k3s` directory (ZimaOS's data partition) and installs the binary to `/opt/bin` with SELinux enabled — these directories were created in the [Prerequisites](#prerequisites) section.
 
 Check that the service is running:
 
