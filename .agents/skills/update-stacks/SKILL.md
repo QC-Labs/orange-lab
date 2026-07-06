@@ -51,6 +51,8 @@ Then ask: **"Apply all stacks?"** (yes/no). Do not proceed without explicit conf
 
 ### 5. Update core stack first
 
+Only if core has changes from preview:
+
 ```
 pulumi up --yes -s <core-stack-name>
 ```
@@ -59,7 +61,7 @@ Wait for completion. If this fails, **stop** and report the error. Do not update
 
 ### 6. Update child stacks in parallel
 
-Run all child stacks simultaneously:
+Only run on child stacks that have changes from preview. Run them simultaneously:
 
 ```
 pulumi up --yes -s <child-stack-name>
