@@ -51,27 +51,31 @@ export class Network {
         this.exportClusterEndpoints({ service, component: spec.name, ports });
 
         const publicPorts = ports.filter(p => !p.private);
-        const hostname = spec.hostname ?? this.getHostname(spec.name);
-        const httpPorts = publicPorts.filter(p => !p.protocol || p.protocol === 'http');
-        if (httpPorts.length > 0) {
-            this.provider.createHttpEndpoints({
-                serviceName: service.metadata.name,
-                httpPorts,
-                component: spec.name,
-                hostname,
-            });
-        }
-        const tcpPorts = publicPorts.filter(
-            p => p.protocol === 'tcp' || p.protocol === 'tls' || p.protocol === 'udp',
-        );
-        if (tcpPorts.length > 0 && !spec.hostNetwork) {
-            this.provider.createTcpEndpoints({
-                serviceName: service.metadata.name,
-                tcpPorts,
-                component: spec.name,
-                hostname,
-                externalTrafficPolicy: spec.externalTrafficPolicy,
-            });
+        if (publicPorts.length > 0) {
+            const hostname = spec.hostname ?? this.getHostname(spec.name);
+            const httpPorts = publicPorts.filter(
+                p => !p.protocol || p.protocol === 'http',
+            );
+            if (httpPorts.length > 0) {
+                this.provider.createHttpEndpoints({
+                    serviceName: service.metadata.name,
+                    httpPorts,
+                    component: spec.name,
+                    hostname,
+                });
+            }
+            const tcpPorts = publicPorts.filter(
+                p => p.protocol === 'tcp' || p.protocol === 'tls' || p.protocol === 'udp',
+            );
+            if (tcpPorts.length > 0 && !spec.hostNetwork) {
+                this.provider.createTcpEndpoints({
+                    serviceName: service.metadata.name,
+                    tcpPorts,
+                    component: spec.name,
+                    hostname,
+                    externalTrafficPolicy: spec.externalTrafficPolicy,
+                });
+            }
         }
 
         Object.assign(this.endpoints, this.provider.endpoints);
