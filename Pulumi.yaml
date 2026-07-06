@@ -59,6 +59,8 @@ config:
     longhorn:backupFullInterval: '14'
     # Set to "least-effort" or "best-effort" to move replicas when nodes become unavailable
     longhorn:replicaAutoBalance: disabled
+    # Set to "best-effort" to create a local replica on the pod's node
+    longhorn:dataLocality: disabled
     longhorn:backupAllVolumes: false
 
     rustfs:enabled: false

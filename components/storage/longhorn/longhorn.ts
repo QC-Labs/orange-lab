@@ -94,7 +94,7 @@ export class Longhorn extends pulumi.ComponentResource {
                     autoCleanupSystemGeneratedSnapshot: 'true',
                     backupConcurrentLimit: '2',
                     concurrentReplicaRebuildPerNodeLimit: '2',
-                    defaultDataLocality: 'best-effort',
+                    defaultDataLocality: config.require('longhorn', 'dataLocality'),
                     defaultReplicaCount: config.require('longhorn', 'replicaCount'),
                     deletingConfirmationFlag: 'false',
                     detachManuallyAttachedVolumesWhenCordoned: 'true',
@@ -150,7 +150,7 @@ export class Longhorn extends pulumi.ComponentResource {
                         'longhorn',
                         'replicaCount',
                     ),
-                    defaultDataLocality: 'best-effort',
+                    defaultDataLocality: config.require('longhorn', 'dataLocality'),
                 },
             },
         });
@@ -194,7 +194,7 @@ export class Longhorn extends pulumi.ComponentResource {
                 reclaimPolicy: 'Delete',
                 parameters: {
                     numberOfReplicas: '1',
-                    dataLocality: 'best-effort',
+                    dataLocality: config.require(this.name, 'dataLocality'),
                     staleReplicaTimeout: (48 * 60).toString(),
                 },
             },

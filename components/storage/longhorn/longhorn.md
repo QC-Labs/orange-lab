@@ -47,6 +47,11 @@ pulumi config set longhorn:storageSize 100Gi
 # "best-effort" - continuously spread replicas evenly across all nodes
 pulumi config set longhorn:replicaAutoBalance best-effort
 
+# Set data locality - creates a local replica on the pod's node
+# "disabled" - (default) no local replica, allow running with remote volume
+# "best-effort" - creates a local replica when possible (better performance but requires migrating volume to local node before start)
+pulumi config set longhorn:dataLocality best-effort
+
 pulumi up
 ```
 
