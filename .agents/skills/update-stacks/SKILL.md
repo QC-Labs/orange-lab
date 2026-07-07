@@ -20,15 +20,21 @@ npm run build
 ### 2. Discover stacks dynamically
 
 - **Core stack**: Look for `Pulumi.<stack>.yaml` in the project root. Use that stack name.
-- **Child stacks**: For each subdirectory in `stacks/`, look for `Pulumi.<stack>.yaml`. Collect all stack names.
+- **Child stacks**: For each subdirectory in `stacks/`, look for `Pulumi.<stack>.yaml`. Collect all stack names. Each child stack must be run from its own directory (`stacks/<name>/`), not the project root.
 
 ### 3. Preview all stacks
 
 Run previews in parallel where safe:
 
-- Preview the **core** stack first (alone)
-- Preview all **child stacks** in parallel
+- Preview the **core** stack first (alone) — run from project root
+- Preview all **child stacks** in parallel — each must be run from its `stacks/<name>/` directory
 
+**Core stack:**
+```
+pulumi preview --json -s <stack-name>
+```
+
+**Child stacks (run from `stacks/<name>/`):**
 ```
 pulumi preview --json -s <stack-name>
 ```
@@ -51,7 +57,7 @@ Then ask: **"Apply all stacks?"** (yes/no). Do not proceed without explicit conf
 
 ### 5. Update core stack first
 
-Only if core has changes from preview:
+Only if core has changes from preview. Run from project root:
 
 ```
 pulumi up --yes -s <core-stack-name>
@@ -61,7 +67,7 @@ Wait for completion. If this fails, **stop** and report the error. Do not update
 
 ### 6. Update child stacks in parallel
 
-Only run on child stacks that have changes from preview. Run them simultaneously:
+Only run on child stacks that have changes from preview. Run them simultaneously from their respective `stacks/<name>/` directories:
 
 ```
 pulumi up --yes -s <child-stack-name>
