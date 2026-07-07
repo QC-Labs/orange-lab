@@ -18,17 +18,9 @@ config:
     k3s:clusterCidr: 10.42.0.0/16
     k3s:serviceCidr: 10.43.0.0/16
 
-    tailscale:enabled: false
-    # tailscale:tailnet: <*.ts.net>
-    # tailscale:oauthClientId: OAUTH_CLIENT_ID
-    # tailscale:oauthClientSecret:
-    #   secure: OAUTH_CLIENT_SECRET
-    # Hostname for Tailscale operator proxy for Kubernetes API
-    tailscale:hostname: k8s
-
     orangelab:routingProvider: tailscale # tailscale | traefik
-    # Note: add A record for "*" pointing to one of your Tailscale IPs
     # Custom domain supported by Traefik provider only.
+    # Note: add A record for "*" pointing to one of your Tailscale IPs
     # orangelab:customDomain: 'example.com'
 
     # Global defaults for storage classes. Apps can override with <app>:storageClass
@@ -38,39 +30,20 @@ config:
     # Global Redis image - apps can override with <app>:redis/image
     orangelab:redis/image: docker.io/redis:8-alpine
 
+    ### Network ###
+
+    tailscale:enabled: false
+    # tailscale:tailnet: <*.ts.net>
+    # tailscale:oauthClientId: OAUTH_CLIENT_ID
+    # tailscale:oauthClientSecret:
+    #   secure: OAUTH_CLIENT_SECRET
+    # Hostname for Tailscale operator proxy for Kubernetes API
+    tailscale:hostname: k8s
+
     traefik:enabled: false
-    traefik:version: 41.0.0
+    traefik:version: 41.0.2
     traefik:hostname: traefik
     traefik:gatewayApiCrdUrl: 'https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.1/experimental-install.yaml'
-
-    longhorn:enabled: false
-    longhorn:version: 1.12.0
-    longhorn:hostname: longhorn
-    # Initial value for default storage. Adjust each volume in Longhorn UI
-    longhorn:replicaCount: 2
-    longhorn:snapshotEnabled: false
-    longhorn:snapshotCron: '0 * * * *' # every hour
-    longhorn:trimEnabled: true
-    longhorn:trimCron: '0 0 * * 0' # once a week on Sunday at midnight
-    longhorn:backupEnabled: false
-    longhorn:backupBucket: backup-longhorn
-    longhorn:backupCron: '15 0 * * *' # daily at 0:15
-    # Full backup every x days, use 0 for incremental only
-    longhorn:backupFullInterval: '14'
-    # Set to "least-effort" or "best-effort" to move replicas when nodes become unavailable
-    longhorn:replicaAutoBalance: disabled
-    # Set to "best-effort" to create a local replica on the pod's node
-    longhorn:dataLocality: disabled
-    longhorn:backupAllVolumes: false
-
-    rustfs:enabled: false
-    rustfs:hostname: rustfs
-    rustfs:hostname-api: rustfs-api
-    # rustfs:dataPath: /mnt/my-drive/rustfs-data
-    # rustfs:requiredNodeLabel: kubernetes.io/hostname=<hostname>
-    rustfs:rootUser: admin
-    rustfs:image: rustfs/rustfs:1.0.0-beta.8
-    rustfs:provisioner/image: rustfs/rc:latest
 
     cert-manager:enabled: false
     cert-manager:version: v1.20.3
@@ -85,6 +58,40 @@ config:
     technitium:DNS_SERVER_FORWARDER_PROTOCOL: 'Udp' # Udp, Tcp, Tls, Https, HttpsJson
     # technitium:requiredNodeLabel: kubernetes.io/hostname=<hostname>
 
+    ### Storage ###
+
+    longhorn:enabled: false
+    longhorn:version: 1.12.0
+    longhorn:hostname: longhorn
+    # Initial value for default storage. Adjust each volume in Longhorn UI
+    longhorn:replicaCount: 2
+    longhorn:snapshotEnabled: false
+    longhorn:snapshotCron: '0 * * * *' # every hour
+    longhorn:trimEnabled: true
+    longhorn:trimCron: '0 0 * * 0' # once a week on Sunday at midnight
+    longhorn:backupEnabled: false
+    longhorn:backupBucket: backup-longhorn
+    longhorn:backupCron: '15 0 * * *' # daily at 0:15
+    # Enable backups for all volumes. Apps can opt in/out individually with <app>:backupVolume: true/false.
+    longhorn:backupAllVolumes: false
+    # Full backup every x days, use 0 for incremental only
+    longhorn:backupFullInterval: '14'
+    # Set to "least-effort" or "best-effort" to move replicas when nodes become unavailable
+    longhorn:replicaAutoBalance: disabled
+    # Set to "best-effort" to create a local replica on the pod's node
+    longhorn:dataLocality: disabled
+
+    rustfs:enabled: false
+    rustfs:hostname: rustfs
+    rustfs:hostname-api: rustfs-api
+    # rustfs:dataPath: /mnt/my-drive/rustfs-data
+    # rustfs:requiredNodeLabel: kubernetes.io/hostname=<hostname>
+    rustfs:rootUser: admin
+    rustfs:image: rustfs/rustfs:1.0.0-beta.8
+    rustfs:provisioner/image: rustfs/rc:latest
+
+    ### Hardware ###
+
     nfd:enabled: false
     nfd:gpu-autodetect: true
     nfd:excludeNodeLabel: orangelab/alpine
@@ -94,6 +101,8 @@ config:
 
     amd-gpu-operator:enabled: false
     amd-gpu-operator:version: v1.5.0
+
+    ### Data ###
 
     mariadb-operator:enabled: false
 
