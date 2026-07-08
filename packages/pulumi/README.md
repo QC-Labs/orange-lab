@@ -1,10 +1,18 @@
 # @orangelab/pulumi
 
-OrangeLab Pulumi Kubernetes DSL — a library of reusable components for deploying applications on Kubernetes with Pulumi.
+Reusable components for deploying applications on Kubernetes with Pulumi.
 
-## Usage
+This package is used by OrangeLab stacks. See the [main repository](https://orangelab.space/) for documentation.
 
-This package is used internally by OrangeLab stacks. See the [main repository](https://github.com/QC-Labs/orange-lab) for documentation.
+## Features
+
+- provides DSL to define distributed applications and their dependencies ([Application](./src/application.ts) class)
+- creates Kubernetes manifests based on your `Pulumi.<stack>.yaml` configuration
+- uses Pulumi to show instrastructure changes and deploys them
+- provisions databases needed by applications (MySQL, PostgreSQL, Redis)
+- supports Helm charts as well as simple Docker images
+- uses Kubernetes labels to target deployments based on `<app>:requiredNodeLabel` (f.e. `kubernetes.io/hostname` or `topology.kubernetes.io/zone`)
+- supports multiple routing providers and app-specific overrides (Tailscale, Traefik)
 
 ## Configuration
 

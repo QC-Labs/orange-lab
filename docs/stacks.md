@@ -1,24 +1,21 @@
 # Multi-Stack Deployment
 
-OrangeLab supports deploying modules as independent Pulumi stacks. This allows you to manage different parts of your infrastructure separately, reducing update time and enabling independent module lifecycle management.
-
-## Architecture
-
-- **Core stack** (`orangelab/<stack>`): Network, storage operators, data operators, hardware operators
-- **Module stacks** (`orangelab-<module>/<stack>`): Application modules like media, AI, bitcoin
+OrangeLab supports deploying modules as independent Pulumi stacks. This allows you to manage different parts of your infrastructure separately and reducing update time.
 
 All stacks target the **same Kubernetes cluster**. The core stack must be deployed first because it installs CRDs, storage classes, and ingress controllers that module stacks depend on.
 
-## Available Module Stacks
+Each additional stack is independent and can be destroyed and re-deployed without affecting the rest of the cluster.
+
+## Available Stacks
 
 | Module   | Path                                              | Description                             |
 |----------|---------------------------------------------------|-----------------------------------------|
+| Apps     | [`stacks/apps/`](./stacks/apps/README.md)         | General-purpose tools and utilities     |
 | AI       | [`stacks/ai/`](./stacks/ai/README.md)             | AI workloads, LLMs                      |
 | Bitcoin  | [`stacks/bitcoin/`](./stacks/bitcoin/README.md)   | Bitcoin nodes and blockchain tools      |
 | Dev      | [`stacks/dev/`](./stacks/dev/README.md)           | Development and debugging utilities     |
 | IoT      | [`stacks/iot/`](./stacks/iot/README.md)           | Home automation and IoT platforms       |
 | Media    | [`stacks/media/`](./stacks/media/README.md)       | Photo backup, streaming, *arr stack     |
-| Apps    | [`stacks/apps/`](./stacks/apps/README.md)      | General-purpose tools and utilities    |
 
 ## Prerequisites
 
@@ -75,8 +72,8 @@ stacks/<module>/
 
 Shared config keys that must be duplicated in every module stack:
 
-| Key | Example | Purpose |
-|---|---|---|
+| Key                         | Example                  | Purpose         |
+|-----------------------------|--------------------------|-----------------|
 | `orangelab:routingProvider` | `traefik` or `tailscale` | Ingress/routing |
 | `orangelab:customDomain`    | `example.com`            | Traefik domain  |
 

@@ -1,33 +1,95 @@
 # OrangeLab
 
-Private distributed infrastructure on consumer hardware.
+**Private distributed self-hosting infrastructure.**
 
 <img src="docs/orange-lab-910-512.png" alt="OrangeLab logo" height="250"/>
 
-## Core components
+# Features
 
-- Pulumi (https://www.pulumi.com/) - configuration management, deployments and infrastructure as code
-- Tailscale (https://tailscale.com/) - end-to-end encrypted communication between nodes
-- K3s (https://k3s.io/) - lightweight Kubernetes cluster
-- Longhorn (https://longhorn.io/) - distributed storage
+- Infrastructure as code and deployment automation ([Pulumi](https://www.pulumi.com/) ↗)
+- Lightweight Kubernetes cluster ([K3S](https://k3s.io/) ↗)
+- Encrypted networking ([Tailscale](https://tailscale.com/) ↗)
+- Distributed replicated storage ([Longhorn](https://longhorn.io/) ↗)
+- Daily incremental backups to S3 ([RustFS](https://rustfs.dev/) ↗)
+- Custom domain support ([Traefik](https://traefik.io/) ↗)
+- SSL certificate provisioning ([Cert-manager](https://cert-manager.io/) ↗)
+- GPU support (AMD, NVIDIA) for local AI workloads
+- PostgreSQL, MariaDB, and Redis database management
 
-## Principles and goals
+Deploy applications using included Pulumi stacks ([`stacks/`](./stacks/) folder) or create your own by referencing [`@orangelab/pulumi`](./packages/pulumi/README.md).
+
+# Hardware requirements
+
+## Linux
+
+Installation instructions assume your machines are running Bluefin (Developer edition, https://projectbluefin.io/ ↗) based on Fedora Silverblue unless otherwise noted.
+
+Most Linux systems with kernel 6.11.6+ and SELinux are supported. That includes your own hardware (e.g. laptops, mini PCs, Rasberry Pi and Zimaboard) as well as any cloud instances.
+
+The main requirement is that K3S and Longhorn (including `open-iscsi` and `iscsiadm`) can be installed.
+
+## Windows, MacOS
+
+Windows and MacOS support is limited, specifically they cannot be used as Longhorn storage nodes.
+
+See [Disabling Longhorn Guide](./docs/longhorn-disable.md) with instructions on using `local-path-provisioner` instead of Longhorn.
+
+## Memory
+
+Minimum 2-4GB memory required for Longhorn. Recommended 8-16GB+ allows to run most components on a single host. More might be needed for AI workloads.
+
+## GPU
+
+Both NVIDIA and AMD GPUs are supported. See [Hardware module](/components/hardware/HARDWARE.md) for more information.
+
+# Principles and goals
 
 - decentralized - uses your physical machines potentially spread out over geographical locations, minimise dependency on external services and cloud providers
-- private by default - uses Tailscale/WireGuard for end to end encrypted communication, making services public has to be explicitly defined
+- private by default - uses Tailscale/WireGuard for end to end encrypted communication, making services public has to be explicitly enabled
 - OSS - only open source components that can be run locally
 - automation - use Pulumi and Helm to automate most tasks and configuration
 - easy to use - no deep Kubernetes knowledge required, sensible defaults
 - offline mode - continue working (with some limitations) over local network when internet connection lost
 - lightweight - can be run on a single laptop using default configuration, focus on consumer hardware
-- scalable - distribute workloads across multiple machines as they become available, optional use of cloud instances
+- scalable - distribute workloads across multiple machines, optional use of cloud instances
 - self-healing - in case of problems, the system should recover with minimal user intervention
 - immutable - no snowflakes, as long as there is at least one Longhorn replica available, components can be destroyed and easily recreated
-- simple disaster recovery - all you need to recreate the system from scratch is Longhorn backups and Pulumi config
+- simple disaster recovery - all you need to recreate the system from scratch is Longhorn backups and Pulumi configs
 
-# Applications
+# Installation
 
-### Base modules
+> [!WARNING]
+> This project is under active development. It is recommended to use static Longhorn volumes and `fromVolume` setting so applications can be destroyed and redeployed without data loss.
+
+## Kubernetes Cluster
+
+Configure **Pulumi** then install **Tailscale** and **K3S** on each node you want to add to the cluster:
+
+- [Installation - Admin node](./docs/install-admin.md) - Initial Pulumi and Tailscale setup
+- [Installation - Linux node configuration](./docs/install-linux.md) - Configure nodes (firewall, suspend settings)
+- [Installation - SSH configuration](./docs/install-ssh.md) (Optional) - Configure SSH keys on nodes for easier access
+- [Installation - K3s cluster](./docs/install-k3s.md) - Install Kubernetes cluster and label nodes
+
+## Core components
+
+After setting up the Kubernetes cluster, deploy the required core modules:
+
+1. [Network](./components/network/NETWORK.md) - Routing provider (Tailscale or **Traefik**)
+2. [Storage](./components/storage/STORAGE.md) - Distributed storage (**Longhorn**) and optionally backups (S3)
+3. [Hardware](./components/hardware/HARDWARE.md) - (Optional) **GPU** support
+4. [Data](./components/data/DATA.md) - (Optional) **Databases**
+
+Information about general application configuration and deployment can be found at [Configuration Guide](./docs/configuration.md)
+
+## Application deployment
+
+After core components are deployed, install any applications you need from the list below.
+
+More information about stacks in general at [Multi-Stack Deployment](./docs/stacks.md)
+
+# Available applications
+
+## Core stack
 
 [Network](./components/network/NETWORK.md):
 
@@ -43,8 +105,8 @@ Private distributed infrastructure on consumer hardware.
 
 [Hardware](./components/hardware/HARDWARE.md):
 
-- [`amd-gpu-operator`](./components/hardware/amd-gpu-operator/amd-gpu-operator.md) - AMD GPU support
 - [`nfd`](./components/hardware/nfd/nfd.md) - Node Feature Discovery (GPU autodetection)
+- [`amd-gpu-operator`](./components/hardware/amd-gpu-operator/amd-gpu-operator.md) - AMD GPU support
 - [`nvidia-gpu-operator`](./components/hardware/nvidia-gpu-operator/nvidia-gpu-operator.md) - NVidia GPU support
 
 [Data](./components/data/DATA.md):
@@ -57,17 +119,22 @@ Private distributed infrastructure on consumer hardware.
 - [`beszel`](./components/monitoring/beszel/beszel.md) - Beszel lightweight monitoring
 - [`prometheus`](./components/monitoring/prometheus/prometheus.md) - Prometheus/Grafana monitoring
 
-### Optional modules
+## Optional application stacks
 
-[AI](./components/ai/AI.md):
+[Apps](./stacks/apps/README.md):
 
-- [`invokeai`](./components/ai/invokeai/invokeai.md) - generative AI plaform, community edition
-- [`n8n`](./components/ai/n8n/n8n.md) - AI workflow automation
-- [`ollama`](./components/ai/ollama/ollama.md) - local large language models
-- [`open-webui`](./components/ai/open-webui/open-webui.md) - Open WebUI frontend
-- [`kubeai`](./components/ai/kubeai/kubeai.md) - (Experimental) Private AI SDK for Kubernetes with OpenAI-compatible API
-- [`automatic1111`](./components/ai/automatic1111/automatic1111.md) - (Deprecated) Stable Diffusion WebUI.
-- [`sdnext`](./components/ai/sdnext/sdnext.md) - (Deprecated) Stable Diffusion WebUI.
+- [`nextcloud`](./stacks/apps/components/nextcloud/nextcloud.md) - File sharing, calendars, contacts, tasks
+- [`vaultwarden`](./stacks/apps/components/vaultwarden/vaultwarden.md) - Bitwarden-compatible password manager
+
+[AI](./stacks/ai/README.md):
+
+- [`invokeai`](./stacks/ai/components/invokeai/invokeai.md) - generative AI plaform, community edition
+- [`n8n`](./stacks/ai/components/n8n/n8n.md) - AI workflow automation
+- [`ollama`](./stacks/ai/components/ollama/ollama.md) - local large language models
+- [`open-webui`](./stacks/ai/components/open-webui/open-webui.md) - Open WebUI frontend
+- [`kubeai`](./stacks/ai/components/kubeai/kubeai.md) - (Experimental) Private AI SDK for Kubernetes with OpenAI-compatible API
+- [`automatic1111`](./stacks/ai/components/automatic1111/automatic1111.md) - (Deprecated) Stable Diffusion WebUI.
+- [`sdnext`](./stacks/ai/components/sdnext/sdnext.md) - (Deprecated) Stable Diffusion WebUI.
 
 [Bitcoin](./stacks/bitcoin/README.md):
 
@@ -76,9 +143,9 @@ Private distributed infrastructure on consumer hardware.
 - [`electrs`](./stacks/bitcoin/components/electrs/electrs.md) - Electrs (Electrum) server implementation
 - [`mempool`](./stacks/bitcoin/components/mempool/mempool.md) - Blockchain explorer
 
-[Dev](./components/dev/DEV.md):
+[Dev](./stacks/dev/README.md):
 
-- [`debug`](./components/dev/debug/debug.md) - (Experimental) Troubleshooting utilities and volume access tools
+- [`debug`](./stacks/dev/components/debug/debug.md) - (Experimental) Troubleshooting utilities and volume access tools
 
 [IoT](./stacks/iot/README.md):
 
@@ -96,55 +163,18 @@ Private distributed infrastructure on consumer hardware.
 - [`sonarr`](./stacks/media/components/sonarr/sonarr.md) - TV show collection manager
 - [`transmission`](./stacks/media/components/transmission/transmission.md) - BitTorrent download client
 
-[Apps](./stacks/apps/README.md):
-
-- [`nextcloud`](./stacks/apps/components/nextcloud/nextcloud.md) - File sharing, calendars, contacts, tasks
-- [`vaultwarden`](./stacks/apps/components/vaultwarden/vaultwarden.md) - Bitwarden-compatible password manager
-
-# Platforms and limitations
-
-Installation instructions assume your machines are running Bluefin (Developer edition, https://projectbluefin.io/) based on Fedora Silverblue unless otherwise noted.
-It should run on any modern Linux distribution with Linux kernel 6.11.6+, even including Raspberry Pi.
-
-Windows and MacOS support is limited, specifically they cannot be used as storage nodes.
-
-See [Disabling Longhorn Guide](./docs/longhorn-disable.md) with instructions on using `local-path-provisioner` instead of Longhorn.
-
-Both NVIDIA and AMD GPUs are supported. See [Hardware module](/components/hardware/HARDWARE.md) for more information.
-
-# Installation
-
-> [!WARNING]
-> This project is under active development. It is recommended to use static Longhorn volumes and `fromVolume` setting so applications can be destroyed and redeployed without data loss.
-
-## Cluster
-
-- [Installation - Admin node](./docs/install-admin.md) - Initial Pulumi and Tailscale setup
-- [Installation - Linux node configuration](./docs/install-linux.md) - Configure nodes (firewall, suspend settings)
-- [Installation - SSH configuration](./docs/install-ssh.md) (Optional) - Configure SSH keys on nodes for easier access
-- [Installation - K3s cluster](./docs/install-k3s.md) - Install Kubernetes cluster and label nodes
-
-## Core components
-
-After setting up the Kubernetes cluster, deploy the core modules:
-
-1. [Network](./components/network/NETWORK.md) - Routing provider (Tailscale or Traefik)
-2. [Storage](./components/storage/STORAGE.md) - Distributed storage (Longhorn) and backups (S3)
-3. [Hardware](./components/hardware/HARDWARE.md) - (Optional) GPU support
-
-## Applications
-
-After core modules are deployed, install optional applications:
-
-- [Multi-Stack Deployment](./docs/stacks.md) - Deploy applications as independent Pulumi stacks
-- [Configuration Guide](./docs/configuration.md) - General application configuration and deployment
-
 # Documentation
 
-- [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/QC-Labs/orange-lab) - AI generated documentation and good place to ask questions
-- [Multi-Stack Deployment](./docs/stacks.md) - Deploy applications as independent Pulumi stacks
-- [Configuration Guide](./docs/configuration.md) - Application configuration and deployment
-- [Upgrade Guide](./docs/upgrade.md) - Upgrading your OrangeLab installation
-- [Disabling Longhorn](./docs/longhorn-disable.md) - Running OrangeLab without distributed storage
+- [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/QC-Labs/orange-lab) ↗ - AI generated documentation and good place to ask questions
+- [Installation - Admin node](./docs/install-admin.md) - Initial Pulumi and Tailscale setup
+- [Installation - Linux node configuration](./docs/install-linux.md) - Configure nodes (firewall, suspend settings)
+- [Installation - Alpine Linux](./docs/install-linux-alpine.md) - Node configuration for Alpine Linux
+- [Installation - Zimaboard (ZimaOS)](./docs/install-linux-zima.md) - Node configuration for ZimaOS
+- [Installation - SSH configuration](./docs/install-ssh.md) - Configure SSH keys on nodes for easier access
+- [Installation - K3s cluster](./docs/install-k3s.md) - Install Kubernetes cluster and label nodes
 - [Backup and Restore](./docs/backup.md) - Using Longhorn backups with S3 storage
+- [Configuration Guide](./docs/configuration.md) - Application configuration and deployment
+- [Disabling Longhorn](./docs/longhorn-disable.md) - Running OrangeLab without distributed storage
+- [Multi-Stack Deployment](./docs/stacks.md) - Deploy applications as independent Pulumi stacks
 - [Troubleshooting](./docs/troubleshooting.md) - Common issues and solutions
+- [Upgrade Guide](./docs/upgrade.md) - Upgrading your OrangeLab installation

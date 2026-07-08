@@ -141,9 +141,9 @@ kubectl label nodes <node-name> orangelab/alpine=true
 
 ### K3s agent Tailscale dependency
 
-When Tailscale restarts (auto-updates ~monthly), the `tailscale0` interface is recreated which breaks flannel networking — pods become unreachable until k3s is restarted. This is a [known issue](https://github.com/k3s-io/k3s/issues/12436).
+When Tailscale restarts (auto-updates ~monthly), the `tailscale0` interface is recreated which can break flannel networking. This is a [known issue](https://github.com/k3s-io/k3s/issues/12436) fixed in K3s 2026-06 release cycle.
 
-Edit `/etc/init.d/k3s-agent` and add `need tailscale` to the `depend()` function:
+To work around the issue on older K3s versions, edit `/etc/init.d/k3s-agent` and add `need tailscale` to the `depend()` function:
 
 ```sh
 nano /etc/init.d/k3s-agent
