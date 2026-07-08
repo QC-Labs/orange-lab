@@ -29,8 +29,8 @@ config:
     bitcoin-knots:storageSize: 1000Gi
     bitcoin-knots:storageClass: longhorn-large
     bitcoin-knots:prune: 0
-    bitcoin-knots:image: btcpayserver/bitcoinknots:29.2.knots20251110
-    bitcoin-knots:commandArgs: bitcoind
+    bitcoin-knots:image: btcpayserver/bitcoinknots:29.3.knots20260508@sha256:cb580f0b85e8617b0b177b5368808dc668a4353fd4d47caa703e8b5ce94e2fcb
+    bitcoin-knots:commandArgs: bitcoind -consensusrules=rdts
     bitcoin-knots:volumePath: /data
 
     electrs:enabled: false
