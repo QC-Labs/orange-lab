@@ -46,7 +46,7 @@ config:
     traefik:gatewayApiCrdUrl: 'https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.1/experimental-install.yaml'
 
     cert-manager:enabled: false
-    cert-manager:version: v1.20.3
+    cert-manager:version: v1.21.0
     cert-manager:clusterIssuer: letsencrypt-issuer
 
     technitium:enabled: false
