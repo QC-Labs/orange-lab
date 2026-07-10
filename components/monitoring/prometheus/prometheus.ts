@@ -1,5 +1,6 @@
 import { Application, Nodes, config } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
+import assert from 'node:assert';
 
 export class Prometheus extends pulumi.ComponentResource {
     public readonly alertmanagerEndpointUrl: string | undefined;
@@ -20,10 +21,12 @@ export class Prometheus extends pulumi.ComponentResource {
 
         this.app = new Application(this, name)
             .addStorage({
+                createStorageClass: true,
                 overrideFullname: `prometheus-${name}-db-prometheus-${name}-0`,
             })
             .addStorage({ name: 'grafana' })
             .addStorage({
+                createStorageClass: true,
                 name: 'alertmanager',
                 overrideFullname: `alertmanager-${name}-db-alertmanager-${name}-0`,
             });
@@ -126,17 +129,24 @@ export class Prometheus extends pulumi.ComponentResource {
 
     // https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/platform/storage.md
     private createVolumeClaimTemplate(componentName?: string) {
+        const storage = this.app.storage;
+        assert(storage, 'Storage not initialized');
+        const isDynamic = storage.isDynamic(componentName);
         return {
-            spec: this.app.storage?.isDynamic(componentName)
-                ? { storageClassName: this.app.storage.getStorageClass(componentName) }
-                : {
-                      selector: {
-                          matchLabels: {
-                              'app.kubernetes.io/name': 'prometheus',
-                              'app.kubernetes.io/component': componentName ?? 'default',
+            spec: {
+                storageClassName: storage.getStorageClass(componentName),
+                resources: { requests: { storage: storage.getStorageSize(componentName) } },
+                ...(!isDynamic
+                    ? {
+                          selector: {
+                              matchLabels: {
+                                  'app.kubernetes.io/name': 'prometheus',
+                                  'app.kubernetes.io/component': componentName ?? 'default',
+                              },
                           },
-                      },
-                  },
+                      }
+                    : {}),
+            },
         };
     }
 }

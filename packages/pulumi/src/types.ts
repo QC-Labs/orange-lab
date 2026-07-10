@@ -161,6 +161,12 @@ export interface PersistentVolumeSpec {
      * Annotations to apply to the PVC
      */
     annotations?: Record<string, string>;
+    /**
+     * Create a Kubernetes StorageClass matching the static Longhorn volume.
+     * Kubernetes generally matches PV and PVC by StorageClass name
+     * but some Helm charts (f.e. prometheus) need the StorageClass to exist.
+     */
+    createStorageClass?: boolean;
 }
 
 /**

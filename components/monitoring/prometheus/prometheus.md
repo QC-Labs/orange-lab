@@ -16,9 +16,9 @@ Components will be deployed to all nodes by default. You can restrict that with 
 
 ```sh
 # (optional) only deploy to labeled nodes
-pulumi config set prometheus:requiredNodeLabel orangelab/prometheus=true
+pulumi config set prometheus:requiredNodeLabel node-role.kubernetes.io/prometheus=true
 # (optional) You need at least one node with orangelab/prometheus label
-kubectl label nodes <node-name> orangelab/prometheus=true
+kubectl label nodes <node-name> node-role.kubernetes.io/prometheus=true
 
 # Enable Prometheus
 pulumi config set prometheus:enabled true

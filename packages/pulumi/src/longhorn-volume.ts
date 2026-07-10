@@ -31,6 +31,10 @@ interface LonghornVolumeArgs {
      * Volume node affinity
      */
     affinity?: kubernetes.types.input.core.v1.VolumeNodeAffinity;
+    /**
+     * Create a Kubernetes StorageClass for this static volume.
+     */
+    createStorageClass?: boolean;
 }
 
 const staleReplicaTimeout = (48 * 60).toString();
@@ -73,6 +77,9 @@ export class LonghornVolume extends pulumi.ComponentResource {
 
     private attachVolume() {
         assert(this.args.fromVolume && !this.args.storageClass);
+        if (this.args.createStorageClass) {
+            this.createStaticStorageClass(this.args.fromVolume);
+        }
         const existingVolume = this.createLonghornPV({
             name: this.args.name,
             volumeHandle: this.args.fromVolume,
@@ -155,6 +162,21 @@ export class LonghornVolume extends pulumi.ComponentResource {
                 },
             },
             { parent: this },
+        );
+    }
+
+    private createStaticStorageClass(volumeHandle: string) {
+        return new kubernetes.storage.v1.StorageClass(
+            `${this.name}-sc`,
+            {
+                metadata: { name: `longhorn-${volumeHandle}` },
+                provisioner: 'driver.longhorn.io',
+                parameters: { staleReplicaTimeout: '30' },
+                reclaimPolicy: 'Retain',
+                volumeBindingMode: 'Immediate',
+                allowVolumeExpansion: true,
+            },
+            { parent: this, deleteBeforeReplace: true },
         );
     }
 }
