@@ -2,6 +2,7 @@
 
 ## Commands
 
+- Confirm with the user before running any command that changes the state of the cluster (e.g. `pulumi up`, `kubectl apply/delete`, `helm install/upgrade`, `kubectl rollout restart`). Read-only analysis commands (`kubectl get`, `pulumi preview`, `logs`, `describe`) do not need explicit approval.
 - Deployment: `pulumi up --yes` (only with user approval)
 - Preview changes: `pulumi preview --diff` (useful for checking for any unintended changes after major code updates or refactoring)
 - Build/Test/TypeCheck (TypeScript only): `npm test`
