@@ -54,7 +54,10 @@ export class AmdGPUOperator extends pulumi.ComponentResource {
                 spec: {
                     driver: { enable: false },
                     devicePlugin: { enableNodeLabeller: true },
-                    metricsExporter: { enable: config.enableMonitoring() },
+                    metricsExporter: {
+                        enable: config.enableMonitoring(),
+                        image: config.require(this.name, 'metricsExporter/image'),
+                    },
                     selector: { 'orangelab/gpu-amd': 'true' },
                     testRunner: { enable: false },
                 },

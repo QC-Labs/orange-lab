@@ -57,15 +57,17 @@ More information at https://github.com/ollama/ollama/blob/main/docs/gpu.md#overr
 
 ## Monitoring
 
-AMD GPU dashboards for Prometheus are automatically installed when monitoring is enabled:
+AMD GPU dashboards and metrics for Prometheus are automatically installed when component monitoring is enabled:
 
 - AMD - Overview
 - AMD - GPU
 - AMD - Job
 - AMD - Compute Node
 
+The metrics exporter image can be customized with `amd-gpu-operator:metricsExporter/image` (default `docker.io/rocm/device-metrics-exporter:v1.5.0`).
+
 ```sh
-pulumi config set amd-gpu-operator:enableMonitoring true
+pulumi config set prometheus:enableComponentMonitoring true
 pulumi up
 ```
 

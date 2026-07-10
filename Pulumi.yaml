@@ -101,6 +101,7 @@ config:
 
     amd-gpu-operator:enabled: false
     amd-gpu-operator:version: v1.5.0
+    amd-gpu-operator:metricsExporter/image: docker.io/rocm/device-metrics-exporter:v1.5.0
 
     ### Data ###
 
