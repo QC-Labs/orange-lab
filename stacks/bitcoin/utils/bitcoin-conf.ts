@@ -37,6 +37,8 @@ rest=0
 rpcallowip=0.0.0.0/0
 rpcbind=0.0.0.0
 server=1
+includeconf=/conf/rpc.conf
+allowignoredconf=1
 `;
 }
 

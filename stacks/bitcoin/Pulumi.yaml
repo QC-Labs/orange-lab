@@ -21,8 +21,12 @@ config:
     bitcoin-core:storageClass: longhorn-large
     bitcoin-core:prune: 0
     bitcoin-core:image: btcpayserver/bitcoin:29.0
-    bitcoin-core:commandArgs: bitcoind
+    bitcoin-core:commandArgs: bitcoind -datadir=/data -conf=/conf/bitcoin.conf
     bitcoin-core:volumePath: /data
+    # (Optional) Override image ENTRYPOINT and set container user; required for non-btcpayserver images
+    # bitcoin-core:command: bitcoind
+    # bitcoin-core:runAsUser: 1000
+    # bitcoin-core:volumeOwnerUserId: 1000
 
     bitcoin-knots:enabled: false
     bitcoin-knots:hostname: bitcoin
@@ -30,8 +34,12 @@ config:
     bitcoin-knots:storageClass: longhorn-large
     bitcoin-knots:prune: 0
     bitcoin-knots:image: btcpayserver/bitcoinknots:29.3.knots20260508@sha256:cb580f0b85e8617b0b177b5368808dc668a4353fd4d47caa703e8b5ce94e2fcb
-    bitcoin-knots:commandArgs: bitcoind -consensusrules=rdts
+    bitcoin-knots:commandArgs: bitcoind -datadir=/data -conf=/conf/bitcoin.conf -consensusrules=rdts
     bitcoin-knots:volumePath: /data
+    # (Optional) Override image ENTRYPOINT and set container user; required for non-btcpayserver images
+    # bitcoin-knots:command: bitcoind
+    # bitcoin-knots:runAsUser: 1000
+    # bitcoin-knots:volumeOwnerUserId: 1000
 
     electrs:enabled: false
     electrs:storageSize: 200Gi

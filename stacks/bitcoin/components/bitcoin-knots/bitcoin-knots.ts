@@ -36,8 +36,11 @@ export class BitcoinKnots extends pulumi.ComponentResource {
     }
 
     private createDeployment() {
+        const command = config.get(this.name, 'command');
         const commandArgs = config.get(this.name, 'commandArgs') ?? '';
         const image = config.require(this.name, 'image');
+        const runAsUser = config.getNumber(this.name, 'runAsUser');
+        const volumeOwnerUserId = config.getNumber(this.name, 'volumeOwnerUserId');
         const volumePath = config.require(this.name, 'volumePath');
 
         this.app.addDeployment({
@@ -50,13 +53,10 @@ export class BitcoinKnots extends pulumi.ComponentResource {
                 { name: 'rpc', port: 8332, protocol: 'tcp' },
                 { name: 'p2p', port: 8333, protocol: 'tcp' },
             ],
+            command: command ? command.split(' ') : undefined,
             commandArgs: commandArgs.split(' '),
-            env: {
-                BITCOIN_EXTRA_ARGS: [
-                    'includeconf=/conf/bitcoin.conf',
-                    'includeconf=/conf/rpc.conf',
-                ].join('\n'),
-            },
+            runAsUser,
+            volumeOwnerUserId,
             volumeMounts: [
                 { mountPath: volumePath },
                 { name: 'config', mountPath: '/conf' },
