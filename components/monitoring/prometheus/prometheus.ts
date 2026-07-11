@@ -90,7 +90,10 @@ export class Prometheus extends pulumi.ComponentResource {
                     kubeProxy: { enabled: true, serviceMonitor: { https: false } },
                     kubeScheduler: { serviceMonitor: { https: false } },
                     kubeStateMetrics: { enabled: true },
-                    kubelet: { enabled: true, serviceMonitor: { https: false } },
+                    kubelet: {
+                        enabled: true,
+                        serviceMonitor: { https: true, insecureSkipVerify: true },
+                    },
                     nodeExporter: { enabled: true },
                     prometheus: {
                         enabled: true,
@@ -102,6 +105,8 @@ export class Prometheus extends pulumi.ComponentResource {
                         },
                         prometheusSpec: {
                             affinity: this.nodes.getAffinity(),
+                            hostNetwork: true,
+                            dnsPolicy: 'ClusterFirstWithHostNet',
                             podMonitorSelectorNilUsesHelmValues: false,
                             probeSelectorNilUsesHelmValues: false,
                             ruleSelectorNilUsesHelmValues: false,
