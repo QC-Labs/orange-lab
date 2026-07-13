@@ -15,6 +15,7 @@ export class MonitoringModule extends pulumi.ComponentResource {
                 grafana: this.prometheus?.grafanaEndpointUrl,
                 prometheus: this.prometheus?.prometheusEndpointUrl,
             },
+            grafanaPassword: this.prometheus?.grafanaPassword,
         };
     }
 

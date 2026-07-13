@@ -12,21 +12,36 @@ Prometheus provides much more detailed monitoring of the cluster. Many tools (li
 
 Enabling it will increase traffic between nodes. Expect over 1GB of data saved to storage per day, even with just a few nodes.
 
-Components will be deployed to all nodes by default. You can restrict that with `requiredNodeLabel` to deploy only to selected nodes:
-
 ```sh
-# (optional) only deploy to labeled nodes
-pulumi config set prometheus:requiredNodeLabel node-role.kubernetes.io/prometheus=true
-# (optional) You need at least one node with orangelab/prometheus label
-kubectl label nodes <node-name> node-role.kubernetes.io/prometheus=true
-
 # Enable Prometheus
 pulumi config set prometheus:enabled true
 
-# (optional) Override grafana "admin" password
-pulumi config set prometheus:grafana-password <password> --secret
+# (Recommended) only deploy to labeled nodes
+pulumi config set prometheus:requiredNodeLabel node-role.kubernetes.io/prometheus=true
+kubectl label nodes <node-name> node-role.kubernetes.io/prometheus=true
+
+# (optional) Override grafana "admin" password (auto-generated if not set)
+pulumi config set prometheus:grafana/password <password> --secret
 
 pulumi up
+```
+
+## Grafana credentials
+
+The grafana admin password is auto-generated if not configured. To preserve it across stack recreation, save it after initial deployment:
+
+```sh
+# show the generated password
+PASSWORD=$(pulumi stack output monitoring.grafanaPassword --show-secrets)
+
+# set prometheus:grafana/password secret
+pulumi config set prometheus:grafana/password $(PASSWORD) --secret
+```
+
+### Resetting password
+
+```sh
+kubectl exec -n prometheus deploy/prometheus-grafana -- grafana-cli admin reset-admin-password <new-password>
 ```
 
 ## Grafana dashboards
@@ -38,19 +53,6 @@ Once Prometheus is installed, additional metrics and Grafana dashboards can be e
 # IMPORTANT: only enable once Prometheus has been installed.
 pulumi config set prometheus:enableComponentMonitoring true
 pulumi up
-```
-
-To remove dashboards created by @pulumiverse/grafana (not used anymore):
-
-```sh
-STACK=lab
-
-pulumi state delete "urn:pulumi:$STACK::orangelab::orangelab:system\$orangelab:system:AmdGPUOperator\$grafana:oss/dashboard:Dashboard::amd-gpu-operator-node-dashboard"
-pulumi state delete "urn:pulumi:$STACK::orangelab::orangelab:system\$orangelab:system:TailscaleOperator\$grafana:oss/dashboard:Dashboard::tailscale-operator-dashboard"
-pulumi state delete "urn:pulumi:$STACK::orangelab::orangelab:system\$orangelab:system:AmdGPUOperator\$grafana:oss/dashboard:Dashboard::amd-gpu-operator-job-dashboard"
-pulumi state delete "urn:pulumi:$STACK::orangelab::orangelab:system\$orangelab:system:AmdGPUOperator\$grafana:oss/dashboard:Dashboard::amd-gpu-operator-overview-dashboard"
-pulumi state delete "urn:pulumi:$STACK::orangelab::orangelab:system\$orangelab:system:AmdGPUOperator\$grafana:oss/dashboard:Dashboard::amd-gpu-operator-gpu-dashboard"
-pulumi state delete "urn:pulumi:$STACK::orangelab::orangelab:system\$orangelab:system:Longhorn\$grafana:oss/dashboard:Dashboard::longhorn-dashboard"
 ```
 
 ## Uninstall

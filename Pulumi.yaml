@@ -114,7 +114,7 @@ config:
 
     prometheus:enabled: false
     #prometheus:requiredNodeLabel: node-role.kubernetes.io/prometheus=true
-    prometheus:grafana/password: admin
+    # prometheus:grafana/password: admin # auto-generated if not set
     prometheus:hostname: prometheus
     prometheus:alertmanager/hostname: alertmanager
     prometheus:grafana/hostname: grafana
