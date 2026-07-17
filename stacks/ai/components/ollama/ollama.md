@@ -49,6 +49,8 @@ pulumi config set ollama:OLLAMA_CONTEXT_LENGTH "65536"
 # pulumi config set ollama:OLLAMA_FLASH_ATTENTION "true"
 # (Optional) Configure KV cache type (f16, q8_0, q4_0)
 # pulumi config set ollama:OLLAMA_KV_CACHE_TYPE "q8_0"
+# (Optional) Allow integrated GPU (iGPU) use. Ollama drops iGPUs by default.
+# pulumi config set ollama:OLLAMA_IGPU_ENABLE "1"
 
 # Enable Ollama
 pulumi config set ollama:enabled true

@@ -30,6 +30,8 @@ config:
     ollama:OLLAMA_CONTEXT_LENGTH: '8192'
     # ollama:OLLAMA_FLASH_ATTENTION: 'true'
     # ollama:OLLAMA_KV_CACHE_TYPE: 'q8_0' # f16, q8_0, q4_0
+    # Enable if ollama drops integrated GPU (iGPU). Set to "1" to use iGPU
+    # ollama:OLLAMA_IGPU_ENABLE: "1"
     # Deploys to any node with selected GPU if requiredNodeLabel NOT specified
     # ollama:requiredNodeLabel: kubernetes.io/hostname=<host>
 

@@ -32,6 +32,7 @@ export class Ollama extends pulumi.ComponentResource {
         const amdTargets = config.get(this.name, 'HCC_AMDGPU_TARGETS');
         const flashAttention = config.get(this.name, 'OLLAMA_FLASH_ATTENTION');
         const kvCacheType = config.get(this.name, 'OLLAMA_KV_CACHE_TYPE');
+        const igpuEnable = config.get(this.name, 'OLLAMA_IGPU_ENABLE');
         const extraEnv = [
             { name: 'OLLAMA_DEBUG', value: this.app.debug ? 'true' : 'false' },
             {
@@ -54,6 +55,12 @@ export class Ollama extends pulumi.ComponentResource {
             extraEnv.push({
                 name: 'OLLAMA_KV_CACHE_TYPE',
                 value: kvCacheType,
+            });
+        }
+        if (igpuEnable) {
+            extraEnv.push({
+                name: 'OLLAMA_IGPU_ENABLE',
+                value: igpuEnable,
             });
         }
         if (gpu === 'amd' && gfxVersion) {
