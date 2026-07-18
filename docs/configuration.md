@@ -21,6 +21,8 @@ pulumi up
 # or
 pulumi up -r # --refresh Pulumi state if out of sync
 
+# Show the app's external endpoint URL
+pulumi stack output --show-secrets --json | jq -r '.endpoints.<app>'
 # Make request to provision HTTP certificate and activate endpoint
 curl https://<app>.<domain>/
 ```
