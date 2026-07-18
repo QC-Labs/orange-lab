@@ -11,14 +11,6 @@ Components related to Bitcoin network nodes and related services.
 - [Electrs](./components/electrs/electrs.md) - Efficient Electrum Server implementation for wallet synchronization.
 - [Mempool](./components/mempool/mempool.md) - Full-stack block explorer and visualization tool.
 
-## Deploy
-
-```sh
-cd stacks/bitcoin
-pulumi stack init <stack> # f.e. lab-bitcoin
-pulumi up
-```
-
 ## Migrate from Root Stack
 
 If Bitcoin components were previously deployed in the root stack, migrate their settings before deploying in this stack.

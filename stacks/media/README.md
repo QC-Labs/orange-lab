@@ -17,14 +17,6 @@ Media management, photo storage, and media streaming applications.
 - [Sonarr](./components/sonarr/sonarr.md) — TV show collection manager
 - [Transmission](./components/transmission/transmission.md) — BitTorrent download client
 
-## Deploy
-
-```sh
-cd stacks/media
-pulumi stack init lab-media
-pulumi up
-```
-
 ## Configure Applications
 
 ### Immich

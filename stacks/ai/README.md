@@ -14,14 +14,6 @@ AI-related components for running large language models, image generation, and w
 - [Automatic1111](./components/automatic1111/automatic1111.md) - Stable Diffusion WebUI (deprecated).
 - [SDNext](./components/sdnext/sdnext.md) - Alternative Stable Diffusion WebUI (deprecated).
 
-## Deploy
-
-```sh
-cd stacks/ai
-pulumi stack init <stack> # f.e. lab-ai
-pulumi up
-```
-
 ## Migrate from Root Stack
 
 If AI components were previously deployed in the root stack, migrate their settings before deploying in this stack.

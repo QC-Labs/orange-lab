@@ -9,14 +9,6 @@ General-purpose tools and utilities.
 - [Nextcloud](./components/nextcloud/nextcloud.md) — Self-hosted productivity platform
 - [Vaultwarden](./components/vaultwarden/vaultwarden.md) — Bitwarden-compatible password manager
 
-## Deploy
-
-```sh
-cd stacks/apps
-pulumi stack init lab-apps
-pulumi stack select lab-apps
-```
-
 ## Configure Applications
 
 ### Nextcloud

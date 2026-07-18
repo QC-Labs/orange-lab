@@ -8,14 +8,6 @@ Components related to IoT (Internet of Things) sensors and home automation.
 
 - [Home Assistant](./components/home-assistant/home-assistant.md) - Open source home automation platform that puts local control and privacy first.
 
-## Deploy
-
-```sh
-cd stacks/iot
-pulumi stack init <stack> # f.e. lab-iot
-pulumi up
-```
-
 ## Configure Applications
 
 ### Home Assistant

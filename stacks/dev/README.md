@@ -8,10 +8,3 @@ Development and debugging utilities.
 
 - [Debug](./components/debug/debug.md) - Debug pod for inspecting existing Longhorn volumes or exporting data.
 
-## Deploy
-
-```sh
-cd stacks/dev
-pulumi stack init <stack> # f.e. lab-dev
-pulumi up
-```
