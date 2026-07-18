@@ -7,10 +7,6 @@ description: Use when the user asks to create, update, or revise documentation f
 
 Creates or updates the `<app>.md` documentation file for an application component. The skill describes basic rules — a starting point, not a final document. App-specific sections are encouraged when warranted.
 
-## Scope
-
-Stay within the user's requested scope. When asked for a narrow update (e.g. "fix the links", "update the code block"), make only those changes. Do not silently fix other out-of-sync items you notice — instead, surface them as a list at the end so the user can decide what to address next. The verify step below checks the whole doc, but its findings outside the requested scope are reported, not applied.
-
 ## General structure
 
 1. `# <App>` H1 — add `(experimental)` or `(deprecated)` suffix when applicable, matching the module's `README.md` component list
@@ -27,14 +23,14 @@ Two-column pipe table, no header row. All fields optional, but **Homepage**, **S
 Row order (skip rows that don't apply):
 
 1. **Homepage** — project landing page
-2. **Source code** — GitHub/forge repository URL
-3. **Documentation** — official docs site/page
-4. **Configuration** / **Environment variables** — dedicated config reference page, or source file when no dedicated page exists (e.g. ollama's `envconfig/config.go`)
-5. **Docker Image** + **Dockerfile** — for image-based apps. Docker Image links to whatever registry the application publishes to (usually Docker Hub, sometimes GHCR) so the user can browse available tags. Dockerfile is the source path in the upstream repo. Name rows when the app ships multiple images (e.g. `Docker backend`, `Docker frontend`)
-6. **Helm chart** + **Helm values** — for Helm-chart-based apps. Artifact Hub page or chart directory in the repo + link to the chart's `values.yaml`
+2. **Source code** — repository URL
+3. **Documentation** — official docs
+4. **Configuration** — dedicated config reference page, or source file when no page exists (e.g. ollama's `envconfig/config.go`)
+5. **Docker Image** + **Dockerfile** — image-based apps; registry link (usually Docker Hub) for browsing tags, Dockerfile at the upstream source path; name rows when the app ships multiple images (e.g. `Docker backend`)
+6. **Helm chart** + **Helm values** — chart-based apps; Artifact Hub page or chart directory + `values.yaml`
 7. **Endpoints** (last) — `https://<app>.<domain>/` (hostname from `Pulumi.yaml`, `<domain>` kept as literal placeholder)
 
-Bespoke rows (e.g. `CLI commands`, `Model catalog`, `Tutorials`) only when warranted.
+Bespoke rows (e.g. `CLI commands`, `Model catalog`) only when warranted.
 
 Example (image-based app):
 
@@ -54,7 +50,7 @@ When updating the table, backfill missing rows. **Never remove a row without con
 
 ## Installation code block
 
-Single `​`sh` block, ends at `pulumi up`. No `pulumi stack output` line for the endpoint — endpoint retrieval is documented centrally in `docs/configuration.md` (`## Deploying Applications`).
+Single `​`sh` block, ends at `pulumi up`. No `pulumi stack output` line for the endpoint — endpoint retrieval is documented centrally in `docs/configuration.md`.
 
 Match the code-block heading convention used by sibling docs in the same module (the repo is inconsistent: `## Basic configuration`, `## Deployment`, `## Installation`, or no heading). Group under a named H2 only when the block grows beyond ~5 commands.
 
@@ -71,17 +67,11 @@ Include only if first-launch setup is required. Flat numbered list for simple ap
 
 ## Other sections
 
-Add H2 sections when a topic needs more than a code comment. Common examples:
+Add H2 sections when a topic needs more than a code comment — one H2 per concern. Common examples:
 
-- **Prerequisites** — cross-stack or cross-component prerequisites (own H2 + sh block)
-- **Backup and Restore** / **Admin access** / **Database** — auto-generated secret persistence (`pulumi stack output ... | jq` to retrieve, `pulumi config set --secret` to persist)
-- **Reset Admin Password** — exec + CLI
-- **Upgrade** — post-upgrade recovery procedure
-- **Custom images** — image swap guide with `### <variant>` H3s
-- **Storage** — `storageOnly` and related flags
-- **Hardware Acceleration**, **Permissions/SELinux**, **Rclone Backup**, **Models**, per-component integration (Arr Stack Integration, Wallet Configuration) — app-specific
-
-One H2 per concern. App-specific sections not listed here are fine.
+- **Prerequisites** — cross-stack or cross-component prerequisites
+- **Backup and Restore** / **Admin access** — auto-generated secret persistence (`pulumi stack output ... | jq` to retrieve, `pulumi config set --secret` to persist)
+- **Reset Admin Password**, **Upgrade**, **Storage** (`storageOnly`), app-specific integrations
 
 ## Relative links
 
@@ -92,16 +82,12 @@ One H2 per concern. App-specific sections not listed here are fine.
 
 Before declaring done:
 
-- Every `pulumi config set <app>:<key>` matches a key in `Pulumi.yaml` or the `.ts` file
-- Every `pulumi stack output ... | jq` path (for secrets, not endpoints) matches what `index.ts` exports
-- Every relative link resolves (use `glob`)
-- Every helper script referenced by path exists (use `glob`)
+- Every `pulumi config set <app>:<key>` matches a key in `Pulumi.yaml` or the `.ts` file; every `pulumi stack output ... | jq` path (secrets, not endpoints) matches an `index.ts` export
+- Every relative link and referenced helper script resolves (use `glob`)
 - Every URL in the links table was verified with `webfetch`
 - No `npm test` / `npm run build` — markdown-only change
 
 ## Writing principles
 
 - **Derive, don't guess.** Config keys, env vars, output paths, and image names come from `.ts` files, `index.ts`, and `Pulumi.yaml`. Upstream URLs come from `webfetch`.
-- **User, not contributor.** Show `pulumi config set ...`, not internal class names.
-- **Keep it tight.** Simple apps need only a table, one-line description, short code block, and optional post-install list. Don't pad with H3 subsections that aren't needed.
-- **No endpoint jq in the code block.** Endpoint goes in the table; retrieval is central in `docs/configuration.md`. Secret-retrieval jq lines belong in their H2 sections.
+- **Keep it tight.** Simple apps need only a table, one-line description, short code block, and optional post-install list. Show `pulumi config set ...`, not internal class names. Endpoint goes in the table, not the code block — retrieval is central in `docs/configuration.md`.
