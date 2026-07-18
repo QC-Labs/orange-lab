@@ -87,7 +87,7 @@ config:
     # rustfs:dataPath: /mnt/my-drive/rustfs-data
     # rustfs:requiredNodeLabel: kubernetes.io/hostname=<hostname>
     rustfs:rootUser: admin
-    rustfs:image: rustfs/rustfs:1.0.0-beta.8
+    rustfs:image: rustfs/rustfs:1.0.0-beta.10
     rustfs:provisioner/image: rustfs/rc:latest
 
     ### Hardware ###
