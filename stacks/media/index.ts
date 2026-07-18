@@ -1,11 +1,12 @@
 import { config } from '@orangelab/pulumi';
+import { DroppedNeedle } from './components/droppedneedle/droppedneedle';
 import { Immich } from './components/immich/immich';
 import { Jellyfin } from './components/jellyfin/jellyfin';
 import { Lidarr } from './components/lidarr/lidarr';
-import { MusicSeerr } from './components/musicseerr/musicseerr';
 import { Prowlarr } from './components/prowlarr/prowlarr';
 import { Radarr } from './components/radarr/radarr';
 import { Seerr } from './components/seerr/seerr';
+import { Slskd } from './components/slskd/slskd';
 import { Sonarr } from './components/sonarr/sonarr';
 import { Transmission } from './components/transmission/transmission';
 
@@ -19,9 +20,11 @@ const transmission = config.isEnabled('transmission')
     ? new Transmission('transmission')
     : undefined;
 
-const musicseerr = config.isEnabled('musicseerr')
-    ? new MusicSeerr('musicseerr', {
-          dependsOn: [lidarr, jellyfin].filter(x => x !== undefined),
+const slskd = config.isEnabled('slskd') ? new Slskd('slskd') : undefined;
+
+const droppedneedle = config.isEnabled('droppedneedle')
+    ? new DroppedNeedle('droppedneedle', {
+          dependsOn: [slskd, jellyfin].filter(x => x !== undefined),
       })
     : undefined;
 
@@ -34,13 +37,14 @@ const seerr = config.isEnabled('seerr')
     : undefined;
 
 export const endpoints = {
-    ...jellyfin?.app.network.endpoints,
+    ...droppedneedle?.app.network.endpoints,
     ...immich?.app.network.endpoints,
+    ...jellyfin?.app.network.endpoints,
     ...lidarr?.app.network.endpoints,
-    ...musicseerr?.app.network.endpoints,
     ...prowlarr?.app.network.endpoints,
     ...radarr?.app.network.endpoints,
     ...seerr?.app.network.endpoints,
+    ...slskd?.app.network.endpoints,
     ...sonarr?.app.network.endpoints,
     ...transmission?.app.network.endpoints,
 };
@@ -50,6 +54,7 @@ export const clusterUrls = {
     lidarr: lidarr?.app.network.clusterEndpoints.lidarr,
     prowlarr: prowlarr?.app.network.clusterEndpoints.prowlarr,
     radarr: radarr?.app.network.clusterEndpoints.radarr,
+    slskd: slskd?.app.network.clusterEndpoints.slskd,
     sonarr: sonarr?.app.network.clusterEndpoints.sonarr,
     transmission: transmission?.app.network.clusterEndpoints.transmission,
 };
@@ -59,6 +64,14 @@ export const apps = {
         ? {
               jwtSecret: immich.jwtSecret,
               db: immich.dbConfig,
+          }
+        : undefined,
+    slskd: slskd
+        ? {
+              apiKey: slskd.apiKey,
+              soulseekUsername: slskd.soulseekUsername,
+              soulseekPassword: slskd.soulseekPassword,
+              webPassword: slskd.webPassword,
           }
         : undefined,
 };

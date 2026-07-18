@@ -1,12 +1,14 @@
 # Lidarr
 
-|               |                                                                  |
-| ------------- | ---------------------------------------------------------------- |
-| Homepage      | https://lidarr.audio/                                            |
-| Documentation | https://wiki.servarr.com/en/lidarr                               |
-| Docker Image  | https://docs.linuxserver.io/images/docker-lidarr/                |
+|               |                                                   |
+| ------------- | ------------------------------------------------- |
+| Homepage      | https://lidarr.audio/                             |
+| Documentation | https://wiki.servarr.com/en/lidarr                |
+| Docker Image  | https://docs.linuxserver.io/images/docker-lidarr/ |
 
 Music collection manager. Integrates with Transmission BitTorrent client to acquire music and manage your library.
+
+**Note:** Lidarr was required by Musicseerr but after move to DroppedNeedle it's not currently used.
 
 Lidarr mounts the host media directory at `/media`. This must point to the same host directory used by [Jellyfin](../jellyfin/jellyfin.md), [Radarr](../radarr/radarr.md), and [Sonarr](../sonarr/sonarr.md) so all apps can access the same files.
 
@@ -33,4 +35,4 @@ After deployment, access Lidarr at the endpoint URL and complete these steps in 
 3. **Library Import** — Library → Import → select `/media/music` to scan and import existing music files
 4. **Download client** — Settings → Download Clients → add [Transmission](../transmission/transmission.md#arr-stack-integration)
 5. **Indexers** — Settings → Indexers → add indexers, or use [Prowlarr](../prowlarr/prowlarr.md) to sync indexers automatically
-6. **API key** — Settings → General → Security → API Key (needed for [MusicSeerr](../musicseerr/musicseerr.md))
+6. **API key** — Settings → General → Security → API Key

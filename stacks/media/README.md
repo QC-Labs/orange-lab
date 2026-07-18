@@ -6,13 +6,14 @@ Media management, photo storage, and media streaming applications.
 
 ## Components
 
+- [DroppedNeedle](./components/droppedneedle/droppedneedle.md) — Self-hosted music discovery, requests, and native library engine
 - [Immich](./components/immich/immich.md) — Self-hosted photo and video backup solution
 - [Jellyfin](./components/jellyfin/jellyfin.md) — Streaming movies, TV shows and music
 - [Lidarr](./components/lidarr/lidarr.md) — Music collection manager
-- [MusicSeerr](./components/musicseerr/musicseerr.md) — Music discovery and request management
-- [Prowlarr](./components/prowlarr/prowlarr.md) — Indexer manager for the *arr ecosystem
+- [Prowlarr](./components/prowlarr/prowlarr.md) — Indexer manager for the \*arr ecosystem
 - [Radarr](./components/radarr/radarr.md) — Movie collection manager
 - [Seerr](./components/seerr/seerr.md) — Media discovery
+- [slskd](./components/slskd/slskd.md) — Soulseek download client for DroppedNeedle
 - [Sonarr](./components/sonarr/sonarr.md) — TV show collection manager
 - [Transmission](./components/transmission/transmission.md) — BitTorrent download client
 
@@ -21,7 +22,7 @@ Media management, photo storage, and media streaming applications.
 ```sh
 cd stacks/media
 pulumi stack init lab-media
-pulumi up --stack lab-media
+pulumi up
 ```
 
 ## Configure Applications
@@ -30,40 +31,41 @@ pulumi up --stack lab-media
 
 ```sh
 # Confirm cloudnative-pg from root stack is installed
-pulumi config set --stack lab-media cloudnative-pg:enabled false
+pulumi config set cloudnative-pg:enabled true
 
-pulumi config set --stack lab-media immich:enabled true
-pulumi config set --stack lab-media immich:machine-learning/enabled true
-pulumi up --stack lab-media
+pulumi config set immich:enabled true
+pulumi config set immich:machine-learning/enabled true
+pulumi up
 ```
 
-### Jellyfin + *arr Stack
+### Jellyfin + \*arr Stack
 
 ```sh
-pulumi config set --stack lab-media jellyfin:enabled true
-pulumi up --stack lab-media
+pulumi config set jellyfin:enabled true
+pulumi up
 ```
 
-### Movies/TV Stack
+#### Seerr - Movies/TV
 
 ```sh
-pulumi config set --stack lab-media seerr:enabled true
-pulumi config set --stack lab-media radarr:enabled true
-pulumi config set --stack lab-media radarr:media/hostPath /mnt/media
-pulumi config set --stack lab-media sonarr:enabled true
-pulumi config set --stack lab-media sonarr:media/hostPath /mnt/media
-pulumi config set --stack lab-media transmission:enabled true
-pulumi config set --stack lab-media prowlarr:enabled true
-pulumi up --stack lab-media
+pulumi config set seerr:enabled true
+pulumi config set radarr:enabled true
+pulumi config set radarr:media/hostPath /mnt/media
+pulumi config set sonarr:enabled true
+pulumi config set sonarr:media/hostPath /mnt/media
+pulumi config set transmission:enabled true
+pulumi config set prowlarr:enabled true
+pulumi up
 ```
 
-### Music Stack
+#### DroppedNeedle + slskd - Music
 
 ```sh
-pulumi config set --stack lab-media musicseerr:enabled true
-pulumi config set --stack lab-media lidarr:enabled true
-pulumi config set --stack lab-media lidarr:media/hostPath /mnt/media
-pulumi config set --stack lab-media transmission:enabled true
-pulumi config set --stack lab-media prowlarr:enabled true
-pulumi up --stack lab-media
+pulumi config set droppedneedle:enabled true
+pulumi config set droppedneedle:media/hostPath /mnt/<drive>/media
+pulumi config set droppedneedle:requiredNodeLabel kubernetes.io/hostname=<host>
+pulumi config set slskd:enabled true
+pulumi config set slskd:media/hostPath /mnt/<drive>/media
+pulumi config set slskd:requiredNodeLabel kubernetes.io/hostname=<host>
+pulumi up
 ```

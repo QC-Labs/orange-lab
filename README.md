@@ -22,11 +22,11 @@ Deploy applications using included Pulumi stacks ([`stacks/`](./stacks/) folder)
 
 ## Linux
 
-Installation instructions assume your machines are running Bluefin (Developer edition, https://projectbluefin.io/ ↗) based on Fedora Silverblue unless otherwise noted.
-
 Most Linux systems with kernel 6.11.6+ and SELinux are supported. That includes your own hardware (e.g. laptops, mini PCs, Rasberry Pi and Zimaboard) as well as any cloud instances.
 
 The main requirement is that K3S and Longhorn (including `open-iscsi` and `iscsiadm`) can be installed.
+
+Note: Installation instructions assume your machines are running Bluefin (Developer edition, https://projectbluefin.io/ ↗) based on Fedora Silverblue unless otherwise noted.
 
 ## Windows, MacOS
 
@@ -153,13 +153,14 @@ More information about stacks in general at [Multi-Stack Deployment](./docs/stac
 
 [Media](./stacks/media/README.md):
 
+- [`droppedneedle`](./stacks/media/components/droppedneedle/droppedneedle.md) - Self-hosted music discovery, requests, and native library engine
 - [`immich`](./stacks/media/components/immich/immich.md) - Self-hosted photo and video backup solution
 - [`jellyfin`](./stacks/media/components/jellyfin/jellyfin.md) - Streaming movies, TV shows and music
 - [`lidarr`](./stacks/media/components/lidarr/lidarr.md) - Music collection manager
-- [`musicseerr`](./stacks/media/components/musicseerr/musicseerr.md) - Music discovery and request management
-- [`prowlarr`](./stacks/media/components/prowlarr/prowlarr.md) - Indexer manager for the *arr ecosystem
+- [`prowlarr`](./stacks/media/components/prowlarr/prowlarr.md) - Indexer manager for the \*arr ecosystem
 - [`radarr`](./stacks/media/components/radarr/radarr.md) - Movie collection manager
 - [`seerr`](./stacks/media/components/seerr/seerr.md) - Media discovery
+- [`slskd`](./stacks/media/components/slskd/slskd.md) - Soulseek download client for DroppedNeedle
 - [`sonarr`](./stacks/media/components/sonarr/sonarr.md) - TV show collection manager
 - [`transmission`](./stacks/media/components/transmission/transmission.md) - BitTorrent download client
 
