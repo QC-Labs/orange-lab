@@ -2,6 +2,8 @@ import * as pulumi from '@pulumi/pulumi';
 
 export type GpuType = 'amd' | 'nvidia';
 
+export type VolumeAccessMode = 'ReadWriteOnce' | 'ReadWriteMany';
+
 export interface ServicePort {
     /**
      * The name of the port. Used to generate endpoint keys and URLs.
@@ -138,6 +140,12 @@ export interface PersistentVolumeSpec {
      * `${name}/storageSize` or `storageSize` if `name` is not set.
      */
     size?: string;
+    /**
+     * Access mode for the volume. Defaults to 'ReadWriteOnce'.
+     * Use 'ReadWriteMany' to share one Longhorn volume between multiple apps
+     * (mounted via Longhorn share manager).
+     */
+    accessMode?: VolumeAccessMode;
     /**
      * Specifies an existing volume name to potentially restore data from.
      * This is typically used in conjunction with backup/restore mechanisms.

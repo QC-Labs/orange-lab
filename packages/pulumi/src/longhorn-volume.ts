@@ -1,11 +1,16 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
+import { VolumeAccessMode } from './types';
 
 interface LonghornVolumeArgs {
     name: string;
     namespace: pulumi.Output<string> | string;
     size: string;
+    /**
+     * Access mode for the volume. Defaults to 'ReadWriteOnce'.
+     */
+    accessMode?: VolumeAccessMode;
     /**
      * Storage class to use. Defaults to 'longhorn' if not specified.
      */
@@ -107,7 +112,7 @@ export class LonghornVolume extends pulumi.ComponentResource {
                 },
                 spec: {
                     nodeAffinity: this.args.affinity,
-                    accessModes: ['ReadWriteOnce'],
+                    accessModes: [this.args.accessMode ?? 'ReadWriteOnce'],
                     storageClassName: `longhorn-${volumeHandle}`,
                     capacity: { storage: this.args.size },
                     volumeMode: 'Filesystem',
@@ -155,7 +160,7 @@ export class LonghornVolume extends pulumi.ComponentResource {
                     annotations: this.args.annotations,
                 },
                 spec: {
-                    accessModes: ['ReadWriteOnce'],
+                    accessModes: [this.args.accessMode ?? 'ReadWriteOnce'],
                     storageClassName,
                     volumeName,
                     resources: { requests: { storage: this.args.size } },

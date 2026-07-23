@@ -85,6 +85,7 @@ export class Storage extends pulumi.ComponentResource {
         const storage = new LonghornVolume(
             `${fullVolumeName}-storage`,
             {
+                accessMode: volume?.accessMode,
                 affinity: this.args.nodes.getVolumeAffinity(volume?.name),
                 annotations: volume?.annotations,
                 createStorageClass: volume?.createStorageClass,
