@@ -1,4 +1,4 @@
-import { Application, config } from '@orangelab/pulumi';
+import { Application, config, VolumeMount } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
 
@@ -24,10 +24,22 @@ export class Slskd extends pulumi.ComponentResource {
         this.webPassword =
             config.getSecret(this.name, 'web/password') ?? this.createWebPassword();
 
-        this.app = new Application(this, name).addStorage().addLocalStorage({
-            name: 'media',
-            hostPath: config.require(this.name, 'media/hostPath'),
-        });
+        const mediaFromVolume = config.get(this.name, 'media/fromVolume');
+
+        this.app = new Application(this, name).addStorage();
+
+        if (mediaFromVolume) {
+            this.app.addStorage({
+                name: 'media',
+                fromVolume: mediaFromVolume,
+                accessMode: 'ReadWriteMany',
+            });
+        } else {
+            this.app.addLocalStorage({
+                name: 'media',
+                hostPath: config.require(this.name, 'media/hostPath'),
+            });
+        }
 
         this.createDeployment();
     }
@@ -85,8 +97,8 @@ export class Slskd extends pulumi.ComponentResource {
                 SLSKD_SLSK_PASSWORD: this.soulseekPassword,
             },
             resources: {
-                requests: { memory: '64Mi' },
-                limits: { memory: '256Mi' },
+                requests: { memory: '128Mi' },
+                limits: { memory: '512Mi' },
             },
             runAsUser: 1000,
             volumeOwnerUserId: 1000,

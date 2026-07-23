@@ -3,6 +3,8 @@ import * as pulumi from '@pulumi/pulumi';
 
 export class Jellyfin extends pulumi.ComponentResource {
     public readonly app: Application;
+    private readonly mediaFromVolume?: string;
+    private readonly mediaHostPath?: string;
 
     constructor(
         private name: string,
@@ -10,10 +12,25 @@ export class Jellyfin extends pulumi.ComponentResource {
     ) {
         super('orangelab:media:Jellyfin', name, {}, opts);
 
-        this.app = new Application(this, name).addStorage().addLocalStorage({
-            name: 'media',
-            hostPath: config.require(this.name, 'media/hostPath'),
-        });
+        this.mediaHostPath = config.get(this.name, 'media/hostPath');
+        this.mediaFromVolume = config.get(this.name, 'media/fromVolume');
+
+        this.app = new Application(this, name).addStorage();
+
+        if (this.mediaFromVolume) {
+            this.app.addStorage({
+                name: 'media',
+                fromVolume: this.mediaFromVolume,
+                accessMode: 'ReadWriteMany',
+            });
+        }
+
+        if (this.mediaHostPath) {
+            this.app.addLocalStorage({
+                name: 'media-local',
+                hostPath: this.mediaHostPath,
+            });
+        }
 
         this.createDeployment();
     }
@@ -22,8 +39,18 @@ export class Jellyfin extends pulumi.ComponentResource {
         const httpEndpointInfo = this.app.network.getHttpEndpointInfo();
         const volumeMounts: VolumeMount[] = [
             { mountPath: '/data' },
-            { mountPath: '/media', name: 'media' },
         ];
+
+        if (this.mediaFromVolume) {
+            volumeMounts.push({ mountPath: '/media', name: 'media' });
+        }
+
+        if (this.mediaHostPath) {
+            volumeMounts.push({
+                mountPath: '/media-local',
+                name: 'media-local',
+            });
+        }
 
         return this.app.addDeployment({
             hostname: httpEndpointInfo.host,
@@ -42,7 +69,9 @@ export class Jellyfin extends pulumi.ComponentResource {
                 JELLYFIN_LOG_DIR: '/data/log',
                 JELLYFIN_PublishedServerUrl: httpEndpointInfo.url,
             },
-            initContainers: [this.createInitContainer(volumeMounts)],
+            initContainers: this.mediaFromVolume
+                ? [this.createInitContainer(volumeMounts)]
+                : undefined,
             resources: {
                 requests: { memory: '512Mi' },
                 limits: { memory: '2Gi' },

@@ -10,10 +10,22 @@ export class Transmission extends pulumi.ComponentResource {
     ) {
         super('orangelab:media:Transmission', name, {}, opts);
 
-        this.app = new Application(this, name).addStorage().addLocalStorage({
-            name: 'media',
-            hostPath: config.require(this.name, 'media/hostPath'),
-        });
+        const mediaFromVolume = config.get(this.name, 'media/fromVolume');
+
+        this.app = new Application(this, name).addStorage();
+
+        if (mediaFromVolume) {
+            this.app.addStorage({
+                name: 'media',
+                fromVolume: mediaFromVolume,
+                accessMode: 'ReadWriteMany',
+            });
+        } else {
+            this.app.addLocalStorage({
+                name: 'media',
+                hostPath: config.require(this.name, 'media/hostPath'),
+            });
+        }
 
         this.createDeployment();
     }
@@ -29,7 +41,7 @@ export class Transmission extends pulumi.ComponentResource {
             command: [
                 'sh',
                 '-c',
-                'mkdir -p /media/downloads && chown -R 1000:1000 /media/downloads',
+                'mkdir -p /media/downloads/complete /media/downloads/incomplete && chown -R 1000:1000 /media/downloads',
             ],
             volumeMounts: [{ mountPath: '/media', name: 'media' }],
         };
