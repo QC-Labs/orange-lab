@@ -61,6 +61,7 @@ Even if the change seems straightforward, these signals may indicate the current
 ## Conventions
 
 - **Pulumi stack files**: Never modify or read `Pulumi.*.yaml` files directly — they may contain secrets. Use `pulumi config set <key> <value>` / `pulumi config get <key>` (`--secret` for sensitive values). If a change to these files is needed, give the user the commands to run.
+- **Secrets stay local**: Prefer `pulumi config` (run in the stack folder) or `pulumi config --cwd <stack> --stack <name>` to read config. Avoid `--show-secrets` unless a secret value is genuinely required for the task — when it is, give the user the command to run themselves so the plaintext never traverses the session/channel. Reading non-secret config values (paths, sizes, flags) is fine via the agent.
 - **Applications** use the Application class for Kubernetes resources (including namespaces and storage for Helm charts).
 - **Writing TypeScript** (components, stacks, `@orangelab/pulumi` library): follow the `code-conventions` skill.
 - **Writing docs** (component `<app>.md`, stack `README.md`): follow the `document-app` / `document-module` skills.
