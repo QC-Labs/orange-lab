@@ -30,6 +30,7 @@
             "pulumi config": "allow",
             "pulumi preview *": "ask",
             "pwd": "allow",
+            "rg": "allow",
             "sleep *": "allow",
             "tail *": "allow"
         },
