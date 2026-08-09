@@ -8,14 +8,16 @@
 
 TV show collection manager. Integrates with Usenet and BitTorrent to acquire series and manage your library.
 
-Sonarr mounts the host media directory at `/media`. This must point to the same host directory used by [Jellyfin](../jellyfin/jellyfin.md) and [Radarr](../radarr/radarr.md) so all apps can access the same files.
+Sonarr mounts the shared media storage configured in the [Media stack README](../../README.md) at `/media`.
 
 ```sh
+# Configure Media profile
+pulumi config set sonarr:media jellyfin-media
+
 # Enable Sonarr
 pulumi config set sonarr:enabled true
-# Mount media volume, same as used by Jellyfin
-pulumi config set sonarr:media/hostPath /mnt/media
-
+# Required when using media:hostPath
+pulumi config set sonarr:requiredNodeLabel kubernetes.io/hostname=<host>
 # (Recommended) Use specified Longhorn volume for config
 pulumi config set sonarr:fromVolume sonarr
 

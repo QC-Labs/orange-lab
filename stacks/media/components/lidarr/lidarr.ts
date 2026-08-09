@@ -1,5 +1,6 @@
-import { Application, config, VolumeMount } from '@orangelab/pulumi';
+import { Application, VolumeMount } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
+import { getMediaStorage } from '../media-storage';
 
 export class Lidarr extends pulumi.ComponentResource {
     public readonly app: Application;
@@ -10,20 +11,21 @@ export class Lidarr extends pulumi.ComponentResource {
     ) {
         super('orangelab:media:Lidarr', name, {}, opts);
 
-        const mediaFromVolume = config.get(this.name, 'media/fromVolume');
+        const mediaStorage = getMediaStorage(this.name);
 
         this.app = new Application(this, name).addStorage();
 
-        if (mediaFromVolume) {
+        if (mediaStorage.fromVolume) {
             this.app.addStorage({
                 name: 'media',
-                fromVolume: mediaFromVolume,
+                fromVolume: mediaStorage.fromVolume,
+                size: mediaStorage.storageSize,
                 accessMode: 'ReadWriteMany',
             });
         } else {
             this.app.addLocalStorage({
                 name: 'media',
-                hostPath: config.require(this.name, 'media/hostPath'),
+                hostPath: mediaStorage.hostPath,
             });
         }
 

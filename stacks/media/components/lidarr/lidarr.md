@@ -10,14 +10,16 @@ Music collection manager. Integrates with Transmission BitTorrent client to acqu
 
 **Note:** Lidarr was required by Musicseerr but after move to DroppedNeedle it's not currently used.
 
-Lidarr mounts the host media directory at `/media`. This must point to the same host directory used by [Jellyfin](../jellyfin/jellyfin.md), [Radarr](../radarr/radarr.md), and [Sonarr](../sonarr/sonarr.md) so all apps can access the same files.
+Lidarr mounts the shared media storage configured in the [Media stack README](../../README.md) at `/media`.
 
 ```sh
+# Configure Media profile
+pulumi config set lidarr:media jellyfin-media
+
 # Enable Lidarr
 pulumi config set lidarr:enabled true
-# Mount media volume, same as used by Jellyfin
-pulumi config set lidarr:media/hostPath /mnt/media
-
+# Required when using media:hostPath
+pulumi config set lidarr:requiredNodeLabel kubernetes.io/hostname=<host>
 # (Recommended) Use specified Longhorn volume for config
 pulumi config set lidarr:fromVolume lidarr
 

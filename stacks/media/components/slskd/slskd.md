@@ -9,15 +9,16 @@
 | Docker Image   | https://hub.docker.com/r/slskd/slskd                                |
 | Endpoints      | `https://slskd.<domain>/`                                           |
 
-Modern Soulseek client. DroppedNeedle uses slskd as its download client: it searches and enqueues downloads through slskd's local HTTP API, then imports finished files into the music library.
+Modern Soulseek client. DroppedNeedle uses slskd as its download client: it searches and enqueues downloads through slskd's local HTTP API, then imports finished files into the music library. Configure shared media storage in the [Media stack README](../../README.md) before enabling this component.
 
 ```sh
+# Configure Media profile
+pulumi config set slskd:media jellyfin-media
+
 # Enable slskd
 pulumi config set slskd:enabled true
 
-# Mount media volume, same as used by DroppedNeedle
-pulumi config set slskd:media/hostPath /mnt/media
-# Host volumes require pods to run on specific host
+# Required when using media:hostPath
 pulumi config set slskd:requiredNodeLabel kubernetes.io/hostname=<host>
 
 # (Recommended) Use specified Longhorn volume for config

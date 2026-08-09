@@ -8,14 +8,16 @@
 
 Movie collection manager. Integrates with Usenet and BitTorrent to acquire movies and manage your library.
 
-Radarr mounts the host media directory at `/media`. This must point to the same host directory used by [Jellyfin](../jellyfin/jellyfin.md) and [Sonarr](../sonarr/sonarr.md) so all apps can access the same files.
+Radarr mounts the shared media storage configured in the [Media stack README](../../README.md) at `/media`.
 
 ```sh
+# Configure Media profile
+pulumi config set radarr:media jellyfin-media
+
 # Enable Radarr
 pulumi config set radarr:enabled true
-# Mount media volume, same as used by Jellyfin
-pulumi config set radarr:media/hostPath /mnt/media
-
+# Required when using media:hostPath
+pulumi config set radarr:requiredNodeLabel kubernetes.io/hostname=<host>
 # (Recommended) Use specified Longhorn volume for config
 pulumi config set radarr:fromVolume radarr
 

@@ -8,10 +8,16 @@
 
 BitTorrent client. Downloads media files acquired by Radarr and Sonarr.
 
+Transmission mounts the shared media storage configured in the [Media stack README](../../README.md) at `/media`.
+
 ```sh
+# Configure Media profile
+pulumi config set transmission:media jellyfin-media
+
 # Enable Transmission
 pulumi config set transmission:enabled true
-pulumi config set transmission:media/hostPath /mnt/media
+# Required when using media:hostPath
+pulumi config set transmission:requiredNodeLabel kubernetes.io/hostname=<host>
 
 # (Recommended) Use specified Longhorn volume for config
 pulumi config set transmission:fromVolume transmission

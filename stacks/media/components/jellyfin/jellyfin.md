@@ -10,15 +10,17 @@
 
 Free Software Media System. Streaming movies, TV shows and music.
 
-Jellyfin shares the host media directory with [Radarr](../radarr/radarr.md), [Sonarr](../sonarr/sonarr.md), and [Transmission](../transmission/transmission.md). All apps must point to the same `media/hostPath` and run on the same node.
+Jellyfin shares the media storage configured for the [Media stack](../../README.md) with [Radarr](../radarr/radarr.md), [Sonarr](../sonarr/sonarr.md), and [Transmission](../transmission/transmission.md). Configure the shared storage once before enabling applications.
 
 ```sh
-# Deploy Jellyfin to my-host using /mnt/media as media folder
+# Configure Media profile
+pulumi config set jellyfin:media jellyfin-media
+
 pulumi config set jellyfin:enabled true
-pulumi config set jellyfin:media/hostPath /mnt/media
+# Required when using media:hostPath
 pulumi config set jellyfin:requiredNodeLabel kubernetes.io/hostname=my-host
 
-# Use specified Longhorn volume as data volume
+# Use specified Longhorn volume for Jellyfin application data
 pulumi config set jellyfin:fromVolume jellyfin
 
 pulumi up

@@ -17,6 +17,46 @@ Media management, photo storage, and media streaming applications.
 - [Sonarr](./components/sonarr/sonarr.md) — TV show collection manager
 - [Transmission](./components/transmission/transmission.md) — BitTorrent download client
 
+## Media Storage
+
+Jellyfin-related applications can use app-specific storage or share a named media profile. Immich and the other applications that do not mount the media volume are unaffected.
+
+### App-specific storage
+
+For a Longhorn volume used by one application:
+
+```sh
+pulumi config set jellyfin:media/fromVolume jellyfin
+pulumi config set jellyfin:media/storageSize 1000Gi
+```
+
+For a host path used by one application:
+
+```sh
+pulumi config set jellyfin:media/hostPath /mnt/<drive>/media
+pulumi config set jellyfin:requiredNodeLabel kubernetes.io/hostname=<host>
+```
+
+### Shared profile (recommended)
+
+```sh
+pulumi config set jellyfin:media jellyfin-media
+pulumi config set jellyfin-media:fromVolume jellyfin-media
+pulumi config set jellyfin-media:storageSize 1000Gi
+```
+
+Set the same `app:media` profile reference for each Jellyfin-related application that should share the volume. Use a different profile name when an application needs separate storage.
+
+For a shared host path profile:
+
+```sh
+pulumi config set jellyfin-media:hostPath /mnt/<drive>/media
+```
+
+When using a host path, configure `<app>:requiredNodeLabel` so each application runs on the node containing the path.
+
+App-specific settings take precedence over a selected profile. When both `fromVolume` and `hostPath` resolve, `fromVolume` takes precedence for most applications; Jellyfin mounts both.
+
 ## Configure Applications
 
 ### Immich
@@ -42,9 +82,7 @@ pulumi up
 ```sh
 pulumi config set seerr:enabled true
 pulumi config set radarr:enabled true
-pulumi config set radarr:media/hostPath /mnt/media
 pulumi config set sonarr:enabled true
-pulumi config set sonarr:media/hostPath /mnt/media
 pulumi config set transmission:enabled true
 pulumi config set prowlarr:enabled true
 pulumi up
@@ -54,10 +92,6 @@ pulumi up
 
 ```sh
 pulumi config set droppedneedle:enabled true
-pulumi config set droppedneedle:media/hostPath /mnt/<drive>/media
-pulumi config set droppedneedle:requiredNodeLabel kubernetes.io/hostname=<host>
 pulumi config set slskd:enabled true
-pulumi config set slskd:media/hostPath /mnt/<drive>/media
-pulumi config set slskd:requiredNodeLabel kubernetes.io/hostname=<host>
 pulumi up
 ```

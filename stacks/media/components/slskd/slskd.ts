@@ -1,6 +1,7 @@
-import { Application, config, VolumeMount } from '@orangelab/pulumi';
+import { Application, config } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
+import { getMediaStorage } from '../media-storage';
 
 export class Slskd extends pulumi.ComponentResource {
     public readonly app: Application;
@@ -24,20 +25,21 @@ export class Slskd extends pulumi.ComponentResource {
         this.webPassword =
             config.getSecret(this.name, 'web/password') ?? this.createWebPassword();
 
-        const mediaFromVolume = config.get(this.name, 'media/fromVolume');
+        const mediaStorage = getMediaStorage(this.name);
 
         this.app = new Application(this, name).addStorage();
 
-        if (mediaFromVolume) {
+        if (mediaStorage.fromVolume) {
             this.app.addStorage({
                 name: 'media',
-                fromVolume: mediaFromVolume,
+                fromVolume: mediaStorage.fromVolume,
+                size: mediaStorage.storageSize,
                 accessMode: 'ReadWriteMany',
             });
         } else {
             this.app.addLocalStorage({
                 name: 'media',
-                hostPath: config.require(this.name, 'media/hostPath'),
+                hostPath: mediaStorage.hostPath,
             });
         }
 

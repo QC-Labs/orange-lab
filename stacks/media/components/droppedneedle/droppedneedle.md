@@ -11,15 +11,16 @@
 
 Self-hosted music request, discovery, and library management app. It scans, tags, fingerprints, and organises your music library natively, and drives downloads through slskd (Soulseek). Gives a Spotify-like UI for your music library. Listen through web or mobile apps with OpenSubsonic and Jellyfin APIs compatibility.
 
-DroppedNeedle depends on [slskd](../slskd/slskd.md) for downloads and integrates with [Jellyfin](../jellyfin/jellyfin.md).
+DroppedNeedle depends on [slskd](../slskd/slskd.md) for downloads and integrates with [Jellyfin](../jellyfin/jellyfin.md). Configure shared media storage in the [Media stack README](../../README.md) before enabling this component.
 
 ```sh
+# Configure Media profile
+pulumi config set droppedneedle:media jellyfin-media
+
 # Enable DroppedNeedle (requires slskd)
 pulumi config set droppedneedle:enabled true
 
-# Mount media volume, same as used by slskd/Jellyfin
-pulumi config set droppedneedle:media/hostPath /mnt/media
-# Host volumes require pods to run on specific host
+# Required when using media:hostPath
 pulumi config set droppedneedle:requiredNodeLabel kubernetes.io/hostname=<host>
 
 # (Recommended) Use specified Longhorn volume for config

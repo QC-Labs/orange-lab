@@ -1,5 +1,6 @@
-import { Application, config, VolumeMount } from '@orangelab/pulumi';
+import { Application, VolumeMount } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
+import { getMediaStorage } from '../media-storage';
 
 export class Jellyfin extends pulumi.ComponentResource {
     public readonly app: Application;
@@ -12,23 +13,25 @@ export class Jellyfin extends pulumi.ComponentResource {
     ) {
         super('orangelab:media:Jellyfin', name, {}, opts);
 
-        this.mediaHostPath = config.get(this.name, 'media/hostPath');
-        this.mediaFromVolume = config.get(this.name, 'media/fromVolume');
+        const mediaStorage = getMediaStorage(this.name);
+        this.mediaFromVolume = mediaStorage.fromVolume;
+        this.mediaHostPath = mediaStorage.hostPath;
 
         this.app = new Application(this, name).addStorage();
 
-        if (this.mediaFromVolume) {
+        if (mediaStorage.fromVolume) {
             this.app.addStorage({
                 name: 'media',
-                fromVolume: this.mediaFromVolume,
+                fromVolume: mediaStorage.fromVolume,
+                size: mediaStorage.storageSize,
                 accessMode: 'ReadWriteMany',
             });
         }
 
-        if (this.mediaHostPath) {
+        if (mediaStorage.hostPath) {
             this.app.addLocalStorage({
                 name: 'media-local',
-                hostPath: this.mediaHostPath,
+                hostPath: mediaStorage.hostPath,
             });
         }
 
@@ -37,9 +40,7 @@ export class Jellyfin extends pulumi.ComponentResource {
 
     private createDeployment() {
         const httpEndpointInfo = this.app.network.getHttpEndpointInfo();
-        const volumeMounts: VolumeMount[] = [
-            { mountPath: '/data' },
-        ];
+        const volumeMounts: VolumeMount[] = [{ mountPath: '/data' }];
 
         if (this.mediaFromVolume) {
             volumeMounts.push({ mountPath: '/media', name: 'media' });
@@ -86,10 +87,10 @@ export class Jellyfin extends pulumi.ComponentResource {
                 'sh',
                 '-c',
                 [
-                    `mkdir -p /media/downloads`,
-                    `mkdir -p /media/movies`,
-                    `mkdir -p /media/shows`,
-                    `mkdir -p /media/music`,
+                    `mkdir -pv /media/downloads`,
+                    `mkdir -pv /media/movies`,
+                    `mkdir -pv /media/shows`,
+                    `mkdir -pv /media/music`,
                     `chown -R 1000:1000 /media`,
                 ].join(' && '),
             ],
