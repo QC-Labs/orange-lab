@@ -41,12 +41,12 @@ config:
     tailscale:hostname: k8s
 
     traefik:enabled: false
-    traefik:version: 41.0.2
+    traefik:version: 41.2.0
     traefik:hostname: traefik
     traefik:gatewayApiCrdUrl: 'https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.1/experimental-install.yaml'
 
     cert-manager:enabled: false
-    cert-manager:version: v1.21.0
+    cert-manager:version: v1.21.1
     cert-manager:clusterIssuer: letsencrypt-issuer
 
     technitium:enabled: false
@@ -87,7 +87,7 @@ config:
     # rustfs:dataPath: /mnt/my-drive/rustfs-data
     # rustfs:requiredNodeLabel: kubernetes.io/hostname=<hostname>
     rustfs:rootUser: admin
-    rustfs:image: rustfs/rustfs:1.0.0-beta.10
+    rustfs:image: rustfs/rustfs:1.0.0-beta.12
     rustfs:provisioner/image: rustfs/rc:latest
 
     ### Hardware ###
