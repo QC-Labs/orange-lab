@@ -70,12 +70,29 @@ stacks/<module>/
 └── components/              # Module components
 ```
 
-Shared config keys that must be duplicated in every module stack:
+Shared and module dependency config keys:
 
-| Key                         | Example                  | Purpose         |
-|-----------------------------|--------------------------|-----------------|
-| `orangelab:routingProvider` | `traefik` or `tailscale` | Ingress/routing |
-| `orangelab:customDomain`    | `example.com`            | Traefik domain  |
+| Key                           | Example                  | Purpose                                  |
+|-------------------------------|--------------------------|------------------------------------------|
+| `orangelab:routingProvider`   | `traefik` or `tailscale` | Ingress/routing                          |
+| `orangelab:customDomain`      | `example.com`            | Traefik domain                           |
+| `longhorn:backupEnabled`      | `false`                  | Enable Longhorn backup jobs              |
+| `longhorn:backupAllVolumes`   | `false`                  | Back up all application volumes by default |
+| `mariadb-operator:enabled`   | `false`                  | Enable MariaDB for dependent applications |
+| `cloudnative-pg:enabled`     | `false`                  | Enable PostgreSQL for dependent applications |
+
+The routing keys must be configured in every module stack. The Longhorn backup
+defaults are defined in every `stacks/*/Pulumi.yaml`; keep both set to `false`
+unless backups have been configured for that stack. Enable them separately in
+each stack that should use backups. Individual applications can override
+`backupAllVolumes` with their `<app>:backupVolume` setting.
+
+Database operator settings are module dependencies and are included only in
+stacks with applications that use them. Keep them disabled unless an
+application in that stack uses the corresponding database; enable the operator
+in the module stack before enabling that application. MariaDB-backed
+applications require `mariadb-operator:enabled: true`, while PostgreSQL-backed
+applications require `cloudnative-pg:enabled: true`.
 
 ## Migrating a Module from Core Stack
 
