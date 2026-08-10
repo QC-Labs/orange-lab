@@ -6,7 +6,6 @@ import {
     VolumeMount,
 } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
-import * as random from '@pulumi/random';
 
 export class Immich extends pulumi.ComponentResource {
     public readonly app: Application;
@@ -19,11 +18,11 @@ export class Immich extends pulumi.ComponentResource {
     ) {
         super('orangelab:media:Immich', name, {}, opts);
 
+        this.app = new Application(this, name).addStorage().addPostgres().addRedis();
         this.jwtSecret = pulumi.output(
-            config.get(name, 'JWT_SECRET') ?? this.createJwtSecret(),
+            config.get(name, 'JWT_SECRET') ?? this.app.createPassword('jwt-secret'),
         );
 
-        this.app = new Application(this, name).addStorage().addPostgres().addRedis();
         this.dbConfig = this.app.databases?.getConfig();
         if (!this.dbConfig) throw new Error('Database not found');
         const httpEndpointInfo = this.app.network.getHttpEndpointInfo();
@@ -101,11 +100,4 @@ export class Immich extends pulumi.ComponentResource {
         });
     }
 
-    private createJwtSecret() {
-        return new random.RandomPassword(
-            `${this.name}-jwt-secret`,
-            { length: 32, special: false },
-            { parent: this },
-        ).result;
-    }
 }

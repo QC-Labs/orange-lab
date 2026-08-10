@@ -1,6 +1,5 @@
 import { Application, Nodes, config } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
-import * as random from '@pulumi/random';
 import assert from 'node:assert';
 
 export class Prometheus extends pulumi.ComponentResource {
@@ -16,12 +15,6 @@ export class Prometheus extends pulumi.ComponentResource {
         super('orangelab:monitoring:Prometheus', name, {}, opts);
 
         this.nodes = new Nodes({ appName: name });
-        this.grafanaPassword =
-            config.getSecret(name, 'grafana/password') ?? this.createPassword(name, 'grafana');
-        const prometheusHostname = config.require(name, 'hostname');
-        const alertManagerHostname = config.require(name, 'alertmanager/hostname');
-        const grafanaHostname = config.require(name, 'grafana/hostname');
-
         this.app = new Application(this, name)
             .addStorage({
                 createStorageClass: true,
@@ -33,6 +26,12 @@ export class Prometheus extends pulumi.ComponentResource {
                 name: 'alertmanager',
                 overrideFullname: `alertmanager-${name}-db-alertmanager-${name}-0`,
             });
+        this.grafanaPassword =
+            config.getSecret(name, 'grafana/password') ??
+            this.app.createPassword('grafana-password');
+        const prometheusHostname = config.require(name, 'hostname');
+        const alertManagerHostname = config.require(name, 'alertmanager/hostname');
+        const grafanaHostname = config.require(name, 'grafana/hostname');
 
         if (this.app.storageOnly) return;
         const grafanaHttpEndpoint = this.app.network.getHttpEndpointInfo(grafanaHostname);
@@ -133,14 +132,6 @@ export class Prometheus extends pulumi.ComponentResource {
         this.alertmanagerEndpointUrl = alertManagerHttpEndpoint.url;
         this.grafanaEndpointUrl = grafanaHttpEndpoint.url;
         this.prometheusEndpointUrl = prometheusHttpEndpoint.url;
-    }
-
-    private createPassword(name: string, component: string) {
-        return new random.RandomPassword(
-            `${name}-${component}-password`,
-            { length: 32, special: false },
-            { parent: this },
-        ).result;
     }
 
     // https://github.com/prometheus-operator/prometheus-operator/blob/main/Documentation/platform/storage.md

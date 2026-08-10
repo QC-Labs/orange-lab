@@ -1,6 +1,5 @@
 import { Application, config } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
-import * as random from '@pulumi/random';
 
 export interface OpenWebUIArgs {
     ollamaUrl?: string;
@@ -11,6 +10,7 @@ export interface OpenWebUIArgs {
 export class OpenWebUI extends pulumi.ComponentResource {
     public readonly endpointUrl: string | undefined;
     public readonly secretKey: pulumi.Output<string>;
+    private readonly app: Application;
 
     constructor(
         private name: string,
@@ -19,14 +19,14 @@ export class OpenWebUI extends pulumi.ComponentResource {
     ) {
         super('orangelab:ai:OpenWebUI', name, args, opts);
 
+        this.app = new Application(this, name).addStorage();
         this.secretKey = pulumi.output(
-            config.get(name, 'WEBUI_SECRET_KEY') ?? this.createSecretKey(),
+            config.get(name, 'WEBUI_SECRET_KEY') ?? this.app.createPassword('secret-key'),
         );
 
-        const app = new Application(this, name).addStorage();
-        if (app.storageOnly) return;
+        if (this.app.storageOnly) return;
 
-        const httpEndpointInfo = app.network.getHttpEndpointInfo();
+        const httpEndpointInfo = this.app.network.getHttpEndpointInfo();
         const isTailscale = httpEndpointInfo.className === 'tailscale';
         this.endpointUrl = httpEndpointInfo.url;
 
@@ -52,7 +52,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
             USER_PERMISSIONS_WORKSPACE_MODELS_ACCESS: 'True',
             USER_PERMISSIONS_WORKSPACE_PROMPTS_ACCESS: 'True',
             USER_PERMISSIONS_WORKSPACE_TOOLS_ACCESS: 'True',
-            USE_CUDA_DOCKER: app.nodes.getGpu() === 'nvidia' ? 'True' : 'False',
+            USE_CUDA_DOCKER: this.app.nodes.getGpu() === 'nvidia' ? 'True' : 'False',
             USE_OLLAMA_DOCKER: 'False',
             WEBUI_AUTH: isTailscale ? 'False' : 'True',
             WEBUI_URL: httpEndpointInfo.url,
@@ -64,7 +64,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
             env.WEBUI_AUTH_TRUSTED_NAME_HEADER = 'Tailscale-User-Name';
         }
 
-        app.addDeployment({
+        this.app.addDeployment({
             ports: [{ name: 'http', port: 8080 }],
             volumeMounts: [{ mountPath: '/app/backend/data' }],
             env,
@@ -75,11 +75,4 @@ export class OpenWebUI extends pulumi.ComponentResource {
         });
     }
 
-    private createSecretKey() {
-        return new random.RandomPassword(
-            `${this.name}-secret-key`,
-            { length: 32, special: false },
-            { parent: this },
-        ).result;
-    }
 }

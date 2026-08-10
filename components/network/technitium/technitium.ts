@@ -1,6 +1,5 @@
 import { Application, config } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
-import * as random from '@pulumi/random';
 
 export class Technitium extends pulumi.ComponentResource {
     public readonly endpointUrl: string;
@@ -19,7 +18,7 @@ export class Technitium extends pulumi.ComponentResource {
         const httpEndpointInfo = this.app.network.getHttpEndpointInfo();
 
         const adminPassword =
-            config.getSecret(name, 'adminPassword') ?? this.createPassword();
+            config.getSecret(name, 'adminPassword') ?? this.app.createPassword('admin-password');
         this.users = { admin: adminPassword };
 
         this.app.addDeployment({
@@ -51,11 +50,4 @@ export class Technitium extends pulumi.ComponentResource {
         this.endpointUrl = httpEndpointInfo.url;
     }
 
-    private createPassword() {
-        return new random.RandomPassword(
-            `${this.name}-admin-password`,
-            { length: 32, special: false },
-            { parent: this },
-        ).result;
-    }
 }

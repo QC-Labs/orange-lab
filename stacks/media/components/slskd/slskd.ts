@@ -1,6 +1,5 @@
 import { Application, config } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
-import * as random from '@pulumi/random';
 import { getMediaStorage } from '../media-storage';
 
 export class Slskd extends pulumi.ComponentResource {
@@ -16,18 +15,19 @@ export class Slskd extends pulumi.ComponentResource {
     ) {
         super('orangelab:media:Slskd', name, {}, opts);
 
-        this.apiKey = config.getSecret(name, 'SLSKD_API_KEY') ?? this.createApiKey();
+        this.app = new Application(this, name).addStorage();
+        this.apiKey = config.getSecret(name, 'SLSKD_API_KEY') ?? this.app.createPassword('api-key');
         this.soulseekUsername = pulumi.output(
-            config.get(name, 'soulseek/username') ?? this.createSoulseekUsername(),
+            config.get(name, 'soulseek/username') ??
+            this.app.createPassword('soulseek-username', { length: 12 }),
         );
         this.soulseekPassword =
-            config.getSecret(name, 'soulseek/password') ?? this.createSoulseekPassword();
+            config.getSecret(name, 'soulseek/password') ??
+            this.app.createPassword('soulseek-password');
         this.webPassword =
-            config.getSecret(this.name, 'web/password') ?? this.createWebPassword();
+            config.getSecret(this.name, 'web/password') ?? this.app.createPassword('web-password');
 
         const mediaStorage = getMediaStorage(this.name);
-
-        this.app = new Application(this, name).addStorage();
 
         if (mediaStorage.fromVolume) {
             this.app.addStorage({
@@ -44,38 +44,6 @@ export class Slskd extends pulumi.ComponentResource {
         }
 
         this.createDeployment();
-    }
-
-    private createApiKey() {
-        return new random.RandomPassword(
-            `${this.name}-api-key`,
-            { length: 32, special: false },
-            { parent: this },
-        ).result;
-    }
-
-    private createWebPassword() {
-        return new random.RandomPassword(
-            `${this.name}-web-password`,
-            { length: 32, special: false },
-            { parent: this },
-        ).result;
-    }
-
-    private createSoulseekUsername() {
-        return new random.RandomPassword(
-            `${this.name}-soulseek-username`,
-            { length: 12, special: false },
-            { parent: this },
-        ).result;
-    }
-
-    private createSoulseekPassword() {
-        return new random.RandomPassword(
-            `${this.name}-soulseek-password`,
-            { length: 32, special: false },
-            { parent: this },
-        ).result;
     }
 
     private createDeployment() {

@@ -1,7 +1,6 @@
 import { Application, config, DatabaseConfig, HttpEndpointInfo } from '@orangelab/pulumi';
 import * as k8s from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
-import * as random from '@pulumi/random';
 
 export class Nextcloud extends pulumi.ComponentResource {
     public readonly serviceUrl?: string;
@@ -21,7 +20,7 @@ export class Nextcloud extends pulumi.ComponentResource {
         this.dbConfig = this.app.databases?.getConfig();
         if (!this.dbConfig) throw new Error('Database not found');
         const adminPassword =
-            config.getSecret(appName, 'adminPassword') ?? this.createPassword('admin');
+            config.getSecret(appName, 'adminPassword') ?? this.app.createPassword('admin-password');
         const adminSecret = this.createAdminSecret(adminPassword);
         const httpEndpointInfo = this.app.network.getHttpEndpointInfo();
         this.users = { admin: adminPassword };
@@ -143,11 +142,4 @@ $CONFIG = array (
         );
     }
 
-    private createPassword(username: string) {
-        return new random.RandomPassword(
-            `${this.appName}-${username}-password`,
-            { length: 32, special: false },
-            { parent: this },
-        ).result;
-    }
 }

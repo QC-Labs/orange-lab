@@ -1,5 +1,6 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
+import * as random from '@pulumi/random';
 import assert from 'node:assert';
 import { config } from './config';
 import { Databases } from './databases';
@@ -170,6 +171,14 @@ export class Application {
         this.getServices().createDeployment(spec);
         this.network.createEndpoints(spec);
         return this;
+    }
+
+    createPassword(name: string, args?: { length?: number }) {
+        return new random.RandomPassword(
+            `${this.appName}-${name}`,
+            { length: args?.length ?? 32, special: false },
+            { parent: this.scope },
+        ).result;
     }
 
     /**

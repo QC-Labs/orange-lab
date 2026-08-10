@@ -1,6 +1,5 @@
 import { Application, config } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
-import * as random from '@pulumi/random';
 import { RustfsProvisioner } from './rustfs-provisioner';
 
 export class Rustfs extends pulumi.ComponentResource {
@@ -18,20 +17,20 @@ export class Rustfs extends pulumi.ComponentResource {
     ) {
         super('orangelab:storage:Rustfs', name, {}, opts);
 
+        this.app = new Application(this, name).addLocalStorage({
+            name: 'data',
+            hostPath: config.require(name, 'dataPath'),
+        });
+
         this.hostname = config.require(name, 'hostname');
         this.hostnameApi = config.require(name, 'hostname-api');
-        const dataPath = config.require(name, 'dataPath');
         this.rootUser = config.require(name, 'rootUser');
         const rootPassword =
-            config.getSecret(name, 'rootPassword') ?? this.createPassword();
+            config.getSecret(name, 'rootPassword') ?? this.app.createPassword('root-password');
         this.users = {
             [this.rootUser]: rootPassword,
         };
 
-        this.app = new Application(this, name).addLocalStorage({
-            name: 'data',
-            hostPath: dataPath,
-        });
         this.createDeployment();
         this.s3Provisioner = new RustfsProvisioner(
             `${name}-admin`,
@@ -66,11 +65,4 @@ export class Rustfs extends pulumi.ComponentResource {
         });
     }
 
-    private createPassword() {
-        return new random.RandomPassword(
-            `${this.name}-root-password`,
-            { length: 32, special: false },
-            { parent: this },
-        ).result;
-    }
 }

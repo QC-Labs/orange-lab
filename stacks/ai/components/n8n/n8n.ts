@@ -1,6 +1,5 @@
 import { Application, config, DatabaseConfig } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
-import * as random from '@pulumi/random';
 
 export interface N8nArgs {
     ollamaUrl?: string;
@@ -18,11 +17,11 @@ export class N8n extends pulumi.ComponentResource {
     ) {
         super('orangelab:ai:N8n', name, args, opts);
 
+        this.app = new Application(this, name).addStorage().addPostgres();
         this.encryptionKey = pulumi.output(
-            config.get(name, 'N8N_ENCRYPTION_KEY') ?? this.createEncryptionKey(),
+            config.get(name, 'N8N_ENCRYPTION_KEY') ?? this.app.createPassword('encryption-key'),
         );
 
-        this.app = new Application(this, name).addStorage().addPostgres();
         this.postgresConfig = this.app.databases?.getConfig();
         const initContainer = this.app.databases?.getWaitContainer();
         this.app.addDeployment({
@@ -60,11 +59,4 @@ export class N8n extends pulumi.ComponentResource {
         });
     }
 
-    private createEncryptionKey() {
-        return new random.RandomPassword(
-            `${this.name}-encryption-key`,
-            { length: 32, special: false },
-            { parent: this },
-        ).result;
-    }
 }
