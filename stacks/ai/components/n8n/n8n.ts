@@ -28,10 +28,10 @@ export class N8n extends pulumi.ComponentResource {
         this.app.addDeployment({
             ports: [{ name: 'http', port: 5678 }],
             volumeMounts: [{ mountPath: '/home/node/.n8n' }],
-            runAsUser: 1000,
+            volumeOwnerUserId: 1000,
             resources: {
-                requests: { memory: '250Mi' },
-                limits: { memory: '500Mi' },
+                requests: { memory: '500Mi' },
+                limits: { memory: '1Gi' },
             },
             env: {
                 CREDENTIALS_OVERWRITE_DATA: args.ollamaUrl
@@ -48,7 +48,7 @@ export class N8n extends pulumi.ComponentResource {
                 N8N_PROTOCOL: 'http',
                 N8N_PROXY_HOPS: '1',
                 N8N_SECURE_COOKIE: 'false',
-                WEBHOOK_URL: this.app.network.getHttpEndpointInfo().url,
+                N8N_WEBHOOK_URL: this.app.network.getHttpEndpointInfo().url,
             },
             envSecret: {
                 DB_POSTGRESDB_DATABASE: this.postgresConfig?.database,
