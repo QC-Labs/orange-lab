@@ -19,6 +19,7 @@ export class BitcoinCore extends pulumi.ComponentResource {
         super('orangelab:bitcoin:BitcoinCore', name, args, opts);
 
         this.prune = config.requireNumber(name, 'prune');
+        const externalIp = config.get(name, 'externalip');
 
         this.app = new Application(this, name);
 
@@ -28,6 +29,7 @@ export class BitcoinCore extends pulumi.ComponentResource {
                 'bitcoin.conf': BitcoinConf.create({
                     prune: this.prune,
                     debug: this.app.debug,
+                    externalIp,
                 }),
                 'rpc.conf': BitcoinConf.createRpc(this.args.rpcUsers),
             },

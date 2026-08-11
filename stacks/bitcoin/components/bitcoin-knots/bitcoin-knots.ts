@@ -18,6 +18,7 @@ export class BitcoinKnots extends pulumi.ComponentResource {
         super('orangelab:bitcoin:BitcoinKnots', name, args, opts);
 
         const prune = config.requireNumber(name, 'prune');
+        const externalIp = config.get(name, 'externalip');
 
         this.app = new Application(this, name);
 
@@ -27,6 +28,7 @@ export class BitcoinKnots extends pulumi.ComponentResource {
                 'bitcoin.conf': BitcoinConf.create({
                     prune,
                     debug: this.app.debug,
+                    externalIp,
                 }),
                 'rpc.conf': BitcoinConf.createRpc(this.args.rpcUsers),
             },
@@ -38,6 +40,7 @@ export class BitcoinKnots extends pulumi.ComponentResource {
     private createDeployment() {
         const command = config.get(this.name, 'command');
         const commandArgs = config.get(this.name, 'commandArgs') ?? '';
+        const reindex = config.getBoolean(this.name, 'reindex') ?? false;
         const image = config.require(this.name, 'image');
         const runAsUser = config.getNumber(this.name, 'runAsUser');
         const volumeOwnerUserId = config.getNumber(this.name, 'volumeOwnerUserId');
@@ -54,7 +57,10 @@ export class BitcoinKnots extends pulumi.ComponentResource {
                 { name: 'p2p', port: 8333, protocol: 'tcp' },
             ],
             command: command ? command.split(' ') : undefined,
-            commandArgs: commandArgs.split(' '),
+            commandArgs: [
+                ...commandArgs.split(' ').filter(Boolean),
+                ...(reindex ? ['-reindex'] : []),
+            ],
             runAsUser,
             volumeOwnerUserId,
             volumeMounts: [

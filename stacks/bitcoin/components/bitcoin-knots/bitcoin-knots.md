@@ -1,12 +1,12 @@
 # Bitcoin Knots
 
-|              |                                                                                                     |
-| ------------ | --------------------------------------------------------------------------------------------------- |
-| Homepage     | https://bitcoinknots.org/                                                                           |
-| Docker image | https://hub.docker.com/r/btcpayserver/bitcoinknots                                                  |
-| Dockerfile   | https://github.com/btcpayserver/dockerfile-deps/blob/master/BitcoinKnots/28.1/linuxamd64.Dockerfile |
+|              |                                                                                                                   |
+| ------------ | ----------------------------------------------------------------------------------------------------------------- |
+| Homepage     | https://bitcoinknots.org/                                                                                         |
+| Docker image | https://hub.docker.com/r/btcpayserver/bitcoinknots                                                                |
+| Dockerfile   | https://github.com/btcpayserver/dockerfile-deps/blob/master/BitcoinKnots/29.3.knots20260508/linuxamd64.Dockerfile |
 
-Bitcoin Knots is a conservative fork of Bitcoin Core with a focus on stability and conservative improvements. The node uses persistent volume storage mounted at `/data`.
+Bitcoin Knots is an alternative node implementation and a fork of Bitcoin Core with a focus on stability and customisation. The node uses persistent volume storage mounted at `/data`.
 
 ```sh
 pulumi config set bitcoin-knots:enabled true
@@ -15,19 +15,15 @@ pulumi config set bitcoin-knots:enabled true
 pulumi config set bitcoin-knots:image btcpayserver/bitcoinknots:28.1
 
 # Optional configuration
-pulumi config set bitcoin-knots:prune 1000  # Prune mode (MB), 0 for full node with txindex
 pulumi config set bitcoin-knots:commandArgs "bitcoind -datadir=/data -conf=/conf/bitcoin.conf -maxconnections=25"
+# Set to external IP of your router. Port forwarding needs to be setup for port 8333
+pulumi config set bitcoin-knots:externalip <public-ip>
+# Pruned nodes are incompatible with Electrs and Mempool
+pulumi config set bitcoin-knots:prune 1000  # Prune mode (MB), 0 for full node with txindex
 
-# Force rebuilding chain state
-pulumi config set bitcoin-knots:commandArgs "bitcoind -datadir=/data -conf=/conf/bitcoin.conf -reindex-chainstate"
+# Rebuild the block index and chain state on the next deployment
+pulumi config set bitcoin-knots:reindex true
 
-pulumi up
-```
-
-You can disable the app but keep blockchain data with:
-
-```sh
-pulumi config set bitcoin-knots:storageOnly true
 pulumi up
 ```
 

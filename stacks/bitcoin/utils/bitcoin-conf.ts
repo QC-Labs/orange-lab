@@ -9,10 +9,19 @@ function createRpc(rpcUsers: Record<string, RpcUser>): pulumi.Output<string> {
     return pulumi.all(authLines).apply(lines => lines.join('\n'));
 }
 
-function create({ prune, debug }: { prune: number; debug?: boolean }): string {
+function create({
+    prune,
+    debug,
+    externalIp,
+}: {
+    prune: number;
+    debug?: boolean;
+    externalIp?: string;
+}): string {
     return `
 ${prune > 0 ? `prune=${prune.toString()}` : 'txindex=1'}
 blocksonly=0
+${externalIp ? `externalip=${externalIp}` : ''}
 ${
     debug
         ? `debug=all

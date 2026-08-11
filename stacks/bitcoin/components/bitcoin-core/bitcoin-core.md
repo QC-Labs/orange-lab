@@ -15,19 +15,15 @@ pulumi config set bitcoin-core:enabled true
 pulumi config set bitcoin-core:image btcpayserver/bitcoin:29.0
 
 # Optional configuration
-pulumi config set bitcoin-core:prune 1000  # Prune mode (MB), 0 for full node with txindex
 pulumi config set bitcoin-core:commandArgs "bitcoind -datadir=/data -conf=/conf/bitcoin.conf -maxuploadtarget=500"
+# Set to external IP of your router. Port forwarding needs to be setup for port 8333
+pulumi config set bitcoin-core:externalip <public-ip>
+# Pruned nodes are incompatible with Electrs and Mempool
+pulumi config set bitcoin-core:prune 1000  # Prune mode (MB), 0 for full node with txindex
 
-# Force rebuilding chain state
-pulumi config set bitcoin-core:commandArgs "bitcoind -datadir=/data -conf=/conf/bitcoin.conf -reindex-chainstate"
+# Rebuild the block index and chain state on the next deployment
+pulumi config set bitcoin-core:reindex true
 
-pulumi up
-```
-
-You can disable the app but keep blockchain data with:
-
-```sh
-pulumi config set bitcoin-core:storageOnly true
 pulumi up
 ```
 
