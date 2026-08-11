@@ -18,6 +18,11 @@ config:
     home-assistant:enabled: false
     home-assistant:hostname: home-assistant
     home-assistant:storageSize: 5Gi
+    home-assistant:devices: []
+    # mount additional host devices
+    # home-assistant:devices:
+    #     - name: connect-zbt-2
+    #       device: /dev/ttyACM0
     # Set zone for deployment on nodes with topology.kubernetes.io/zone=<value> label
     # This gives access to sensors on local host network
     # home-assistant:requiredNodeLabel: topology.kubernetes.io/zone=<value>

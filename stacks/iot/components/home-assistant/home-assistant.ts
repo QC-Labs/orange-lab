@@ -1,8 +1,14 @@
 import { Application } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 
+export interface HomeAssistantDevice {
+    name: string;
+    device: string;
+}
+
 export interface HomeAssistantArgs {
     trustedProxies?: string[];
+    devices?: HomeAssistantDevice[];
 }
 
 export class HomeAssistant extends pulumi.ComponentResource {
@@ -23,12 +29,20 @@ export class HomeAssistant extends pulumi.ComponentResource {
                 values: {
                     additionalMounts: [
                         { mountPath: '/run/dbus', name: 'dbus', readOnly: true },
+                        ...(args.devices ?? []).map(({ name, device }) => ({
+                            name,
+                            mountPath: device,
+                        })),
                     ],
                     additionalVolumes: [
                         {
                             name: 'dbus',
                             hostPath: { path: '/run/dbus', type: 'Directory' },
                         },
+                        ...(args.devices ?? []).map(({ name, device }) => ({
+                            name,
+                            hostPath: { path: device, type: 'CharDevice' },
+                        })),
                     ],
                     affinity: app.nodes.getAffinity(),
                     configuration: {
@@ -58,6 +72,7 @@ export class HomeAssistant extends pulumi.ComponentResource {
                         seLinuxOptions: {
                             type: 'spc_t',
                         },
+                        privileged: Boolean(args.devices?.length),
                     },
                 },
             },

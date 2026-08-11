@@ -19,3 +19,17 @@ pulumi config set home-assistant:requiredNodeLabel "topology.kubernetes.io/zone=
 
 pulumi up
 ```
+
+## Device access
+
+Home Assistant can access host devices such as USB or serial adapters. Configure
+each device with a unique volume name and its path on the node:
+
+```sh
+pulumi config set home-assistant:devices '[{"name":"connect-zbt-2","device":"/dev/ttyACM0"}]'
+```
+
+The device must exist at the configured path on the node where Home Assistant
+is scheduled. Device mounts automatically enable privileged mode for the
+container, as required by the Home Assistant Helm chart. Only configure the
+device paths that Home Assistant needs.

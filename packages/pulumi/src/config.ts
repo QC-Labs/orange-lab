@@ -47,6 +47,10 @@ class Config {
         return this.getConfig(appName).get(key);
     }
 
+    public getObject(appName: string, key: string): unknown {
+        return this.getConfig(appName).getObject(key);
+    }
+
     public require(appName: string, key: string): string {
         return this.getConfig(appName).require(key);
     }
