@@ -20,6 +20,7 @@ export class BitcoinCore extends pulumi.ComponentResource {
 
         this.prune = config.requireNumber(name, 'prune');
         const externalIp = config.get(name, 'externalip');
+        const maxConnections = config.requireNumber(name, 'maxconnections');
 
         this.app = new Application(this, name);
 
@@ -30,6 +31,7 @@ export class BitcoinCore extends pulumi.ComponentResource {
                     prune: this.prune,
                     debug: this.app.debug,
                     externalIp,
+                    maxConnections,
                 }),
                 'rpc.conf': BitcoinConf.createRpc(this.args.rpcUsers),
             },

@@ -13,10 +13,12 @@ function create({
     prune,
     debug,
     externalIp,
+    maxConnections,
 }: {
     prune: number;
     debug?: boolean;
     externalIp?: string;
+    maxConnections: number;
 }): string {
     return `
 ${prune > 0 ? `prune=${prune.toString()}` : 'txindex=1'}
@@ -39,7 +41,7 @@ debugexclude=validation`
 disablewallet=1
 listen=1
 listenonion=0
-maxconnections=20
+maxconnections=${maxConnections.toString()}
 nodebuglogfile=1
 printtoconsole=1
 rest=0

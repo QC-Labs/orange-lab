@@ -19,6 +19,7 @@ export class BitcoinKnots extends pulumi.ComponentResource {
 
         const prune = config.requireNumber(name, 'prune');
         const externalIp = config.get(name, 'externalip');
+        const maxConnections = config.requireNumber(name, 'maxconnections');
 
         this.app = new Application(this, name);
 
@@ -29,6 +30,7 @@ export class BitcoinKnots extends pulumi.ComponentResource {
                     prune,
                     debug: this.app.debug,
                     externalIp,
+                    maxConnections,
                 }),
                 'rpc.conf': BitcoinConf.createRpc(this.args.rpcUsers),
             },
