@@ -45,10 +45,15 @@ export class Electrs extends pulumi.ComponentResource {
     private createDeployment() {
         if (!this.args.bitcoinRpcUrl || !this.args.bitcoinP2pUrl) return;
         const extraArgs = config.get(this.name, 'extraArgs') ?? '';
+        const reindex = config.getBoolean(this.name, 'reindex') ?? false;
         this.app.addDeployment({
             ports: [{ name: 'rpc', port: 50001, protocol: 'tls' }],
             runAsUser: 1000,
-            commandArgs: ['--conf=/conf/electrs.toml', extraArgs],
+            commandArgs: [
+                '--conf=/conf/electrs.toml',
+                ...extraArgs.split(' ').filter(Boolean),
+                ...(reindex ? ['--reindex'] : []),
+            ],
             volumeMounts: [
                 { mountPath: '/data' },
                 { name: 'config', mountPath: '/conf' },
