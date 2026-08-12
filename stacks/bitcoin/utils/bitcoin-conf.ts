@@ -13,11 +13,13 @@ function create({
     prune,
     debug,
     externalIp,
+    includeconf,
     maxConnections,
 }: {
     prune: number;
     debug?: boolean;
     externalIp?: string;
+    includeconf: string;
     maxConnections: number;
 }): string {
     return `
@@ -48,8 +50,7 @@ rest=0
 rpcallowip=0.0.0.0/0
 rpcbind=0.0.0.0
 server=1
-includeconf=/conf/rpc.conf
-allowignoredconf=1
+includeconf=${includeconf}
 `;
 }
 

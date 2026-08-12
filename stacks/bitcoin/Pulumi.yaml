@@ -27,7 +27,7 @@ config:
     bitcoin-core:maxconnections: 20
     bitcoin-core:prune: 0
     bitcoin-core:image: btcpayserver/bitcoin:29.0
-    bitcoin-core:commandArgs: bitcoind -datadir=/data -conf=/conf/bitcoin.conf
+    bitcoin-core:commandArgs: bitcoind -datadir=/data
     bitcoin-core:volumePath: /data
     # (Optional) Override image ENTRYPOINT and set container user; required for non-btcpayserver images
     # bitcoin-core:command: bitcoind
@@ -43,7 +43,7 @@ config:
     # bitcoin-knots:reindex: true
     bitcoin-knots:maxconnections: 20
     bitcoin-knots:image: btcpayserver/bitcoinknots:29.3.knots20260508@sha256:cb580f0b85e8617b0b177b5368808dc668a4353fd4d47caa703e8b5ce94e2fcb
-    bitcoin-knots:commandArgs: bitcoind -datadir=/data -conf=/conf/bitcoin.conf -consensusrules=rdts
+    bitcoin-knots:commandArgs: bitcoind -datadir=/data
     bitcoin-knots:volumePath: /data
     # (Optional) Override image ENTRYPOINT and set container user
     # bitcoin-knots:command: bitcoind

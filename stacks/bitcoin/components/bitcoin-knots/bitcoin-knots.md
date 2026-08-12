@@ -15,7 +15,7 @@ pulumi config set bitcoin-knots:enabled true
 pulumi config set bitcoin-knots:image btcpayserver/bitcoinknots:28.1
 
 # Optional configuration
-pulumi config set bitcoin-knots:commandArgs "bitcoind -datadir=/data -conf=/conf/bitcoin.conf -maxconnections=25"
+pulumi config set bitcoin-knots:commandArgs "bitcoind -datadir=/data"
 # Set to external IP of your router. Port forwarding needs to be setup for port 8333
 pulumi config set bitcoin-knots:externalip <public-ip>
 # Increase number of peer connections (default 20)
@@ -41,9 +41,9 @@ By default `btcpayserver/bitcoinknots` images are used. You can use custom docke
 # set custom image location
 pulumi config set bitcoin-knots:image bitcoinknots/bitcoin:29.3.knots20260508
 
-# override the hardcoded ENTRYPOINT to use /data and /conf
+# override the hardcoded ENTRYPOINT to use /data
 pulumi config set bitcoin-knots:command bitcoind
-pulumi config set bitcoin-knots:commandArgs "-datadir=/data -conf=/conf/bitcoin.conf -consensusrules=rdts"
+pulumi config set bitcoin-knots:commandArgs "-datadir=/data -consensusrules=rdts"
 
 # the image runs as UID 1000; unlike btcpayserver/bitcoinknots it does not start as root and fix permissions automatically
 # set both values to the same UID so the container can read and write /data

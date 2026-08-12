@@ -15,7 +15,7 @@ pulumi config set bitcoin-core:enabled true
 pulumi config set bitcoin-core:image btcpayserver/bitcoin:29.0
 
 # Optional configuration
-pulumi config set bitcoin-core:commandArgs "bitcoind -datadir=/data -conf=/conf/bitcoin.conf -maxuploadtarget=500"
+pulumi config set bitcoin-core:commandArgs "bitcoind -datadir=/data -maxuploadtarget=500"
 # Set to external IP of your router. Port forwarding needs to be setup for port 8333
 pulumi config set bitcoin-core:externalip <public-ip>
 # Increase number of peer connections (default 20)

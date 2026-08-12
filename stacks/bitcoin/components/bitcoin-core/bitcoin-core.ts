@@ -10,6 +10,7 @@ export interface BitcoinCoreArgs {
 export class BitcoinCore extends pulumi.ComponentResource {
     public readonly app: Application;
     private readonly prune: number;
+    private readonly volumePath: string;
 
     constructor(
         private name: string,
@@ -20,6 +21,7 @@ export class BitcoinCore extends pulumi.ComponentResource {
 
         this.prune = config.requireNumber(name, 'prune');
         const externalIp = config.get(name, 'externalip');
+        this.volumePath = config.require(name, 'volumePath');
         const maxConnections = config.requireNumber(name, 'maxconnections');
 
         this.app = new Application(this, name);
@@ -31,6 +33,7 @@ export class BitcoinCore extends pulumi.ComponentResource {
                     prune: this.prune,
                     debug: this.app.debug,
                     externalIp,
+                    includeconf: `${this.volumePath}/rpc.conf`,
                     maxConnections,
                 }),
                 'rpc.conf': BitcoinConf.createRpc(this.args.rpcUsers),
@@ -46,7 +49,6 @@ export class BitcoinCore extends pulumi.ComponentResource {
         const image = config.require(this.name, 'image');
         const runAsUser = config.getNumber(this.name, 'runAsUser');
         const volumeOwnerUserId = config.getNumber(this.name, 'volumeOwnerUserId');
-        const volumePath = config.require(this.name, 'volumePath');
 
         this.app.addDeployment({
             resources: {
@@ -60,11 +62,25 @@ export class BitcoinCore extends pulumi.ComponentResource {
             ],
             command: command ? command.split(' ') : undefined,
             commandArgs: commandArgs.split(' '),
+            initContainers: [
+                {
+                    name: 'copy-config',
+                    command: [
+                        'sh',
+                        '-c',
+                        `cp -v /conf/bitcoin.conf ${this.volumePath}/bitcoin.conf && cp -v /conf/rpc.conf ${this.volumePath}/rpc.conf`,
+                    ],
+                    volumeMounts: [
+                        { name: 'config', mountPath: '/conf', readOnly: true },
+                        { mountPath: this.volumePath },
+                    ],
+                },
+            ],
             runAsUser,
             volumeOwnerUserId,
             volumeMounts: [
-                { mountPath: volumePath },
-                { name: 'config', mountPath: '/conf' },
+                { mountPath: this.volumePath },
+                { name: 'config', mountPath: '/conf', readOnly: true },
             ],
         });
     }

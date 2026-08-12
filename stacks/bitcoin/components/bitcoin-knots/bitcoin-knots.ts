@@ -19,6 +19,7 @@ export class BitcoinKnots extends pulumi.ComponentResource {
 
         const prune = config.requireNumber(name, 'prune');
         const externalIp = config.get(name, 'externalip');
+        const volumePath = config.require(name, 'volumePath');
         const maxConnections = config.requireNumber(name, 'maxconnections');
 
         this.app = new Application(this, name);
@@ -30,6 +31,7 @@ export class BitcoinKnots extends pulumi.ComponentResource {
                     prune,
                     debug: this.app.debug,
                     externalIp,
+                    includeconf: `${volumePath}/rpc.conf`,
                     maxConnections,
                 }),
                 'rpc.conf': BitcoinConf.createRpc(this.args.rpcUsers),
@@ -63,11 +65,25 @@ export class BitcoinKnots extends pulumi.ComponentResource {
                 ...commandArgs.split(' ').filter(Boolean),
                 ...(reindex ? ['-reindex'] : []),
             ],
+            initContainers: [
+                {
+                    name: 'copy-config',
+                    command: [
+                        'sh',
+                        '-c',
+                        `cp -v /conf/bitcoin.conf ${volumePath}/bitcoin.conf && cp -v /conf/rpc.conf ${volumePath}/rpc.conf`,
+                    ],
+                    volumeMounts: [
+                        { name: 'config', mountPath: '/conf', readOnly: true },
+                        { mountPath: volumePath },
+                    ],
+                },
+            ],
             runAsUser,
             volumeOwnerUserId,
             volumeMounts: [
                 { mountPath: volumePath },
-                { name: 'config', mountPath: '/conf' },
+                { name: 'config', mountPath: '/conf', readOnly: true },
             ],
         });
     }
