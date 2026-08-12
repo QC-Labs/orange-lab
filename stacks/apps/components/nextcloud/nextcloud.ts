@@ -14,17 +14,19 @@ export class Nextcloud extends pulumi.ComponentResource {
     ) {
         super('orangelab:Nextcloud', appName, {}, opts);
 
-        this.app = new Application(this, appName).addStorage().addMariaDB();
+        this.app = new Application(this, appName).addStorage().addMariaDB().addRedis();
         if (this.app.storageOnly) return;
 
         this.dbConfig = this.app.databases?.getConfig();
         if (!this.dbConfig) throw new Error('Database not found');
+        const redisConfig = this.app.databases?.getConfig('redis');
+        if (!redisConfig) throw new Error('Redis not found');
         const adminPassword =
             config.getSecret(appName, 'adminPassword') ?? this.app.createPassword('admin-password');
         const adminSecret = this.createAdminSecret(adminPassword);
         const httpEndpointInfo = this.app.network.getHttpEndpointInfo();
         this.users = { admin: adminPassword };
-        this.createHelmChart({ httpEndpointInfo, adminSecret, dbConfig: this.dbConfig });
+        this.createHelmChart({ httpEndpointInfo, adminSecret, dbConfig: this.dbConfig, redisConfig });
         this.serviceUrl = httpEndpointInfo.url;
     }
 
@@ -32,8 +34,10 @@ export class Nextcloud extends pulumi.ComponentResource {
         httpEndpointInfo: HttpEndpointInfo;
         adminSecret: k8s.core.v1.Secret;
         dbConfig: DatabaseConfig;
+        redisConfig: DatabaseConfig;
     }) {
         const waitForDb = this.app.databases?.getWaitContainer();
+        const waitForRedis = this.app.databases?.getWaitContainer(args.redisConfig);
         const trustedProxies = config
             .require('nextcloud', 'trustedProxies')
             .split(',')
@@ -55,6 +59,11 @@ export class Nextcloud extends pulumi.ComponentResource {
                         user: args.dbConfig.username,
                         password: args.dbConfig.password,
                         database: args.dbConfig.database,
+                    },
+                    externalRedis: {
+                        enabled: true,
+                        host: args.redisConfig.hostname,
+                        port: args.redisConfig.port,
                     },
                     ingress: {
                         enabled: true,
@@ -101,7 +110,7 @@ $CONFIG = array (
                             },
                             { name: 'OVERWRITEPROTOCOL', value: 'https' },
                         ],
-                        extraInitContainers: [waitForDb],
+                        extraInitContainers: [waitForDb, waitForRedis],
                         host: args.httpEndpointInfo.hostname,
                         existingSecret: {
                             enabled: true,

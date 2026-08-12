@@ -14,6 +14,7 @@ config:
     cloudnative-pg:enabled: false
     longhorn:backupEnabled: false
     longhorn:backupAllVolumes: false
+    orangelab:redis/image: docker.io/redis:8-alpine
 
     vaultwarden:enabled: false
     vaultwarden:hostname: vaultwarden

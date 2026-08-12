@@ -67,6 +67,16 @@ Login with the admin user. The password can be retrieved with:
 pulumi stack output --show-secrets --json | jq '.apps.nextcloud.users.admin' -r
 ```
 
+## NextCloud as UnifiedPush Provider
+
+UnifiedPush lets Nextcloud notify a phone when calendar or contact data changes, so the phone does not need to poll the server frequently. This reduces unnecessary requests while keeping calendars and contacts up to date more quickly.
+
+1. In Nextcloud, install **DAV Push** and **UnifiedPush Provider** from the Apps page.
+2. On the phone, install **NextPush** and **DAVx5**. DAVx5 is required for CalDAV and CardDAV push notifications.
+3. Follow the [NextPush setup procedure](https://unifiedpush.org/users/distributors/nextpush/) to connect the phone to Nextcloud.
+
+Redis is provisioned and configured automatically by this component.
+
 ## Database
 
 Nextcloud uses a MariaDB database to store its data, which is managed by the MariaDB Operator.
