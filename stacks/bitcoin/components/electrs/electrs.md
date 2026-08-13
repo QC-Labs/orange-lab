@@ -20,9 +20,6 @@ pulumi config set electrs:enabled true
 # (Optional) lock version
 pulumi config set electrs:image getumbrel/electrs:v0.11.0
 
-# Rebuild the Electrs index on the next deployment (set to false when done)
-pulumi config set electrs:reindex true
-
 pulumi up
 ```
 

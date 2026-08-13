@@ -44,7 +44,6 @@ export class BitcoinKnots extends pulumi.ComponentResource {
     private createDeployment() {
         const command = config.get(this.name, 'command');
         const commandArgs = config.get(this.name, 'commandArgs') ?? '';
-        const reindex = config.getBoolean(this.name, 'reindex') ?? false;
         const image = config.require(this.name, 'image');
         const runAsUser = config.getNumber(this.name, 'runAsUser');
         const volumeOwnerUserId = config.getNumber(this.name, 'volumeOwnerUserId');
@@ -52,10 +51,7 @@ export class BitcoinKnots extends pulumi.ComponentResource {
 
         this.app.addDeployment({
             command: command ? command.split(' ') : undefined,
-            commandArgs: [
-                ...commandArgs.split(' ').filter(Boolean),
-                ...(reindex ? ['-reindex'] : []),
-            ],
+            commandArgs: commandArgs.split(' ').filter(Boolean),
             env: {
                 BITCOIN_DATA: volumePath,
             },
