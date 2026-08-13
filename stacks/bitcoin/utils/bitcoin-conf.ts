@@ -12,32 +12,29 @@ function createRpc(rpcUsers: Record<string, RpcUser>): pulumi.Output<string> {
 function create({
     prune,
     debug,
+    debugExclude,
     externalIp,
     maxConnections,
 }: {
     prune: number;
     debug?: boolean;
+    debugExclude: string;
     externalIp?: string;
     maxConnections: number;
 }): string {
+    const debugExcludeLines = debugExclude
+        .split(',')
+        .map(value => value.trim())
+        .filter(Boolean)
+        .map(value => `debugexclude=${value}`)
+        .join('\n');
+
     return `
 ${prune > 0 ? `prune=${prune.toString()}` : 'txindex=1'}
 blocksonly=0
 ${externalIp ? `externalip=${externalIp}` : ''}
-${
-    debug
-        ? `debug=all
-debugexclude=addrman
-debugexclude=bench
-debugexclude=estimatefee
-debugexclude=leveldb
-debugexclude=libevent
-debugexclude=mempool
-debugexclude=net
-debugexclude=txpackages
-debugexclude=validation`
-        : ''
-}
+${debug ? 'debug=all' : ''}
+${debugExcludeLines}
 disablewallet=1
 listen=1
 listenonion=0

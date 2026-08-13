@@ -19,6 +19,7 @@ export class BitcoinCore extends pulumi.ComponentResource {
         super('orangelab:bitcoin:BitcoinCore', name, args, opts);
 
         this.prune = config.requireNumber(name, 'prune');
+        const debugExclude = config.require(name, 'debugexclude');
         const externalIp = config.get(name, 'externalip');
         const maxConnections = config.requireNumber(name, 'maxconnections');
 
@@ -30,6 +31,7 @@ export class BitcoinCore extends pulumi.ComponentResource {
                 'bitcoin.conf': BitcoinConf.create({
                     prune: this.prune,
                     debug: this.app.debug,
+                    debugExclude,
                     externalIp,
                     maxConnections,
                 }),
