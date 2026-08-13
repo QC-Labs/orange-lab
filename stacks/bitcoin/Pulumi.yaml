@@ -25,6 +25,8 @@ config:
     # bitcoin-core:externalip: <public-ip>
     bitcoin-core:maxconnections: 20
     bitcoin-core:prune: 0
+    bitcoin-core:debug: false
+    bitcoin-core:debugexclude: addrman,bench,estimatefee,leveldb,libevent,mempool,net,txpackages,validation
     bitcoin-core:image: btcpayserver/bitcoin:29.0
     bitcoin-core:commandArgs: bitcoind -datadir=/data
     bitcoin-core:volumePath: /data
@@ -40,13 +42,15 @@ config:
     bitcoin-knots:prune: 0
     # bitcoin-knots:externalip: <public-ip>
     bitcoin-knots:maxconnections: 20
-    bitcoin-knots:image: btcpayserver/bitcoinknots:29.3.knots20260508@sha256:cb580f0b85e8617b0b177b5368808dc668a4353fd4d47caa703e8b5ce94e2fcb
-    bitcoin-knots:commandArgs: bitcoind -datadir=/data
+    bitcoin-knots:debug: false
+    bitcoin-knots:debugexclude: addrman,bench,estimatefee,leveldb,libevent,mempool,net,txpackages,validation
+    bitcoin-knots:image: ghcr.io/retropex/bitcoin:29.3.knots20260507@sha256:366a8d1a939b002291a134aee6e03d1a10379f8dead646f8d30b296b88ee8380
+    bitcoin-knots:commandArgs: -datadir=/data
     bitcoin-knots:volumePath: /data
-    # (Optional) Override image ENTRYPOINT and set container user
+    # (Optional) Override image ENTRYPOINT and container user
     # bitcoin-knots:command: bitcoind
-    # bitcoin-knots:runAsUser: 1000
-    # bitcoin-knots:volumeOwnerUserId: 1000
+    # bitcoin-knots:runAsUser: 999
+    # bitcoin-knots:volumeOwnerUserId: 999
 
     electrs:enabled: false
     electrs:storageSize: 200Gi

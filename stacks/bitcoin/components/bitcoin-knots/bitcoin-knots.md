@@ -1,10 +1,10 @@
 # Bitcoin Knots
 
-|              |                                                                                                                   |
-| ------------ | ----------------------------------------------------------------------------------------------------------------- |
-| Homepage     | https://bitcoinknots.org/                                                                                         |
-| Docker image | https://hub.docker.com/r/btcpayserver/bitcoinknots                                                                |
-| Dockerfile   | https://github.com/btcpayserver/dockerfile-deps/blob/master/BitcoinKnots/29.3.knots20260508/linuxamd64.Dockerfile |
+|              |                                                                             |
+| ------------ | --------------------------------------------------------------------------- |
+| Homepage     | https://bitcoinknots.org/                                                   |
+| Docker image | https://github.com/Retropex/docker-bitcoind-prebuilt                        |
+| Dockerfile   | https://github.com/Retropex/docker-bitcoind-prebuilt/blob/master/Dockerfile |
 
 Bitcoin Knots is an alternative node implementation and a fork of Bitcoin Core with a focus on stability and customisation. The node uses persistent volume storage mounted at `/data`.
 
