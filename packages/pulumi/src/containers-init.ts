@@ -53,7 +53,11 @@ export class InitContainers {
     private getLocalVolumeMounts(volumeMounts?: VolumeMount[]): string[] {
         const volumeNames = this.args.storage?.getVolumeNames() ?? [this.appName];
         return (volumeMounts ?? [])
-            .filter(mount => volumeNames.includes(mount.name ?? this.appName))
+            .filter(
+                mount =>
+                    !mount.readOnly &&
+                    volumeNames.includes(mount.name ?? this.appName),
+            )
             .map(mount => mount.mountPath);
     }
 
