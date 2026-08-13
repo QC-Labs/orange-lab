@@ -19,7 +19,6 @@ export class BitcoinKnots extends pulumi.ComponentResource {
 
         const prune = config.requireNumber(name, 'prune');
         const externalIp = config.get(name, 'externalip');
-        const volumePath = config.require(name, 'volumePath');
         const maxConnections = config.requireNumber(name, 'maxconnections');
 
         this.app = new Application(this, name);
@@ -31,7 +30,6 @@ export class BitcoinKnots extends pulumi.ComponentResource {
                     prune,
                     debug: this.app.debug,
                     externalIp,
-                    includeconf: `${volumePath}/rpc.conf`,
                     maxConnections,
                 }),
                 'rpc.conf': BitcoinConf.createRpc(this.args.rpcUsers),
@@ -51,27 +49,22 @@ export class BitcoinKnots extends pulumi.ComponentResource {
         const volumePath = config.require(this.name, 'volumePath');
 
         this.app.addDeployment({
-            resources: {
-                requests: { cpu: '100m', memory: '2Gi' },
-                limits: { cpu: '2000m', memory: '8Gi' },
-            },
-            image,
-            ports: [
-                { name: 'rpc', port: 8332, protocol: 'tcp' },
-                { name: 'p2p', port: 8333, protocol: 'tcp' },
-            ],
             command: command ? command.split(' ') : undefined,
             commandArgs: [
                 ...commandArgs.split(' ').filter(Boolean),
                 ...(reindex ? ['-reindex'] : []),
             ],
+            env: {
+                BITCOIN_DATA: volumePath,
+            },
+            image,
             initContainers: [
                 {
                     name: 'copy-config',
                     command: [
                         'sh',
                         '-c',
-                        `cp -v /conf/bitcoin.conf ${volumePath}/bitcoin.conf && cp -v /conf/rpc.conf ${volumePath}/rpc.conf`,
+                        `cp -v /conf/bitcoin.conf ${volumePath}/bitcoin.conf`,
                     ],
                     volumeMounts: [
                         { name: 'config', mountPath: '/conf', readOnly: true },
@@ -79,12 +72,20 @@ export class BitcoinKnots extends pulumi.ComponentResource {
                     ],
                 },
             ],
+            ports: [
+                { name: 'rpc', port: 8332, protocol: 'tcp' },
+                { name: 'p2p', port: 8333, protocol: 'tcp' },
+            ],
+            resources: {
+                requests: { cpu: '1000m', memory: '2Gi' },
+                limits: { cpu: '2000m', memory: '8Gi' },
+            },
             runAsUser,
-            volumeOwnerUserId,
             volumeMounts: [
                 { mountPath: volumePath },
                 { name: 'config', mountPath: '/conf', readOnly: true },
             ],
+            volumeOwnerUserId,
         });
     }
 }

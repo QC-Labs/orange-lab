@@ -4,7 +4,7 @@ import { RpcUser } from './rpc-user';
 
 function createRpc(rpcUsers: Record<string, RpcUser>): pulumi.Output<string> {
     const authLines = Object.values(rpcUsers).map(
-        user => pulumi.interpolate`rpcauth=${user.rpcAuth}`,
+        user => pulumi.interpolate`${user.rpcAuth}`,
     );
     return pulumi.all(authLines).apply(lines => lines.join('\n'));
 }
@@ -13,13 +13,11 @@ function create({
     prune,
     debug,
     externalIp,
-    includeconf,
     maxConnections,
 }: {
     prune: number;
     debug?: boolean;
     externalIp?: string;
-    includeconf: string;
     maxConnections: number;
 }): string {
     return `
@@ -50,7 +48,7 @@ rest=0
 rpcallowip=0.0.0.0/0
 rpcbind=0.0.0.0
 server=1
-includeconf=${includeconf}
+rpcauthfile=/conf/rpc.conf
 `;
 }
 
