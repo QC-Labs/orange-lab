@@ -31,7 +31,6 @@ function create({
 
     return `
 ${prune > 0 ? `prune=${prune.toString()}` : 'txindex=1'}
-blocksonly=0
 ${externalIp ? `externalip=${externalIp}` : ''}
 ${debug ? 'debug=all' : ''}
 ${debugExcludeLines}
@@ -41,7 +40,6 @@ listenonion=0
 maxconnections=${maxConnections.toString()}
 nodebuglogfile=1
 printtoconsole=1
-rest=0
 rpcallowip=0.0.0.0/0
 rpcbind=0.0.0.0
 server=1
