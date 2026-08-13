@@ -46,7 +46,7 @@ export class InitContainers {
         const paths = mountPaths.join(' ');
         return {
             name: 'fix-volume-permissions',
-            command: ['sh', '-c', `chown ${userId}:${userId} ${paths}`],
+            command: ['sh', '-c', `chown -R ${userId}:${userId} ${paths}`],
         };
     }
 
