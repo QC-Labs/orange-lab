@@ -16,7 +16,7 @@ if [ -z "$appName" ]; then
 fi
 
 while true; do
-  kubectl logs -f -l $label=$appName -n $namespace --all-containers=true --ignore-errors=true --pod-running-timeout=5m
+  kubectl logs -f -l $label=$appName -n $namespace --all-containers=true --ignore-errors=true --pod-running-timeout=5m --prefix=true
   echo "*** Connection lost *** Retrying in 5 seconds..."
   sleep 5
 done
