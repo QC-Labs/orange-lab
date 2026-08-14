@@ -33,9 +33,11 @@ pulumi up
 
 By default `btcpayserver/bitcoin` images are used. You can use custom docker images as well.
 
+Images can use different users for it's operations. You can add `runAsUser: 999` to avoid root permissions in the container and `volumeOwnerUserId: 999` to fix volume permissions by running `chown -R 1000:1000 /data` before start.
+
 ### bitcoin/bitcoin
 
-`bitcoin/bitcoin` runs as UID 1000. Unlike `btcpayserver/bitcoin`, it does not start as root and fix permissions automatically. Set both values to the same UID so the container can read and write `/data`:
+`bitcoin/bitcoin` runs as UID 1000. Set both values to the same UID so the container can read and write `/data`:
 
 ```sh
 # set custom image location
@@ -47,5 +49,3 @@ pulumi config set bitcoin-core:volumeOwnerUserId 1000
 # optional: override the command if the image has a non-standard ENTRYPOINT
 # pulumi config set bitcoin-core:command bitcoind
 ```
-
-If migrating from `btcpayserver/bitcoin`, your volume is likely owned by UID 999. To avoid re-downloading the chain, use `runAsUser: 999` and `volumeOwnerUserId: 999` instead, or run a one-time `chown -R 1000:1000 /data` on the volume.
