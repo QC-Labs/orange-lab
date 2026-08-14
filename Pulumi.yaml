@@ -61,7 +61,7 @@ config:
     ### Storage ###
 
     longhorn:enabled: false
-    longhorn:version: 1.12.0
+    longhorn:version: 1.12.1
     longhorn:hostname: longhorn
     # Initial value for default storage. Adjust each volume in Longhorn UI
     longhorn:replicaCount: 2
