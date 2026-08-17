@@ -34,7 +34,7 @@ sudo tailscale up \
 
 ## Firewall
 
-Setup firewall rules on k3s server and worker nodes:
+Fedora nodes run firewalld. Run these commands on the k3s server and each worker node (or copy-paste the equivalent [`scripts/firewall-fedora.sh`](../scripts/firewall-fedora.sh)):
 
 ```sh
 firewall-cmd --permanent --add-source=10.42.0.0/16 # Pods
@@ -42,8 +42,16 @@ firewall-cmd --permanent --add-source=10.43.0.0/16 # Services
 firewall-cmd --permanent --add-port=6443/tcp # API Server
 firewall-cmd --permanent --add-port=10250/tcp # Kubelet metrics
 firewall-cmd --permanent --add-port=41641/tcp # Tailscale UDP
+firewall-cmd --permanent --add-interface=tailscale0 # Pod traffic to tailnet addresses
 
-# (Optional) Used by apps
+systemctl reload firewalld
+```
+
+Binding `tailscale0` to the zone is required so firewalld allows forwarded pod traffic to tailnet addresses — without it, pods cannot reach other nodes' Tailscale IPs (e.g. metrics-server cannot scrape kubelets on remote nodes, coredns cannot reach Tailscale MagicDNS).
+
+(Optional) Ports used by apps, open them on the node where the app runs:
+
+```sh
 firewall-cmd --permanent --add-port=9100/tcp # Prometheus metrics
 firewall-cmd --permanent --add-port=45876/tcp # Beszel metrics
 firewall-cmd --permanent --add-port=53/tcp  # Technitium DNS Zone transfers, DNSSEC
