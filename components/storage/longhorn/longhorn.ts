@@ -109,7 +109,7 @@ export class Longhorn extends pulumi.ComponentResource {
                     replicaAutoBalance: config.require('longhorn', 'replicaAutoBalance'),
                     replicaDiskSoftAntiAffinity: 'true',
                     replicaReplenishmentWaitInterval: '900',
-                    replicaSoftAntiAffinity: 'false',
+                    replicaSoftAntiAffinity: 'true',
                     replicaZoneSoftAntiAffinity: 'true',
                     snapshotMaxCount: '10',
                     storageMinimalAvailablePercentage: '10',
