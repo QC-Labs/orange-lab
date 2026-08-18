@@ -59,8 +59,13 @@ config:
     open-webui:enabled: false
     open-webui:hostname: webui
     open-webui:storageSize: 5Gi
-    open-webui:DEFAULT_USER_ROLE: admin
+    open-webui:DEFAULT_USER_ROLE: user
     open-webui:image: ghcr.io/open-webui/open-webui:main-slim
+    # open-webui:debug: false
+    # open-webui:OAUTH_CLIENT_ID: CLIENT_ID
+    # open-webui:OAUTH_CLIENT_SECRET: CLIENT_SECRET
+    # open-webui:OPENID_PROVIDER_URL: https://pocket.example.com/.well-known/openid-configuration
+    # open-webui:OAUTH_PROVIDER_NAME: SSO
 
     kubeai:enabled: false
     kubeai:hostname: kubeai

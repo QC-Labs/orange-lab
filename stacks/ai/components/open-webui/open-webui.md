@@ -27,6 +27,44 @@ pulumi config set open-webui:version ""
 pulumi up
 ```
 
+## OpenID Connect (Pocket ID)
+
+OIDC login is optional. It is enabled when `OPENID_PROVIDER_URL` is configured. When enabled, `OAUTH_CLIENT_ID` and `OAUTH_CLIENT_SECRET` are required. If the provider URL is not configured, no OAuth environment variables are passed to Open WebUI. For the general client creation and customization workflow, see [Pocket ID: Using Pocket ID with Applications](../../../../components/security/pocket/pocket.md).
+
+### Pocket ID client
+
+Create the client in Pocket ID before deploying Open WebUI:
+
+| Field          | Value                                             |
+| -------------- | ------------------------------------------------- |
+| Name           | `Open WebUI`                                      |
+| Callback URL   | `<open-webui-url>/oauth/oidc/callback`           |
+| Launch URL     | `<open-webui-url>`                               |
+| Icon           | Optional; see [selfh.st/icons](https://selfh.st/icons/) |
+
+Replace `<open-webui-url>` with the public URL provided by the selected routing provider. For the current Traefik configuration, it is `https://webui.orangelab.space`.
+
+Copy the client ID and generate/copy the client secret. The secret is shown only once.
+
+### Pulumi configuration
+
+Set these values before the first Open WebUI deployment. The provider URL is the OIDC switch, so omit all three settings to leave OAuth disabled:
+
+```sh
+OPENID_PROVIDER_URL=$(pulumi stack output --json | jq -r '.security.endpoints.pocketOidc')
+
+pulumi --cwd stacks/ai config set open-webui:OAUTH_CLIENT_ID <client-id>
+pulumi --cwd stacks/ai config set open-webui:OAUTH_CLIENT_SECRET <client-secret> --secret
+pulumi --cwd stacks/ai config set open-webui:OPENID_PROVIDER_URL "$OPENID_PROVIDER_URL"
+
+# Optional: label the Open WebUI login button; defaults to "SSO".
+pulumi --cwd stacks/ai config set open-webui:OAUTH_PROVIDER_NAME "Pocket ID"
+
+pulumi --cwd stacks/ai up
+```
+
+When OIDC is enabled, the local login form, password authentication, and local signups are disabled. OAuth signup remains enabled so Pocket ID users can be provisioned in Open WebUI. Existing Open WebUI accounts are matched by email automatically.
+
 ## Backup and Restore
 
 After Open-WebUI is initialized, save the secret key to the config for backup restoration:
