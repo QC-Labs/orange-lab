@@ -74,11 +74,10 @@ Configure the application before its first `pulumi up` so OIDC is enabled during
 
 ### Provider URL
 
-The OIDC discovery URL is the Pocket ID endpoint with `/.well-known/openid-configuration` appended. Use the public Pocket ID endpoint exported by the root stack rather than constructing it from the routing provider:
+Use the complete OIDC discovery URL exported by the root stack:
 
 ```sh
-POCKET_URL=$(pulumi stack output --json | jq -r '.security.endpoints.pocket')
-printf '%s/.well-known/openid-configuration\n' "${POCKET_URL%/}"
+pulumi stack output --json | jq -r '.security.endpoints.pocketOidc'
 ```
 
 When an application already has user data, configure its account/user ID mapping before enabling automatic account creation so OIDC users match existing accounts instead of creating duplicates.

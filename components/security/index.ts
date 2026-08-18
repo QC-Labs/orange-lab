@@ -9,6 +9,7 @@ export class SecurityModule extends pulumi.ComponentResource {
         return {
             endpoints: {
                 ...this.pocket?.app.network.endpoints,
+                pocketOidc: this.pocket?.oidcProviderUrl,
             },
         };
     }
