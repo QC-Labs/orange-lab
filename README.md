@@ -119,6 +119,10 @@ More information about stacks in general at [Multi-Stack Deployment](./docs/stac
 - [`beszel`](./components/monitoring/beszel/beszel.md) - Beszel lightweight monitoring
 - [`prometheus`](./components/monitoring/prometheus/prometheus.md) - Prometheus/Grafana monitoring
 
+[Security](./components/security/SECURITY.md):
+
+- [`pocket-id`](./components/security/pocket/pocket.md) - OpenID Connect provider with passkey authentication
+
 ## Optional application stacks
 
 [Apps](./stacks/apps/README.md):

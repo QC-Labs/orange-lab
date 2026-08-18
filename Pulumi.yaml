@@ -135,3 +135,12 @@ config:
     beszel:agent/requiredNodeLabel: ''
     beszel:storageSize: 5Gi
     beszel:storageOnly: false
+
+    ### Security ###
+
+    pocket:enabled: false
+    pocket:hostname: pocket
+    pocket:image: pocketid/pocket-id:v2
+    pocket:storageSize: 1Gi
+    # pocket:encryptionKey:
+    #   secure: ENCRYPTION_KEY

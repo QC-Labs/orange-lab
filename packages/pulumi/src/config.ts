@@ -5,6 +5,7 @@ const moduleDependencies: Record<string, string[]> = {
     data: ['cloudnative-pg', 'mariadb-operator'],
     hardware: ['amd-gpu-operator', 'nfd', 'nvidia-gpu-operator'],
     monitoring: ['beszel', 'prometheus'],
+    security: ['pocket'],
 };
 
 class Config {

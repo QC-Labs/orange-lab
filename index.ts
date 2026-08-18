@@ -4,6 +4,7 @@ import { DataModule } from './components/data';
 import { HardwareModule } from './components/hardware';
 import { MonitoringModule } from './components/monitoring';
 import { NetworkModule } from './components/network';
+import { SecurityModule } from './components/security';
 import { StorageModule } from './components/storage';
 
 const networkModule = new NetworkModule('network');
@@ -32,6 +33,13 @@ if (config.isModuleEnabled('monitoring')) {
         dependsOn: baseModules,
     });
     exports.monitoring = monitoringModule.getExports();
+}
+
+if (config.isModuleEnabled('security')) {
+    const securityModule = new SecurityModule('security', {
+        dependsOn: baseModules,
+    });
+    exports.security = securityModule.getExports();
 }
 
 
