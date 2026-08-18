@@ -39,10 +39,11 @@ Create the client in Pocket ID before deploying Open WebUI:
 | -------------- | ------------------------------------------------- |
 | Name           | `Open WebUI`                                      |
 | Callback URL   | `<open-webui-url>/oauth/oidc/callback`           |
+| Logout callback URL | `<open-webui-url>`                            |
 | Launch URL     | `<open-webui-url>`                               |
 | Icon           | Optional; see [selfh.st/icons](https://selfh.st/icons/) |
 
-Replace `<open-webui-url>` with the public URL provided by the selected routing provider. For the current Traefik configuration, it is `https://webui.orangelab.space`.
+Replace `<open-webui-url>` with the public URL provided by the selected routing provider. For the current Traefik configuration, it is `https://webui.orangelab.space`. The logout callback URL must be registered in Pocket ID exactly as shown.
 
 Copy the client ID and generate/copy the client secret. The secret is shown only once.
 

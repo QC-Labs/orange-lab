@@ -80,6 +80,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
             env.OAUTH_PROVIDER_NAME = config.get(name, 'OAUTH_PROVIDER_NAME') ?? 'SSO';
             env.OAUTH_UPDATE_PICTURE_ON_LOGIN = 'True';
             env.OPENID_PROVIDER_URL = openidProviderUrl;
+            env.WEBUI_AUTH_SIGNOUT_REDIRECT_URL = httpEndpointInfo.url;
         }
 
         this.app.addDeployment({
