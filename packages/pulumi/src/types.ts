@@ -244,6 +244,17 @@ export interface HttpEndpointInfo {
 }
 
 /**
+ * Shape of the outputs exported by the core (orangelab) stack, consumed by
+ * module stacks via StackReference. Add fields as new cross-stack values are
+ * exported.
+ */
+export interface CoreStackExports {
+    security?: {
+        oidcProviderUrl?: string;
+    };
+}
+
+/**
  * Represents a routing provider that creates HTTP and TCP endpoints.
  */
 export interface RoutingProvider {

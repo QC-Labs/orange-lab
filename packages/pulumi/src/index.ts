@@ -1,4 +1,5 @@
 export { Application } from './application';
+export { coreStack } from './core-stack';
 export { config } from './config';
 export { GrafanaDashboard } from './grafana-dashboard';
 export { Metadata } from './metadata';
@@ -7,6 +8,7 @@ export {
     ConfigVolumeSpec,
     ContainerResources,
     ContainerSpec,
+    CoreStackExports,
     DatabaseConfig,
     DeviceMountSpec,
     GpuType,
