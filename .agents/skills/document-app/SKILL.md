@@ -12,7 +12,7 @@ Creates or updates the `<app>.md` documentation file for an application componen
 1. `# <App>` H1 — add `(experimental)` or `(deprecated)` suffix when applicable, matching the module's `README.md` component list
 2. Links table
 3. One-line description + optional integrations sentence linking to sibling component docs
-4. Installation code block (ends at `pulumi up`)
+4. TL;DR installation code block with the common working example (ends at `pulumi up`); if commands assume a stack directory, put one `cd stacks/<module>` on the first line only
 5. (Optional) `## Post-Installation` — first-launch setup steps
 6. (Optional) Other H2 sections as relevant (Prerequisites, Reset Password, Backup/Restore, app-specific)
 
@@ -54,6 +54,8 @@ Single `​`sh` block, ends at `pulumi up`. No `pulumi stack output` line for th
 
 Match the code-block heading convention used by sibling docs in the same module (the repo is inconsistent: `## Basic configuration`, `## Deployment`, `## Installation`, or no heading). Group under a named H2 only when the block grows beyond ~5 commands.
 
+Use short comments in code blocks to explain non-obvious command groups. Keep the pattern readable: comment, command(s), blank line, next comment. Do not repeat stack-directory `cd` commands in later blocks.
+
 Comment prefixes:
 - No prefix for required settings
 - `# (Recommended)` for settings most users should set
@@ -90,4 +92,7 @@ Before declaring done:
 ## Writing principles
 
 - **Derive, don't guess.** Config keys, env vars, output paths, and image names come from `.ts` files, `index.ts`, and `Pulumi.yaml`. Upstream URLs come from `webfetch`.
-- **Keep it tight.** Simple apps need only a table, one-line description, short code block, and optional post-install list. Show `pulumi config set ...`, not internal class names. Endpoint goes in the table, not the code block — retrieval is central in `docs/configuration.md`.
+- **Lead with the TL;DR.** Put the most likely working configuration in the first code block so users can scan the page and deploy without reading every section.
+- **Use scannable prose.** Prefer short paragraphs and flat bullet lists over long chains of semicolon-separated clauses.
+- **Keep the structure.** Retain useful sections such as Post-Installation, Backup and Restore, and Admin access when they apply.
+- **Keep it tight.** Prefer a table, one-line description, short example, and focused sections. Show `pulumi config set ...`, not internal class names. Endpoint goes in the table, not the code block — retrieval is central in `docs/configuration.md`.

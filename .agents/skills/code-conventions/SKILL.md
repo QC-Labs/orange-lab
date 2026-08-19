@@ -38,7 +38,7 @@ When a value from `Application` (like `this.app.debug`) is needed during chained
 - **Conditional requirements**: When a feature is enabled, all its related settings should typically be required — the `enabled` flag acts as the conditional gate
 - **Minimal config generation**: Only generate config files (ConfigMaps/Secrets) when a feature requiring them is enabled
 - **Derive don't duplicate**: Values that can be derived from existing resources (like URLs from `HttpEndpointInfo`) should be derived, not manually configured
-- **Naming**: Settings that map to container environment variables use the exact env var name (e.g. `DNS_SERVER_FORWARDERS` instead of `forwarders`)
+- **Naming**: Settings that map to container environment variables use the exact env var name (e.g. `DNS_SERVER_FORWARDERS` instead of `forwarders`). Exception: settings that are standardized across apps (shared semantics regardless of the app's env var name) use a generic namespace and the component maps them to the app-specific env var — e.g. `auth/clientId`, `auth/clientSecret`, `auth/providerUrl`, `auth/providerName` map to `OAUTH_CLIENT_ID`, `OAUTH_CLIENT_SECRET`, `OPENID_PROVIDER_URL`, `OAUTH_PROVIDER_NAME` in Open WebUI (and the equivalent vars in other apps). Use this only for genuinely cross-app settings, not for one-off app-specific knobs.
 
 ## Secrets
 
