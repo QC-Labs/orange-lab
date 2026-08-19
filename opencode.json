@@ -32,6 +32,7 @@
             "pulumi * --show-secrets *": "ask",
             "pulumi config": "allow",
             "pulumi preview *": "ask",
+            "pulumi stack output *": "allow",
             "pwd": "allow",
             "rg *": "allow",
             "sleep *": "allow",
