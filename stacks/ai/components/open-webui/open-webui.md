@@ -11,60 +11,82 @@
 User-friendly AI Interface supporting Ollama, OpenAI API, and other LLM backends.
 
 ```sh
+cd stacks/ai
+
 # Enable Open-WebUI
 pulumi config set open-webui:enabled true
 
-# Use GPU for local Whisper speech recognition (nvidia only)
-pulumi config set open-webui:gpu nvidia
-pulumi config set open-webui:image ghcr.io/open-webui/open-webui:cuda-slim
+# Reference the deployed core stack: organization/project/stack
+pulumi config set orangelab:coreStackRef example-org/orangelab/lab
 
-# Or use CPU-only image (default)
-pulumi config set open-webui:image ghcr.io/open-webui/open-webui:main-slim
-
-# Use latest Helm chart version instead of pinned default
-pulumi config set open-webui:version ""
-
+# Deploy
 pulumi up
 ```
 
 ## OpenID Connect (Pocket ID)
 
-OIDC login is optional. It is enabled when `OPENID_PROVIDER_URL` is configured. When enabled, `OAUTH_CLIENT_ID` and `OAUTH_CLIENT_SECRET` are required. If the provider URL is not configured, no OAuth environment variables are passed to Open WebUI. For the general client creation and customization workflow, see [Pocket ID: Using Pocket ID with Applications](../../../../components/security/pocket/pocket.md).
+OIDC is optional. The discovery URL is resolved automatically from the core stack.
 
-### Pocket ID client
+- The core stack must have Pocket ID enabled and deployed first.
+- The discovery URL comes from `security.oidcProviderUrl` through `orangelab:coreStackRef`.
+- Omit `open-webui:auth` to leave OAuth disabled.
+
+### Automated setup (Recommended)
+
+Run the generic Pocket ID client script from the AI stack directory:
+
+```sh
+# Set the core stack reference if it is not already configured
+pulumi config set orangelab:coreStackRef example-org/orangelab/lab
+
+# Create or refresh the Pocket ID client
+../../scripts/pocket-client.sh \
+  --app-name open-webui \
+  --client-name "Open WebUI" \
+  --launch-url https://webui.example.org \
+  --callback-path /oauth/oidc/callback \
+  --dark-icon-url https://cdn.jsdelivr.net/gh/selfhst/icons@main/webp/open-webui-dark.webp \
+  --light-icon-url https://cdn.jsdelivr.net/gh/selfhst/icons@main/webp/open-webui.webp
+```
+
+The script can be run before the first Open WebUI deployment as long as the public launch URL is known. It prints the client ID and secret commands. Run those commands, then run `pulumi up`.
+
+Existing clients are reused without rotating their secret. If the client was deleted, the script creates a new client and secret.
+
+### Manual setup
 
 Create the client in Pocket ID before deploying Open WebUI:
 
-| Field          | Value                                             |
-| -------------- | ------------------------------------------------- |
-| Name           | `Open WebUI`                                      |
-| Callback URL   | `<open-webui-url>/oauth/oidc/callback`           |
-| Logout callback URL | `<open-webui-url>`                            |
-| Launch URL     | `<open-webui-url>`                               |
-| Icon           | Optional; see [selfh.st/icons](https://selfh.st/icons/) |
+| Field               | Value                                                   |
+| ------------------- | ------------------------------------------------------- |
+| Name                | `Open WebUI`                                            |
+| Callback URL        | `<open-webui-url>/oauth/oidc/callback`                  |
+| Launch URL          | `<open-webui-url>`                                      |
+| Icon                | Optional; see [selfh.st/icons](https://selfh.st/icons/) |
 
-Replace `<open-webui-url>` with the public URL provided by the selected routing provider. For the current Traefik configuration, it is `https://webui.orangelab.space`. The logout callback URL must be registered in Pocket ID exactly as shown.
+Replace `<open-webui-url>` with the public URL provided by the selected routing provider. For the current Traefik configuration, it is `https://webui.orangelab.space`.
 
 Copy the client ID and generate/copy the client secret. The secret is shown only once.
 
-### Pulumi configuration
-
-Set these values before the first Open WebUI deployment. The provider URL is the OIDC switch, so omit all three settings to leave OAuth disabled:
+Set the client values in the AI stack:
 
 ```sh
-OPENID_PROVIDER_URL=$(pulumi stack output --json | jq -r '.security.endpoints.pocketOidc')
+pulumi config set open-webui:auth pocket
+pulumi config set open-webui:auth/clientId <client-id>
+pulumi config set open-webui:auth/clientSecret <client-secret> --secret
 
-pulumi --cwd stacks/ai config set open-webui:OAUTH_CLIENT_ID <client-id>
-pulumi --cwd stacks/ai config set open-webui:OAUTH_CLIENT_SECRET <client-secret> --secret
-pulumi --cwd stacks/ai config set open-webui:OPENID_PROVIDER_URL "$OPENID_PROVIDER_URL"
+# Optional: change the login label or override the discovery URL
+pulumi config set open-webui:auth/providerName "Pocket ID"
+# pulumi config set open-webui:auth/providerUrl https://pocket.example.com/.well-known/openid-configuration
 
-# Optional: label the Open WebUI login button; defaults to "SSO".
-pulumi --cwd stacks/ai config set open-webui:OAUTH_PROVIDER_NAME "Pocket ID"
-
-pulumi --cwd stacks/ai up
+pulumi up
 ```
 
-When OIDC is enabled, the local login form, password authentication, and local signups are disabled. OAuth signup remains enabled so Pocket ID users can be provisioned in Open WebUI. Existing Open WebUI accounts are matched by email automatically.
+When OIDC is enabled:
+
+- The local login form, password authentication, and local signups are disabled.
+- OAuth signup remains enabled so Pocket ID users can be provisioned in Open WebUI.
+- Existing Open WebUI accounts are matched by email automatically.
 
 ## Backup and Restore
 

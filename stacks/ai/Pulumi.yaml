@@ -10,6 +10,7 @@ config:
     # Required shared defaults (duplicated from root Pulumi.yaml)
     # orangelab:routingProvider: tailscale | traefik
     # orangelab:customDomain: 'example.com'
+    # orangelab:coreStackRef: <organization/project/stack>
     prometheus:enabled: false
     prometheus:enableComponentMonitoring: false
     cloudnative-pg:enabled: false
@@ -62,10 +63,13 @@ config:
     open-webui:DEFAULT_USER_ROLE: user
     open-webui:image: ghcr.io/open-webui/open-webui:main-slim
     # open-webui:debug: false
-    # open-webui:OAUTH_CLIENT_ID: CLIENT_ID
-    # open-webui:OAUTH_CLIENT_SECRET: CLIENT_SECRET
-    # open-webui:OPENID_PROVIDER_URL: https://pocket.example.com/.well-known/openid-configuration
-    # open-webui:OAUTH_PROVIDER_NAME: SSO
+    # OIDC (OAuth) login. Set open-webui:auth to an OIDC provider to enable (currently: pocket).
+    # Requires orangelab:coreStackRef pointing at a core stack with the provider enabled.
+    # open-webui:auth: pocket
+    # open-webui:auth/clientId: CLIENT_ID
+    # open-webui:auth/clientSecret: CLIENT_SECRET
+    # open-webui:auth/providerUrl: https://pocket.example.com/.well-known/openid-configuration  # optional override; defaults to the core stack's provider export
+    # open-webui:auth/providerName: SSO  # optional; label the login button, defaults to "SSO"
 
     kubeai:enabled: false
     kubeai:hostname: kubeai
