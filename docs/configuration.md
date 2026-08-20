@@ -8,6 +8,43 @@ After system components have been deployed, you can add any of the optional appl
 
 All available settings can be found in `Pulumi.yaml` (or `stacks/*/Pulumi.yaml`). Override defaults with `pulumi config` or by directly modifying `Pulumi.<stack>.yaml`.
 
+## Core Stack Reference
+
+Module stacks use `orangelab:coreStackRef` to reference the deployed core
+stack. The reference is a fully qualified Pulumi stack name in the form
+`organization/project/stack` and allows applications to consume shared core
+outputs, including the Pocket ID OIDC provider URL.
+
+Configure it in each module stack before deploying applications that depend on
+core outputs:
+
+```sh
+# From the core stack directory, list the stack and its Pulumi Cloud URL
+cd /
+pulumi stack ls
+# Use the organization/project/stack path from the URL column
+# Example URL: https://app.pulumi.com/example-org/orangelab/lab
+
+cd stacks/<module>
+
+# Use the value printed above
+pulumi config set orangelab:coreStackRef example-org/orangelab/lab
+```
+
+The referenced core stack must be deployed first. For example, applications
+using Pocket ID authentication need this reference before their first
+`pulumi up`, together with their OIDC client configuration:
+
+```sh
+pulumi config set <app>:auth pocket
+pulumi config set <app>:auth/clientId <client-id>
+pulumi config set <app>:auth/clientSecret <client-secret> --secret
+pulumi up
+```
+
+The reference is optional for applications that do not consume core stack
+outputs.
+
 ```sh
 # enable app
 pulumi config set <app>:enabled true

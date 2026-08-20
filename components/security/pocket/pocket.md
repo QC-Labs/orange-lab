@@ -69,9 +69,15 @@ Deploy the core stack first, then configure every application module stack to
 reference it:
 
 ```sh
+# From the core stack directory, list the stack and its Pulumi Cloud URL
+cd /
+pulumi stack ls
+# Use the organization/project/stack path from the URL column
+# Example URL: https://app.pulumi.com/example-org/orangelab/lab
+
 cd stacks/<module>
 
-# Reference the deployed core stack: organization/project/stack
+# Use the value printed above
 pulumi config set orangelab:coreStackRef example-org/orangelab/lab
 ```
 

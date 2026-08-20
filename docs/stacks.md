@@ -31,6 +31,30 @@ Core must include:
 - [Storage](./components/storage/STORAGE.md) — Longhorn or local-path storage class
 - [Data](./components/data/DATA.md) — database operators if apps need them
 
+Each module stack must reference the deployed core stack so it can consume shared
+outputs such as the Pocket ID OIDC provider URL:
+
+```sh
+# From the core stack directory, list the stack and its Pulumi Cloud URL
+cd /
+pulumi stack ls
+# Use the organization/project/stack path from the URL column
+# Example URL: https://app.pulumi.com/example-org/orangelab/lab
+
+cd stacks/<module>
+
+# Use the value printed above
+pulumi config set orangelab:coreStackRef example-org/orangelab/lab
+```
+
+The value must identify the deployed core stack in
+`organization/project/stack` form. The same value can be checked with
+`pulumi stack ls` from the core stack directory.
+
+The referenced core stack must already exist and be deployed. Set this value
+before deploying applications that depend on core outputs, including applications
+configured with `orangelab:coreStackRef`-based OIDC authentication.
+
 ## Deploying a Module Stack
 
 ### Example: Media Stack
@@ -44,6 +68,7 @@ pulumi stack init <stack> # f.e. lab
 # Configure shared settings (copy from core stack overrides)
 pulumi config set orangelab:routingProvider traefik
 pulumi config set orangelab:customDomain example.com
+pulumi config set orangelab:coreStackRef example-org/orangelab/lab
 
 # Enable media applications
 pulumi config set jellyfin:enabled true
@@ -76,6 +101,7 @@ Shared and module dependency config keys:
 |-------------------------------|--------------------------|------------------------------------------|
 | `orangelab:routingProvider`   | `traefik` or `tailscale` | Ingress/routing                          |
 | `orangelab:customDomain`      | `example.com`            | Traefik domain                           |
+| `orangelab:coreStackRef`      | `organization/project/stack` | Reference to the deployed core stack and its shared outputs |
 | `longhorn:backupEnabled`      | `false`                  | Enable Longhorn backup jobs              |
 | `longhorn:backupAllVolumes`   | `false`                  | Back up all application volumes by default |
 | `mariadb-operator:enabled`   | `false`                  | Enable MariaDB for dependent applications |
@@ -119,10 +145,11 @@ To move a module from the monolithic core stack to its own stack:
     # select stack as active
     pulumi stack select lab
 
-    # Copy shared settings from root Pulumi.lab.yaml
-    pulumi config set orangelab:routingProvider traefik
-    pulumi config set orangelab:customDomain example.com
-    pulumi config set mariadb-operator:enabled true
+     # Copy shared settings from root Pulumi.lab.yaml
+     pulumi config set orangelab:routingProvider traefik
+     pulumi config set orangelab:customDomain example.com
+     pulumi config set orangelab:coreStackRef example-org/orangelab/lab
+     pulumi config set mariadb-operator:enabled true
 
     # Copy app overrides from root Pulumi.lab.yaml
     # Secrets must be re-set because each stack has its own encryption key
