@@ -15,8 +15,7 @@ config:
     prometheus:enableComponentMonitoring: false
     cloudnative-pg:enabled: false
     mariadb-operator:enabled: false
-    longhorn:backupEnabled: false
-    longhorn:backupAllVolumes: false
+    # longhorn:backupAllVolumes: false # read from the core stack by default
 
     ollama:enabled: false
     ollama:hostname: ollama

@@ -12,6 +12,11 @@ exports.network = networkModule.getExports();
 
 const storageModule = new StorageModule('storage', { dependsOn: networkModule });
 exports.storage = storageModule.getExports();
+exports.config = {
+    longhorn: {
+        backupAllVolumes: config.getBoolean('longhorn', 'backupAllVolumes') ?? false,
+    },
+};
 
 const dataModule = config.isModuleEnabled('data')
     ? new DataModule('data', { dependsOn: [networkModule, storageModule] })
@@ -41,5 +46,4 @@ if (config.isModuleEnabled('security')) {
     });
     exports.security = securityModule.getExports();
 }
-
 

@@ -14,6 +14,7 @@ import { CoreStackExports } from './types';
 export class CoreStack {
     private readonly ref?: pulumi.StackReference;
     readonly outputs: {
+        config?: pulumi.Output<CoreStackExports['config']>;
         security?: pulumi.Output<CoreStackExports['security']>;
     };
 
@@ -21,6 +22,11 @@ export class CoreStack {
         const name = config.get('orangelab', 'coreStackRef');
         this.ref = name ? new pulumi.StackReference('core', { name }) : undefined;
         this.outputs = {
+            config: this.ref
+                ? (this.ref.getOutput('config') as pulumi.Output<
+                      CoreStackExports['config']
+                  >)
+                : undefined,
             security: this.ref
                 ? (this.ref.getOutput('security') as pulumi.Output<
                       CoreStackExports['security']

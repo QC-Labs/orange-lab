@@ -25,12 +25,6 @@ class Config {
         return this.getBoolean(name, 'enabled') ?? false;
     }
 
-    public isBackupEnabled(appName: string, volumeName?: string): boolean {
-        const volumePrefix = volumeName ? `${volumeName}/` : '';
-        const appSetting = this.getBoolean(appName, `${volumePrefix}backupVolume`);
-        return appSetting ?? this.getBoolean('longhorn', 'backupAllVolumes') ?? false;
-    }
-
     public enableMonitoring() {
         const prometheusEnabled = this.getBoolean('prometheus', 'enabled') ?? false;
         const componentsEnabled =

@@ -12,8 +12,7 @@ config:
     # orangelab:customDomain: 'example.com'
     mariadb-operator:enabled: false
     cloudnative-pg:enabled: false
-    longhorn:backupEnabled: false
-    longhorn:backupAllVolumes: false
+    # longhorn:backupAllVolumes: false # read from the core stack by default
 
     # Default RPC users that will be created (comma-separated)
     bitcoin:rpcUsers: admin,electrs,mempool

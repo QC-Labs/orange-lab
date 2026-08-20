@@ -12,8 +12,7 @@ config:
     # orangelab:customDomain: 'example.com'
     mariadb-operator:enabled: false
     cloudnative-pg:enabled: false
-    longhorn:backupEnabled: false
-    longhorn:backupAllVolumes: false
+    # longhorn:backupAllVolumes: false # read from the core stack by default
     orangelab:redis/image: docker.io/redis:8-alpine
 
     vaultwarden:enabled: false

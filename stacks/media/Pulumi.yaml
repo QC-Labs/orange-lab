@@ -11,8 +11,7 @@ config:
     # orangelab:routingProvider: tailscale | traefik
     # orangelab:customDomain: 'example.com'
     cloudnative-pg:enabled: false
-    longhorn:backupEnabled: false
-    longhorn:backupAllVolumes: false
+    # longhorn:backupAllVolumes: false # read from the core stack by default
 
     ### Media ###
 

@@ -21,9 +21,9 @@ interface LonghornVolumeArgs {
      */
     fromVolume?: string;
     /**
-     * Enable automated backups for volume by adding it to "backup" group
+     * Enable automated backups for volume by adding it to "backup" group.
      */
-    enableBackup?: boolean;
+    enableBackup?: pulumi.Input<boolean>;
     /**
      * Labels to apply to the PVC
      */
@@ -141,14 +141,20 @@ export class LonghornVolume extends pulumi.ComponentResource {
         volumeName?: pulumi.Output<string>;
         storageClassName: pulumi.Output<string> | string;
     }) {
-        const labels = { ...(this.args.labels ?? {}) };
+        const labels = pulumi
+            .output(this.args.enableBackup ?? false)
+            .apply(enabled => {
+                const labels = { ...(this.args.labels ?? {}) };
 
-        labels['recurring-job.longhorn.io/source'] = 'enabled';
-        labels['recurring-job-group.longhorn.io/default'] = 'enabled';
+                labels['recurring-job.longhorn.io/source'] = 'enabled';
+                labels['recurring-job-group.longhorn.io/default'] = 'enabled';
 
-        if (this.args.enableBackup) {
-            labels['recurring-job-group.longhorn.io/backup'] = 'enabled';
-        }
+                if (enabled) {
+                    labels['recurring-job-group.longhorn.io/backup'] = 'enabled';
+                }
+
+                return labels;
+            });
 
         return new kubernetes.core.v1.PersistentVolumeClaim(
             `${this.name}-pvc`,

@@ -249,6 +249,11 @@ export interface HttpEndpointInfo {
  * exported.
  */
 export interface CoreStackExports {
+    config?: {
+        longhorn?: {
+            backupAllVolumes?: boolean;
+        };
+    };
     security?: {
         oidcProviderUrl?: string;
     };

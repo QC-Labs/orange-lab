@@ -102,16 +102,14 @@ Shared and module dependency config keys:
 | `orangelab:routingProvider`   | `traefik` or `tailscale` | Ingress/routing                          |
 | `orangelab:customDomain`      | `example.com`            | Traefik domain                           |
 | `orangelab:coreStackRef`      | `organization/project/stack` | Reference to the deployed core stack and its shared outputs |
-| `longhorn:backupEnabled`      | `false`                  | Enable Longhorn backup jobs              |
-| `longhorn:backupAllVolumes`   | `false`                  | Back up all application volumes by default |
+| `longhorn:backupAllVolumes`   | `false`                  | Back up all application volumes by default; inherited from the core stack |
 | `mariadb-operator:enabled`   | `false`                  | Enable MariaDB for dependent applications |
 | `cloudnative-pg:enabled`     | `false`                  | Enable PostgreSQL for dependent applications |
 
-The routing keys must be configured in every module stack. The Longhorn backup
-defaults are defined in every `stacks/*/Pulumi.yaml`; keep both set to `false`
-unless backups have been configured for that stack. Enable them separately in
-each stack that should use backups. Individual applications can override
-`backupAllVolumes` with their `<app>:backupVolume` setting.
+The routing keys must be configured in every module stack. The backup policy is
+read from the core stack when `orangelab:coreStackRef` is configured. Set
+`longhorn:backupAllVolumes` in a module stack to override the core policy.
+Individual applications can override it with their `<app>:backupVolume` setting.
 
 Database operator settings are module dependencies and are included only in
 stacks with applications that use them. Keep them disabled unless an
