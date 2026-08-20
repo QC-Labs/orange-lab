@@ -2,6 +2,7 @@ import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
 import assert from 'node:assert';
+import { Auth } from './auth';
 import { config } from './config';
 import { Databases } from './databases';
 import { Metadata } from './metadata';
@@ -29,6 +30,7 @@ export class Application {
     readonly metadata: Metadata;
     readonly nodes: Nodes;
     readonly network: Network;
+    readonly auth: Auth;
     readonly debug: boolean;
     databases?: Databases;
     storage?: Storage;
@@ -46,6 +48,7 @@ export class Application {
         this.processDeprecated();
         this.storageOnly = config.getBoolean(appName, 'storageOnly') ?? false;
         this.debug = config.getBoolean(appName, 'debug') ?? false;
+        this.auth = new Auth(appName);
         this.metadata = new Metadata(
             appName,
             {

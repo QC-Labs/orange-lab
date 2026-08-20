@@ -1,4 +1,5 @@
 export { Application } from './application';
+export { Auth, OidcAuthConfig, OidcProvider } from './auth';
 export { coreStack } from './core-stack';
 export { config } from './config';
 export { GrafanaDashboard } from './grafana-dashboard';
