@@ -13,6 +13,7 @@ exports.network = networkModule.getExports();
 const storageModule = new StorageModule('storage', { dependsOn: networkModule });
 exports.storage = storageModule.getExports();
 exports.config = {
+    customDomain: config.get('orangelab', 'customDomain'),
     longhorn: {
         backupAllVolumes: config.getBoolean('longhorn', 'backupAllVolumes') ?? false,
     },
@@ -46,4 +47,3 @@ if (config.isModuleEnabled('security')) {
     });
     exports.security = securityModule.getExports();
 }
-

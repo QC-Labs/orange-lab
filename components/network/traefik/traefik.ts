@@ -183,7 +183,7 @@ export class Traefik extends pulumi.ComponentResource {
                     entryPoints: ['websecure'],
                     routes: [
                         {
-                            match: `Host(\`${httpEndpointInfo.hostname}\`)`,
+                            match: pulumi.interpolate`Host(\`${httpEndpointInfo.hostname}\`)`,
                             kind: 'Rule',
                             services: [{ name: 'api@internal', kind: 'TraefikService' }],
                         },

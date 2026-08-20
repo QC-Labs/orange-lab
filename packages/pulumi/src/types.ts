@@ -231,11 +231,11 @@ export interface S3Provisioner {
 export interface HttpEndpointInfo {
     className: string;
     host: string;
-    hostname: string;
-    url: string;
+    hostname: pulumi.Input<string>;
+    url: pulumi.Input<string>;
     tls: boolean;
     tlsSecretName?: string;
-    domain: string;
+    domain: pulumi.Input<string>;
     gatewayRef?: {
         name: string;
         namespace: string;
@@ -250,6 +250,7 @@ export interface HttpEndpointInfo {
  */
 export interface CoreStackExports {
     config?: {
+        customDomain?: string;
         longhorn?: {
             backupAllVolumes?: boolean;
         };

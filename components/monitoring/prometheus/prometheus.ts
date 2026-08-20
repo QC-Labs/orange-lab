@@ -3,9 +3,9 @@ import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
 
 export class Prometheus extends pulumi.ComponentResource {
-    public readonly alertmanagerEndpointUrl: string | undefined;
-    public readonly prometheusEndpointUrl: string | undefined;
-    public readonly grafanaEndpointUrl: string | undefined;
+    public readonly alertmanagerEndpointUrl?: pulumi.Input<string>;
+    public readonly prometheusEndpointUrl?: pulumi.Input<string>;
+    public readonly grafanaEndpointUrl?: pulumi.Input<string>;
     public readonly grafanaPassword: pulumi.Output<string>;
 
     private readonly nodes: Nodes;

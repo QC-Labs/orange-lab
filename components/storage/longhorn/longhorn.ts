@@ -14,7 +14,7 @@ export interface LonghornArgs {
 }
 
 export class Longhorn extends pulumi.ComponentResource {
-    public readonly endpointUrl: string | undefined;
+    public readonly endpointUrl?: pulumi.Input<string>;
 
     private readonly app: Application;
     private readonly chart: kubernetes.helm.v3.Release;

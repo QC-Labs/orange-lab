@@ -125,7 +125,9 @@ pulumi config set prometheus:routingProvider tailscale
 pulumi config set nextcloud:routingProvider traefik
 ```
 
-When using `traefik`, ensure `orangelab:customDomain` is set. When using `tailscale`, ensure `tailscale:tailnet` is set.
+When using `traefik`, ensure `orangelab:customDomain` is set in the current
+stack or inherited from a deployed core stack via `orangelab:coreStackRef`.
+When using `tailscale`, ensure `tailscale:tailnet` is set.
 
 ### Version Pinning
 

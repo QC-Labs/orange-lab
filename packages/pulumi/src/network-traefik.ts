@@ -1,27 +1,28 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { config } from './config';
+import { coreStack } from './core-stack';
 import { Metadata } from './metadata';
 import { HttpEndpointInfo, RoutingProvider, ServicePort } from './types';
 
 export class TraefikNetwork implements RoutingProvider {
     endpoints: Record<string, pulumi.Input<string>> = {};
-    customDomain: string;
+    customDomain: pulumi.Input<string>;
 
     constructor(
         private appName: string,
         private args: { metadata: Metadata },
         private opts?: pulumi.ComponentResourceOptions,
     ) {
-        this.customDomain = config.require('orangelab', 'customDomain');
+        this.customDomain = this.resolveCustomDomain();
     }
 
     getHttpEndpointInfo(hostname: string): HttpEndpointInfo {
         return {
             className: 'traefik',
             host: hostname,
-            hostname: `${hostname}.${this.customDomain}`,
-            url: `https://${hostname}.${this.customDomain}`,
+            hostname: pulumi.interpolate`${hostname}.${this.customDomain}`,
+            url: pulumi.interpolate`https://${hostname}.${this.customDomain}`,
             tls: true,
             tlsSecretName: `${hostname}-tls-secret`,
             domain: this.customDomain,
@@ -57,7 +58,7 @@ export class TraefikNetwork implements RoutingProvider {
     }
 
     private createHttpRoute(params: {
-        hostname: string;
+        hostname: pulumi.Input<string>;
         componentName: string;
         serviceName: pulumi.Input<string>;
         servicePort: number;
@@ -106,7 +107,7 @@ export class TraefikNetwork implements RoutingProvider {
             component: params.component,
             tlsPorts: params.tcpPorts.filter(p => p.protocol === 'tls'),
             serviceName: params.serviceName,
-            hostname: `${params.hostname}.${this.customDomain}`,
+            hostname: pulumi.interpolate`${params.hostname}.${this.customDomain}`,
         });
         this.createInternalLoadBalancer({
             component: params.component,
@@ -119,7 +120,7 @@ export class TraefikNetwork implements RoutingProvider {
         this.exportTcpEndpoints({
             component: params.component,
             tcpPorts: params.tcpPorts,
-            hostname: `${params.hostname}.${this.customDomain}`,
+            hostname: pulumi.interpolate`${params.hostname}.${this.customDomain}`,
         });
     }
 
@@ -127,7 +128,7 @@ export class TraefikNetwork implements RoutingProvider {
         component?: string;
         tlsPorts: ServicePort[];
         serviceName: pulumi.Input<string>;
-        hostname: string;
+        hostname: pulumi.Input<string>;
     }): void {
         const metadata = this.args.metadata.get({ component: params.component });
         params.tlsPorts.forEach(port => {
@@ -224,7 +225,7 @@ export class TraefikNetwork implements RoutingProvider {
     private exportTcpEndpoints(params: {
         component?: string;
         tcpPorts: ServicePort[];
-        hostname: string;
+        hostname: pulumi.Input<string>;
     }): void {
         params.tcpPorts.forEach(port => {
             const key = this.getEndpointKey({
@@ -246,5 +247,25 @@ export class TraefikNetwork implements RoutingProvider {
         ]
             .filter(Boolean)
             .join('-');
+    }
+
+    private resolveCustomDomain(): pulumi.Input<string> {
+        const localDomain = config.get('orangelab', 'customDomain');
+        if (localDomain) return localDomain;
+
+        if (!coreStack.outputs.config) {
+            throw new Error(
+                `${this.appName}: set orangelab:customDomain or configure ` +
+                    'orangelab:coreStackRef',
+            );
+        }
+
+        return coreStack.outputs.config.apply(coreConfig => {
+            const domain = coreConfig?.customDomain;
+            if (!domain) {
+                throw new Error('Core stack output config.customDomain is required');
+            }
+            return domain;
+        });
     }
 }

@@ -12,7 +12,7 @@ export interface HomeAssistantArgs {
 }
 
 export class HomeAssistant extends pulumi.ComponentResource {
-    public readonly endpointUrl: string | undefined;
+    public readonly endpointUrl?: pulumi.Input<string>;
 
     constructor(name: string, args: HomeAssistantArgs, opts?: pulumi.ResourceOptions) {
         super('orangelab:iot:HomeAssistant', name, args, opts);

@@ -2,7 +2,7 @@ import { Application, config, HttpEndpointInfo } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 
 export class Ollama extends pulumi.ComponentResource {
-    public readonly endpointUrl?: string;
+    public readonly endpointUrl?: pulumi.Input<string>;
     public readonly serviceUrl?: string;
 
     private readonly app: Application;

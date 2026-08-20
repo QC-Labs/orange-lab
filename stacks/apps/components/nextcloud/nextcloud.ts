@@ -3,7 +3,7 @@ import * as k8s from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 
 export class Nextcloud extends pulumi.ComponentResource {
-    public readonly serviceUrl?: string;
+    public readonly serviceUrl?: pulumi.Input<string>;
     public readonly app: Application;
     public readonly users: Record<string, pulumi.Output<string>> = {};
     public readonly dbConfig?: DatabaseConfig;

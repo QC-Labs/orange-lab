@@ -65,9 +65,8 @@ cd stacks/media
 # Initialize the stack
 pulumi stack init <stack> # f.e. lab
 
-# Configure shared settings (copy from core stack overrides)
+# Configure shared settings. customDomain can be inherited from the core stack.
 pulumi config set orangelab:routingProvider traefik
-pulumi config set orangelab:customDomain example.com
 pulumi config set orangelab:coreStackRef example-org/orangelab/lab
 
 # Enable media applications
@@ -100,14 +99,15 @@ Shared and module dependency config keys:
 | Key                           | Example                  | Purpose                                  |
 |-------------------------------|--------------------------|------------------------------------------|
 | `orangelab:routingProvider`   | `traefik` or `tailscale` | Ingress/routing                          |
-| `orangelab:customDomain`      | `example.com`            | Traefik domain                           |
+| `orangelab:customDomain`      | `example.com`            | Traefik domain; inherited from core when omitted |
 | `orangelab:coreStackRef`      | `organization/project/stack` | Reference to the deployed core stack and its shared outputs |
 | `longhorn:backupAllVolumes`   | `false`                  | Back up all application volumes by default; inherited from the core stack |
 | `mariadb-operator:enabled`   | `false`                  | Enable MariaDB for dependent applications |
 | `cloudnative-pg:enabled`     | `false`                  | Enable PostgreSQL for dependent applications |
 
-The routing keys must be configured in every module stack. The backup policy is
-read from the core stack when `orangelab:coreStackRef` is configured. Set
+`orangelab:routingProvider` must be configured in every module stack. The
+Traefik domain and backup policy are read from the core stack when
+`orangelab:coreStackRef` is configured. Set
 `longhorn:backupAllVolumes` in a module stack to override the core policy.
 Individual applications can override it with their `<app>:backupVolume` setting.
 

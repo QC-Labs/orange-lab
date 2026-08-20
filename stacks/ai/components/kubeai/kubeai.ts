@@ -3,7 +3,7 @@ import * as pulumi from '@pulumi/pulumi';
 import dashboardJson from './kubeai-dashboard-vllm.json';
 
 export class KubeAi extends pulumi.ComponentResource {
-    public readonly endpointUrl: string | undefined;
+    public readonly endpointUrl?: pulumi.Input<string>;
     public readonly serviceUrl: string | undefined;
 
     private readonly app: Application;

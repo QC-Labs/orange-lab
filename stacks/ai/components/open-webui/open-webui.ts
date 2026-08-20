@@ -8,7 +8,7 @@ export interface OpenWebUIArgs {
 }
 
 export class OpenWebUI extends pulumi.ComponentResource {
-    public readonly endpointUrl: string | undefined;
+    public readonly endpointUrl?: pulumi.Input<string>;
     public readonly secretKey: pulumi.Output<string>;
     private readonly app: Application;
 
@@ -46,7 +46,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
     }
 
     private getEnvironment(
-        endpointUrl: string,
+        endpointUrl: pulumi.Input<string>,
         isTailscale: boolean,
         auth: OidcAuthConfig | undefined,
     ): Record<string, pulumi.Input<string> | undefined> {
@@ -95,7 +95,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
     private addOidcEnvironment(
         env: Record<string, pulumi.Input<string> | undefined>,
         auth: OidcAuthConfig,
-        endpointUrl: string,
+        endpointUrl: pulumi.Input<string>,
     ): void {
         if (auth.providerUrl === undefined) {
             throw new Error(

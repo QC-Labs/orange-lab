@@ -2,7 +2,7 @@ import { Application, config } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 
 export class Technitium extends pulumi.ComponentResource {
-    public readonly endpointUrl: string;
+    public readonly endpointUrl: pulumi.Input<string>;
     public readonly users: Record<string, pulumi.Output<string>> = {};
 
     private readonly app: Application;

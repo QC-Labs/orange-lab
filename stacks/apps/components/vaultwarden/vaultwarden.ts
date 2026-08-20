@@ -6,7 +6,7 @@ import { VaultwardenToken } from './vaultwarden-token';
 export class Vaultwarden extends pulumi.ComponentResource {
     public readonly app: Application;
     public readonly adminToken?: pulumi.Output<string>;
-    public readonly serviceUrl?: string;
+    public readonly serviceUrl?: pulumi.Input<string>;
 
     constructor(
         private appName: string,
