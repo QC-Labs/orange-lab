@@ -36,4 +36,28 @@ export class CoreStack {
     }
 }
 
+/**
+ * Resolves a setting from the referenced core stack.
+ *
+ * A configured core stack reference and a defined value in its `config` output
+ * are both required.
+ */
+export function resolveInherited<T>(args: {
+    settingName: string;
+    coreValue: pulumi.Output<T | undefined> | undefined;
+}): pulumi.Output<T> {
+    if (!args.coreValue) {
+        throw new Error(
+            `orangelab:coreStackRef is required to inherit ${args.settingName}`,
+        );
+    }
+
+    return args.coreValue.apply((value): T => {
+        if (value === undefined) {
+            throw new Error(`Core stack output config.${args.settingName} is required`);
+        }
+        return value;
+    });
+}
+
 export const coreStack = new CoreStack();

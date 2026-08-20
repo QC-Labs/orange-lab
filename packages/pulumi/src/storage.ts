@@ -4,7 +4,7 @@ import * as pulumi from '@pulumi/pulumi';
 import * as crypto from 'crypto';
 import assert from 'node:assert';
 import { config } from './config';
-import { coreStack } from './core-stack';
+import { coreStack, resolveInherited } from './core-stack';
 import { LocalVolume } from './local-volume';
 import { LonghornVolume } from './longhorn-volume';
 import { Metadata } from './metadata';
@@ -164,30 +164,16 @@ export class Storage extends pulumi.ComponentResource {
 
     private resolveBackupEnabled(volumeName?: string): pulumi.Input<boolean> {
         const prefix = volumeName ? `${volumeName}/` : '';
-        const backupOverride =
+        const localBackupValue =
             config.getBoolean(this.appName, `${prefix}backupVolume`) ??
             config.getBoolean('longhorn', 'backupAllVolumes');
+        if (localBackupValue !== undefined) return localBackupValue;
 
-        if (backupOverride !== undefined) {
-            return backupOverride;
-        }
-
-        if (!coreStack.outputs.config) {
-            throw new Error(
-                `${this.appName}: set orangelab:coreStackRef or configure ` +
-                    `${this.appName}:${prefix}backupVolume or ` +
-                    'longhorn:backupAllVolumes',
-            );
-        }
-
-        return coreStack.outputs.config.apply(coreConfig => {
-            const value = coreConfig?.longhorn?.backupAllVolumes;
-            if (value === undefined) {
-                throw new Error(
-                    'Core stack output config.longhorn.backupAllVolumes is required',
-                );
-            }
-            return value;
+        return resolveInherited({
+            settingName: 'longhorn.backupAllVolumes',
+            coreValue: coreStack.outputs.config?.apply(
+                coreConfig => coreConfig?.longhorn?.backupAllVolumes,
+            ),
         });
     }
 

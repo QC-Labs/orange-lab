@@ -1,7 +1,7 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { config } from './config';
-import { coreStack } from './core-stack';
+import { coreStack, resolveInherited } from './core-stack';
 import { Metadata } from './metadata';
 import { HttpEndpointInfo, RoutingProvider, ServicePort } from './types';
 
@@ -251,21 +251,11 @@ export class TraefikNetwork implements RoutingProvider {
 
     private resolveCustomDomain(): pulumi.Input<string> {
         const localDomain = config.get('orangelab', 'customDomain');
-        if (localDomain) return localDomain;
+        if (localDomain !== undefined) return localDomain;
 
-        if (!coreStack.outputs.config) {
-            throw new Error(
-                `${this.appName}: set orangelab:customDomain or configure ` +
-                    'orangelab:coreStackRef',
-            );
-        }
-
-        return coreStack.outputs.config.apply(coreConfig => {
-            const domain = coreConfig?.customDomain;
-            if (!domain) {
-                throw new Error('Core stack output config.customDomain is required');
-            }
-            return domain;
+        return resolveInherited({
+            settingName: 'customDomain',
+            coreValue: coreStack.outputs.config?.apply(coreConfig => coreConfig?.customDomain),
         });
     }
 }
