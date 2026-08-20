@@ -56,33 +56,89 @@ Alternatively enable signup tokens (**Application Configuration** -> **Enable Us
 
 ## Using Pocket ID with Applications
 
-Create an OIDC client per application and configure its client ID, client secret, and provider URL in the application stack. See the [client examples](https://pocket-id.org/docs/client-examples) for application-specific guides, including [Nextcloud](https://pocket-id.org/docs/client-examples/nextcloud).
+There are two ways to connect an application to Pocket ID. In both cases, the
+application needs an OIDC client ID and client secret, and its module stack
+must reference the deployed core stack.
 
-### Create a client
+See the [Pocket ID client examples](https://pocket-id.org/docs/client-examples)
+for provider-specific requirements, including the [Nextcloud example](https://pocket-id.org/docs/client-examples/nextcloud).
+
+### Prerequisites
+
+Deploy the core stack first, then configure every application module stack to
+reference it:
+
+```sh
+cd stacks/<module>
+
+# Reference the deployed core stack: organization/project/stack
+pulumi config set orangelab:coreStackRef example-org/orangelab/lab
+```
+
+The application resolves Pocket ID's OIDC discovery URL automatically from the
+core stack. Do not configure a provider URL manually unless the application
+documentation specifically requires an override.
+
+### (Recommended) Automated setup
+
+The [generic Pocket ID client script](../../../scripts/pocket-client.sh) creates
+the OIDC client, generates its secret, and optionally uploads icons. It requires
+a Pocket ID API key.
+
+Create an API key at **Settings -> Admin -> API Keys**, then store it in the
+core stack:
+
+```sh
+pulumi config set pocket:apiKey <api-key> --secret
+```
+
+Applications currently using the script:
+
+- [Open WebUI](../../../stacks/ai/components/open-webui/open-webui.md) — the application documentation contains the complete command and application-specific values.
+
+Run the script from the application's module stack directory. It can be run
+before the application's first deployment when its public launch URL is known.
+The script prints the application config commands; run those commands before
+`pulumi up`.
+
+### Manual setup
+
+Use this path when the application is not supported by the script or when you
+need to configure the Pocket ID client directly.
+
+#### Create the Pocket ID client
 
 Create and customize the client in the Pocket ID admin UI before deploying the application:
 
 1. Open **Settings -> OIDC Clients** and create a client.
 2. Set a descriptive display name. The name can be changed later; the client ID is the stable identity.
 3. Set the application's callback URL exactly as documented by that application.
-4. Set the application's launch URL if you want it to appear in Pocket ID's app dashboard.
-5. Optionally restrict the client to selected user groups.
-6. Optionally upload an icon. [selfh.st/icons](https://selfh.st/icons/) is a useful source for application icons.
-7. Copy the client ID and generate/copy the client secret. The secret is shown only once.
+4. Set the application's launch URL when you want it to appear in Pocket ID's **My Apps** dashboard.
+5. Configure a logout callback URL only when the application documentation requires one.
+6. Optionally restrict the client to selected user groups.
+7. Optionally upload an icon. [selfh.st/icons](https://selfh.st/icons/) is a useful source for application icons.
+8. Copy the client ID and generate/copy the client secret. The secret is shown only once.
 
-Configure the application before its first `pulumi up` so OIDC is enabled during its initial deployment. Store client secrets with Pulumi's `--secret` flag.
+#### Configure the application
 
-### Provider URL
-
-Use the complete OIDC discovery URL exported by the root stack:
+Configure the application before its first `pulumi up` so OIDC is enabled
+during the initial deployment. Store client secrets with Pulumi's `--secret`
+flag:
 
 ```sh
-pulumi stack output --json | jq -r '.security.endpoints.pocketOidc'
+# Enable OIDC for the application
+pulumi config set <app>:auth pocket
+pulumi config set <app>:auth/clientId <client-id>
+pulumi config set <app>:auth/clientSecret <client-secret> --secret
+pulumi up
 ```
 
-When an application already has user data, configure its account/user ID mapping before enabling automatic account creation so OIDC users match existing accounts instead of creating duplicates.
+#### Existing application users
 
-When switching an application with existing user data (e.g. Nextcloud), configure the user ID mapping so OIDC logins match existing accounts instead of creating new ones.
+When an application already has user data, configure its account or user ID
+mapping before enabling automatic account creation so OIDC users match existing
+accounts instead of creating duplicates. Follow the application's documentation
+for the required mapping settings.
 
 ## Backup and Restore
 
