@@ -1,5 +1,6 @@
 ---
-description: Review staged code changes
+name: code-review
+description: Use when the user asks to review staged changes or perform a code review in the orange-lab repo. Trigger on phrases like "review my staged changes", "code review", "review before commit".
 ---
 
 Review staged code changes for quality, security, and adherence to OrangeLab's specific conventions.

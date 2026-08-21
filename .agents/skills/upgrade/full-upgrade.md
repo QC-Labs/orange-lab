@@ -1,242 +1,6 @@
----
-description: Upgrade OrangeLab to latest version
----
+# Full Upgrade Path (Steps 2-11)
 
-# ORANGELAB UPGRADE COMMAND - PLAN MODE
-
-**START IMMEDIATELY AT STEP 0** - Do not read the entire file first.
-
-## Mode of Operation
-
-You are operating in **PLAN MODE as a guide**. You will:
-
-- **ANALYZE** the current state using read-only commands
-- **EXPLAIN** each step clearly so the user understands what needs to be done
-- **SHOW** the exact commands the user should run
-- **VERIFY** the user completed each step correctly before proceeding
-
-**You must NEVER:**
-
-- Execute commands that modify state (`pulumi up`, `pulumi config set`, `git pull`, etc.)
-- Use `--show-secrets` flag - secrets must not be sent to external models
-- Make any changes to files or infrastructure directly
-- Skip ahead or preview future steps
-
-**After each step**: STOP, show analysis, and ask user "Continue to Step X?"
-
-## How User Runs Commands
-
-The user can run commands in two ways:
-
-1. **Separate terminal** - Copy-paste commands to their own terminal window
-2. **OpenCode shell** - Prefix with `!` to run in OpenCode (e.g., `!npm install`) - you will see the output
-
-When showing commands for the user to run, format them clearly:
-
-```
-👉 Run in your terminal (or use !command in OpenCode):
-   <command>
-```
-
-## Context
-
-- **Current version**: Read from `package.json` (version field)
-- **GitHub releases**: https://github.com/QC-Labs/orange-lab/releases
-- **Repository**: QC-Labs/orange-lab
-- **Upgrade docs**: `docs/upgrade.md` - standard upgrade procedures
-- **Storage docs**: `docs/configuration.md` - volume management and `fromVolume` usage
-
-## Overview
-
-This command guides users through upgrading their OrangeLab installation safely.
-
-**Quick Upgrade** (no breaking changes):
-
-- Step 0: Check for uncommitted changes and pending infrastructure updates
-- Step 1: Analyze incoming changes, if no breaking changes → `git pull --rebase && pulumi up`
-
-**Full Upgrade** (breaking changes detected):
-
-- Steps 2-11: Verify storage safety, save secrets, update K3s, disable/re-enable affected apps
-
-## Important Rules
-
-- Before each step: Explain what will be done so the user understands the process
-- After each step: Ask the user to confirm completion, then verify everything is correct
-- Ask for confirmation before proceeding to the next step
-- If issues occur: Summarize them, suggest potential resolutions, and ask for direction
-- Never proceed automatically if errors are detected
-- **NEVER use `--show-secrets`** - this would expose secrets to external models
-- Use the Troubleshooting section at the bottom if issues occur
-
-## Steps
-
-### Step 0: Preparation (Start Here)
-
-**Tell user**: "First, I'll check your current state and see if there are any pending infrastructure changes before we pull new code."
-
-**Run these commands**:
-
-```bash
-# Check for uncommitted changes
-git status
-
-# Check current infrastructure state
-pulumi preview --diff
-```
-
-**If git status shows uncommitted changes**:
-
-- **Ask user**: "You have uncommitted changes. Do you want to: (a) stash them, (b) commit them, or (c) abort upgrade?"
-- Wait for user to resolve before continuing
-
-**If pulumi preview shows changes**:
-
-- **Tell user**: "There are pending infrastructure changes (likely version updates or config drift). It's best to apply these before pulling new code."
-- **Show user**:
-
-    ```
-    👉 Run in your terminal (or use !command in OpenCode):
-
-       pulumi up
-    ```
-
-- Wait for user to confirm changes are applied
-- Run `pulumi preview --diff` again to verify clean state
-
-**When both are clean**, proceed to Step 1.
-
----
-
-### Step 1: Analyze Incoming Changes
-
-**Tell user**: "I'll check for incoming changes and identify any breaking changes that require special handling."
-
-**Run these read-only commands**:
-
-```bash
-# Get current version
-cat package.json | grep '"version"'
-
-# Fetch latest from GitHub
-git fetch origin
-
-# Check for incoming changes (overview)
-git log HEAD..origin/main --oneline
-
-# Get full commit messages to find BREAKING CHANGE entries
-git log HEAD..origin/main
-```
-
-**To check for major releases** (try `gh` first, fall back to WebFetch):
-
-```bash
-# Try gh first (saves tokens)
-gh release list --repo QC-Labs/orange-lab --limit 5
-```
-
-If `gh` is not configured, use WebFetch: `https://github.com/QC-Labs/orange-lab/releases`
-
-**Analyze the output for USER-FACING breaking changes**:
-
-A breaking change is ONLY something that requires the user to modify their `pulumi config`. Look for:
-
-- Commits containing "BREAKING CHANGE:" in their body - these contain migration instructions
-- Release notes sections titled "BREAKING CHANGES" or "UPGRADE ACTIONS"
-- Config key renames (e.g., `app:oldKey` → `app:newKey`)
-- Removed config options that the user may have set
-- New required config options
-
-**NOT breaking changes** (ignore these):
-
-- Internal code refactoring (changing how code is structured internally)
-- Dependency updates
-- Moving config access from one internal pattern to another
-- Any change that doesn't require user action in `pulumi config`
-
-**Example**: A commit saying "refactor: config now uses `config.require()` directly" is internal code cleanup, NOT a breaking change. The user's config file is unchanged.
-
-**If user-facing breaking changes found**, check which apps are affected by running:
-
-```bash
-pulumi config
-```
-
-Cross-reference breaking changes with enabled apps. If all affected apps are disabled (`enabled: false` or not configured), they don't require the full upgrade path.
-
-**NEVER disable these components** (apply config migrations directly instead):
-
-- **Longhorn** - Storage backend; disabling could remove storage volumes
-- **cert-manager** - Stores certificates in CRDs; disabling would lose certs
-
-Other infrastructure (Traefik, Tailscale) can be safely disabled and re-enabled.
-
----
-
-### If NO breaking changes found (or only affect disabled apps) → Quick Upgrade Path
-
-**Tell user**: "No breaking changes affect your enabled apps. We can do a simple upgrade."
-
-**Show user commands**:
-
-```
-👉 Run in your terminal (or use !command in OpenCode):
-
-   git pull --rebase origin main
-   npm install
-   npm test
-```
-
-**After user completes**, run preview:
-
-```bash
-pulumi preview --diff
-```
-
-**Analyze preview for safety**:
-
-- Look for unexpected resource REPLACEMENTS or DELETIONS
-- Minor updates (image versions, config changes) are expected and safe
-
-**If preview looks safe**:
-
-```
-👉 Run in your terminal (or use !command in OpenCode):
-
-   pulumi up
-```
-
-**After user applies**, verify:
-
-```bash
-kubectl get pods -A | grep -v Running | grep -v Completed
-```
-
-**If all pods healthy**, report success and END upgrade process.
-
-**If preview shows concerning changes** (major replacements, deletions), continue to Step 2 for detailed analysis.
-
----
-
-### If breaking changes affect ENABLED apps → Full Upgrade Path (Steps 2-11)
-
-**Tell user**: "Breaking changes detected for enabled apps. We'll need to follow the full upgrade process to safely migrate."
-
-**Report to user**:
-
-```
-Current version: [version from package.json]
-Latest release: [version from GitHub]
-Incoming commits: [count]
-
-Breaking changes found:
-- [list BREAKING CHANGE entries from git log, include full instructions]
-
-Apps requiring action:
-- [list apps that need disabling/config changes]
-```
-
-**Ask user**: "Continue to Step 2: Verify Storage Safety?"
+Follow these steps only when Step 1 found breaking changes affecting enabled apps.
 
 ### Step 2: Verify Storage Safety (Static Volumes)
 
@@ -247,10 +11,16 @@ Apps requiring action:
 - **Longhorn** - Storage backend that manages all volumes; it doesn't use volumes itself
 - **cert-manager** - Stores certificates in CRDs that would be lost if disabled
 
-**Run this read-only command** to get a categorized list of all enabled apps by volume type:
+**Run this read-only command** to get a categorized list of all enabled apps by volume type.
+
+The script reads the config of the stack it runs from, so run it from the core stack AND from each module stack (from Step 1) that has affected apps:
 
 ```bash
+# From repository root (core stack)
 ./scripts/list-volumes.sh
+
+# From each affected module stack (script is at repository root)
+cd stacks/<module> && ../../scripts/list-volumes.sh && cd ../..
 ```
 
 The script outputs two sections:
@@ -284,16 +54,16 @@ Not affected (disabled or no breaking changes):
 2. **Show user commands** to convert to static volume:
 
     ```
-    👉 Run in your terminal (or use !command in OpenCode):
+    👉 Run in your terminal (or use !command in OpenCode), in the app's stack directory:
 
        # Set storageOnly to keep volume while disabling app resources
-       pulumi config set <app>:storageOnly true
-       pulumi up
+       pulumi --cwd stacks/<module> config set <app>:storageOnly true
+       pulumi --cwd stacks/<module> up
 
        # Then clone volume in Longhorn UI with descriptive name (e.g., app name)
        # Finally, attach the static volume:
-       pulumi config set <app>:fromVolume <volume-name>
-       pulumi config delete <app>:storageOnly
+       pulumi --cwd stacks/<module> config set <app>:fromVolume <volume-name>
+       pulumi --cwd stacks/<module> config delete <app>:storageOnly
     ```
 
 3. **Ask user**: "Have you set up static volumes for these apps, or do you accept the data loss risk?"
@@ -308,27 +78,28 @@ Not affected (disabled or no breaking changes):
 
 **Apps with secrets**: `n8n` (encryption key + PostgreSQL), `nextcloud` (MariaDB), `mempool` (MariaDB)
 
-**Tell user**: "Check which apps from Steps 1-2 are ENABLED and need secrets saved. Look up the config key names in `components/<category>/<app>/<app>.ts` and output paths in `pulumi stack output --json`."
+**Tell user**: "Check which apps from Steps 1-2 are ENABLED and need secrets saved. Look up the config key names in the app's component source (e.g. `components/<category>/<app>/<app>.ts` or `stacks/<module>/components/...`) and output paths in `pulumi stack output --json` from the stack where the app is deployed."
 
 **Show user commands to run in their terminal**:
 
 ```
 👉 Run in your terminal (NOT in OpenCode - secrets should stay local):
 
-   # View all outputs to find your app's secrets
-   pulumi stack output --show-secrets --json
+   # View all outputs to find your app's secrets (run in the app's stack directory)
+   pulumi --cwd stacks/<module> stack output --show-secrets --json
 
-   # Get secret value and save to config
-   pulumi stack output <module> --show-secrets --json | jq -r '.<app>.<path>'
-   pulumi config set <app>:<config-key> "<value>" --secret
+   # Get secret value and save to config (same stack directory)
+   pulumi --cwd stacks/<module> stack output <module> --show-secrets --json | jq -r '.<app>.<path>'
+   pulumi --cwd stacks/<module> config set <app>:<config-key> "<value>" --secret
 ```
 
 **Tell user**: "Run the relevant commands for your ENABLED apps. Don't share the output with me. Type 'done' when complete."
 
-**When user types "done", run verification**:
+**When user types "done", run verification** (core first, then each affected module stack):
 
 ```bash
 pulumi config
+pulumi --cwd stacks/<module> config
 ```
 
 **Verify** the relevant secret configs are present for the apps being disabled. If any are missing, ask user to run the commands again.
@@ -419,19 +190,24 @@ kubectl get nodes --show-labels
 - `nfd` - Delete CRDs
 - `amd-gpu-operator` - Delete CRDs
 
-**Show user the commands** for apps identified in Step 1 (excluding Longhorn/cert-manager):
+**Show user the commands** for apps identified in Step 1 (excluding Longhorn/cert-manager), grouped by the stack each app lives in:
 
 ```
 👉 Run in your terminal (or use !command in OpenCode):
 
+   # Core stack apps
    pulumi config set <app>:enabled false
+
+   # Module stack apps (repeat per stack)
+   pulumi --cwd stacks/<module> config set <app>:enabled false
    # Repeat for each app that needs to be disabled
 ```
 
-**After user disables apps, run preview**:
+**After user disables apps, run previews** (core first, then each affected module stack):
 
 ```bash
 pulumi preview --diff
+pulumi preview --diff --cwd stacks/<module>
 ```
 
 **Analyze the preview**:
@@ -442,12 +218,16 @@ pulumi preview --diff
 
 **Tell user**: "Preview shows [X] apps will be disabled. The PersistentVolumes will be removed, but Longhorn volumes persist (they'll show as 'Detached' in Longhorn UI)."
 
-**Show user the apply command**:
+**Show user the apply commands** (core first, then module stacks):
 
 ```
-👉 Review the preview above. If it looks correct, run:
+👉 Review the previews above. If they look correct, run:
 
+   # Core stack first
    pulumi up
+
+   # Then each affected module stack
+   pulumi --cwd stacks/<module> up
 ```
 
 **After user applies**, ask them to share the output or confirm success.
@@ -510,12 +290,13 @@ Tests: [passed/failed]
 
 ### Step 7: Preview Infrastructure Changes
 
-**Tell user**: "I'll run a Pulumi preview to check for any unexpected infrastructure changes before applying."
+**Tell user**: "I'll run Pulumi previews to check for any unexpected infrastructure changes before applying."
 
-**Run preview**:
+**Run previews** (core first, then each initialized module stack):
 
 ```bash
 pulumi preview --diff
+pulumi preview --diff --cwd stacks/<module>
 ```
 
 **Analyze the output carefully**:
@@ -549,12 +330,16 @@ Potential issues:
 
 **Tell user**: "Now we'll apply the infrastructure changes to upgrade your cluster."
 
-**Show user the apply command**:
+**Show user the apply commands** (core first - module stacks depend on core CRDs/storage/ingress):
 
 ```
 👉 Run in your terminal (or use !command in OpenCode):
 
+   # Core stack first
    pulumi up
+
+   # Then each module stack
+   pulumi --cwd stacks/<module> up
 ```
 
 **After user applies**, ask them to share the output or report status.
@@ -583,19 +368,24 @@ Changes applied:
 
 **Tell user**: "I'll guide you to re-enable the apps that were disabled for the upgrade."
 
-**Show user commands** for each app disabled in Step 5:
+**Show user commands** for each app disabled in Step 5, grouped by stack:
 
 ```
 👉 Run in your terminal (or use !command in OpenCode):
 
+   # Core stack apps
    pulumi config set <app>:enabled true
+
+   # Module stack apps (repeat per stack)
+   pulumi --cwd stacks/<module> config set <app>:enabled true
    # Repeat for each app that was disabled in Step 5
 ```
 
-**After user re-enables apps, run preview**:
+**After user re-enables apps, run previews** (core first, then each affected module stack):
 
 ```bash
 pulumi preview --diff
+pulumi preview --diff --cwd stacks/<module>
 ```
 
 **Report to user**:
@@ -616,12 +406,16 @@ Preview shows:
 
 **Tell user**: "Now we'll deploy the re-enabled apps with their new configuration."
 
-**Show user the apply command**:
+**Show user the apply commands** (core first, then module stacks):
 
 ```
 👉 Run in your terminal (or use !command in OpenCode):
 
+   # Core stack first
    pulumi up
+
+   # Then each affected module stack
+   pulumi --cwd stacks/<module> up
 ```
 
 **After user applies**, ask them to share the output or report status.
@@ -655,11 +449,12 @@ If failed: [error details from user]
 **Run these read-only commands**:
 
 ```bash
-# Check if custom domain is configured
+# Check if custom domain is configured (core stack)
 pulumi config get customDomain 2>/dev/null
 
-# Get list of deployed apps (no secrets)
+# Get list of deployed apps (no secrets) - core first, then each module stack
 pulumi stack output --json
+pulumi --cwd stacks/<module> stack output --json
 
 # Check pod status
 kubectl get pods -A | grep -v Running | grep -v Completed
@@ -671,7 +466,7 @@ kubectl get pods -A --field-selector=status.phase!=Running,status.phase!=Succeed
 **For endpoint health checks**, run or show user:
 
 ```bash
-# For each endpoint URL from pulumi output
+# For each endpoint URL from the stack outputs
 curl -s -o /dev/null -w "%{http_code}" --connect-timeout 5 <url>
 ```
 
@@ -757,25 +552,25 @@ Use this section when issues occur during any step.
     - For MariaDB, see reset procedure in `components/data/mariadb-operator/mariadb-operator.md`
     - For PostgreSQL, use `pg-restore.sh` script to restore from dump, or reset password manually
 4. **Encryption key mismatch**: App cannot decrypt data because key changed
-    - This happens if you forgot to save the encryption key before disabling the app
-    - If app is still running, user can extract from Pulumi output in their terminal: `pulumi stack output ai --show-secrets --json | jq -r '.n8n.encryptionKey'`
-    - If app was already removed, data encrypted with old key is unrecoverable
+     - This happens if you forgot to save the encryption key before disabling the app
+     - If app is still running, user can extract from Pulumi output in their terminal, from the app's stack directory: `pulumi --cwd stacks/<module> stack output <module> --show-secrets --json | jq -r '.<app>.encryptionKey'`
+     - If app was already removed, data encrypted with old key is unrecoverable
 5. **Ingress not responding**:
     - With custom domain: Check Traefik pods `kubectl get pods -n traefik` and cert-manager `kubectl get certificates -A`
     - Tailscale routes: Check operator `kubectl get pods -n tailscale` and services `kubectl get svc -n tailscale`
 6. **Pod crashlooping**: Check logs with `kubectl logs -n <namespace> <pod>`
 7. **Pulumi state conflict**: May need `pulumi refresh` to sync state
-8. **App stuck deploying**: Guide user to try `storageOnly` mode to keep storage while removing app resources:
+8. **App stuck deploying**: Guide user to try `storageOnly` mode to keep storage while removing app resources (run in the app's stack directory):
 
     ```
     👉 Run these commands in your terminal:
 
-       pulumi config set <app>:enabled true
-       pulumi config set <app>:storageOnly true
-       pulumi up
+       pulumi --cwd stacks/<module> config set <app>:enabled true
+       pulumi --cwd stacks/<module> config set <app>:storageOnly true
+       pulumi --cwd stacks/<module> up
 
-       pulumi config delete <app>:storageOnly
-       pulumi up
+       pulumi --cwd stacks/<module> config delete <app>:storageOnly
+       pulumi --cwd stacks/<module> up
     ```
 
 ## Recovery Options
@@ -784,14 +579,16 @@ Guide user with these commands if needed:
 
 - **Rollback code**: `git checkout <previous-commit>`
 - **Rollback infrastructure**: Pulumi maintains state history, but app data may be affected
-- **Skip problematic app**: `pulumi config set <app>:enabled false` and continue with rest of upgrade
-- **Restore from backup**: Use Longhorn UI to restore volume from backup, then `pulumi config set <app>:fromVolume <volume-name>`
+- **Skip problematic app**: `pulumi --cwd stacks/<module> config set <app>:enabled false` (in the app's stack) and continue with rest of upgrade
+- **Restore from backup**: Use Longhorn UI to restore volume from backup, then `pulumi --cwd stacks/<module> config set <app>:fromVolume <volume-name>`
 
 ---
 
 # REFERENCE
 
 ## Command Summary
+
+All Pulumi commands run against the stack in the current directory. Use `pulumi --cwd <dir> ...` to target the core stack (repository root) or a module stack (`stacks/<module>`). Core always goes first.
 
 **LLM can safely run (read-only)**:
 

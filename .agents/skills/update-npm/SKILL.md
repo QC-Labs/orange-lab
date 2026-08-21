@@ -1,5 +1,6 @@
 ---
-description: Update npm dependencies
+name: update-npm
+description: Use ONLY when the user asks to update npm dependencies in the orange-lab repo. Trigger on phrases like "update npm dependencies", "update deps", "bump packages". Not for upgrading the OrangeLab installation (use the upgrade skill).
 ---
 
 Update npm dependencies in this project, ensuring all versions are properly locked and no infrastructure changes are introduced.
@@ -58,16 +59,6 @@ Show me:
 ❌ Don't update everything blindly
 ❌ Don't break peer dependency requirements
 ❌ Don't proceed if pulumi preview shows unexpected changes
-
-## Context Needed
-
-Please provide:
-
-- Current `package.json` content
-- Output of `npm outdated`
-- Output of `npm audit` (if any vulnerabilities)
-- Node version being used
-- Any known compatibility requirements
 
 ## Expected Output
 

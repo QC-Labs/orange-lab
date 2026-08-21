@@ -9,12 +9,10 @@ You can use AI to guide you through the migration process or follow manual instr
 ```sh
 opencode
 
-# switch to PLAN mode
-
 # ctrl-x m to select AI model
 
-# run command
-/orangelab-upgrade
+# ask the AI - the upgrade skill guides you through the process step by step
+upgrade orangelab to the latest release
 ```
 
 ## Prerequisites
@@ -69,7 +67,7 @@ npm run build
 pulumi up
 ```
 
-If any application has problems deploying, try disabling the app first. Make sure you use static Longhorn volumes so your data is not lost (check )
+If any application has problems deploying, try disabling the app first. Make sure you use static Longhorn volumes so your data is not lost (see [Preparing Volumes for Recovery](#preparing-volumes-for-recovery))
 
 ```sh
 pulumi config set <app>:enabled false
