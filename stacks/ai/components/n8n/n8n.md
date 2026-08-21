@@ -21,6 +21,8 @@ pulumi config set n8n:db/fromVolume n8n-db
 pulumi up
 ```
 
+## Encryption Key
+
 After n8n is initialized, save the encryption key to the config. This is needed to restore database from backup:
 
 ```sh
@@ -29,3 +31,5 @@ pulumi config set n8n:N8N_ENCRYPTION_KEY $ENCRYPTION_KEY --secret
 
 pulumi up
 ```
+
+The key is required to decrypt stored credentials - without it they are lost when restoring a database backup or restoring the volume into a new stack.

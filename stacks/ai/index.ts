@@ -59,6 +59,11 @@ export const clusterEndpoints = {
 };
 
 export const apps = {
+    'open-webui': openWebUI
+        ? {
+              secretKey: openWebUI.secretKey,
+          }
+        : undefined,
     n8n: n8n
         ? {
               encryptionKey: n8n.encryptionKey,
