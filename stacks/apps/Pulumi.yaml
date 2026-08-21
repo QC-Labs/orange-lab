@@ -9,7 +9,6 @@ description: OrangeLab Apps Stack
 config:
     # Required shared defaults (duplicated from root Pulumi.yaml)
     # orangelab:routingProvider: tailscale | traefik
-    # orangelab:customDomain: 'example.com'
     mariadb-operator:enabled: false
     cloudnative-pg:enabled: false
     # longhorn:backupAllVolumes: false # read from the core stack by default

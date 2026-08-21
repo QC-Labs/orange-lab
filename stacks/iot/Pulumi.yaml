@@ -9,7 +9,6 @@ description: OrangeLab IoT Stack
 config:
     # Required shared defaults (duplicated from root Pulumi.yaml)
     # orangelab:routingProvider: tailscale | traefik
-    # orangelab:customDomain: 'example.com'
     # longhorn:backupAllVolumes: false # read from the core stack by default
 
     ### IoT ###

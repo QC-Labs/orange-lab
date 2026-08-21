@@ -9,7 +9,6 @@ description: OrangeLab AI Stack
 config:
     # Required shared defaults (duplicated from root Pulumi.yaml)
     # orangelab:routingProvider: tailscale | traefik
-    # orangelab:customDomain: 'example.com'
     # orangelab:coreStackRef: <organization/project/stack>
     prometheus:enabled: false
     prometheus:enableComponentMonitoring: false
