@@ -21,8 +21,7 @@ export class Nextcloud extends pulumi.ComponentResource {
         if (!this.dbConfig) throw new Error('Database not found');
         const redisConfig = this.app.databases?.getConfig('redis');
         if (!redisConfig) throw new Error('Redis not found');
-        const adminPassword =
-            config.getSecret(appName, 'adminPassword') ?? this.app.createPassword('admin-password');
+        const adminPassword = config.requireSecret(appName, 'adminPassword');
         const adminSecret = this.createAdminSecret(adminPassword);
         const httpEndpointInfo = this.app.network.getHttpEndpointInfo();
         this.users = { admin: adminPassword };

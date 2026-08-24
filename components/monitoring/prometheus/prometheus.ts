@@ -26,9 +26,7 @@ export class Prometheus extends pulumi.ComponentResource {
                 name: 'alertmanager',
                 overrideFullname: `alertmanager-${name}-db-alertmanager-${name}-0`,
             });
-        this.grafanaPassword =
-            config.getSecret(name, 'grafana/password') ??
-            this.app.createPassword('grafana-password');
+        this.grafanaPassword = config.requireSecret(name, 'grafana/password');
         const prometheusHostname = config.require(name, 'hostname');
         const alertManagerHostname = config.require(name, 'alertmanager/hostname');
         const grafanaHostname = config.require(name, 'grafana/hostname');

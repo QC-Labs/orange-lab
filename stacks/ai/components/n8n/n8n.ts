@@ -18,8 +18,7 @@ export class N8n extends pulumi.ComponentResource {
         super('orangelab:ai:N8n', name, args, opts);
 
         this.app = new Application(this, name).addStorage().addPostgres();
-        this.encryptionKey =
-            config.getSecret(name, 'N8N_ENCRYPTION_KEY') ?? this.app.createPassword('encryption-key');
+        this.encryptionKey = config.requireSecret(name, 'N8N_ENCRYPTION_KEY');
 
         this.postgresConfig = this.app.databases?.getConfig();
         const initContainer = this.app.databases?.getWaitContainer();

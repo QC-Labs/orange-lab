@@ -20,8 +20,7 @@ export class OpenWebUI extends pulumi.ComponentResource {
         super('orangelab:ai:OpenWebUI', name, args, opts);
 
         this.app = new Application(this, name).addStorage();
-        this.secretKey =
-            config.getSecret(name, 'WEBUI_SECRET_KEY') ?? this.app.createPassword('secret-key');
+        this.secretKey = config.requireSecret(name, 'WEBUI_SECRET_KEY');
 
         if (this.app.storageOnly) return;
 
