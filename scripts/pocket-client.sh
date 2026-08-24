@@ -153,23 +153,39 @@ fi
 tmp_dir=$(mktemp -d)
 trap 'rm -rf "${tmp_dir}"' EXIT
 
-if [[ -n "${dark_icon_url}" ]]; then
-    curl --fail --silent --show-error \
-        -o "${tmp_dir}/dark.webp" \
-        "${dark_icon_url}"
+upload_icon() {
+    local url="$1"
+    local filename="$2"
+    local light="$3"
+    local extension="${url##*/}"
+    extension="${extension%%\?*}"
+    extension="${extension##*.}"
+    local mime_type
+
+    case "${extension,,}" in
+        svg) mime_type='image/svg+xml' ;;
+        png) mime_type='image/png' ;;
+        jpg|jpeg) mime_type='image/jpeg' ;;
+        webp) mime_type='image/webp' ;;
+        *)
+            printf 'Unsupported icon format: %s\n' "${extension}" >&2
+            exit 1
+            ;;
+    esac
+
+    local icon_path="${tmp_dir}/${filename}.${extension}"
+    curl --fail --silent --show-error -o "${icon_path}" "${url}"
     curl --fail-with-body --silent --show-error \
-        -X POST "${POCKET_ID_URL}/api/oidc/clients/${client_id}/logo?light=true" \
+        -X POST "${POCKET_ID_URL}/api/oidc/clients/${client_id}/logo?light=${light}" \
         -H "X-API-KEY: ${pocket_api_key}" \
-        -F "file=@${tmp_dir}/dark.webp;type=image/webp"
+        -F "file=@${icon_path};type=${mime_type}"
+}
+
+if [[ -n "${dark_icon_url}" ]]; then
+    upload_icon "${dark_icon_url}" dark true
 fi
 if [[ -n "${light_icon_url}" ]]; then
-    curl --fail --silent --show-error \
-        -o "${tmp_dir}/light.webp" \
-        "${light_icon_url}"
-    curl --fail-with-body --silent --show-error \
-        -X POST "${POCKET_ID_URL}/api/oidc/clients/${client_id}/logo?light=false" \
-        -H "X-API-KEY: ${pocket_api_key}" \
-        -F "file=@${tmp_dir}/light.webp;type=image/webp"
+    upload_icon "${light_icon_url}" light false
 fi
 
 #
