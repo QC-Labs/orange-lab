@@ -46,11 +46,19 @@ When a value from `Application` (like `this.app.debug`) is needed during chained
 - Environment variable names should be UPPERCASE
 - Never expose passwords or sensitive data in command line arguments
 
-### Auto-generated Secrets
+### Restore-critical Secrets
 
-When a component generates secrets/tokens automatically (e.g., encryption keys), provide instructions in the component docs for:
+If a secret protects data at rest (encryption keys, credentials stored in the app's database/volume), read it with `config.requireSecret()` - a missing value must fail the deploy instead of silently breaking volume restores. Document it in the component docs:
 
-1. Retrieving the secret from stack outputs after first deployment
-2. Saving it to config with `--secret` flag for backup restoration
+1. Generation + `pulumi config set --secret` in the deployment block (before first `pulumi up`)
+2. Why it must stay stable across restores
 
-Example: n8n, vaultwarden
+Example: n8n, open-webui, nextcloud adminPassword, rustfs rootPassword, prometheus grafana/password
+
+### Rotation-safe Secrets
+
+Login passwords or external credentials that don't protect restored data may keep an auto-generated fallback (`config.getSecret(...) ?? this.app.createPassword(...)`). Docs should instruct retrieving from stack outputs and persisting with `--secret` for stability, but rotation is acceptable.
+
+Example: slskd, technitium, immich JWT_SECRET, vaultwarden adminToken
+
+Never read secret config values with `config.get()` - it returns undefined for `--secret` entries; use `config.getSecret()`/`requireSecret()`.

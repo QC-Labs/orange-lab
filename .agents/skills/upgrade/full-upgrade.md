@@ -111,7 +111,7 @@ pulumi --cwd stacks/<module> config
 
 **If secrets are not in outputs** (app was never deployed):
 
-- For fresh installs, secrets will be auto-generated on first deploy
+- Restore-critical secrets (`n8n:N8N_ENCRYPTION_KEY`, `open-webui:WEBUI_SECRET_KEY`, `nextcloud:adminPassword`, `rustfs:rootPassword`, `prometheus:grafana/password`) are required config - deployment fails without them; fresh installs must set them before first deploy
 - For recovery from backup, see `components/data/mariadb-operator/mariadb-operator.md` for MariaDB reset procedure
 
 **Ask user**: "Continue to Step 4: Update K3s Nodes?"
