@@ -97,7 +97,7 @@ config:
     nfd:excludeNodeLabel: orangelab/alpine
 
     nvidia-gpu-operator:enabled: false
-    nvidia-gpu-operator:version: v26.3.3
+    nvidia-gpu-operator:version: v26.7.0
 
     amd-gpu-operator:enabled: false
     amd-gpu-operator:version: v1.5.1
