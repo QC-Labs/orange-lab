@@ -3,7 +3,7 @@ set -euo pipefail
 
 usage() {
     cat <<EOF
-Usage: $0 --app-name <name> --client-name <name> --launch-url <url> --callback-path <path> [options]
+Usage: $0 --app-name <name> --client-name <name> --launch-url <url> --callback-url <url> [options]
 
 Create or refresh a Pocket ID OIDC client for the application stack in the current directory.
 Existing clients are reused and their secrets are not rotated.
@@ -12,7 +12,7 @@ Required parameters:
   --app-name <name>          Pulumi endpoint and config name, e.g. open-webui
   --client-name <name>       Pocket ID client display name, e.g. "Open WebUI"
   --launch-url <url>         Public application URL and Pocket ID launch URL
-  --callback-path <path>     OIDC callback path, e.g. /oauth/oidc/callback
+  --callback-url <url>       OIDC callback URL; may be specified multiple times
 
 Optional parameters:
   --dark-icon-url <url>      URL for the dark-theme client icon
@@ -34,13 +34,13 @@ EOF
 app_name=''
 client_name=''
 launch_url=''
-callback_path=''
+callback_urls=()
 dark_icon_url=''
 light_icon_url=''
 
 while (($# > 0)); do
     case "$1" in
-        --app-name|--client-name|--launch-url|--callback-path|--dark-icon-url|--light-icon-url)
+        --app-name|--client-name|--launch-url|--callback-url|--dark-icon-url|--light-icon-url)
             if [[ $# -lt 2 || "$2" == -* ]]; then
                 printf 'Missing value for %s\n\n' "$1" >&2
                 usage >&2
@@ -50,7 +50,7 @@ while (($# > 0)); do
                 --app-name) app_name="$2" ;;
                 --client-name) client_name="$2" ;;
                 --launch-url) launch_url="$2" ;;
-                --callback-path) callback_path="$2" ;;
+                --callback-url) callback_urls+=("$2") ;;
                 --dark-icon-url) dark_icon_url="$2" ;;
                 --light-icon-url) light_icon_url="$2" ;;
             esac
@@ -71,13 +71,18 @@ done
 #
 # Validation
 #
-for parameter in app_name client_name launch_url callback_path; do
+for parameter in app_name client_name launch_url; do
     if [[ -z "${!parameter}" ]]; then
         printf 'Missing required parameter: --%s\n\n' "${parameter//_/-}" >&2
         usage >&2
         exit 2
     fi
 done
+if ((${#callback_urls[@]} == 0)); then
+    printf 'Missing required parameter: --callback-url\n\n' >&2
+    usage >&2
+    exit 2
+fi
 
 #
 # Configuration
@@ -102,10 +107,11 @@ if ! pocket_api_key=$(pulumi --cwd "$root_stack" config get pocket:apiKey 2>/dev
 fi
 
 POCKET_ID_URL=$(stack_output "$root_stack" | jq -er '.security.endpoints.pocket')
+OIDC_PROVIDER_URL=$(stack_output "$root_stack" | jq -er '.security.oidcProviderUrl')
 
 POCKET_ID_URL="${POCKET_ID_URL%/}"
 launch_url="${launch_url%/}"
-callback_url="${launch_url}${callback_path}"
+callback_urls_json=$(printf '%s\n' "${callback_urls[@]}" | jq -R -s 'split("\n") | map(select(length > 0))')
 
 #
 # Create client
@@ -123,14 +129,14 @@ if [[ -z "${client_id}" ]]; then
         -H 'Content-Type: application/json' \
         --data "$(jq -n \
             --arg name "${client_name}" \
-            --arg callback_url "${callback_url}" \
             --arg launch_url "${launch_url}" \
+            --argjson callback_urls "${callback_urls_json}" \
             '{
                 name: $name,
-                callbackURLs: [$callback_url],
+                callbackURLs: $callback_urls,
                 launchURL: $launch_url,
                 isPublic: false,
-                pkceEnabled: false,
+                pkceEnabled: true,
                 skipConsent: true
             }')"
     )
@@ -192,6 +198,7 @@ fi
 # Output
 #
 printf '\nClient refreshed: %s\n' "${client_name}"
+printf 'OIDC issuer URL: %s\n' "${OIDC_PROVIDER_URL}"
 printf 'pulumi config set %s:auth pocket\n' "${app_name}"
 printf 'pulumi config set %s:auth/clientId %q\n' "${app_name}" "${client_id}"
 if [[ -n "${client_secret}" ]]; then
