@@ -40,20 +40,24 @@ OIDC is optional. The discovery URL is resolved automatically from the core stac
 Run the generic Pocket ID client script from the AI stack directory:
 
 ```sh
+cd stacks/ai
+
 # Set the core stack reference if it is not already configured
 pulumi config set orangelab:coreStackRef example-org/orangelab/lab
+
+WEBUI_URL=$(pulumi stack output --json | jq -er '.endpoints["open-webui"]')
 
 # Create or refresh the Pocket ID client
 ../../scripts/pocket-client.sh \
   --app-name open-webui \
   --client-name "Open WebUI" \
-  --launch-url https://webui.example.org \
-  --callback-path /oauth/oidc/callback \
+  --launch-url "$WEBUI_URL" \
+  --callback-url "$WEBUI_URL/oauth/oidc/callback" \
   --dark-icon-url https://cdn.jsdelivr.net/gh/selfhst/icons@main/webp/open-webui-dark.webp \
   --light-icon-url https://cdn.jsdelivr.net/gh/selfhst/icons@main/webp/open-webui.webp
 ```
 
-The script can be run before the first Open WebUI deployment as long as the public launch URL is known. It prints the client ID and secret commands. Run those commands, then run `pulumi up`.
+The script can be run after Open WebUI is deployed. It prints the client ID and secret commands. Run those commands, then run `pulumi up`.
 
 Existing clients are reused without rotating their secret. If the client was deleted, the script creates a new client and secret.
 
@@ -79,9 +83,8 @@ pulumi config set open-webui:auth pocket
 pulumi config set open-webui:auth/clientId <client-id>
 pulumi config set open-webui:auth/clientSecret <client-secret> --secret
 
-# Optional: change the login label or override the discovery URL
+# Optional: change the login label
 pulumi config set open-webui:auth/providerName "Pocket ID"
-# pulumi config set open-webui:auth/providerUrl https://pocket.example.com/.well-known/openid-configuration
 
 pulumi up
 ```
