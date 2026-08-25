@@ -104,6 +104,11 @@ The following settings are supported by most applications in OrangeLab:
 | `excludeNodeLabel`    | Do not deploy to nodes with specified label (hard constraint)                                |
 | `requiredVolumeLabel` | Pin volume to specific node(s). Immutable - requires app redeploy to change                  |
 | `backupVolume`        | Enable volume backups to S3-compatible storage                                               |
+| `auth`                | Enable OIDC authentication with the selected provider                                         |
+| `auth/clientId`       | OIDC client ID                                                                                |
+| `auth/clientSecret`   | OIDC client secret                                                                            |
+| `auth/providerUrl`    | Override the OIDC discovery URL                                                               |
+| `auth/providerName`   | Label shown for the OIDC login button                                                         |
 
 ### Custom Hostnames
 
@@ -274,4 +279,25 @@ For single node or non-Linux systems, you can use override application to use `l
 pulumi config set longhorn:enabled false
 
 pulumi config set ollama:storageClass local-path
+```
+
+### OAuth / OIDC
+
+Applications normally resolve the OIDC discovery URL from the referenced core
+stack. For an application-specific provider or an environment where automatic
+discovery is not appropriate, override it with the application's auth provider
+URL setting:
+
+```sh
+pulumi config set <app>:auth/providerUrl <issuer-url>
+```
+
+Applications using a core stack's OIDC provider require the core stack reference
+and the provider-specific client settings:
+
+```sh
+pulumi config set <app>:auth pocket
+pulumi config set <app>:auth/clientId <client-id>
+pulumi config set <app>:auth/clientSecret <client-secret> --secret
+pulumi up
 ```
