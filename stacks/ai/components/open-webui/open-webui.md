@@ -53,6 +53,7 @@ WEBUI_URL=$(pulumi stack output --json | jq -er '.endpoints["open-webui"]')
   --client-name "Open WebUI" \
   --launch-url "$WEBUI_URL" \
   --callback-url "$WEBUI_URL/oauth/oidc/callback" \
+  --pkce-enabled false \
   --dark-icon-url https://cdn.jsdelivr.net/gh/selfhst/icons@main/webp/open-webui-dark.webp \
   --light-icon-url https://cdn.jsdelivr.net/gh/selfhst/icons@main/webp/open-webui.webp
 ```

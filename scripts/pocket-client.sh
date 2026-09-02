@@ -17,6 +17,7 @@ Required parameters:
 Optional parameters:
   --dark-icon-url <url>      URL for the dark-theme client icon
   --light-icon-url <url>     URL for the light-theme client icon
+  --pkce-enabled <boolean>   Enable PKCE (default: true)
   -h, --help                 Show this help
 
 Run this script from the application's Pulumi stack directory.
@@ -37,10 +38,11 @@ launch_url=''
 callback_urls=()
 dark_icon_url=''
 light_icon_url=''
+pkce_enabled=true
 
 while (($# > 0)); do
     case "$1" in
-        --app-name|--client-name|--launch-url|--callback-url|--dark-icon-url|--light-icon-url)
+        --app-name|--client-name|--launch-url|--callback-url|--dark-icon-url|--light-icon-url|--pkce-enabled)
             if [[ $# -lt 2 || "$2" == -* ]]; then
                 printf 'Missing value for %s\n\n' "$1" >&2
                 usage >&2
@@ -53,6 +55,7 @@ while (($# > 0)); do
                 --callback-url) callback_urls+=("$2") ;;
                 --dark-icon-url) dark_icon_url="$2" ;;
                 --light-icon-url) light_icon_url="$2" ;;
+                --pkce-enabled) pkce_enabled="$2" ;;
             esac
             shift 2
             ;;
@@ -81,6 +84,10 @@ done
 if ((${#callback_urls[@]} == 0)); then
     printf 'Missing required parameter: --callback-url\n\n' >&2
     usage >&2
+    exit 2
+fi
+if [[ "${pkce_enabled}" != true && "${pkce_enabled}" != false ]]; then
+    printf 'Invalid value for --pkce-enabled: %s (expected true or false)\n' "${pkce_enabled}" >&2
     exit 2
 fi
 
@@ -131,12 +138,13 @@ if [[ -z "${client_id}" ]]; then
             --arg name "${client_name}" \
             --arg launch_url "${launch_url}" \
             --argjson callback_urls "${callback_urls_json}" \
+            --argjson pkce_enabled "${pkce_enabled}" \
             '{
                 name: $name,
                 callbackURLs: $callback_urls,
                 launchURL: $launch_url,
                 isPublic: false,
-                pkceEnabled: true,
+                pkceEnabled: $pkce_enabled,
                 skipConsent: true
             }')"
     )
