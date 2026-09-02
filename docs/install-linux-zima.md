@@ -20,6 +20,14 @@ sudo sysctl -p
 
 See [Tailscale's performance tuning docs](https://tailscale.com/kb/1320/performance-best-practices#ethtool-configuration) for optional network interface optimizations.
 
+### Network
+
+You can switch active network with:
+
+```sh
+sudo nmtui
+```
+
 ### Directories
 
 ```sh
@@ -44,7 +52,6 @@ You will need this IP when running the K3s agent script below.
 
 Tailscale IP can also be found by opening the Tailscale application in ZimaOS dashboard.
 
-
 ## K3s Agent
 
 Run [`scripts/k3s-agent-zima.sh`](../scripts/k3s-agent-zima.sh) on the management node, passing the Tailscale IP from the previous step:
@@ -64,6 +71,7 @@ systemctl status k3s-agent.service
 ```
 
 On the management node make sure the node joined the cluster (Status=Ready):
+
 ```sh
 kubectl get node
 ```
