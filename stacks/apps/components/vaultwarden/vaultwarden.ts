@@ -1,4 +1,4 @@
-import { Application, config, HttpEndpointInfo } from '@orangelab/pulumi';
+import { Application, config, HttpEndpointInfo, OidcAuthConfig } from '@orangelab/pulumi';
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import { VaultwardenToken } from './vaultwarden-token';
@@ -43,8 +43,10 @@ export class Vaultwarden extends pulumi.ComponentResource {
         const smtpPort = config.getNumber(this.appName, 'smtp/port');
         const signupsAllowed = config.requireBoolean(this.appName, 'signupsAllowed');
         const signupsVerify = config.requireBoolean(this.appName, 'signupsVerify');
+        const auth = this.app.auth.getOidc();
 
         const smtpSecret = this.createSmtpSecret(smtpUsername, smtpPassword);
+        const ssoSecret = this.createSsoSecret(auth);
 
         return this.app.addHelmChart(
             this.appName,
@@ -81,6 +83,7 @@ export class Vaultwarden extends pulumi.ComponentResource {
                               }
                             : {}),
                     },
+                    sso: this.getSsoConfig(auth, ssoSecret),
                     storage: {
                         enabled: true,
                         existingVolumeClaim: {
@@ -89,7 +92,54 @@ export class Vaultwarden extends pulumi.ComponentResource {
                             attachmentsPath: '/data/attachments',
                         },
                     },
+                    strategy: {
+                        type: 'Recreate',
+                    },
                     webVaultEnabled: true,
+                },
+            },
+            { parent: this },
+        );
+    }
+
+    private getSsoConfig(
+        auth: OidcAuthConfig | undefined,
+        secret: kubernetes.core.v1.Secret | undefined,
+    ) {
+        if (!auth || !secret) return { enabled: false };
+
+        return {
+            authority: pulumi.output(auth.providerBaseUrl).apply(url => {
+                if (!url) {
+                    throw new Error(
+                        'Vaultwarden: OIDC enabled (vaultwarden:auth) but the OIDC provider base URL is unavailable. Set orangelab:coreStackRef to a deployed core stack with the auth provider enabled.',
+                    );
+                }
+                return url;
+            }),
+            clientId: { existingSecretKey: 'SSO_CLIENT_ID' },
+            clientSecret: { existingSecretKey: 'SSO_CLIENT_SECRET' },
+            enabled: true,
+            existingSecret: secret.metadata.name,
+            onlySSO: true,
+            pkce: true,
+            scopes: 'email profile groups offline_access',
+            signupsMatchEmail: true,
+        };
+    }
+
+    private createSsoSecret(
+        auth: OidcAuthConfig | undefined,
+    ): kubernetes.core.v1.Secret | undefined {
+        if (!auth) return undefined;
+
+        return new kubernetes.core.v1.Secret(
+            `${this.appName}-sso`,
+            {
+                metadata: this.app.metadata.get({ component: 'sso' }),
+                stringData: {
+                    SSO_CLIENT_ID: auth.clientId,
+                    SSO_CLIENT_SECRET: auth.clientSecret,
                 },
             },
             { parent: this },
