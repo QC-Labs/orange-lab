@@ -96,3 +96,4 @@ Before declaring done:
 - **Use scannable prose.** Prefer short paragraphs and flat bullet lists over long chains of semicolon-separated clauses.
 - **Keep the structure.** Retain useful sections such as Post-Installation, Backup and Restore, and Admin access when they apply.
 - **Keep it tight.** Prefer a table, one-line description, short example, and focused sections. Show `pulumi config set ...`, not internal class names. Endpoint goes in the table, not the code block — retrieval is central in `docs/configuration.md`.
+- **Document outcomes, not implementation.** Explain what users need to configure and how to reach a working component; omit internal Kubernetes, Helm, Secret, and resource-wiring details unless they affect user action or troubleshooting.
