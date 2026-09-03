@@ -256,6 +256,7 @@ export interface CoreStackExports {
         };
     };
     security?: {
+        oidcProviderBaseUrl?: string;
         oidcProviderUrl?: string;
     };
 }

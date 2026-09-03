@@ -3,6 +3,7 @@ import * as pulumi from '@pulumi/pulumi';
 
 export class Pocket extends pulumi.ComponentResource {
     public readonly app: Application;
+    public readonly oidcProviderBaseUrl: pulumi.Input<string>;
     public readonly oidcProviderUrl: pulumi.Input<string>;
 
     constructor(
@@ -13,6 +14,7 @@ export class Pocket extends pulumi.ComponentResource {
 
         this.app = new Application(this, name).addStorage();
         const httpEndpointInfo = this.app.network.getHttpEndpointInfo();
+        this.oidcProviderBaseUrl = httpEndpointInfo.url;
         this.oidcProviderUrl = pulumi.interpolate`${httpEndpointInfo.url}/.well-known/openid-configuration`;
 
         this.app.addDeployment({
