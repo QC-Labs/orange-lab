@@ -121,7 +121,7 @@ export class Vaultwarden extends pulumi.ComponentResource {
             clientSecret: { existingSecretKey: 'SSO_CLIENT_SECRET' },
             enabled: true,
             existingSecret: secret.metadata.name,
-            onlySSO: true,
+            onlySSO: false,
             pkce: true,
             scopes: 'email profile groups offline_access',
             signupsMatchEmail: true,
