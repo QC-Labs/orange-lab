@@ -195,48 +195,66 @@ export class Storage extends pulumi.ComponentResource {
 
         this.configFilesHash = this.getConfigHash(configVolume);
         const volumeName = configVolume.name ?? 'config';
+        const hasFiles = configVolume.files !== undefined;
+        const hasSecretFiles = configVolume.secretFiles !== undefined;
+        const fullName = `${this.appName}-${volumeName}`;
+        const configMapName = hasSecretFiles ? `${fullName}-config` : fullName;
+        const secretName = hasFiles ? `${fullName}-secret` : fullName;
 
-        if (configVolume.files) {
-            this.addConfigMapVolume(volumeName, configVolume.files);
+        if (hasFiles) {
+            assert(configVolume.files);
+            this.createConfigMap(configMapName, configVolume.files);
         }
-        if (configVolume.secretFiles) {
-            this.addSecretVolume(volumeName, configVolume.secretFiles);
+
+        if (hasSecretFiles) {
+            assert(configVolume.secretFiles);
+            this.createConfigSecret(secretName, configVolume.secretFiles);
+        }
+
+        if (hasFiles && hasSecretFiles) {
+            this.volumes.set(volumeName, {
+                name: volumeName,
+                projected: {
+                    sources: [
+                        { configMap: { name: configMapName } },
+                        { secret: { name: secretName } },
+                    ],
+                },
+            });
+        } else if (hasFiles) {
+            this.volumes.set(volumeName, {
+                name: volumeName,
+                configMap: { name: configMapName },
+            });
+        } else {
+            assert(hasSecretFiles && configVolume.secretFiles);
+            this.volumes.set(volumeName, {
+                name: volumeName,
+                secret: { secretName },
+            });
         }
     }
 
-    private addConfigMapVolume(
-        name: string,
-        files: Record<string, pulumi.Input<string>>,
-    ) {
-        const fullName = `${this.appName}-${name}`;
+    private createConfigMap(name: string, files: Record<string, pulumi.Input<string>>) {
         new ConfigMap(
-            `${fullName}-cm`,
+            `${name}-cm`,
             {
-                metadata: this.createMetadata(fullName),
+                metadata: this.createMetadata(name),
                 data: files,
             },
             { parent: this },
         );
-        this.volumes.set(name, {
-            name,
-            configMap: { name: fullName },
-        });
     }
 
-    private addSecretVolume(name: string, files: Record<string, pulumi.Input<string>>) {
-        const fullName = `${this.appName}-${name}`;
+    private createConfigSecret(name: string, files: Record<string, pulumi.Input<string>>) {
         new Secret(
-            `${fullName}-secret`,
+            `${name}-secret`,
             {
-                metadata: this.createMetadata(fullName),
+                metadata: this.createMetadata(name),
                 stringData: files,
             },
             { parent: this },
         );
-        this.volumes.set(fullName, {
-            name: fullName,
-            secret: { secretName: fullName },
-        });
     }
 
     private createMetadata(name: string) {
