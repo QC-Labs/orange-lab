@@ -45,7 +45,7 @@ pulumi up
 
 ## OAuth Authentication (Pocket ID)
 
-Immich OAuth is configured from the Immich administration UI, so users can continue changing Immich settings there. This requires [Pocket ID](../../../../components/security/pocket/pocket.md) to be deployed.
+Immich uses a generated configuration file for OAuth, machine-learning, and SMTP settings. The file is mounted as a Secret and configured on every deployment. Because Immich treats the file as authoritative, all Immich system settings are read-only in the administration UI; settings not included in the file use Immich defaults. This requires [Pocket ID](../../../../components/security/pocket/pocket.md) to be deployed for OAuth.
 
 ### Create the Pocket ID client
 
@@ -67,33 +67,47 @@ IMMICH_URL=$(pulumi stack output --json | jq -er '.endpoints.immich')
   --light-icon-url https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/immich.svg
 ```
 
-The helper creates all required web and mobile callbacks, prints the OIDC issuer URL, client ID, and client secret, and reuses existing clients without rotating their secrets. Use those values in Immich's OAuth settings; do not apply the printed `immich:auth` commands.
+The helper creates all required web and mobile callbacks, prints the OIDC issuer URL, client ID, and client secret, and reuses existing clients without rotating their secrets. Configure the printed client values in Pulumi:
 
-### Configure Immich
+```sh
+cd stacks/media
 
-In Immich, go to **Administration -> Settings -> Authentication Settings -> OAuth** and set:
+pulumi config set immich:auth pocket
+pulumi config set immich:auth/clientId <client-id>
+pulumi config set immich:auth/clientSecret <client-secret> --secret
+pulumi up
+```
 
-| Setting | Value |
-| --- | --- |
-| Enable Login with OAuth | Enabled |
-| Issuer URL | The `OIDC issuer URL` printed by `pocket-client.sh` |
-| Client ID | The client ID from Pocket ID |
-| Client Secret | The client secret from Pocket ID |
-| Scope | `openid email profile` |
-| End Session Endpoint | Empty |
-| Button Text | `Login with Pocket ID` |
-| Auto Register | Enabled |
-| Auto Launch | Enabled; automatically redirects users to Pocket ID from the login page |
+The generated config includes OAuth, machine-learning, and SMTP settings. The OAuth button text defaults to `Login with OrangeLab`; override it with `immich:auth/providerName` if needed. The OIDC issuer URL is resolved from the core stack's `security.oidcProviderUrl`, or can be overridden with `immich:auth/providerUrl`.
 
-The issuer URL is exported by the core stack as `security.oidcProviderUrl`. If the Pocket ID hostname changes, run the helper again and use the updated printed value.
+### OAuth settings
 
-Save the settings and test the OAuth login. For mobile login, keep `app.immich:///oauth-callback` registered with Pocket ID.
+The generated OAuth settings use scope `openid email profile`, signing algorithm `RS256`, token endpoint authentication `client_secret_post`, auto registration, and auto launch. For mobile login, keep `app.immich:///oauth-callback` registered with Pocket ID.
 
 When **Auto Launch** is enabled, use the following URL to access the regular Immich login page and sign in with a local administrator account:
 
 ```text
 https://immich.<domain>/auth/login?autoLaunch=0
 ```
+
+### SMTP settings
+
+SMTP is disabled by default. Configure it in Pulumi before running `pulumi up`:
+
+```sh
+cd stacks/media
+
+pulumi config set immich:smtp/enabled true
+pulumi config set immich:smtp/host smtp.example.com
+pulumi config set immich:smtp/port 587
+pulumi config set immich:smtp/secure false
+pulumi config set immich:smtp/from "OrangeLab Immich <admin@orangelab.space>"
+pulumi config set immich:smtp/username admin@example.com
+pulumi config set immich:smtp/password <smtp-password> --secret
+pulumi up
+```
+
+The `secure` setting defaults to `false` for providers using STARTTLS on port `587`. Providers using implicit TLS can set `immich:smtp/secure true` and override the port to `465`. The generated configuration verifies the server certificate. Port `587` is the default but can be overridden for providers using a different port. The `from` address is used as the sender and reply address. SMTP credentials are included in the Secret-backed config file and are not stored in a ConfigMap.
 
 ## Reset Admin Password
 
