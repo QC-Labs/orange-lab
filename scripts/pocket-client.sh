@@ -15,6 +15,7 @@ Required parameters:
   --callback-url <url>       OIDC callback URL; may be specified multiple times
 
 Optional parameters:
+  --logout-callback-url <url>  Logout callback URL; may be specified multiple times
   --dark-icon-url <url>      URL for the dark-theme client icon
   --light-icon-url <url>     URL for the light-theme client icon
   --pkce-enabled <boolean>   Enable PKCE (default: true)
@@ -36,13 +37,14 @@ app_name=''
 client_name=''
 launch_url=''
 callback_urls=()
+logout_callback_urls=()
 dark_icon_url=''
 light_icon_url=''
 pkce_enabled=true
 
 while (($# > 0)); do
     case "$1" in
-        --app-name|--client-name|--launch-url|--callback-url|--dark-icon-url|--light-icon-url|--pkce-enabled)
+        --app-name|--client-name|--launch-url|--callback-url|--logout-callback-url|--dark-icon-url|--light-icon-url|--pkce-enabled)
             if [[ $# -lt 2 || "$2" == -* ]]; then
                 printf 'Missing value for %s\n\n' "$1" >&2
                 usage >&2
@@ -53,6 +55,7 @@ while (($# > 0)); do
                 --client-name) client_name="$2" ;;
                 --launch-url) launch_url="$2" ;;
                 --callback-url) callback_urls+=("$2") ;;
+                --logout-callback-url) logout_callback_urls+=("$2") ;;
                 --dark-icon-url) dark_icon_url="$2" ;;
                 --light-icon-url) light_icon_url="$2" ;;
                 --pkce-enabled) pkce_enabled="$2" ;;
@@ -114,11 +117,14 @@ if ! pocket_api_key=$(pulumi --cwd "$root_stack" config get pocket:apiKey 2>/dev
 fi
 
 POCKET_ID_URL=$(stack_output "$root_stack" | jq -er '.security.endpoints.pocket')
-OIDC_PROVIDER_URL=$(stack_output "$root_stack" | jq -er '.security.oidcProviderUrl')
-
 POCKET_ID_URL="${POCKET_ID_URL%/}"
 launch_url="${launch_url%/}"
 callback_urls_json=$(printf '%s\n' "${callback_urls[@]}" | jq -R -s 'split("\n") | map(select(length > 0))')
+if ((${#logout_callback_urls[@]} == 0)); then
+    logout_callback_urls_json='[]'
+else
+    logout_callback_urls_json=$(printf '%s\n' "${logout_callback_urls[@]}" | jq -R -s 'split("\n") | map(select(length > 0))')
+fi
 
 #
 # Create client
@@ -138,10 +144,12 @@ if [[ -z "${client_id}" ]]; then
             --arg name "${client_name}" \
             --arg launch_url "${launch_url}" \
             --argjson callback_urls "${callback_urls_json}" \
+            --argjson logout_callback_urls "${logout_callback_urls_json}" \
             --argjson pkce_enabled "${pkce_enabled}" \
             '{
                 name: $name,
                 callbackURLs: $callback_urls,
+                logoutCallbackURLs: $logout_callback_urls,
                 launchURL: $launch_url,
                 isPublic: false,
                 pkceEnabled: $pkce_enabled,
@@ -159,6 +167,48 @@ if [[ -z "${client_id}" ]]; then
     client_secret=$(jq -er '.secret' <<<"${secret_response}")
 else
     client_secret=''
+fi
+
+#
+# Sync logout callback URLs on reused clients (merged, other settings untouched)
+#
+if [[ "${logout_callback_urls_json}" != '[]' ]]; then
+    existing_client=$(jq -c --arg name "${client_name}" \
+        '[.data[] | select(.name == $name)][0]' <<<"${client_list}")
+    missing_logout_urls=$(jq -c -n \
+        --argjson existing "${existing_client}" \
+        --argjson requested "${logout_callback_urls_json}" \
+        '$requested - ($existing.logoutCallbackURLs // [])')
+    if [[ "${missing_logout_urls}" != '[]' ]]; then
+        update_body=$(jq -c -n \
+            --argjson existing "${existing_client}" \
+            --argjson requested "${logout_callback_urls_json}" \
+            '{
+                name: $existing.name,
+                description: ($existing.description // ""),
+                callbackURLs: ($existing.callbackURLs // []),
+                logoutCallbackURLs: ((($existing.logoutCallbackURLs // []) + $requested) | unique),
+                isPublic: ($existing.isPublic // false),
+                pkceEnabled: ($existing.pkceEnabled // false),
+                requiresReauthentication: ($existing.requiresReauthentication // false),
+                requiresPushedAuthorizationRequests: ($existing.requiresPushedAuthorizationRequests // false),
+                skipConsent: ($existing.skipConsent // false),
+                launchURL: $existing.launchURL,
+                hasLogo: ($existing.hasLogo // false),
+                hasDarkLogo: ($existing.hasDarkLogo // false),
+                isGroupRestricted: ($existing.isGroupRestricted // false),
+                accessTokenDurationMinutes: ($existing.accessTokenDurationMinutes // 60),
+                refreshTokenDurationMinutes: ($existing.refreshTokenDurationMinutes // 43200)
+            }')
+        curl --fail-with-body --silent --show-error \
+            -X PUT "${POCKET_ID_URL}/api/oidc/clients/${client_id}" \
+            -H "X-API-KEY: ${pocket_api_key}" \
+            -H 'Content-Type: application/json' \
+            --data "${update_body}" > /dev/null
+        printf 'Logout callback URLs synced.\n'
+    else
+        printf 'Logout callback URLs already up to date.\n'
+    fi
 fi
 
 #
@@ -206,7 +256,6 @@ fi
 # Output
 #
 printf '\nClient refreshed: %s\n' "${client_name}"
-printf 'OIDC issuer URL: %s\n' "${OIDC_PROVIDER_URL}"
 printf 'pulumi config set %s:auth pocket\n' "${app_name}"
 printf 'pulumi config set %s:auth/clientId %q\n' "${app_name}" "${client_id}"
 if [[ -n "${client_secret}" ]]; then

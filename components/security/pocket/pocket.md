@@ -34,7 +34,7 @@ kubectl -n pocket exec deploy/pocket -- /app/pocket-id one-time-access-token <us
 The key is stored encrypted in the Pulumi stack config, but also save it in a password manager - it is required to decrypt data when restoring a volume backup to a new stack:
 
 ```sh
-pulumi config get pocket:encryptionKey --show-secrets
+pulumi config get pocket:encryptionKey
 ```
 
 ## Post-Installation
@@ -100,12 +100,14 @@ pulumi config set pocket:apiKey <api-key> --secret
 
 Applications currently using the script:
 
-- [Open WebUI](../../../stacks/ai/components/open-webui/open-webui.md) — the application documentation contains the complete command and application-specific values.
+- [Open WebUI](../../../stacks/ai/components/open-webui/open-webui.md)
+- [Immich](../../../stacks/media/components/immich/immich.md)
+- [Vaultwarden](../../../stacks/apps/components/vaultwarden/vaultwarden.md)
+- [Nextcloud](../../../stacks/apps/components/nextcloud/nextcloud.md)
 
-Run the script from the application's module stack directory. It can be run
-before the application's first deployment when its public launch URL is known.
-The script prints the application config commands; run those commands before
-`pulumi up`.
+Run the script from the application's module stack directory.
+The script creates or reuses the OIDC client and prints the Pulumi configuration
+required by the application. Run those commands before `pulumi up`.
 
 ### Manual setup
 
