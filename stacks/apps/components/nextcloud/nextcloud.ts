@@ -1,4 +1,6 @@
-import { Application, config, DatabaseConfig, HttpEndpointInfo } from '@orangelab/pulumi';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { Application, config, DatabaseConfig, HttpEndpointInfo, OidcAuthConfig } from '@orangelab/pulumi';
 import * as k8s from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 
@@ -24,8 +26,15 @@ export class Nextcloud extends pulumi.ComponentResource {
         const adminPassword = config.requireSecret(appName, 'adminPassword');
         const adminSecret = this.createAdminSecret(adminPassword);
         const httpEndpointInfo = this.app.network.getHttpEndpointInfo();
+        const auth = this.app.auth.getOidc();
         this.users = { admin: adminPassword };
-        this.createHelmChart({ httpEndpointInfo, adminSecret, dbConfig: this.dbConfig, redisConfig });
+        this.createHelmChart({
+            httpEndpointInfo,
+            adminSecret,
+            dbConfig: this.dbConfig,
+            redisConfig,
+            auth,
+        });
         this.serviceUrl = httpEndpointInfo.url;
     }
 
@@ -34,13 +43,11 @@ export class Nextcloud extends pulumi.ComponentResource {
         adminSecret: k8s.core.v1.Secret;
         dbConfig: DatabaseConfig;
         redisConfig: DatabaseConfig;
+        auth: OidcAuthConfig | undefined;
     }) {
         const waitForDb = this.app.databases?.getWaitContainer();
         const waitForRedis = this.app.databases?.getWaitContainer(args.redisConfig);
-        const trustedProxies = config
-            .require('nextcloud', 'trustedProxies')
-            .split(',')
-            .map(s => s.trim());
+        const oidcSecret = this.createOidcSecret(args.auth);
         return this.app.addHelmChart(
             this.appName,
             {
@@ -84,33 +91,11 @@ export class Nextcloud extends pulumi.ComponentResource {
                     livenessProbe: { enabled: true },
                     metrics: { enabled: true },
                     nextcloud: {
-                        configs: {
-                            'disable-skeleton.config.php': `<?php
-$CONFIG = array (
-    'skeletondirectory' => '',
-);`,
-                            ...(this.app.debug
-                                ? {
-                                      'logging.config.php': `<?php
-$CONFIG = array (
-    'log_type' => 'errorlog',
-);`,
-                                  }
-                                : {}),
-                        },
-                        extraEnv: [
-                            {
-                                name: 'TRUSTED_PROXIES',
-                                value: trustedProxies.join(' '),
-                            },
-                            {
-                                name: 'OVERWRITEHOST',
-                                value: args.httpEndpointInfo.hostname,
-                            },
-                            { name: 'OVERWRITEPROTOCOL', value: 'https' },
-                        ],
+                        configs: this.getConfigFiles(args.auth),
+                        extraEnv: this.getExtraEnv(args, oidcSecret),
                         extraInitContainers: [waitForDb, waitForRedis],
                         host: args.httpEndpointInfo.hostname,
+                        ...(args.auth ? { hooks: { 'before-starting': this.getOidcHook() } } : {}),
                         existingSecret: {
                             enabled: true,
                             secretName: args.adminSecret.metadata.name,
@@ -130,6 +115,116 @@ $CONFIG = array (
                     readinessProbe: { enabled: true },
                     replicaCount: 1,
                     startupProbe: { enabled: true },
+                },
+            },
+            { parent: this },
+        );
+    }
+
+    private getOidcHook(): string {
+        return readFileSync(join(__dirname, 'nextcloud-oidc.sh'), 'utf8');
+    }
+
+    private getConfigFiles(auth?: OidcAuthConfig) {
+        return {
+            'disable-skeleton.config.php': `<?php
+$CONFIG = array (
+    'skeletondirectory' => '',
+);`,
+            ...(auth
+                ? {
+                      'allow-local-remote-servers.config.php': `<?php
+$CONFIG = array (
+    'allow_local_remote_servers' => true,
+);`,
+                  }
+                : {}),
+            ...(this.app.debug
+                ? {
+                      'logging.config.php': `<?php
+$CONFIG = array (
+    'log_type' => 'errorlog',
+);`,
+                  }
+                : {}),
+        };
+    }
+
+    private getExtraEnv(
+        args: { httpEndpointInfo: HttpEndpointInfo },
+        oidcSecret?: k8s.core.v1.Secret,
+    ) {
+        const trustedProxies = config
+            .require('nextcloud', 'trustedProxies')
+            .split(',')
+            .map(s => s.trim());
+        const groupProvisioningWhitelist = config.require(
+            'nextcloud',
+            'groupProvisioningWhitelist',
+        );
+        return [
+            { name: 'TRUSTED_PROXIES', value: trustedProxies.join(' ') },
+            { name: 'OVERWRITEHOST', value: args.httpEndpointInfo.hostname },
+            { name: 'OVERWRITEPROTOCOL', value: 'https' },
+            { name: 'OVERWRITECLIURL', value: args.httpEndpointInfo.url },
+            ...(oidcSecret
+                ? [
+                      {
+                          name: 'NEXTCLOUD_OIDC_CLIENT_ID',
+                          valueFrom: {
+                              secretKeyRef: {
+                                  name: oidcSecret.metadata.name,
+                                  key: 'OIDC_CLIENT_ID',
+                              },
+                          },
+                      },
+                      {
+                          name: 'NEXTCLOUD_OIDC_CLIENT_SECRET',
+                          valueFrom: {
+                              secretKeyRef: {
+                                  name: oidcSecret.metadata.name,
+                                  key: 'OIDC_CLIENT_SECRET',
+                              },
+                          },
+                      },
+                      {
+                          name: 'NEXTCLOUD_OIDC_DISCOVERY_URI',
+                          valueFrom: {
+                              secretKeyRef: {
+                                  name: oidcSecret.metadata.name,
+                                  key: 'OIDC_DISCOVERY_URI',
+                              },
+                          },
+                      },
+                      {
+                          name: 'NEXTCLOUD_OIDC_GROUP_WHITELIST_REGEX',
+                          value: groupProvisioningWhitelist,
+                      },
+                  ]
+                : []),
+        ];
+    }
+
+    private createOidcSecret(auth: OidcAuthConfig | undefined): k8s.core.v1.Secret | undefined {
+        if (!auth) return undefined;
+
+        const discoveryUri = pulumi.output(auth.providerUrl).apply(url => {
+            if (!url) {
+                throw new Error(
+                    'Nextcloud: OIDC enabled (nextcloud:auth) but the OIDC provider URL is unavailable. Set orangelab:coreStackRef to a deployed core stack with the auth provider enabled, or set nextcloud:auth/providerUrl.',
+                );
+            }
+            return url;
+        });
+
+        return new k8s.core.v1.Secret(
+            `${this.appName}-oidc`,
+            {
+                metadata: { namespace: this.app.metadata.namespace },
+                stringData: {
+                    OIDC_CLIENT_ID: auth.clientId,
+                    OIDC_CLIENT_SECRET: auth.clientSecret,
+                    OIDC_DISCOVERY_URI: discoveryUri,
                 },
             },
             { parent: this },

@@ -10,6 +10,8 @@ const vaultwarden = config.isEnabled('vaultwarden')
 export const endpoints = {
     ...nextcloud?.app.network.endpoints,
     ...vaultwarden?.app.network.endpoints,
+    nextcloud: nextcloud?.serviceUrl,
+    vaultwarden: vaultwarden?.serviceUrl,
 };
 
 export const clusterUrls = {
