@@ -89,6 +89,7 @@ config:
     rustfs:rootUser: admin
     rustfs:image: rustfs/rustfs:1.0.0-rc.5
     rustfs:provisioner/image: rustfs/rc:latest
+    # rustfs:fixVolumePermissions: '-Rv'
 
     ### Hardware ###
 

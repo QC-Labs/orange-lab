@@ -36,7 +36,7 @@ pulumi up
 
 By default `ghcr.io/retropex/bitcoin:29.3.knots20260507` images are used. You can other docker images as well.
 
-Images can use different users for it's operations. You can use `runAsUser: 999` to avoid root permissions in the container and `volumeOwnerUserId: 999` to fix volume permissions by running `chown -R 1000:1000 /data` before start.
+Images can use different users for its operations. You can use `runAsUser: 999` to avoid root permissions in the container and `volumeOwnerUserId: 999` to fix volume permissions by running `chown 1000:1000 /data` before start. Ownership is fixed without recursion for speed; set `fixVolumePermissions` to `-R` (or `-Rv` for verbose output) when reusing existing data with wrong owners.
 
 ### bitcoinknots/bitcoin
 

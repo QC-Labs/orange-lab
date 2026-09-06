@@ -3,6 +3,7 @@ import * as pulumi from '@pulumi/pulumi';
 import { Metadata } from './metadata';
 import { Storage } from './storage';
 import { ContainerSpec, InitContainerSpec, VolumeMount } from './types';
+import { config } from './config';
 
 export class InitContainers {
     constructor(
@@ -44,9 +45,11 @@ export class InitContainers {
     ): InitContainerSpec {
         const userId = String(runAsUser);
         const paths = mountPaths.join(' ');
+        const options = config.get(this.appName, 'fixVolumePermissions') ?? '';
+        const args = [options, `${userId}:${userId}`, paths].filter(Boolean).join(' ');
         return {
             name: 'fix-volume-permissions',
-            command: ['sh', '-c', `chown -R ${userId}:${userId} ${paths}`],
+            command: ['sh', '-c', `chown ${args}`],
         };
     }
 
@@ -55,8 +58,7 @@ export class InitContainers {
         return (volumeMounts ?? [])
             .filter(
                 mount =>
-                    !mount.readOnly &&
-                    volumeNames.includes(mount.name ?? this.appName),
+                    !mount.readOnly && volumeNames.includes(mount.name ?? this.appName),
             )
             .map(mount => mount.mountPath);
     }

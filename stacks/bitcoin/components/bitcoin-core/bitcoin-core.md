@@ -33,7 +33,7 @@ pulumi up
 
 By default `btcpayserver/bitcoin` images are used. You can use custom docker images as well.
 
-Images can use different users for it's operations. You can add `runAsUser: 999` to avoid root permissions in the container and `volumeOwnerUserId: 999` to fix volume permissions by running `chown -R 1000:1000 /data` before start.
+Images can use different users for its operations. You can add `runAsUser: 999` to avoid root permissions in the container and `volumeOwnerUserId: 999` to fix volume permissions by running `chown 1000:1000 /data` before start. Ownership is fixed without recursion for speed; set `fixVolumePermissions` to `-R` (or `-Rv` for verbose output) when reusing existing data with wrong owners.
 
 ### bitcoin/bitcoin
 
