@@ -170,24 +170,29 @@ else
 fi
 
 #
-# Sync logout callback URLs on reused clients (merged, other settings untouched)
+# Sync callback URLs on reused clients (merged, other settings untouched)
 #
-if [[ "${logout_callback_urls_json}" != '[]' ]]; then
+if [[ "${callback_urls_json}" != '[]' || "${logout_callback_urls_json}" != '[]' ]]; then
     existing_client=$(jq -c --arg name "${client_name}" \
         '[.data[] | select(.name == $name)][0]' <<<"${client_list}")
+    missing_callback_urls=$(jq -c -n \
+        --argjson existing "${existing_client}" \
+        --argjson requested "${callback_urls_json}" \
+        '$requested - ($existing.callbackURLs // [])')
     missing_logout_urls=$(jq -c -n \
         --argjson existing "${existing_client}" \
         --argjson requested "${logout_callback_urls_json}" \
         '$requested - ($existing.logoutCallbackURLs // [])')
-    if [[ "${missing_logout_urls}" != '[]' ]]; then
+    if [[ "${missing_callback_urls}" != '[]' || "${missing_logout_urls}" != '[]' ]]; then
         update_body=$(jq -c -n \
             --argjson existing "${existing_client}" \
-            --argjson requested "${logout_callback_urls_json}" \
+            --argjson requested_callbacks "${callback_urls_json}" \
+            --argjson requested_logout "${logout_callback_urls_json}" \
             '{
                 name: $existing.name,
                 description: ($existing.description // ""),
-                callbackURLs: ($existing.callbackURLs // []),
-                logoutCallbackURLs: ((($existing.logoutCallbackURLs // []) + $requested) | unique),
+                callbackURLs: ((($existing.callbackURLs // []) + $requested_callbacks) | unique),
+                logoutCallbackURLs: ((($existing.logoutCallbackURLs // []) + $requested_logout) | unique),
                 isPublic: ($existing.isPublic // false),
                 pkceEnabled: ($existing.pkceEnabled // false),
                 requiresReauthentication: ($existing.requiresReauthentication // false),
@@ -205,9 +210,9 @@ if [[ "${logout_callback_urls_json}" != '[]' ]]; then
             -H "X-API-KEY: ${pocket_api_key}" \
             -H 'Content-Type: application/json' \
             --data "${update_body}" > /dev/null
-        printf 'Logout callback URLs synced.\n'
+        printf 'Callback URLs synced.\n'
     else
-        printf 'Logout callback URLs already up to date.\n'
+        printf 'Callback URLs already up to date.\n'
     fi
 fi
 
