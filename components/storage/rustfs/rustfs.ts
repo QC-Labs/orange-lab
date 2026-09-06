@@ -1,6 +1,10 @@
-import { Application, config } from '@orangelab/pulumi';
+import { Application, config, OidcAuthConfig, OidcProviderUrls } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 import { RustfsProvisioner } from './rustfs-provisioner';
+
+export interface RustfsArgs {
+    oidc?: OidcProviderUrls;
+}
 
 export class Rustfs extends pulumi.ComponentResource {
     public readonly users: Record<string, pulumi.Output<string>> = {};
@@ -13,6 +17,7 @@ export class Rustfs extends pulumi.ComponentResource {
 
     constructor(
         private name: string,
+        private readonly args: RustfsArgs = {},
         opts?: pulumi.ResourceOptions,
     ) {
         super('orangelab:storage:Rustfs', name, {}, opts);
@@ -45,6 +50,8 @@ export class Rustfs extends pulumi.ComponentResource {
     }
 
     private createDeployment() {
+        const auth = this.app.auth.getOidc(this.args.oidc);
+        const consoleUrl = this.app.network.getHttpEndpointInfo(this.hostname).url;
         this.app.addDeployment({
             volumeOwnerUserId: 10001,
             ports: [
@@ -52,16 +59,70 @@ export class Rustfs extends pulumi.ComponentResource {
                 { name: 'api', port: 9000, hostname: this.hostnameApi },
             ],
             env: {
-                RUSTFS_ACCESS_KEY: this.rootUser,
-                RUSTFS_CONSOLE_ENABLE: 'true',
-                RUSTFS_SERVER_DOMAINS: this.app.network.getHttpEndpointInfo().hostname,
+                ...this.getBaseEnv(),
+                ...this.getOidcEnv(auth, consoleUrl),
             },
             envSecret: {
                 RUSTFS_SECRET_KEY: this.users[this.rootUser],
+                ...this.getOidcSecret(auth),
             },
             commandArgs: ['/data'],
             volumeMounts: [{ name: 'data', mountPath: '/data' }],
         });
+    }
+
+    private getBaseEnv() {
+        return {
+            RUSTFS_ACCESS_KEY: this.rootUser,
+            RUSTFS_CONSOLE_ENABLE: 'true',
+        };
+    }
+
+    private getOidcEnv(auth: OidcAuthConfig | undefined, consoleUrl: pulumi.Input<string>) {
+        if (!auth) return {};
+        return {
+            RUSTFS_BROWSER_REDIRECT_URL: consoleUrl,
+            RUSTFS_IDENTITY_OPENID_CLAIM_NAME: 'rustfs_policies',
+            RUSTFS_IDENTITY_OPENID_CLIENT_ID: auth.clientId,
+            RUSTFS_IDENTITY_OPENID_CONFIG_URL: this.resolveProviderUrl(auth),
+            RUSTFS_IDENTITY_OPENID_DISPLAY_NAME: 'Pocket ID',
+            RUSTFS_IDENTITY_OPENID_EMAIL_CLAIM: 'email',
+            RUSTFS_IDENTITY_OPENID_ENABLE: 'true',
+            RUSTFS_IDENTITY_OPENID_GROUPS_CLAIM: 'rustfs_policies',
+            RUSTFS_IDENTITY_OPENID_REDIRECT_URI: pulumi.interpolate`${consoleUrl}/rustfs/admin/v3/oidc/callback/default`,
+            RUSTFS_IDENTITY_OPENID_REDIRECT_URI_DYNAMIC: 'off',
+            RUSTFS_IDENTITY_OPENID_SCOPES: 'openid,profile,email,groups',
+            RUSTFS_IDENTITY_OPENID_USERNAME_CLAIM: 'preferred_username',
+            RUSTFS_OUTBOUND_ALLOW_ORIGINS: this.resolveOutboundAllowOrigins(auth),
+        };
+    }
+
+    private resolveProviderUrl(auth: OidcAuthConfig) {
+        if (auth.providerUrl === undefined) {
+            throw new Error(
+                'RustFS: OIDC enabled (rustfs:auth) but no OIDC provider URL. Enable Pocket ID in the core stack (pocket:enabled) or set rustfs:auth/providerUrl to override it for testing.',
+            );
+        }
+        return pulumi.output(auth.providerUrl).apply(url => {
+            if (!url) {
+                throw new Error(
+                    'RustFS: OIDC enabled (rustfs:auth) but the OIDC provider URL is unavailable. Enable Pocket ID in the core stack (pocket:enabled) or set rustfs:auth/providerUrl to override it for testing.',
+                );
+            }
+            return url;
+        });
+    }
+
+    private resolveOutboundAllowOrigins(auth: OidcAuthConfig) {
+        return this.resolveProviderUrl(auth).apply(url => {
+            const parsed = new URL(url);
+            return `${parsed.protocol}//${parsed.hostname}`;
+        });
+    }
+
+    private getOidcSecret(auth: OidcAuthConfig | undefined) {
+        if (!auth) return {};
+        return { RUSTFS_IDENTITY_OPENID_CLIENT_SECRET: auth.clientSecret };
     }
 
 }

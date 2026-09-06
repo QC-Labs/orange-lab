@@ -4,6 +4,7 @@
 | ----------------- | ------------------------------------------------------------------------------ |
 | Homepage          | https://rustfs.dev/                                                            |
 | Source            | https://github.com/rustfs/rustfs/                                              |
+| Documentation     | https://docs.rustfs.com/en/security-compliance/oidc                            |
 | Docker image      | https://hub.docker.com/r/rustfs/rustfs                                         |
 | Docker image (rc) | https://hub.docker.com/r/rustfs/rc                                             |
 | Endpoints         | `https://rustfs.<domain>/` (console) <br> `https://rustfs-api.<domain>/` (api) |
@@ -49,3 +50,65 @@ rc alias set rustfs https://rustfs.<domain> $ACCESS_KEY $SECRET_KEY
 # Test connection
 rc ls rustfs
 ```
+
+## OpenID Connect (Pocket ID)
+
+OIDC is optional. Console SSO matches users by email (`preferred_username`/`email`). Root login stays as fallback.
+
+Requires [Pocket ID](../../security/pocket/pocket.md) deployed in the core stack with `pocket:apiKey` configured. The discovery URL is resolved automatically from the core stack.
+
+### Automated setup (Recommended)
+
+Run the generic Pocket ID client script from the repo root (core stack directory):
+
+```sh
+RUSTFS_URL=$(pulumi stack output --json | jq -er '.storage.endpoints["rustfs-console"]')
+
+./scripts/pocket-client.sh \
+  --app-name rustfs \
+  --client-name "RustFS" \
+  --launch-url "$RUSTFS_URL" \
+  --callback-url "$RUSTFS_URL/rustfs/admin/v3/oidc/callback/default" \
+  --dark-icon-url https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/rustfs-dark.svg \
+  --light-icon-url https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/rustfs.svg
+```
+
+The script can be run after RustFS is deployed. It prints the client ID and secret commands. Run those commands, then deploy:
+
+```sh
+pulumi config set rustfs:auth pocket
+pulumi config set rustfs:auth/clientId <client-id>
+pulumi config set rustfs:auth/clientSecret <client-secret> --secret
+
+pulumi up
+```
+
+### Group mapping
+
+Access is granted per Pocket ID group through a custom claim. Create a group, add a custom claim `rustfs_policies` with the RustFS policy as value, and put users in it:
+
+| Pocket ID group | Custom claim key  | Custom claim value |
+| --------------- | ----------------- | ------------------ |
+| `Admins`        | `rustfs_policies` | `consoleAdmin`     |
+| `rustfs-users`  | `rustfs_policies` | `readwrite`        |
+
+Users without a `rustfs_policies` claim cannot log in (`OIDC policy mapping did not resolve to current policies`). Optionally restrict the RustFS client in Pocket ID to these groups.
+
+### Manual setup
+
+Create the client in Pocket ID before deploying RustFS:
+
+| Field          | Value                                                                    |
+| -------------- | ------------------------------------------------------------------------ |
+| Name           | `RustFS`                                                                 |
+| Callback URL   | `https://rustfs.<domain>/rustfs/admin/v3/oidc/callback/default`          |
+| Launch URL     | `https://rustfs.<domain>/`                                               |
+| PKCE           | Enabled (RustFS requires S256)                                           |
+| Logo (dark)    | https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/rustfs.svg            |
+| Logo (light)   | https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/rustfs-dark.svg       |
+| Allowed groups | Optionally restrict to the mapped groups (e.g. `Admins`, `rustfs-users`) |
+
+When OIDC is enabled:
+
+- The console login shows a `Pocket ID` button alongside root login.
+- Users are matched by email

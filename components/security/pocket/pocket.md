@@ -104,6 +104,7 @@ Applications currently using the script:
 - [Immich](../../../stacks/media/components/immich/immich.md)
 - [Vaultwarden](../../../stacks/apps/components/vaultwarden/vaultwarden.md)
 - [Nextcloud](../../../stacks/apps/components/nextcloud/nextcloud.md)
+- [RustFS](../../storage/rustfs/rustfs.md)
 
 Run the script from the application's module stack directory.
 The script creates or reuses the OIDC client and prints the Pulumi configuration
