@@ -35,6 +35,7 @@
             "pulumi stack output *": "allow",
             "pwd": "allow",
             "rg *": "allow",
+            "sed *": "allow",
             "sleep *": "allow",
             "tail *": "allow"
         },
