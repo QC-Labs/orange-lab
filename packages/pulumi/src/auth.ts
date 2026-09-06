@@ -13,18 +13,26 @@ export interface OidcAuthConfig {
     clientSecret: pulumi.Output<string>;
 }
 
+export interface OidcProviderUrls {
+    providerBaseUrl?: pulumi.Input<string | undefined>;
+    providerUrl?: pulumi.Input<string | undefined>;
+}
+
 export class Auth {
     constructor(private readonly appName: string) {}
 
-    getOidc(): OidcAuthConfig | undefined {
+    getOidc(local?: OidcProviderUrls): OidcAuthConfig | undefined {
         if (config.get(this.appName, 'auth') !== OidcProvider.Pocket) return undefined;
 
         return {
-            providerBaseUrl: coreStack.outputs.security?.apply(
-                security => security?.oidcProviderBaseUrl,
-            ),
+            providerBaseUrl:
+                local?.providerBaseUrl ??
+                coreStack.outputs.security?.apply(
+                    security => security?.oidcProviderBaseUrl,
+                ),
             providerUrl:
                 config.get(this.appName, 'auth/providerUrl') ??
+                local?.providerUrl ??
                 coreStack.outputs.security?.apply(security => security?.oidcProviderUrl),
             clientId: config.require(this.appName, 'auth/clientId'),
             clientSecret: config.requireSecret(this.appName, 'auth/clientSecret'),

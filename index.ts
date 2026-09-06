@@ -10,7 +10,17 @@ import { StorageModule } from './components/storage';
 const networkModule = new NetworkModule('network');
 exports.network = networkModule.getExports();
 
-const storageModule = new StorageModule('storage', { dependsOn: networkModule });
+const securityModule = config.isModuleEnabled('security')
+    ? new SecurityModule('security', { dependsOn: networkModule })
+    : undefined;
+if (securityModule) exports.security = securityModule.getExports();
+
+const storageModule = new StorageModule('storage', {
+    oidc: {
+        providerBaseUrl: securityModule?.pocket?.oidcProviderBaseUrl,
+        providerUrl: securityModule?.pocket?.oidcProviderUrl,
+    },
+});
 exports.storage = storageModule.getExports();
 exports.config = {
     customDomain: config.get('orangelab', 'customDomain'),
@@ -39,11 +49,4 @@ if (config.isModuleEnabled('monitoring')) {
         dependsOn: baseModules,
     });
     exports.monitoring = monitoringModule.getExports();
-}
-
-if (config.isModuleEnabled('security')) {
-    const securityModule = new SecurityModule('security', {
-        dependsOn: baseModules,
-    });
-    exports.security = securityModule.getExports();
 }

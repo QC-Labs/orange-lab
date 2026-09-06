@@ -1,7 +1,11 @@
-import { config } from '@orangelab/pulumi';
+import { config, OidcProviderUrls } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 import { Longhorn } from './longhorn/longhorn';
 import { Rustfs } from './rustfs/rustfs';
+
+export interface StorageModuleArgs {
+    oidc?: OidcProviderUrls;
+}
 
 export class StorageModule extends pulumi.ComponentResource {
     longhorn?: Longhorn;
@@ -20,7 +24,7 @@ export class StorageModule extends pulumi.ComponentResource {
         };
     }
 
-    constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
+    constructor(name: string, args: StorageModuleArgs = {}, opts?: pulumi.ResourceOptions) {
         super('orangelab:storage', name, args, {
             ...opts,
             aliases: [{ type: 'orangelab:system' }],
@@ -29,7 +33,7 @@ export class StorageModule extends pulumi.ComponentResource {
         const systemAlias = pulumi.interpolate`urn:pulumi:${pulumi.getStack()}::${pulumi.getProject()}::orangelab:system::system`;
 
         if (config.isEnabled('rustfs')) {
-            this.rustfs = new Rustfs('rustfs', {
+            this.rustfs = new Rustfs('rustfs', { oidc: args.oidc }, {
                 parent: this,
                 aliases: [{ type: 'orangelab:system:Rustfs', parent: systemAlias }],
             });
