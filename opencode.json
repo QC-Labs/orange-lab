@@ -30,7 +30,7 @@
             "npm run test": "allow",
             "npm test*": "allow",
             "pulumi * --show-secrets *": "ask",
-            "pulumi config": "allow",
+            "pulumi config get *": "allow",
             "pulumi preview *": "ask",
             "pulumi stack output *": "allow",
             "pwd": "allow",
