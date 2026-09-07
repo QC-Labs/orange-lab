@@ -14,12 +14,18 @@ export class Beszel extends pulumi.ComponentResource {
         const token = config.getSecret(name, 'TOKEN');
         this.app = new Application(this, name).addStorage();
         const httpEndpointInfo = this.app.network.getHttpEndpointInfo();
+        // when auth is enabled, password login is disabled - configure the
+        // OAuth provider in the PocketBase superuser UI before `pulumi up`
+        const auth = this.app.auth.getOidc();
 
         this.app.addDeployment({
             ports: [{ name: 'http', port: 8090 }],
             env: {
                 USER_CREATION: 'true',
+                // systems created by one user are not visible to others - share everything
+                SHARE_ALL_SYSTEMS: 'true',
                 APP_URL: httpEndpointInfo.url,
+                ...(auth ? { DISABLE_PASSWORD_AUTH: 'true' } : {}),
             },
             volumeMounts: [{ mountPath: '/beszel_data' }],
             resources: {

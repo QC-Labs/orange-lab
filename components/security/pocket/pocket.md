@@ -106,6 +106,7 @@ Applications currently using the script:
 - [Nextcloud](../../../stacks/apps/components/nextcloud/nextcloud.md)
 - [RustFS](../../storage/rustfs/rustfs.md)
 - [Technitium](../network/technitium/technitium.md)
+- [Beszel](../../monitoring/beszel/beszel.md)
 
 Run the script from the application's module stack directory.
 The script creates or reuses the OIDC client and prints the Pulumi configuration
