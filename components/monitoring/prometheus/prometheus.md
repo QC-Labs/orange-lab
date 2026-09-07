@@ -41,6 +41,37 @@ pulumi config --show-secrets --json | jq -r '.["prometheus:grafana/password"].va
 kubectl exec -n prometheus deploy/prometheus-grafana -- grafana-cli admin reset-admin-password <new-password>
 ```
 
+## Grafana SSO (Pocket ID)
+
+Grafana supports OAuth login via [Pocket ID](../../security/pocket/pocket.md), following the [Grafana example](https://pocket-id.org/docs/client-examples/grafana). Enabling it adds a **Sign in with Pocket ID** button to the Grafana login page; the local `admin` account keeps working as a fallback login (keep the password safe for this reason).
+
+1. Run the generic Pocket ID client script from the repository root (where the core stack lives) to create the OIDC client:
+
+```sh
+GRAFANA_URL=$(pulumi stack output --json | jq -er '.monitoring.endpoints.grafana')
+
+./scripts/pocket-client.sh \
+  --app-name prometheus \
+  --client-name "Grafana" \
+  --launch-url "$GRAFANA_URL" \
+  --callback-url "$GRAFANA_URL/login/generic_oauth" \
+  --dark-icon-url https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/grafana.svg \
+  --light-icon-url https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/grafana-light.svg
+
+# Configure the printed values
+pulumi config set prometheus:auth pocket
+pulumi config set prometheus:auth/clientId <client-id>
+pulumi config set prometheus:auth/clientSecret <client-secret> --secret
+```
+
+2. Run `pulumi up` - Grafana is redeployed with the OAuth provider configured.
+
+### Notes
+
+Users log in with the **Sign in with Pocket ID** button; the password form stays available for the Grafana `admin` account. When an OAuth login creates a new Grafana user instead of matching the existing admin, update the admin user's email (Administrators -> Users) to match the Pocket ID user's email.
+
+Grafana requests the Pocket ID `groups` scope and maps the Pocket ID group named `admin` (displayed as `Admins`) to the Grafana `Admin` role. All other OAuth users receive the `Viewer` role. The group name is case-sensitive; Grafana role mapping uses the group's machine name, not its display name. See the [Grafana generic OAuth docs](https://grafana.com/docs/grafana/latest/setup-grafana/configure-access/configure-authentication/generic-oauth/) for the mapping behavior.
+
 ## Grafana dashboards
 
 Once Prometheus is installed, additional metrics and Grafana dashboards can be enabled for applications that support it.

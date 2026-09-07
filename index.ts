@@ -48,8 +48,10 @@ const baseModules = [
 ];
 
 if (config.isModuleEnabled('monitoring')) {
-    const monitoringModule = new MonitoringModule('monitoring', {
-        dependsOn: baseModules,
-    });
+    const monitoringModule = new MonitoringModule(
+        'monitoring',
+        { oidc },
+        { dependsOn: baseModules },
+    );
     exports.monitoring = monitoringModule.getExports();
 }

@@ -1,6 +1,10 @@
-import { Application, Nodes, config } from '@orangelab/pulumi';
+import { Application, Nodes, config, OidcProviderUrls } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
+
+export interface PrometheusArgs {
+    oidc?: OidcProviderUrls;
+}
 
 export class Prometheus extends pulumi.ComponentResource {
     public readonly alertmanagerEndpointUrl?: pulumi.Input<string>;
@@ -11,8 +15,8 @@ export class Prometheus extends pulumi.ComponentResource {
     private readonly nodes: Nodes;
     private readonly app: Application;
 
-    constructor(name: string, opts?: pulumi.ResourceOptions) {
-        super('orangelab:monitoring:Prometheus', name, {}, opts);
+    constructor(name: string, args: PrometheusArgs = {}, opts?: pulumi.ResourceOptions) {
+        super('orangelab:monitoring:Prometheus', name, args, opts);
 
         this.nodes = new Nodes({ appName: name });
         this.app = new Application(this, name)
@@ -30,6 +34,7 @@ export class Prometheus extends pulumi.ComponentResource {
         const prometheusHostname = config.require(name, 'hostname');
         const alertManagerHostname = config.require(name, 'alertmanager/hostname');
         const grafanaHostname = config.require(name, 'grafana/hostname');
+        const auth = this.app.auth.getOidc(args.oidc);
 
         if (this.app.storageOnly) return;
         const grafanaHttpEndpoint = this.app.network.getHttpEndpointInfo(grafanaHostname);
@@ -68,6 +73,13 @@ export class Prometheus extends pulumi.ComponentResource {
                         enabled: true,
                         adminPassword: this.grafanaPassword,
                         affinity: this.nodes.getAffinity(),
+                        ...(auth
+                            ? {
+                                  envRenderSecret: {
+                                      GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: auth.clientSecret,
+                                  },
+                              }
+                            : {}),
                         ingress: {
                             enabled: true,
                             hosts: [grafanaHttpEndpoint.hostname],
@@ -77,6 +89,35 @@ export class Prometheus extends pulumi.ComponentResource {
                         persistence: {
                             enabled: true,
                             existingClaim: this.app.storage?.getClaimName('grafana'),
+                        },
+                        'grafana.ini': {
+                            server: {
+                                root_url: pulumi.interpolate`${grafanaHttpEndpoint.url}/`,
+                            },
+                            ...(auth
+                                ? {
+                                      auth: {
+                                          oauth_allow_insecure_email_lookup: 'true',
+                                      },
+                                      'auth.generic_oauth': {
+                                          allow_sign_up: 'true',
+                                          api_url: pulumi.interpolate`${auth.providerBaseUrl}/api/oidc/userinfo`,
+                                          auth_url: pulumi.interpolate`${auth.providerBaseUrl}/authorize`,
+                                          client_id: auth.clientId,
+                                          client_secret:
+                                              '$__env{GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET}',
+                                          email_attribute_name: 'email:primary',
+                                          enabled: 'true',
+                                          name: 'Pocket ID',
+                                          role_attribute_path:
+                                              "contains(groups[*], 'admin') && 'Admin' || 'Viewer'",
+                                          scopes: 'openid email profile groups',
+                                          skip_org_role_sync: 'false',
+                                          token_url: pulumi.interpolate`${auth.providerBaseUrl}/api/oidc/token`,
+                                          use_pkce: 'true',
+                                      },
+                                  }
+                                : {}),
                         },
                     },
                     'kube-state-metrics': { affinity: this.nodes.getAffinity() },

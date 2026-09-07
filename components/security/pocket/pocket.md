@@ -107,6 +107,7 @@ Applications currently using the script:
 - [RustFS](../../storage/rustfs/rustfs.md)
 - [Technitium](../network/technitium/technitium.md)
 - [Beszel](../../monitoring/beszel/beszel.md)
+- [Grafana (Prometheus)](../../monitoring/prometheus/prometheus.md)
 
 Run the script from the application's module stack directory.
 The script creates or reuses the OIDC client and prints the Pulumi configuration
