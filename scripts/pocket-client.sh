@@ -127,17 +127,77 @@ else
 fi
 
 #
+# API helper with retry (Pocket ID intermittently answers 400/5xx)
+#
+pocket_api() {
+    local method="$1"
+    local endpoint="$2"
+    shift 2
+    local attempt response status=1
+    for attempt in 1 2 3 4 5; do
+        if response=$(curl --fail-with-body --silent --show-error -X "${method}" \
+            "${POCKET_ID_URL}${endpoint}" "$@" 2>&1); then
+            printf '%s' "${response}"
+            return 0
+        fi
+        status=1
+        printf 'Pocket ID request failed (attempt %s/5): %s %s\n' "${attempt}" "${method}" "${endpoint}" >&2
+        printf '%s\n' "${response}" >&2
+        sleep 3
+    done
+    return "${status}"
+}
+
+#
+# Upload icons (shared by create and reuse paths)
+#
+tmp_dir=$(mktemp -d)
+trap 'rm -rf "${tmp_dir}"' EXIT
+
+upload_icon() {
+    local url="$1"
+    local filename="$2"
+    local light="$3"
+    local extension="${url##*/}"
+    extension="${extension%%\?*}"
+    extension="${extension##*.}"
+    local mime_type
+
+    case "${extension,,}" in
+        svg) mime_type='image/svg+xml' ;;
+        png) mime_type='image/png' ;;
+        jpg|jpeg) mime_type='image/jpeg' ;;
+        webp) mime_type='image/webp' ;;
+        *)
+            printf 'Unsupported icon format: %s\n' "${extension}" >&2
+            exit 1
+            ;;
+    esac
+
+    local icon_path="${tmp_dir}/${filename}.${extension}"
+    if ! curl --fail --silent --show-error -o "${icon_path}" "${url}"; then
+        printf 'Warning: icon download failed, skipping: %s\n' "${url}" >&2
+        return 1
+    fi
+    # a missing icon is cosmetic and must not fail the whole run
+    if ! pocket_api POST "/api/oidc/clients/${client_id}/logo?light=${light}" \
+            -H "X-API-KEY: ${pocket_api_key}" \
+            -F "file=@${icon_path};type=${mime_type}" > /dev/null; then
+        printf 'Warning: icon upload failed - the client works without it, re-run the script to retry.\n' >&2
+        return 1
+    fi
+}
+
+#
 # Create client
 #
-client_list=$(curl --fail-with-body --silent --show-error \
-    "${POCKET_ID_URL}/api/oidc/clients?pagination%5Bpage%5D=1&pagination%5Blimit%5D=100" \
+client_list=$(pocket_api GET "/api/oidc/clients?pagination%5Bpage%5D=1&pagination%5Blimit%5D=100" \
     -H "X-API-KEY: ${pocket_api_key}")
 client_id=$(jq -er --arg name "${client_name}" \
     '[.data[] | select(.name == $name) | .id][0] // empty' <<<"${client_list}" || true)
 
 if [[ -z "${client_id}" ]]; then
-    client_response=$(curl --fail-with-body --silent --show-error \
-        -X POST "${POCKET_ID_URL}/api/oidc/clients" \
+    if ! client_response=$(pocket_api POST /api/oidc/clients \
         -H "X-API-KEY: ${pocket_api_key}" \
         -H 'Content-Type: application/json' \
         --data "$(jq -n \
@@ -154,17 +214,39 @@ if [[ -z "${client_id}" ]]; then
                 isPublic: false,
                 pkceEnabled: $pkce_enabled,
                 skipConsent: true
-            }')"
-    )
-
+            }')"); then
+        printf 'Error: could not create the client after 5 attempts - re-run the script.\n' >&2
+        exit 1
+    fi
     client_id=$(jq -er '.id' <<<"${client_response}")
-    secret_response=$(curl --fail-with-body --silent --show-error \
-        -X POST "${POCKET_ID_URL}/api/oidc/clients/${client_id}/secret" \
+
+    if ! secret_response=$(pocket_api POST "/api/oidc/clients/${client_id}/secret" \
         -H "X-API-KEY: ${pocket_api_key}" \
         -H 'Content-Type: application/json' \
-        --data '{}'
-    )
+        --data '{}'); then
+        printf 'Error: secret rotation failed, deleting the client to leave a clean state - re-run the script.\n' >&2
+        pocket_api DELETE "/api/oidc/clients/${client_id}" -H "X-API-KEY: ${pocket_api_key}" >/dev/null || true
+        exit 1
+    fi
     client_secret=$(jq -er '.secret' <<<"${secret_response}")
+
+    # commands are printed right away so later (non-fatal) failures
+    # cannot hide the config values
+    printf '\nClient created: %s\n' "${client_name}"
+    printf 'pulumi config set %s:auth pocket\n' "${app_name}"
+    printf 'pulumi config set %s:auth/clientId %q\n' "${app_name}" "${client_id}"
+    printf 'pulumi config set %s:auth/clientSecret %q --secret\n' "${app_name}" "${client_secret}"
+
+    # upload icons on the fresh client, then done
+    if [[ -n "${dark_icon_url}" ]]; then
+        upload_icon "${dark_icon_url}" dark true || true
+    fi
+    if [[ -n "${light_icon_url}" ]]; then
+        upload_icon "${light_icon_url}" light false || true
+    fi
+
+    printf 'Done. If icon uploads warned above, re-run to retry them.\n'
+    exit 0
 else
     client_secret=''
 fi
@@ -205,8 +287,7 @@ if [[ "${callback_urls_json}" != '[]' || "${logout_callback_urls_json}" != '[]' 
                 accessTokenDurationMinutes: ($existing.accessTokenDurationMinutes // 60),
                 refreshTokenDurationMinutes: ($existing.refreshTokenDurationMinutes // 43200)
             }')
-        curl --fail-with-body --silent --show-error \
-            -X PUT "${POCKET_ID_URL}/api/oidc/clients/${client_id}" \
+        pocket_api PUT "/api/oidc/clients/${client_id}" \
             -H "X-API-KEY: ${pocket_api_key}" \
             -H 'Content-Type: application/json' \
             --data "${update_body}" > /dev/null
@@ -216,45 +297,12 @@ if [[ "${callback_urls_json}" != '[]' || "${logout_callback_urls_json}" != '[]' 
     fi
 fi
 
-#
-# Upload icons
-#
-tmp_dir=$(mktemp -d)
-trap 'rm -rf "${tmp_dir}"' EXIT
-
-upload_icon() {
-    local url="$1"
-    local filename="$2"
-    local light="$3"
-    local extension="${url##*/}"
-    extension="${extension%%\?*}"
-    extension="${extension##*.}"
-    local mime_type
-
-    case "${extension,,}" in
-        svg) mime_type='image/svg+xml' ;;
-        png) mime_type='image/png' ;;
-        jpg|jpeg) mime_type='image/jpeg' ;;
-        webp) mime_type='image/webp' ;;
-        *)
-            printf 'Unsupported icon format: %s\n' "${extension}" >&2
-            exit 1
-            ;;
-    esac
-
-    local icon_path="${tmp_dir}/${filename}.${extension}"
-    curl --fail --silent --show-error -o "${icon_path}" "${url}"
-    curl --fail-with-body --silent --show-error \
-        -X POST "${POCKET_ID_URL}/api/oidc/clients/${client_id}/logo?light=${light}" \
-        -H "X-API-KEY: ${pocket_api_key}" \
-        -F "file=@${icon_path};type=${mime_type}"
-}
-
+# Upload icons on the reused client
 if [[ -n "${dark_icon_url}" ]]; then
-    upload_icon "${dark_icon_url}" dark true
+    upload_icon "${dark_icon_url}" dark true || true
 fi
 if [[ -n "${light_icon_url}" ]]; then
-    upload_icon "${light_icon_url}" light false
+    upload_icon "${light_icon_url}" light false || true
 fi
 
 #
