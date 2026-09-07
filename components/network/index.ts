@@ -1,9 +1,13 @@
-import { config } from '@orangelab/pulumi';
+import { config, OidcProviderUrls } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 import { CertManager } from './cert-manager/cert-manager';
 import { TailscaleOperator } from './tailscale/tailscale';
 import { Technitium } from './technitium/technitium';
 import { Traefik } from './traefik/traefik';
+
+export interface NetworkModuleArgs {
+    oidc?: OidcProviderUrls;
+}
 
 export class NetworkModule extends pulumi.ComponentResource {
     technitium?: Technitium;
@@ -17,7 +21,7 @@ export class NetworkModule extends pulumi.ComponentResource {
         };
     }
 
-    constructor(name: string, args = {}, opts?: pulumi.ResourceOptions) {
+    constructor(name: string, args: NetworkModuleArgs = {}, opts?: pulumi.ResourceOptions) {
         super('orangelab:network', name, args, {
             ...opts,
             aliases: [{ type: 'orangelab:system' }],
@@ -67,7 +71,7 @@ export class NetworkModule extends pulumi.ComponentResource {
         if (config.isEnabled('technitium')) {
             this.technitium = new Technitium(
                 'technitium',
-                {},
+                { oidc: args.oidc },
                 {
                     parent: this,
                     aliases: [

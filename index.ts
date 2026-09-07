@@ -3,25 +3,28 @@ import { config } from '@orangelab/pulumi';
 import { DataModule } from './components/data';
 import { HardwareModule } from './components/hardware';
 import { MonitoringModule } from './components/monitoring';
-import { NetworkModule } from './components/network';
+import { NetworkModule, NetworkModuleArgs } from './components/network';
 import { SecurityModule } from './components/security';
 import { StorageModule } from './components/storage';
 
-const networkModule = new NetworkModule('network');
-exports.network = networkModule.getExports();
-
 const securityModule = config.isModuleEnabled('security')
-    ? new SecurityModule('security', { dependsOn: networkModule })
+    ? new SecurityModule('security')
     : undefined;
 if (securityModule) exports.security = securityModule.getExports();
 
-const storageModule = new StorageModule('storage', {
-    oidc: {
-        providerBaseUrl: securityModule?.pocket?.oidcProviderBaseUrl,
-        providerUrl: securityModule?.pocket?.oidcProviderUrl,
-    },
-});
+const oidc: NetworkModuleArgs['oidc'] = securityModule
+    ? {
+          providerBaseUrl: securityModule.pocket?.oidcProviderBaseUrl,
+          providerUrl: securityModule.pocket?.oidcProviderUrl,
+      }
+    : undefined;
+
+const networkModule = new NetworkModule('network', { oidc });
+exports.network = networkModule.getExports();
+
+const storageModule = new StorageModule('storage', { oidc });
 exports.storage = storageModule.getExports();
+
 exports.config = {
     customDomain: config.get('orangelab', 'customDomain'),
     longhorn: {

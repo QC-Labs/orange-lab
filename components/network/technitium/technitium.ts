@@ -1,5 +1,9 @@
-import { Application, config } from '@orangelab/pulumi';
+import { Application, config, OidcAuthConfig, OidcProviderUrls } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
+
+export interface TechnitiumArgs {
+    oidc?: OidcProviderUrls;
+}
 
 export class Technitium extends pulumi.ComponentResource {
     public readonly endpointUrl: pulumi.Input<string>;
@@ -9,7 +13,7 @@ export class Technitium extends pulumi.ComponentResource {
 
     constructor(
         private name: string,
-        args = {},
+        private args: TechnitiumArgs = {},
         opts?: pulumi.ResourceOptions,
     ) {
         super('orangelab:network:Technitium', name, args, opts);
@@ -21,6 +25,17 @@ export class Technitium extends pulumi.ComponentResource {
             config.getSecret(name, 'adminPassword') ?? this.app.createPassword('admin-password');
         this.users = { admin: adminPassword };
 
+        const auth = this.app.auth.getOidc(this.args.oidc);
+        const env: Record<string, pulumi.Input<string> | undefined> = {
+            DNS_SERVER_DOMAIN: httpEndpointInfo.hostname,
+            DNS_SERVER_FORWARDERS: config.require(name, 'DNS_SERVER_FORWARDERS'),
+            DNS_SERVER_FORWARDER_PROTOCOL: config.require(
+                name,
+                'DNS_SERVER_FORWARDER_PROTOCOL',
+            ),
+        };
+        if (auth) this.addSsoEnvironment(env, auth);
+
         this.app.addDeployment({
             clusterIP: '10.43.0.53',
             externalTrafficPolicy: 'Local',
@@ -30,16 +45,10 @@ export class Technitium extends pulumi.ComponentResource {
                 { name: 'dns-udp', port: 53, protocol: 'udp' },
             ],
             volumeMounts: [{ mountPath: '/etc/dns' }],
-            env: {
-                DNS_SERVER_DOMAIN: httpEndpointInfo.hostname,
-                DNS_SERVER_FORWARDERS: config.require(name, 'DNS_SERVER_FORWARDERS'),
-                DNS_SERVER_FORWARDER_PROTOCOL: config.require(
-                    name,
-                    'DNS_SERVER_FORWARDER_PROTOCOL',
-                ),
-            },
+            env,
             envSecret: {
                 DNS_SERVER_ADMIN_PASSWORD: this.users.admin,
+                DNS_SERVER_SSO_CLIENT_SECRET: auth?.clientSecret,
             },
             resources: {
                 requests: { cpu: '50m', memory: '128Mi' },
@@ -48,6 +57,42 @@ export class Technitium extends pulumi.ComponentResource {
         });
 
         this.endpointUrl = httpEndpointInfo.url;
+    }
+
+    private addSsoEnvironment(
+        env: Record<string, pulumi.Input<string> | undefined>,
+        auth: OidcAuthConfig,
+    ): void {
+        if (auth.providerUrl === undefined) {
+            throw new Error(
+                'Technitium: SSO enabled (technitium:auth) but the OIDC provider is unavailable. Enable the security module (orangelab:security) in this stack, then deploy.',
+            );
+        }
+
+        env.DNS_SERVER_SSO_ALLOW_SIGNUP = 'true';
+        env.DNS_SERVER_SSO_ALLOW_SIGNUP_ONLY_FOR_MAPPED_USERS = 'true';
+        env.DNS_SERVER_SSO_AUTHORITY = pulumi.output(auth.providerBaseUrl).apply(url => {
+            if (!url) {
+                throw new Error(
+                    'Technitium: the security module is enabled but the OIDC provider base URL is unavailable. Deploy (or refresh) the security module with the Pocket ID auth provider enabled before deploying this stack.',
+                );
+            }
+            return url;
+        });
+        env.DNS_SERVER_SSO_CLIENT_ID = auth.clientId;
+        env.DNS_SERVER_SSO_GROUP_MAP =
+            config.get(this.name, 'auth/groupMap') ??
+            'technitium_admins:Administrators,technitium_dns_admins:DNS Administrators,technitium_dhcp_admins:DHCP Administrators';
+        env.DNS_SERVER_SSO_METADATA_ADDRESS = pulumi.output(auth.providerUrl).apply(url => {
+            if (!url) {
+                throw new Error(
+                    'Technitium: the security module is enabled but the OIDC provider URL is unavailable. Deploy (or refresh) the security module with the Pocket ID auth provider enabled before deploying this stack.',
+                );
+            }
+            return url;
+        });
+        env.DNS_SERVER_SSO_SCOPES = 'openid,profile,email,groups';
+        env.DNS_SERVER_SSO_ENABLED = 'true';
     }
 
 }
