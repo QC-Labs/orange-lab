@@ -1,10 +1,11 @@
 # Beszel
 
-|           |                              |
-| --------- | ---------------------------- |
-| Homepage  | https://beszel.dev/          |
-| Endpoints | `https://beszel.<domain>/`   |
-|           | `https://beszel.<domain>/_/` |
+|               |                                                   |
+| ------------- | ------------------------------------------------- |
+| Homepage      | https://beszel.dev/                               |
+| Endpoints     | `https://beszel.<domain>/`                        |
+|               | `https://beszel.<domain>/_/`                      |
+| Documentation | https://pocket-id.org/docs/client-examples/beszel |
 
 A lightweight alternative to Prometheus.
 
@@ -61,16 +62,15 @@ pulumi config set beszel:auth/clientSecret <client-secret> --secret
 ```
 
 2. Configure the OAuth provider in the Beszel superuser interface at `beszel.<domain>/_/#/settings` following the [Beszel example](https://pocket-id.org/docs/client-examples/beszel) (Settings -> Application -> disable "Hide collection create and edit controls" -> Collections > `users` -> Options -> OAuth2 -> enable and add the `oidc` provider):
+    - **Client ID / Client Secret**: from `pulumi config get beszel:auth/clientId` and `pulumi config get beszel:auth/clientSecret --show-secrets`
+    - **Display Name**: `Pocket ID`
+    - **Auth URL**: `https://login.<domain>/authorize`
+    - **Token URL**: `https://login.<domain>/api/oidc/token`
+    - **User Info URL**: `https://login.<domain>/api/oidc/userinfo`
+    - **Support PKCE**: on
+    - Set **Fetch user info from** to **User info URL**
 
-   - **Client ID / Client Secret**: from `pulumi config get beszel:auth/clientId` and `pulumi config get beszel:auth/clientSecret --show-secrets`
-   - **Display Name**: `Pocket ID`
-   - **Auth URL**: `https://login.<domain>/authorize`
-   - **Token URL**: `https://login.<domain>/api/oidc/token`
-   - **User Info URL**: `https://login.<domain>/api/oidc/userinfo`
-   - **Support PKCE**: on
-   - Set **Fetch user info from** to **User info URL**
-
-   Save, then re-enable **Hide collection create and edit controls** in the settings page.
+    Save, then re-enable **Hide collection create and edit controls** in the settings page.
 
 3. Enable verified emails in Pocket ID (**Application Configuration** -> **Emails Verified**); Beszel requires a verified email to create new OAuth users. If a first login fails with `email: cannot be blank`, the user's email is not marked verified in Pocket ID.
 4. Run `pulumi up` - this applies the auth config and sets `DISABLE_PASSWORD_AUTH=true` on the hub. Users log in with the **Pocket ID** button on the login page; the password login screen is no longer shown.

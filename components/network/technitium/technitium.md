@@ -5,6 +5,7 @@
 | Homepage              | https://technitium.com/dns/                                                                         |
 | Source code           | https://github.com/TechnitiumSoftware/DnsServer                                                     |
 | Documentation         | https://technitium.com/help/                                                                        |
+|                       | https://pocket-id.org/docs/client-examples/technitium-dns                                           |
 | Environment variables | https://raw.githubusercontent.com/TechnitiumSoftware/DnsServer/master/DockerEnvironmentVariables.md |
 | Endpoint              | https://dns.<domain>                                                                                |
 
@@ -119,10 +120,10 @@ pulumi up
 
 2. Create the user groups in Pocket ID (**Groups -> Create group**) with these exact names - they are mapped in the component and referenced by the `groups` claim; users not in any of them cannot log in:
 
-| Pocket ID group        | Technitium group   |
-| ---------------------- | ------------------ |
-| `technitium_admins`    | `Administrators`   |
-| `technitium_dns_admins` | `DNS Administrators` |
+| Pocket ID group          | Technitium group      |
+| ------------------------ | --------------------- |
+| `technitium_admins`      | `Administrators`      |
+| `technitium_dns_admins`  | `DNS Administrators`  |
 | `technitium_dhcp_admins` | `DHCP Administrators` |
 
 Groups that don't apply to your setup stay uncreated; only names that actually exist matter.
@@ -149,17 +150,17 @@ pulumi config get technitium:auth/clientSecret --show-secrets
 
 Then enable SSO and fill in these exact fields:
 
-| Field                        | Value                                                       |
-| ---------------------------- | ----------------------------------------------------------- |
-| Enable SSO                   | on                                                           |
-| Authority                    | `https://login.<domain>`                                     |
-| Client ID                    | from `pulumi config get technitium:auth/clientId`            |
-| Client Secret                | from the command above                                       |
-| Metadata Address             | `https://login.<domain>/.well-known/openid-configuration`     |
-| Scopes                       | `openid profile email groups` (includes `groups` for the group map) |
-| Allow Signup                 | on (auto-provisions accounts on first SSO login)              |
-| Allow Signup Only for Mapped Users | on (only users in a mapped group can log in)            |
-| Group Map                    | `admin:Administrators` (or matching `technitium:auth/groupMap`) |
+| Field                              | Value                                                               |
+| ---------------------------------- | ------------------------------------------------------------------- |
+| Enable SSO                         | on                                                                  |
+| Authority                          | `https://login.<domain>`                                            |
+| Client ID                          | from `pulumi config get technitium:auth/clientId`                   |
+| Client Secret                      | from the command above                                              |
+| Metadata Address                   | `https://login.<domain>/.well-known/openid-configuration`           |
+| Scopes                             | `openid profile email groups` (includes `groups` for the group map) |
+| Allow Signup                       | on (auto-provisions accounts on first SSO login)                    |
+| Allow Signup Only for Mapped Users | on (only users in a mapped group can log in)                        |
+| Group Map                          | `admin:Administrators` (or matching `technitium:auth/groupMap`)     |
 
 Saving restarts the web service; a **Login with SSO** button then appears on the login page.
 
