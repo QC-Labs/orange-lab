@@ -5,6 +5,7 @@
 | Homepage      | https://docs.seerr.dev/                                          |
 | Documentation | https://docs.seerr.dev/                                          |
 | Docker Image  | https://github.com/seerr-team/seerr/pkgs/container/seerr         |
+| Endpoints     | `https://seerr.<domain>/`                                        |
 
 Media request management. Integrates with Jellyfin for auth and library sync, and Radarr/Sonarr for request fulfillment.
 
@@ -13,6 +14,27 @@ Media request management. Integrates with Jellyfin for auth and library sync, an
 pulumi config set seerr:enabled true
 
 pulumi up
+```
+
+## Jellyfin Credentials
+
+Seerr has no OIDC support - users log in with a Jellyfin username and password. Jellyfin accounts created via SSO have no password, so an admin sets one for each user (Jellyfin Dashboard -> Users) - SSO login keeps working alongside it. See [Jellyfin SSO](../jellyfin/jellyfin.md#sso-pocket-id).
+
+## Pocket ID Launcher
+
+Seerr itself does not support OIDC, but it can appear in Pocket ID's App Dashboard as a plain launcher icon:
+
+```sh
+# From stacks/media
+SEERR_URL=$(pulumi stack output --json | jq -er '.endpoints.seerr')
+
+../../scripts/pocket-client.sh \
+  --app-name seerr \
+  --client-name "Seerr" \
+  --launch-url "$SEERR_URL" \
+  --callback-url "$SEERR_URL/sso/OID/redirect/pocketid" \
+  --dark-icon-url https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/seerr.svg \
+  --light-icon-url https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/seerr-light.svg
 ```
 
 ## Setup

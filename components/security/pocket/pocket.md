@@ -103,6 +103,7 @@ Applications currently using the script:
 - [Open WebUI](../../../stacks/ai/components/open-webui/open-webui.md)
 - [Immich](../../../stacks/media/components/immich/immich.md)
 - [Jellyfin](../../../stacks/media/components/jellyfin/jellyfin.md)
+- [Seerr](../../../stacks/media/components/seerr/seerr.md) (App Dashboard launcher only)
 - [Vaultwarden](../../../stacks/apps/components/vaultwarden/vaultwarden.md)
 - [Nextcloud](../../../stacks/apps/components/nextcloud/nextcloud.md)
 - [RustFS](../../storage/rustfs/rustfs.md)
