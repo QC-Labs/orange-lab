@@ -29,6 +29,39 @@ pulumi config set droppedneedle:fromVolume droppedneedle
 pulumi up
 ```
 
+## SSO (Pocket ID)
+
+DroppedNeedle supports OIDC login via [Pocket ID](../../../../components/security/pocket/pocket.md). Keep the local admin account as a password fallback - both login methods stay available per user.
+
+1. From `stacks/media`, create the OIDC client with Pocket ID's API key:
+
+```sh
+DN_URL=$(pulumi stack output --json | jq -er '.endpoints.droppedneedle')
+
+../../scripts/pocket-client.sh \
+  --app-name droppedneedle \
+  --client-name "DroppedNeedle" \
+  --launch-url "$DN_URL" \
+  --callback-url "$DN_URL/api/v1/auth/oidc/callback" \
+  --dark-icon-url https://cdn.jsdelivr.net/gh/selfhst/icons@main/png/droppedneedle.png \
+  --light-icon-url https://cdn.jsdelivr.net/gh/selfhst/icons@main/png/droppedneedle.png
+```
+
+```sh
+# Values for DroppedNeedle Settings -> Security:
+# Issuer URL (Pocket ID base URL) and Redirect URL:
+ pulumi --cwd ../.. stack output --json | jq -er '.security.endpoints.pocket' # -> Issuer URL
+ pulumi stack output --json | jq -er '.endpoints.droppedneedle'              # -> Redirect URL + /api/v1/auth/oidc/callback
+```
+
+2. In DroppedNeedle **Settings -> Security**, enter:
+   - **Issuer URL**: the Pocket ID base URL from the first output (e.g. `https://login.<domain>`)
+   - **Client ID / Secret**: from the script output
+   - **Redirect URL**: `<droppedneedle URL>/api/v1/auth/oidc/callback` from the second output (the same URL registered with Pocket ID)
+3. Save - an SSO button appears on the login page.
+
+Users who sign in via OIDC are created automatically on first login with the `User` role; an admin can promote them at **Settings -> Users**. OIDC users can add a password from their profile to also log in with a username.
+
 ## Post-Installation
 
 After deployment, access DroppedNeedle at the endpoint URL and complete these steps:
