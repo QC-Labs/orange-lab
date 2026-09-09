@@ -46,6 +46,18 @@ class Config {
         return this.getConfig(appName).getObject(key);
     }
 
+    public requireCommaSeparated(appName: string, key: string): string[] {
+        const value = this.require(appName, key);
+        const strings = value
+            .split(',')
+            .map(item => item.trim())
+            .filter(Boolean);
+        if (strings.length === 0) {
+            throw new Error(`${appName}:${key} must contain at least one group.`);
+        }
+        return strings;
+    }
+
     public require(appName: string, key: string): string {
         return this.getConfig(appName).require(key);
     }

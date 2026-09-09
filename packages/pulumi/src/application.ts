@@ -2,7 +2,7 @@ import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 import * as random from '@pulumi/random';
 import assert from 'node:assert';
-import { Auth } from './auth';
+import { Auth, OidcAuthConfig, OidcProviderSettings } from './auth';
 import { config } from './config';
 import { Databases } from './databases';
 import { Metadata } from './metadata';
@@ -31,6 +31,8 @@ export class Application {
     readonly nodes: Nodes;
     readonly network: Network;
     readonly auth: Auth;
+    /** Resolved OIDC client settings for native application authentication or route protection. */
+    readonly oidc?: OidcAuthConfig;
     readonly debug: boolean;
     databases?: Databases;
     storage?: Storage;
@@ -43,12 +45,16 @@ export class Application {
         args?: {
             namespace?: string;
             existingNamespace?: string;
+            /** OIDC provider settings; route protection is opt-in for edge-only applications. */
+            oidc?: OidcProviderSettings;
         },
     ) {
         this.processDeprecated();
         this.storageOnly = config.getBoolean(appName, 'storageOnly') ?? false;
         this.debug = config.getBoolean(appName, 'debug') ?? false;
         this.auth = new Auth(appName);
+        this.oidc = this.auth.getOidc(args?.oidc);
+        const routeOidc = args?.oidc?.protectRoutes ? this.oidc : undefined;
         this.metadata = new Metadata(
             appName,
             {
@@ -60,7 +66,14 @@ export class Application {
         this.nodes = new Nodes({ appName });
         this.network = new Network(
             appName,
-            { metadata: this.metadata },
+            {
+                metadata: this.metadata,
+                oidc: routeOidc,
+                pluginSecret: routeOidc
+                    ? config.getSecret(appName, 'auth/pluginSecret') ??
+                      this.createPassword('oidc-secret')
+                    : undefined,
+            },
             { parent: this.scope },
         );
     }
@@ -235,11 +248,17 @@ export class Application {
             chart: string;
             repo: string;
             values?: pulumi.Inputs;
+            httpRoute?: {
+                componentName?: string;
+                hostname?: string;
+                serviceName: pulumi.Input<string>;
+                servicePort: number;
+            };
             skipCrds?: boolean;
         },
         opts?: pulumi.CustomResourceOptions,
     ) {
-        return new kubernetes.helm.v3.Release(
+        const chart = new kubernetes.helm.v3.Release(
             name,
             {
                 chart: args.chart,
@@ -252,5 +271,21 @@ export class Application {
             },
             { ...opts, parent: this.scope },
         );
+        if (args.httpRoute) {
+            const endpoint = this.network.getHttpEndpointInfo(
+                args.httpRoute.hostname ?? config.require(this.appName, 'hostname'),
+            );
+            this.network.createHttpRoute(
+                {
+                    componentName: args.httpRoute.componentName ?? name,
+                    hostname: endpoint.hostname,
+                    serviceName: args.httpRoute.serviceName,
+                    servicePort: args.httpRoute.servicePort,
+                    middlewareName: this.network.oidcMiddlewareName,
+                },
+                { parent: this.scope, dependsOn: [chart] },
+            );
+        }
+        return chart;
     }
 }

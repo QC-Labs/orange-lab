@@ -265,18 +265,20 @@ if [[ "${callback_urls_json}" != '[]' || "${logout_callback_urls_json}" != '[]' 
         --argjson existing "${existing_client}" \
         --argjson requested "${logout_callback_urls_json}" \
         '$requested - ($existing.logoutCallbackURLs // [])')
-    if [[ "${missing_callback_urls}" != '[]' || "${missing_logout_urls}" != '[]' ]]; then
+    existing_pkce_enabled=$(jq -er '.pkceEnabled // false' <<<"${existing_client}")
+    if [[ "${missing_callback_urls}" != '[]' || "${missing_logout_urls}" != '[]' || "${existing_pkce_enabled}" != "${pkce_enabled}" ]]; then
         update_body=$(jq -c -n \
             --argjson existing "${existing_client}" \
             --argjson requested_callbacks "${callback_urls_json}" \
             --argjson requested_logout "${logout_callback_urls_json}" \
+            --argjson pkce_enabled "${pkce_enabled}" \
             '{
                 name: $existing.name,
                 description: ($existing.description // ""),
                 callbackURLs: ((($existing.callbackURLs // []) + $requested_callbacks) | unique),
                 logoutCallbackURLs: ((($existing.logoutCallbackURLs // []) + $requested_logout) | unique),
                 isPublic: ($existing.isPublic // false),
-                pkceEnabled: ($existing.pkceEnabled // false),
+                pkceEnabled: $pkce_enabled,
                 requiresReauthentication: ($existing.requiresReauthentication // false),
                 requiresPushedAuthorizationRequests: ($existing.requiresPushedAuthorizationRequests // false),
                 skipConsent: ($existing.skipConsent // false),

@@ -1,10 +1,18 @@
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
+import { OidcAuthConfig } from './auth';
 import { config } from './config';
 import { Metadata } from './metadata';
+import { createTraefikOidcMiddleware, traefikOidcMiddlewareName } from './oidc-auth';
 import { TailscaleNetwork } from './network-tailscale';
 import { TraefikNetwork } from './network-traefik';
-import { ContainerSpec, HttpEndpointInfo, RoutingProvider, ServicePort } from './types';
+import {
+    ContainerSpec,
+    HttpEndpointInfo,
+    HttpRouteSpec,
+    RoutingProvider,
+    ServicePort,
+} from './types';
 
 export class Network {
     endpoints: Record<string, pulumi.Input<string>> = {};
@@ -13,7 +21,11 @@ export class Network {
 
     constructor(
         private appName: string,
-        private args: { metadata: Metadata },
+        private args: {
+            metadata: Metadata;
+            pluginSecret?: pulumi.Input<string>;
+            oidc?: OidcAuthConfig;
+        },
         private opts?: pulumi.ComponentResourceOptions,
     ) {
         const routingProvider =
@@ -31,12 +43,41 @@ export class Network {
                     `Unknown orangelab:routingProvider: ${routingProvider ?? 'undefined'}. Must be 'traefik' or 'tailscale'.`,
                 );
         }
+        if (args.oidc !== undefined) {
+            if (routingProvider !== 'traefik') {
+                throw new Error(
+                    `${appName}: OIDC-protected routes require the Traefik routing provider.`,
+                );
+            }
+            if (args.pluginSecret === undefined) {
+                throw new Error(`${appName}: OIDC plugin secret is not configured.`);
+            }
+            this.oidcMiddlewareName = traefikOidcMiddlewareName(appName);
+            createTraefikOidcMiddleware(
+                {
+                    appName,
+                    namespace: args.metadata.namespace,
+                    oidc: args.oidc,
+                    pluginSecret: args.pluginSecret,
+                },
+                { parent: opts?.parent },
+            );
+        }
     }
+
+    readonly oidcMiddlewareName?: string;
 
     public getHttpEndpointInfo(
         hostname: string = config.require(this.appName, 'hostname'),
     ): HttpEndpointInfo {
         return this.provider.getHttpEndpointInfo(hostname);
+    }
+
+    createHttpRoute(
+        spec: HttpRouteSpec,
+        opts?: pulumi.CustomResourceOptions,
+    ) {
+        this.provider.createHttpRoute(spec, opts);
     }
 
     createEndpoints(spec: ContainerSpec) {
@@ -62,6 +103,7 @@ export class Network {
                     httpPorts,
                     component: spec.name,
                     hostname,
+                    middlewareName: this.oidcMiddlewareName,
                 });
             }
             const tcpPorts = publicPorts.filter(

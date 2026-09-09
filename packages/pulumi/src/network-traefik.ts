@@ -3,7 +3,12 @@ import * as pulumi from '@pulumi/pulumi';
 import { config } from './config';
 import { coreStack, resolveInherited } from './core-stack';
 import { Metadata } from './metadata';
-import { HttpEndpointInfo, RoutingProvider, ServicePort } from './types';
+import {
+    HttpEndpointInfo,
+    HttpRouteSpec,
+    RoutingProvider,
+    ServicePort,
+} from './types';
 
 export class TraefikNetwork implements RoutingProvider {
     endpoints: Record<string, pulumi.Input<string>> = {};
@@ -34,11 +39,95 @@ export class TraefikNetwork implements RoutingProvider {
         };
     }
 
+    createHttpRoute(
+        spec: HttpRouteSpec,
+        opts?: pulumi.CustomResourceOptions,
+    ): void {
+        const metadata = this.args.metadata.get({ component: spec.componentName });
+        if (spec.serviceKind === 'TraefikService') {
+            new kubernetes.apiextensions.CustomResource(
+                `${metadata.name}-ingressroute`,
+                {
+                    apiVersion: 'traefik.io/v1alpha1',
+                    kind: 'IngressRoute',
+                    metadata,
+                    spec: {
+                        entryPoints: ['websecure'],
+                        routes: [
+                            {
+                                match: pulumi.interpolate`Host(\`${spec.hostname}\`)`,
+                                kind: 'Rule',
+                                ...(spec.middlewareName
+                                    ? { middlewares: [{ name: spec.middlewareName }] }
+                                    : {}),
+                                services: [
+                                    { name: spec.serviceName, kind: spec.serviceKind },
+                                ],
+                            },
+                        ],
+                        tls: { secretName: pulumi.interpolate`${this.customDomain}-tls` },
+                    },
+                },
+                { ...this.opts, ...opts },
+            );
+            return;
+        }
+        new kubernetes.apiextensions.CustomResource(
+            `${metadata.name}-httproute`,
+            {
+                apiVersion: 'gateway.networking.k8s.io/v1',
+                kind: 'HTTPRoute',
+                metadata,
+                spec: {
+                    parentRefs: [
+                        {
+                            name: 'traefik-gateway',
+                            namespace: 'traefik',
+                            sectionName: 'websecure',
+                        },
+                    ],
+                    hostnames: [spec.hostname],
+                    rules: [
+                        {
+                            ...(spec.middlewareName
+                                ? {
+                                      filters: [
+                                          {
+                                              type: 'ExtensionRef',
+                                              extensionRef: {
+                                                  group: 'traefik.io',
+                                                  kind: 'Middleware',
+                                                  name: spec.middlewareName,
+                                              },
+                                          },
+                                      ],
+                                  }
+                                : {}),
+                            backendRefs: [
+                                {
+                                    name: spec.serviceName,
+                                    ...(spec.servicePort === undefined
+                                        ? {}
+                                        : { port: spec.servicePort }),
+                                    ...(spec.serviceKind === undefined
+                                        ? {}
+                                        : { kind: spec.serviceKind }),
+                                },
+                            ],
+                        },
+                    ],
+                },
+            },
+            { ...this.opts, ...opts },
+        );
+    }
+
     createHttpEndpoints(params: {
         serviceName: pulumi.Input<string>;
         httpPorts: ServicePort[];
         component?: string;
         hostname: string;
+        middlewareName?: string;
     }): void {
         params.httpPorts.forEach(portSpec => {
             const portHostname = portSpec.hostname ?? params.hostname;
@@ -47,21 +136,23 @@ export class TraefikNetwork implements RoutingProvider {
                 .filter(Boolean)
                 .join('-');
 
-            this.createHttpRoute({
+            this.createHttpBackendRoute({
                 hostname: httpEndpointInfo.hostname,
                 componentName: portComponentName,
                 serviceName: params.serviceName,
                 servicePort: portSpec.port,
+                middlewareName: params.middlewareName,
             });
         });
         this.exportHttpEndpoints(params);
     }
 
-    private createHttpRoute(params: {
+    private createHttpBackendRoute(params: {
         hostname: pulumi.Input<string>;
         componentName: string;
         serviceName: pulumi.Input<string>;
         servicePort: number;
+        middlewareName?: string;
     }): void {
         const metadata = this.args.metadata.get({ component: params.componentName });
         new kubernetes.apiextensions.CustomResource(
@@ -81,6 +172,20 @@ export class TraefikNetwork implements RoutingProvider {
                     hostnames: [params.hostname],
                     rules: [
                         {
+                            ...(params.middlewareName
+                                ? {
+                                      filters: [
+                                          {
+                                              type: 'ExtensionRef',
+                                              extensionRef: {
+                                                  group: 'traefik.io',
+                                                  kind: 'Middleware',
+                                                  name: params.middlewareName,
+                                              },
+                                          },
+                                      ],
+                                  }
+                                : {}),
                             backendRefs: [
                                 {
                                     name: params.serviceName,

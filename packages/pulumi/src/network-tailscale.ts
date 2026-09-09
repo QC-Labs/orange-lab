@@ -3,7 +3,12 @@ import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
 import { config } from './config';
 import { Metadata } from './metadata';
-import { HttpEndpointInfo, RoutingProvider, ServicePort } from './types';
+import {
+    HttpEndpointInfo,
+    HttpRouteSpec,
+    RoutingProvider,
+    ServicePort,
+} from './types';
 
 export class TailscaleNetwork implements RoutingProvider {
     endpoints: Record<string, pulumi.Input<string>> = {};
@@ -32,12 +37,27 @@ export class TailscaleNetwork implements RoutingProvider {
         };
     }
 
+    createHttpRoute(
+        _spec: HttpRouteSpec,
+        _opts?: pulumi.CustomResourceOptions,
+    ): void {
+        assert(
+            false,
+            `${this.appName}: OIDC-protected routes require the Traefik routing provider.`,
+        );
+    }
+
     createHttpEndpoints(params: {
         serviceName: pulumi.Input<string>;
         httpPorts: ServicePort[];
         component?: string;
         hostname: string;
+        middlewareName?: string;
     }): void {
+        assert(
+            !params.middlewareName,
+            `${this.appName}: OIDC-protected routes require the Traefik routing provider.`,
+        );
         params.httpPorts.forEach(httpPort => {
             const httpEndpointInfo = this.getHttpEndpointInfo(
                 httpPort.hostname ?? params.hostname,

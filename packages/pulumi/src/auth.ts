@@ -13,16 +13,24 @@ export interface OidcAuthConfig {
     clientSecret: pulumi.Output<string>;
 }
 
-export interface OidcProviderUrls {
+export interface OidcProviderSettings {
     providerBaseUrl?: pulumi.Input<string | undefined>;
     providerUrl?: pulumi.Input<string | undefined>;
+    /** Enables the shared Traefik middleware for applications without native OIDC. */
+    protectRoutes?: boolean;
 }
 
 export class Auth {
     constructor(private readonly appName: string) {}
 
-    getOidc(local?: OidcProviderUrls): OidcAuthConfig | undefined {
-        if (config.get(this.appName, 'auth') !== OidcProvider.Pocket) return undefined;
+    getOidc(local?: OidcProviderSettings): OidcAuthConfig | undefined {
+        const provider = config.get(this.appName, 'auth');
+        if (provider === undefined) return undefined;
+        if (provider !== OidcProvider.Pocket) {
+            throw new Error(
+                `${this.appName}: unsupported OIDC provider '${provider}'. Supported providers: ${OidcProvider.Pocket}.`,
+            );
+        }
 
         return {
             providerBaseUrl:

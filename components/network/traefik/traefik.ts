@@ -40,6 +40,14 @@ export class Traefik extends pulumi.ComponentResource {
                     affinity: this.app.nodes.getAffinity(),
                     api: { dashboard: true },
                     deployment: { kind: 'DaemonSet' },
+                    experimental: {
+                        plugins: {
+                            'traefik-oidc-auth': {
+                                moduleName: 'github.com/sevensolutions/traefik-oidc-auth',
+                                version: 'v0.21.0',
+                            },
+                        },
+                    },
                     gateway: {
                         listeners: {
                             web: {

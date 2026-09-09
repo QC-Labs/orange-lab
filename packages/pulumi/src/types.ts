@@ -243,6 +243,15 @@ export interface HttpEndpointInfo {
     };
 }
 
+export interface HttpRouteSpec {
+    componentName: string;
+    hostname: pulumi.Input<string>;
+    serviceName: pulumi.Input<string>;
+    servicePort?: number;
+    serviceKind?: string;
+    middlewareName?: string;
+}
+
 /**
  * Shape of the outputs exported by the core (orangelab) stack, consumed by
  * module stacks via StackReference. Add fields as new cross-stack values are
@@ -267,11 +276,16 @@ export interface CoreStackExports {
 export interface RoutingProvider {
     endpoints: Record<string, pulumi.Input<string>>;
     getHttpEndpointInfo: (hostname: string) => HttpEndpointInfo;
+    createHttpRoute: (
+        spec: HttpRouteSpec,
+        opts?: pulumi.CustomResourceOptions,
+    ) => void;
     createHttpEndpoints: (params: {
         serviceName: pulumi.Input<string>;
         httpPorts: ServicePort[];
         component?: string;
         hostname: string;
+        middlewareName?: string;
     }) => void;
     createTcpEndpoints: (params: {
         serviceName: pulumi.Input<string>;
