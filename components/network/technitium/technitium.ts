@@ -1,8 +1,13 @@
-import { Application, config, OidcAuthConfig, OidcProviderUrls } from '@orangelab/pulumi';
+import {
+    Application,
+    config,
+    OidcAuthConfig,
+    OidcProviderSettings,
+} from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 
 export interface TechnitiumArgs {
-    oidc?: OidcProviderUrls;
+    oidc?: OidcProviderSettings;
 }
 
 export class Technitium extends pulumi.ComponentResource {
@@ -18,14 +23,16 @@ export class Technitium extends pulumi.ComponentResource {
     ) {
         super('orangelab:network:Technitium', name, args, opts);
 
-        this.app = new Application(this, name).addStorage();
+        this.app = new Application(this, name, {
+            oidc: args.oidc,
+        }).addStorage();
         const httpEndpointInfo = this.app.network.getHttpEndpointInfo();
 
         const adminPassword =
-            config.getSecret(name, 'adminPassword') ?? this.app.createPassword('admin-password');
+            config.getSecret(name, 'adminPassword') ??
+            this.app.createPassword('admin-password');
         this.users = { admin: adminPassword };
 
-        const auth = this.app.auth.getOidc(this.args.oidc);
         const env: Record<string, pulumi.Input<string> | undefined> = {
             DNS_SERVER_DOMAIN: httpEndpointInfo.hostname,
             DNS_SERVER_FORWARDERS: config.require(name, 'DNS_SERVER_FORWARDERS'),
@@ -34,7 +41,7 @@ export class Technitium extends pulumi.ComponentResource {
                 'DNS_SERVER_FORWARDER_PROTOCOL',
             ),
         };
-        if (auth) this.addSsoEnvironment(env, auth);
+        if (this.app.oidc) this.addSsoEnvironment(env, this.app.oidc);
 
         this.app.addDeployment({
             clusterIP: '10.43.0.53',
@@ -48,7 +55,7 @@ export class Technitium extends pulumi.ComponentResource {
             env,
             envSecret: {
                 DNS_SERVER_ADMIN_PASSWORD: this.users.admin,
-                DNS_SERVER_SSO_CLIENT_SECRET: auth?.clientSecret,
+                DNS_SERVER_SSO_CLIENT_SECRET: this.app.oidc?.clientSecret,
             },
             resources: {
                 requests: { cpu: '50m', memory: '128Mi' },
@@ -83,16 +90,17 @@ export class Technitium extends pulumi.ComponentResource {
         env.DNS_SERVER_SSO_GROUP_MAP =
             config.get(this.name, 'auth/groupMap') ??
             'technitium_admins:Administrators,technitium_dns_admins:DNS Administrators,technitium_dhcp_admins:DHCP Administrators';
-        env.DNS_SERVER_SSO_METADATA_ADDRESS = pulumi.output(auth.providerUrl).apply(url => {
-            if (!url) {
-                throw new Error(
-                    'Technitium: the security module is enabled but the OIDC provider URL is unavailable. Deploy (or refresh) the security module with the Pocket ID auth provider enabled before deploying this stack.',
-                );
-            }
-            return url;
-        });
+        env.DNS_SERVER_SSO_METADATA_ADDRESS = pulumi
+            .output(auth.providerUrl)
+            .apply(url => {
+                if (!url) {
+                    throw new Error(
+                        'Technitium: the security module is enabled but the OIDC provider URL is unavailable. Deploy (or refresh) the security module with the Pocket ID auth provider enabled before deploying this stack.',
+                    );
+                }
+                return url;
+            });
         env.DNS_SERVER_SSO_SCOPES = 'openid,profile,email,groups';
         env.DNS_SERVER_SSO_ENABLED = 'true';
     }
-
 }

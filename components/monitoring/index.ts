@@ -1,10 +1,10 @@
-import { config, OidcProviderUrls } from '@orangelab/pulumi';
+import { config, OidcProviderSettings } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 import { Beszel } from './beszel/beszel';
 import { Prometheus } from './prometheus/prometheus';
 
 export interface MonitoringModuleArgs {
-    oidc?: OidcProviderUrls;
+    oidc?: OidcProviderSettings;
 }
 
 export class MonitoringModule extends pulumi.ComponentResource {
@@ -31,7 +31,7 @@ export class MonitoringModule extends pulumi.ComponentResource {
         }
 
         if (config.isEnabled('beszel')) {
-            this.beszel = new Beszel('beszel', { parent: this });
+            this.beszel = new Beszel('beszel', { oidc: args.oidc }, { parent: this });
         }
     }
 }

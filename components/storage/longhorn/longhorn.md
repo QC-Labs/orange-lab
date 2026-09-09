@@ -55,6 +55,32 @@ pulumi config set longhorn:dataLocality best-effort
 pulumi up
 ```
 
+## SSO (Pocket ID)
+
+Longhorn has no user management; by default its external endpoint is reachable without authentication. OIDC protection currently requires the Traefik routing provider. Once configured, the UI requires Pocket ID sign-in and is limited to the Pocket ID `admin` group (see [Pocket ID](../../security/pocket/pocket.md)):
+
+```sh
+LONGHORN_URL=$(pulumi stack output --json | jq -er '.storage.endpoints.longhorn')
+
+./scripts/pocket-client.sh \
+  --app-name longhorn \
+  --client-name "Longhorn" \
+  --launch-url "$LONGHORN_URL" \
+  --callback-url "$LONGHORN_URL/oidc/callback" \
+  --logout-callback-url "$LONGHORN_URL/oidc/callback" \
+  --pkce-enabled false \
+  --dark-icon-url https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/rancher-longhorn.svg \
+  --light-icon-url https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/rancher-longhorn-light.svg
+
+# Configure the OIDC client
+pulumi config set longhorn:auth pocket
+pulumi config set longhorn:auth/clientId <client-id>
+pulumi config set longhorn:auth/clientSecret <client-secret> --secret
+pulumi up
+```
+
+Restrict the Pocket ID OIDC client to the groups that should access Longhorn. Group access is managed in Pocket ID under **Settings -> OIDC Clients**.
+
 ## Using Extra Disks
 
 By default, Longhorn stores data at `/var/lib/longhorn/` (root disk). To use a dedicated storage drive:

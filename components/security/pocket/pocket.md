@@ -111,6 +111,12 @@ Applications currently using the script:
 - [Technitium](../network/technitium/technitium.md)
 - [Beszel](../../monitoring/beszel/beszel.md)
 - [Grafana (Prometheus)](../../monitoring/prometheus/prometheus.md)
+- [Longhorn](../../../components/storage/longhorn/longhorn.md) (no user management)
+- [Traefik Dashboard](../../../components/network/traefik/traefik.md)
+- [Mempool](../../../stacks/bitcoin/components/mempool/mempool.md) (App Dashboard launcher only)
+- [InvokeAI](../../../stacks/ai/components/invokeai/invokeai.md) (App Dashboard launcher only)
+- [n8n](../../../stacks/ai/components/n8n/n8n.md) (App Dashboard launcher only)
+- [Home Assistant](../../../stacks/iot/components/home-assistant/home-assistant.md) (App Dashboard launcher only)
 
 Run the script from the application's module stack directory.
 The script creates or reuses the OIDC client and prints the Pulumi configuration

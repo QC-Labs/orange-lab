@@ -1,10 +1,10 @@
-import { config, OidcProviderUrls } from '@orangelab/pulumi';
+import { config, OidcProviderSettings } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 import { Longhorn } from './longhorn/longhorn';
 import { Rustfs } from './rustfs/rustfs';
 
 export interface StorageModuleArgs {
-    oidc?: OidcProviderUrls;
+    oidc?: OidcProviderSettings;
 }
 
 export class StorageModule extends pulumi.ComponentResource {
@@ -44,6 +44,7 @@ export class StorageModule extends pulumi.ComponentResource {
                 'longhorn',
                 {
                     s3Provisioner: this.rustfs?.s3Provisioner,
+                    oidc: args.oidc,
                 },
                 {
                     parent: this,

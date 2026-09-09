@@ -3,6 +3,7 @@ import {
     config,
     GrafanaDashboard,
     HttpEndpointInfo,
+    OidcProviderSettings,
     S3Provisioner,
 } from '@orangelab/pulumi';
 import * as kubernetes from '@pulumi/kubernetes';
@@ -11,6 +12,7 @@ import dashboardJson from './longhorn-dashboard.json';
 
 export interface LonghornArgs {
     s3Provisioner?: S3Provisioner;
+    oidc?: OidcProviderSettings;
 }
 
 export class Longhorn extends pulumi.ComponentResource {
@@ -26,9 +28,13 @@ export class Longhorn extends pulumi.ComponentResource {
     ) {
         super('orangelab:storage:Longhorn', name, args, opts);
 
-        this.app = new Application(this, name, { namespace: `${name}-system` });
+        this.app = new Application(this, name, {
+            namespace: `${name}-system`,
+            oidc: args.oidc ? { ...args.oidc, protectRoutes: true } : undefined,
+        });
         const httpEndpointInfo = this.app.network.getHttpEndpointInfo();
 
+        const middlewareName = this.app.network.oidcMiddlewareName;
         const backupEnabled = config.getBoolean(name, 'backupEnabled') ?? false;
         let backupTarget: string | undefined = undefined;
         let backupTargetCredentialSecret: pulumi.Output<string> | undefined = undefined;
@@ -41,12 +47,12 @@ export class Longhorn extends pulumi.ComponentResource {
 
         this.chart = this.createHelmRelease({
             httpEndpointInfo,
+            middlewareName,
             backupTarget,
             backupTargetCredentialSecret,
         });
 
         this.createStorageClasses();
-
         if (config.getBoolean(name, 'snapshotEnabled')) {
             this.createSnapshotJob();
         }
@@ -65,10 +71,12 @@ export class Longhorn extends pulumi.ComponentResource {
 
     private createHelmRelease({
         httpEndpointInfo,
+        middlewareName,
         backupTarget,
         backupTargetCredentialSecret,
     }: {
         httpEndpointInfo: HttpEndpointInfo;
+        middlewareName?: string;
         backupTarget?: string;
         backupTargetCredentialSecret?: pulumi.Output<string>;
     }) {
@@ -123,22 +131,26 @@ export class Longhorn extends pulumi.ComponentResource {
                         'node-role.kubernetes.io/longhorn': 'true',
                     },
                 },
-                ...(httpEndpointInfo.gatewayRef
-                    ? {
-                          httproute: {
-                              enabled: true,
-                              hostnames: [httpEndpointInfo.hostname],
-                              parentRefs: [httpEndpointInfo.gatewayRef],
-                          },
-                      }
-                    : {
-                          ingress: {
-                              enabled: true,
-                              host: httpEndpointInfo.hostname,
-                              ingressClassName: httpEndpointInfo.className,
-                              tls: httpEndpointInfo.tls,
-                          },
-                      }),
+                // Unauthenticated chart routing is disabled when OIDC auth
+                // protects the UI (the shared route helper adds the route).
+                ...(middlewareName
+                    ? {}
+                    : httpEndpointInfo.gatewayRef
+                      ? {
+                            httproute: {
+                                enabled: true,
+                                hostnames: [httpEndpointInfo.hostname],
+                                parentRefs: [httpEndpointInfo.gatewayRef],
+                            },
+                        }
+                      : {
+                            ingress: {
+                                enabled: true,
+                                host: httpEndpointInfo.hostname,
+                                ingressClassName: httpEndpointInfo.className,
+                                tls: httpEndpointInfo.tls,
+                            },
+                        }),
                 longhornUI: {
                     replicas: 1,
                 },
@@ -153,6 +165,13 @@ export class Longhorn extends pulumi.ComponentResource {
                     defaultDataLocality: config.require('longhorn', 'dataLocality'),
                 },
             },
+            httpRoute: middlewareName
+                ? {
+                      componentName: this.name,
+                      serviceName: 'longhorn-frontend',
+                      servicePort: 80,
+                  }
+                : undefined,
         });
     }
 

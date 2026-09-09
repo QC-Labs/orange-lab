@@ -1,4 +1,4 @@
-import { Application, config } from '@orangelab/pulumi';
+import { Application, config, OidcProviderSettings } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 
 export class Beszel extends pulumi.ComponentResource {
@@ -6,18 +6,19 @@ export class Beszel extends pulumi.ComponentResource {
 
     constructor(
         private readonly name: string,
+        private readonly args: { oidc?: OidcProviderSettings } = {},
         opts?: pulumi.ResourceOptions,
     ) {
         super('orangelab:monitoring:Beszel', name, {}, opts);
 
         const hubKey = config.get(name, 'hubKey');
         const token = config.getSecret(name, 'TOKEN');
-        this.app = new Application(this, name).addStorage();
+        this.app = new Application(this, name, {
+            oidc: args.oidc,
+        }).addStorage();
         const httpEndpointInfo = this.app.network.getHttpEndpointInfo();
         // when auth is enabled, password login is disabled - configure the
         // OAuth provider in the PocketBase superuser UI before `pulumi up`
-        const auth = this.app.auth.getOidc();
-
         this.app.addDeployment({
             ports: [{ name: 'http', port: 8090 }],
             env: {
@@ -25,7 +26,7 @@ export class Beszel extends pulumi.ComponentResource {
                 // systems created by one user are not visible to others - share everything
                 SHARE_ALL_SYSTEMS: 'true',
                 APP_URL: httpEndpointInfo.url,
-                ...(auth ? { DISABLE_PASSWORD_AUTH: 'true' } : {}),
+                ...(this.app.oidc ? { DISABLE_PASSWORD_AUTH: 'true' } : {}),
             },
             volumeMounts: [{ mountPath: '/beszel_data' }],
             resources: {

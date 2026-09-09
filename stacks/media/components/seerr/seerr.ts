@@ -10,7 +10,9 @@ export class Seerr extends pulumi.ComponentResource {
     ) {
         super('orangelab:media:Seerr', name, {}, opts);
 
-        this.app = new Application(this, name).addStorage().addDeployment({
+        this.app = new Application(this, name, { oidc: { protectRoutes: true } })
+            .addStorage()
+            .addDeployment({
             ports: [{ name: 'http', port: 5055 }],
             resources: {
                 requests: { memory: '128Mi' },
@@ -18,6 +20,6 @@ export class Seerr extends pulumi.ComponentResource {
             },
             volumeMounts: [{ mountPath: '/app/config' }],
             volumeOwnerUserId: 1000,
-        });
+            });
     }
 }

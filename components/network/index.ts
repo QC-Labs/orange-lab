@@ -1,4 +1,4 @@
-import { config, OidcProviderUrls } from '@orangelab/pulumi';
+import { config, OidcProviderSettings } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 import { CertManager } from './cert-manager/cert-manager';
 import { TailscaleOperator } from './tailscale/tailscale';
@@ -6,7 +6,7 @@ import { Technitium } from './technitium/technitium';
 import { Traefik } from './traefik/traefik';
 
 export interface NetworkModuleArgs {
-    oidc?: OidcProviderUrls;
+    oidc?: OidcProviderSettings;
 }
 
 export class NetworkModule extends pulumi.ComponentResource {
@@ -59,7 +59,7 @@ export class NetworkModule extends pulumi.ComponentResource {
         if (config.isEnabled('traefik')) {
             new Traefik(
                 'traefik',
-                {},
+                { oidc: args.oidc },
                 {
                     parent: this,
                     dependsOn: certManager,

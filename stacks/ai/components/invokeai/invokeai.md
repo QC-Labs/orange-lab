@@ -24,3 +24,24 @@ pulumi config set invokeai:enable true
 pulumi config set invokeai:huggingfaceToken <TOKEN> --secret
 pulumi up
 ```
+
+## Pocket ID Launcher
+
+InvokeAI community edition does not support user authentication or OIDC, but it
+can appear in Pocket ID's App Dashboard as an unrestricted launcher:
+
+```sh
+# From stacks/ai
+INVOKEAI_URL=$(pulumi stack output --json | jq -er '.endpoints.invokeai')
+
+../../scripts/pocket-client.sh \
+  --app-name invokeai \
+  --client-name "InvokeAI" \
+  --launch-url "$INVOKEAI_URL" \
+  --callback-url "$INVOKEAI_URL/" \
+  --dark-icon-url "https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/invoke-ai.svg" \
+  --light-icon-url "https://cdn.jsdelivr.net/gh/selfhst/icons@main/svg/invoke-ai-light.svg"
+```
+
+Do not apply the `invokeai:auth` commands printed by the script; InvokeAI uses
+the client only as a Pocket ID launcher.

@@ -1,4 +1,8 @@
-import { Application, config } from '@orangelab/pulumi';
+import {
+    Application,
+    config,
+    OidcProviderSettings,
+} from '@orangelab/pulumi';
 import * as kubernetes from '@pulumi/kubernetes';
 import * as pulumi from '@pulumi/pulumi';
 
@@ -9,13 +13,15 @@ export class Traefik extends pulumi.ComponentResource {
 
     constructor(
         private name: string,
-        args = {},
+        private args: { oidc?: OidcProviderSettings } = {},
         opts?: pulumi.ResourceOptions,
     ) {
         super('orangelab:network:Traefik', name, args, opts);
         this.customDomain = config.require('orangelab', 'customDomain');
         config.requireEnabled(name, 'cert-manager');
-        this.app = new Application(this, name);
+        this.app = new Application(this, name, {
+            oidc: args.oidc ? { ...args.oidc, protectRoutes: true } : undefined,
+        });
         const crds = this.createGatewayAPICRDs();
         this.chart = this.createChart(crds);
         this.createCertificate();
@@ -179,25 +185,13 @@ export class Traefik extends pulumi.ComponentResource {
 
     private createDashboard() {
         const httpEndpointInfo = this.app.network.getHttpEndpointInfo();
-        const metadata = this.app.metadata.get({ component: 'dashboard' });
-
-        new kubernetes.apiextensions.CustomResource(
-            `${metadata.name}-ingressroute`,
+        this.app.network.createHttpRoute(
             {
-                apiVersion: 'traefik.io/v1alpha1',
-                kind: 'IngressRoute',
-                metadata,
-                spec: {
-                    entryPoints: ['websecure'],
-                    routes: [
-                        {
-                            match: pulumi.interpolate`Host(\`${httpEndpointInfo.hostname}\`)`,
-                            kind: 'Rule',
-                            services: [{ name: 'api@internal', kind: 'TraefikService' }],
-                        },
-                    ],
-                    tls: { secretName: `${this.customDomain}-tls` },
-                },
+                componentName: 'dashboard',
+                hostname: httpEndpointInfo.hostname,
+                serviceName: 'api@internal',
+                serviceKind: 'TraefikService',
+                middlewareName: this.app.network.oidcMiddlewareName,
             },
             { parent: this, dependsOn: this.chart },
         );

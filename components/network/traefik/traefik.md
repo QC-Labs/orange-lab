@@ -29,6 +29,34 @@ pulumi config set traefik:hostname traefik
 pulumi up
 ```
 
+## Dashboard SSO (Pocket ID)
+
+Once configured, the dashboard requires Pocket ID sign-in and is limited to the Pocket ID `admin` group (see [Pocket ID](../../security/pocket/pocket.md)). Without it, the dashboard is reachable without authentication.
+
+From the repo root, provision the OIDC client:
+
+```sh
+TRAEFIK_URL="https://traefik.<domain>"
+
+./scripts/pocket-client.sh \
+  --app-name traefik \
+  --client-name "Traefik Dashboard" \
+  --launch-url "$TRAEFIK_URL" \
+  --callback-url "$TRAEFIK_URL/oidc/callback" \
+  --logout-callback-url "$TRAEFIK_URL/oidc/callback" \
+  --pkce-enabled false \
+  --dark-icon-url https://cdn.jsdelivr.net/gh/selfhst/icons@main/png/traefik.png \
+  --light-icon-url https://cdn.jsdelivr.net/gh/selfhst/icons@main/png/traefik.png
+
+# Configure the OIDC client
+pulumi config set traefik:auth pocket
+pulumi config set traefik:auth/clientId <client-id>
+pulumi config set traefik:auth/clientSecret <client-secret> --secret
+pulumi up
+```
+
+Restrict the Pocket ID OIDC client to the groups that should access the dashboard. Group access is managed in Pocket ID under **Settings -> OIDC Clients**.
+
 ## Uninstall
 
 To uninstall Traefik and clean up its custom resource definitions:

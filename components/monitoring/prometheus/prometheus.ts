@@ -1,9 +1,9 @@
-import { Application, Nodes, config, OidcProviderUrls } from '@orangelab/pulumi';
+import { Application, Nodes, config, OidcProviderSettings } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 import assert from 'node:assert';
 
 export interface PrometheusArgs {
-    oidc?: OidcProviderUrls;
+    oidc?: OidcProviderSettings;
 }
 
 export class Prometheus extends pulumi.ComponentResource {
@@ -19,7 +19,9 @@ export class Prometheus extends pulumi.ComponentResource {
         super('orangelab:monitoring:Prometheus', name, args, opts);
 
         this.nodes = new Nodes({ appName: name });
-        this.app = new Application(this, name)
+        this.app = new Application(this, name, {
+            oidc: args.oidc,
+        })
             .addStorage({
                 createStorageClass: true,
                 overrideFullname: `prometheus-${name}-db-prometheus-${name}-0`,
@@ -34,8 +36,6 @@ export class Prometheus extends pulumi.ComponentResource {
         const prometheusHostname = config.require(name, 'hostname');
         const alertManagerHostname = config.require(name, 'alertmanager/hostname');
         const grafanaHostname = config.require(name, 'grafana/hostname');
-        const auth = this.app.auth.getOidc(args.oidc);
-
         if (this.app.storageOnly) return;
         const grafanaHttpEndpoint = this.app.network.getHttpEndpointInfo(grafanaHostname);
         const prometheusHttpEndpoint =
@@ -73,10 +73,10 @@ export class Prometheus extends pulumi.ComponentResource {
                         enabled: true,
                         adminPassword: this.grafanaPassword,
                         affinity: this.nodes.getAffinity(),
-                        ...(auth
+                        ...(this.app.oidc
                             ? {
                                   envRenderSecret: {
-                                      GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: auth.clientSecret,
+                                      GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET: this.app.oidc.clientSecret,
                                   },
                               }
                             : {}),
@@ -94,16 +94,16 @@ export class Prometheus extends pulumi.ComponentResource {
                             server: {
                                 root_url: pulumi.interpolate`${grafanaHttpEndpoint.url}/`,
                             },
-                            ...(auth
+                            ...(this.app.oidc
                                 ? {
                                       auth: {
                                           oauth_allow_insecure_email_lookup: 'true',
                                       },
                                       'auth.generic_oauth': {
                                           allow_sign_up: 'true',
-                                          api_url: pulumi.interpolate`${auth.providerBaseUrl}/api/oidc/userinfo`,
-                                          auth_url: pulumi.interpolate`${auth.providerBaseUrl}/authorize`,
-                                          client_id: auth.clientId,
+                                           api_url: pulumi.interpolate`${this.app.oidc.providerBaseUrl}/api/oidc/userinfo`,
+                                           auth_url: pulumi.interpolate`${this.app.oidc.providerBaseUrl}/authorize`,
+                                           client_id: this.app.oidc.clientId,
                                           client_secret:
                                               '$__env{GF_AUTH_GENERIC_OAUTH_CLIENT_SECRET}',
                                           email_attribute_name: 'email:primary',
@@ -113,7 +113,7 @@ export class Prometheus extends pulumi.ComponentResource {
                                               "contains(groups[*], 'admin') && 'Admin' || 'Viewer'",
                                           scopes: 'openid email profile groups',
                                           skip_org_role_sync: 'false',
-                                          token_url: pulumi.interpolate`${auth.providerBaseUrl}/api/oidc/token`,
+                                           token_url: pulumi.interpolate`${this.app.oidc.providerBaseUrl}/api/oidc/token`,
                                           use_pkce: 'true',
                                       },
                                   }

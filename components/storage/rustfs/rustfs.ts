@@ -1,9 +1,9 @@
-import { Application, config, OidcAuthConfig, OidcProviderUrls } from '@orangelab/pulumi';
+import { Application, config, OidcAuthConfig, OidcProviderSettings } from '@orangelab/pulumi';
 import * as pulumi from '@pulumi/pulumi';
 import { RustfsProvisioner } from './rustfs-provisioner';
 
 export interface RustfsArgs {
-    oidc?: OidcProviderUrls;
+    oidc?: OidcProviderSettings;
 }
 
 export class Rustfs extends pulumi.ComponentResource {
@@ -22,7 +22,9 @@ export class Rustfs extends pulumi.ComponentResource {
     ) {
         super('orangelab:storage:Rustfs', name, {}, opts);
 
-        this.app = new Application(this, name).addLocalStorage({
+        this.app = new Application(this, name, {
+            oidc: args.oidc,
+        }).addLocalStorage({
             name: 'data',
             hostPath: config.require(name, 'dataPath'),
         });
@@ -50,7 +52,6 @@ export class Rustfs extends pulumi.ComponentResource {
     }
 
     private createDeployment() {
-        const auth = this.app.auth.getOidc(this.args.oidc);
         const consoleUrl = this.app.network.getHttpEndpointInfo(this.hostname).url;
         this.app.addDeployment({
             volumeOwnerUserId: 10001,
@@ -60,11 +61,11 @@ export class Rustfs extends pulumi.ComponentResource {
             ],
             env: {
                 ...this.getBaseEnv(),
-                ...this.getOidcEnv(auth, consoleUrl),
+                ...this.getOidcEnv(this.app.oidc, consoleUrl),
             },
             envSecret: {
                 RUSTFS_SECRET_KEY: this.users[this.rootUser],
-                ...this.getOidcSecret(auth),
+                ...this.getOidcSecret(this.app.oidc),
             },
             commandArgs: ['/data'],
             volumeMounts: [{ name: 'data', mountPath: '/data' }],

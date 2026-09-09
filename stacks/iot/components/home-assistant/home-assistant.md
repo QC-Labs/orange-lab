@@ -20,6 +20,29 @@ pulumi config set home-assistant:requiredNodeLabel "topology.kubernetes.io/zone=
 pulumi up
 ```
 
+## Pocket ID Launcher
+
+Home Assistant does not support Pocket ID as a native OIDC login provider, but it
+can appear in Pocket ID's App Dashboard as a launcher available to every Pocket
+ID user:
+
+```sh
+# From stacks/iot
+HOME_ASSISTANT_URL=$(pulumi stack output --json | jq -er '.endpoints.homeAssistant')
+
+../../scripts/pocket-client.sh \
+  --app-name home-assistant \
+  --client-name "Home Assistant" \
+  --launch-url "$HOME_ASSISTANT_URL" \
+  --callback-url "$HOME_ASSISTANT_URL/" \
+  --dark-icon-url "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/home-assistant.png" \
+  --light-icon-url "https://cdn.jsdelivr.net/gh/homarr-labs/dashboard-icons/png/home-assistant.png"
+```
+
+Do not apply the `home-assistant:auth` commands printed by the script; Home
+Assistant uses the client only as a Pocket ID launcher and does not support
+Pocket ID OIDC login.
+
 ## Device access
 
 Home Assistant can access host devices such as USB or serial adapters. Configure
