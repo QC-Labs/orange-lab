@@ -3,6 +3,8 @@ import {
     HomeAssistant,
     HomeAssistantDevice,
 } from './components/home-assistant/home-assistant';
+import { MatterServer } from './components/matter/matter';
+import { OpenThreadBorderRouter } from './components/openthread/openthread';
 
 const homeAssistant = config.isEnabled('home-assistant')
     ? new HomeAssistant('home-assistant', {
@@ -15,6 +17,17 @@ const homeAssistant = config.isEnabled('home-assistant')
       })
     : undefined;
 
+const openThreadBorderRouter = config.isEnabled('openthread')
+    ? new OpenThreadBorderRouter('openthread')
+    : undefined;
+
+const matterServer = config.isEnabled('matter')
+    ? new MatterServer('matter')
+    : undefined;
+
 export const endpoints = {
     homeAssistant: homeAssistant?.endpointUrl,
+    openThreadRestApi: openThreadBorderRouter?.restApiUrl,
+    matterDashboard: matterServer?.endpointUrl,
+    matterWebsocket: matterServer?.websocketUrl,
 };

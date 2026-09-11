@@ -19,7 +19,7 @@ config:
     home-assistant:devices: []
     # mount additional host devices
     # home-assistant:devices:
-    #     - name: connect-zbt-2
+    #     - name: usb-device
     #       device: /dev/ttyACM0
     # Set zone for deployment on nodes with topology.kubernetes.io/zone=<value> label
     # This gives access to sensors on local host network
@@ -28,3 +28,20 @@ config:
     # home-assistant:requiredNodeLabel: kubernetes.io/hostname=<value>
 
     home-assistant:trustedProxies: '10.42.0.0/16,10.43.0.0/16,127.0.0.0/8' # clusterCidr,serviceCidr,local
+
+    openthread:enabled: false
+    openthread:storageSize: 1Gi
+    openthread:image: openthread/border-router:latest
+    # Set node-specific values (infra iface, RCP device path with /dev/serial/by-id
+    # preferred, node pinning) in your stack config, e.g.:
+    # openthread:OT_INFRA_IF: wlan0
+    # openthread:device: /dev/ttyACM0
+
+    matter:enabled: false
+    matter:hostname: matter
+    matter:storageSize: 1Gi
+    matter:image: ghcr.io/matter-js/matterjs-server:stable
+    # Host Bluetooth adapter index used for BLE commissioning (set to -1 to disable)
+    matter:bluetoothAdapter: 0
+    # (Optional) Primary network interface for Matter mDNS
+    # matter:primaryInterface: enp3s0
