@@ -45,6 +45,7 @@
             "pwd": "allow",
             "rg *": "allow",
             "sed *": "allow",
+            "sort *": "allow",
             "sleep *": "allow",
             "tail *": "allow"
         },
