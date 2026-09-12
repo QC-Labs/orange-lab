@@ -102,7 +102,7 @@ export class PostgresCluster extends pulumi.ComponentResource {
                         pvcTemplate: this.args.fromPVC
                             ? {
                                   dataSource: {
-                                      apiGroup: 'v1',
+                                      apiGroup: '',
                                       name: this.args.fromPVC,
                                       kind: 'PersistentVolumeClaim',
                                   },
